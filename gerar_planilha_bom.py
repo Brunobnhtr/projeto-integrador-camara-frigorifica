@@ -46,6 +46,9 @@ VERDE = "2B8A3E"
 FINA = Side(style="thin", color=CINZA_LINHA)
 BORDA = Border(left=FINA, right=FINA, top=FINA, bottom=FINA)
 
+# Seções da BOM que descrevem o que SAIU do projeto — nunca viram compra.
+SECAO_REMOVIDOS = re.compile(r"n[ãa]o existem mais|removid", re.IGNORECASE)
+
 
 def limpar(texto: str) -> str:
     """Tira a formatação markdown, deixando o texto puro para a planilha."""
@@ -99,9 +102,20 @@ def ler_bom(caminho: Path) -> list[dict]:
         if not cabecalho or "Item" not in cabecalho[0]:
             continue
 
+        # ⚠️ A tabela "Itens que NÃO existem mais" também tem "Item" no
+        #    cabeçalho ("Item removido"). Sem este filtro, componentes já
+        #    eliminados do projeto — XL4016, Zener, cooler do T1 — voltam
+        #    para a lista de compras.
+        if SECAO_REMOVIDOS.search(secao):
+            continue
+
+        brutos = dict(zip(cabecalho, celulas))
         valores = dict(zip(cabecalho, [limpar(c) for c in celulas]))
         item = valores.get(cabecalho[0], "")
-        if not item or item.startswith("~~"):
+
+        # O tachado (~~item~~) marca o que saiu do projeto. A checagem é feita
+        # na célula BRUTA porque limpar() remove os "~~" antes de chegar aqui.
+        if not item or "~~" in brutos.get(cabecalho[0], ""):
             continue
 
         # a 4ª coluna muda de nome conforme a tabela (Busca / Ajuste / Aplicação)

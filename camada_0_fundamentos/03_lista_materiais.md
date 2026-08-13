@@ -123,7 +123,7 @@
 | **Fio rígido ENCAPADO 0,50 mm² CINZA** | 2 m | Ramal **R3** (auxiliares) | |
 | **Fio rígido ENCAPADO 1,50 mm² AZUL CLARO** ⬆ | 2 m | **Retorno comum 0 V** — o "neutro" da linha, 40 mm abaixo da cruzeta. Subiu de 1,00 para 1,50 mm²: conduz a **soma** dos 3 ramais (6,9 A) | |
 | Contas/miçangas marrom ou branca Ø 6 mm | 20 | **Isoladores** de pino da cruzeta | |
-| **Tubo de PVC Ø 50 mm** | 24 cm | Corpos dos 3 postes — 8 cm cada: **T2** (P2), **T3** (P3) e a **caixa de derivação** (P1). Agora os três têm o mesmo diâmetro, porque não há mais o XL4016 grande no P1 | |
+| **Tubo de PVC Ø 50 mm** | 24 cm | Corpos dos 3 postes — 8 cm cada: **T2** (P2), **T3** (P3) e a **caixa de derivação** (P1). Agora os três têm o mesmo diâmetro, porque o P1 deixou de ter conversor | |
 | Tampa/cap PVC Ø 50 mm | 6 | Tampas dos 3 corpos | |
 | Cinta de alumínio 10 mm | 1 m | Fixação dos transformadores e da caixa de derivação nos postes | |
 | **Bornes de emenda pequenos (2 ou 3 vias)** | 2 | Dentro da **caixa de derivação do P1** — ali os 24 V só se distribuem, não se transformam | |
