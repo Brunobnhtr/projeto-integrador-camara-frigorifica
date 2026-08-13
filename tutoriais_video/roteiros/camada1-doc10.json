@@ -1,0 +1,70 @@
+{
+  "id": "camada1-doc10",
+  "titulo": "Base e Chão de Fábrica",
+  "camada": "CAMADA 1 · MAQUETE",
+  "documento": "Doc 10",
+  "voz": "pt-BR-AntonioNeural",
+  "taxa": "-6%",
+  "beats": [
+    {
+      "id": "s00-abertura",
+      "cena": "Abertura",
+      "texto": "Bem-vindo à Camada 1 do Projeto Integrador. Nesta etapa nós vamos construir a base da maquete: o terreno onde a nossa planta industrial vai ficar. É a primeira coisa a ser feita, e um erro aqui custa caro lá na frente."
+    },
+    {
+      "id": "s01-visao",
+      "cena": "O percurso da energia",
+      "texto": "A base tem mil e quinhentos por quinhentos milímetros, e ela conta uma história em linha reta. Da esquerda para a direita: primeiro a subestação, depois os três postes com a linha de vinte e quatro volts, em seguida o painel de comando, e por último a câmara frigorífica no fundo com o chão de fábrica na frente."
+    },
+    {
+      "id": "s02-materiais",
+      "cena": "Separe o material",
+      "texto": "Antes de começar, separe tudo: uma chapa de MDF de doze milímetros, quatro tiras para a moldura, três travessas de reforço, insertos rosqueados, oito pés de borracha, duas alças, tinta cinza claro, tinta cor de asfalto, verniz fosco e as fitas de demarcação."
+    },
+    {
+      "id": "s03-corte",
+      "cena": "Passo 1 — Corte",
+      "texto": "Passo um: corte a chapa em mil e quinhentos por quinhentos milímetros. Depois de cortar, meça as duas diagonais com uma trena. Se elas não forem iguais, a base está fora de esquadro. A diferença máxima aceitável é de dois milímetros."
+    },
+    {
+      "id": "s04-furacao",
+      "cena": "Passo 2 — Marcação e furação",
+      "texto": "Passo dois: marque todos os furos antes de montar qualquer coisa. Três furos para os postes, um para a saída da subestação, três entradas separadas no painel, uma para cada tensão, mais o chicote da câmara e o dreno. Fure primeiro com broca guia de três milímetros, e só depois alargue."
+    },
+    {
+      "id": "s05-moldura",
+      "cena": "Passo 3 — A moldura e o vão de 40 mm",
+      "texto": "Passo três, e este é o mais importante do vídeo inteiro: monte a moldura com quarenta milímetros de altura, e três travessas de reforço com entalhe no meio. O vão é por onde toda a fiação passa por baixo. O entalhe é o que permite o cabo atravessar de ponta a ponta. Sem ele, a base vira quatro compartimentos fechados."
+    },
+    {
+      "id": "s06-pintura",
+      "cena": "Passo 4 — Pintura",
+      "texto": "Passo quatro: lixe, aplique o fundo selador e só então pinte. Aqui são duas cores: cinza claro fosco no chão de fábrica e cinza asfalto escuro na rua. Mascare uma zona enquanto pinta a outra. Sem o selador a tinta mancha, porque o MDF é poroso."
+    },
+    {
+      "id": "s07-demarcacao",
+      "cena": "Passo 5 — Demarcação de segurança",
+      "texto": "Passo cinco: a demarcação. Isto não é enfeite, é conteúdo técnico. A faixa zebrada amarela e preta na frente do painel representa a zona controlada da norma NR dez. As faixas amarelas contínuas delimitam a área de máquinas, e a verde é rota de fuga. Coloque uma legenda explicando isso na maquete: vale ponto na apresentação."
+    },
+    {
+      "id": "s08-cenografia",
+      "cena": "Passo 6 — A rua e o portão",
+      "texto": "Passo seis: a rua. Na frente da subestação e dos postes vai uma via pública, com pista, meio fio, faixa de pedestres, carros, pessoas e três postes de iluminação. Atenção: os postes de iluminação são diferentes dos postes de distribuição. E a rua termina em um muro com portão, porque a partir dali já é dentro da empresa."
+    },
+    {
+      "id": "s09-fiacao",
+      "cena": "Roteamento da fiação",
+      "texto": "Guarde a regra de ouro do cabeamento: potência de um lado, sinal do outro, com pelo menos cinquenta milímetros de separação. Quando os dois grupos precisarem se cruzar, cruze sempre a noventa graus. Isso evita que o ruído dos drivers atrapalhe a leitura dos sensores."
+    },
+    {
+      "id": "s10-checklist",
+      "cena": "Checklist de aceitação",
+      "texto": "Antes de passar para o próximo documento, confira: base esquadrejada, vão de quarenta milímetros confirmado com paquímetro, travessas com entalhe, todos os furos feitos antes da pintura, as três entradas separadas do painel, faixa zebrada aplicada e o teste final: passar um cabo de ponta a ponta por baixo da base, atravessando as três travessas, sem esforço."
+    },
+    {
+      "id": "s11-encerramento",
+      "cena": "Encerramento",
+      "texto": "Camada 1, documento 10, concluída. No próximo vídeo: a subestação e os postes, onde os cento e vinte e sete volts viram vinte e quatro volts e sobem para a linha de distribuição. Até lá."
+    }
+  ]
+}

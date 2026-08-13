@@ -1,0 +1,50 @@
+{
+  "id": "camada3-doc31-reles",
+  "titulo": "Por que K0, K1 e K2?",
+  "camada": "CAMADA 3 · ELÉTRICA",
+  "documento": "Doc 31 · Relés",
+  "voz": "pt-BR-AntonioNeural",
+  "taxa": "-4%",
+  "beats": [
+    {
+      "id": "s00-tres-niveis",
+      "cena": "Três níveis, três funções",
+      "texto": "Três relés parecem repetição, mas aqui eles não fazem o mesmo trabalho. Eles separam três níveis: o sinal de cinco volts do Arduino, o comando de vinte e quatro volts e a potência de doze volts, com até seis vírgula três ampères."
+    },
+    {
+      "id": "s01-k0",
+      "cena": "K0 — a interface do Arduino",
+      "texto": "O pino D vinte e seis do Arduino trabalha em cinco volts e fornece pouca corrente. Ele não pode alimentar diretamente as bobinas de vinte e quatro volts. Por isso aciona o módulo K zero. O contato seco de K zero entra na cadeia de comando e dá ao software um jeito físico de derrubar K um e K dois se detectar fan parada, corrente anormal ou outra falha."
+    },
+    {
+      "id": "s02-k1-selo",
+      "cena": "K1 — memória elétrica e selo",
+      "texto": "K um resolve a lógica das botoeiras. Emergência e STOP usam contatos normalmente fechados; START usa um contato normalmente aberto. Ao apertar START, as bobinas de K um e K dois energizam juntas. O contato auxiliar K um N A um fecha em paralelo com START e mantém o circuito ligado depois que o botão é solto. Se STOP, emergência ou falta de energia abrirem a cadeia, o selo se perde e somente um novo START pode ligar outra vez."
+    },
+    {
+      "id": "s03-quatorze-pinos",
+      "cena": "De onde vêm os 14 pinos?",
+      "texto": "Os quatorze pinos saem de uma conta simples. Cada contato reversível possui três terminais: comum, normalmente fechado e normalmente aberto. Quatro contatos vezes três terminais dão doze. Somando A um e A dois, os dois terminais da bobina, chegamos a quatorze. A numeração exata varia; confira sempre o desenho impresso no relé."
+    },
+    {
+      "id": "s04-reversivel",
+      "cena": "O que significa reversível?",
+      "texto": "Reversível quer dizer comutador. Em repouso, o comum toca o N F. Quando a bobina energiza, o comum abandona o N F e passa a tocar o N A. Isso não inverte tensão nem rotação. Neste projeto, um N A faz o selo e outro informa ao Arduino que a potência foi armada. Os outros dois ficam de reserva."
+    },
+    {
+      "id": "s05-k2",
+      "cena": "K2 — o relé de potência",
+      "texto": "K dois é o músculo. Atenção à especificação: a bobina também é de vinte e quatro volts. O seu contato, nominal de quarenta ampères, é que chaveia o ramal de doze volts e seis vírgula três ampères dos drivers. Essa corrente não deve passar pelos contatos de lógica de K um, nem por vários contatos ligados em paralelo."
+    },
+    {
+      "id": "s06-dois-caminhos",
+      "cena": "Botões físicos e software",
+      "texto": "Então, sim: os botões físicos são parte essencial do motivo. STOP e emergência abrem diretamente o comando, sem pedir permissão ao programa. Ao mesmo tempo, o Arduino supervisiona sensores e pode abrir K zero. São dois caminhos de parada que chegam ao mesmo resultado: K um e K dois desenergizam, o contato de potência abre e a carga fica fisicamente sem alimentação."
+    },
+    {
+      "id": "s07-resumo",
+      "cena": "Uma cadeia, três responsabilidades",
+      "texto": "Resumindo: K zero é a interface e o poder de corte do software. K um é a memória do comando, faz o selo e devolve o estado. K dois suporta e corta a corrente da carga. Depois de qualquer parada, o sistema espera um novo START manual. Não são três cópias da mesma chave; são três responsabilidades elétricas diferentes."
+    }
+  ]
+}

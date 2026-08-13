@@ -1,0 +1,235 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 980" width="1160" height="980" font-family="Segoe UI, Arial, sans-serif">
+  <rect width="1160" height="980" fill="#ffffff"/>
+
+  <defs>
+    <marker id="ar" markerWidth="10" markerHeight="10" refX="9" refY="3.2" orient="auto">
+      <path d="M0,0 L9,3.2 L0,6.4 z" fill="#212529"/>
+    </marker>
+  </defs>
+
+  <text x="50" y="40" font-size="23" font-weight="700" fill="#111">DIAGRAMA UNIFILAR — CADEIA DE ENERGIA</text>
+  <text x="50" y="63" font-size="13" fill="#555">127 V CA → 24 Vcc → 12 V / 5 V / 3,3 V · proteção em 5 níveis · Projeto Integrador CF-01</text>
+
+  <!-- ============ NÍVEL 1 — SUBESTAÇÃO ============ -->
+  <rect x="50" y="86" width="1060" height="270" fill="#fff5f5" stroke="#c92a2a" stroke-width="2" stroke-dasharray="8 4"/>
+  <text x="66" y="108" font-size="13" font-weight="700" fill="#c92a2a">⚡ SUBESTAÇÃO — ÚNICA REGIÃO COM 127 V CA (caixa fechada e aparafusada)</text>
+
+  <!-- tomada -->
+  <g>
+    <rect x="80" y="130" width="110" height="52" fill="#f8f9fa" stroke="#212529" stroke-width="2"/>
+    <circle cx="105" cy="150" r="4" fill="#212529"/><circle cx="135" cy="150" r="4" fill="#212529"/>
+    <circle cx="120" cy="166" r="4" fill="#2b8a3e"/>
+    <text x="135" y="200" font-size="12" font-weight="700" fill="#212529" text-anchor="middle">TOMADA 127 V CA</text>
+    <text x="135" y="216" font-size="10" fill="#495057" text-anchor="middle">2P+T · cabo PP 3×1,5 mm²</text>
+  </g>
+  <line x1="190" y1="156" x2="250" y2="156" stroke="#212529" stroke-width="2.5" marker-end="url(#ar)"/>
+
+  <!-- disjuntor Q0 -->
+  <g>
+    <rect x="256" y="126" width="76" height="60" fill="#ffe3e3" stroke="#c92a2a" stroke-width="2"/>
+    <path d="M270 176 L270 146 L284 132" stroke="#c92a2a" stroke-width="2.5" fill="none"/>
+    <path d="M300 176 L300 146 L314 132" stroke="#c92a2a" stroke-width="2.5" fill="none"/>
+    <text x="294" y="204" font-size="12" font-weight="700" fill="#c92a2a" text-anchor="middle">Q0</text>
+    <text x="294" y="220" font-size="10" fill="#7a0b0b" text-anchor="middle">2P · 6 A · curva C</text>
+    <text x="294" y="234" font-size="9" fill="#7a0b0b" text-anchor="middle">(curva C = inrush da fonte)</text>
+  </g>
+  <line x1="332" y1="156" x2="392" y2="156" stroke="#212529" stroke-width="2.5" marker-end="url(#ar)"/>
+
+  <!-- chave S3 -->
+  <g>
+    <rect x="398" y="126" width="72" height="60" fill="#e7f5ff" stroke="#1971c2" stroke-width="2"/>
+    <circle cx="418" cy="170" r="3.5" fill="#1971c2"/>
+    <circle cx="418" cy="142" r="3.5" fill="#1971c2"/>
+    <line x1="418" y1="170" x2="436" y2="142" stroke="#1971c2" stroke-width="2.5"/>
+    <text x="452" y="160" font-size="11" fill="#1971c2">0-1</text>
+    <text x="434" y="204" font-size="12" font-weight="700" fill="#1971c2" text-anchor="middle">S3</text>
+    <text x="434" y="220" font-size="10" fill="#0b4a86" text-anchor="middle">chave rotativa</text>
+    <text x="434" y="234" font-size="9" fill="#0b4a86" text-anchor="middle">(só a fase)</text>
+  </g>
+  <line x1="470" y1="156" x2="530" y2="156" stroke="#212529" stroke-width="2.5" marker-end="url(#ar)"/>
+
+  <!-- fonte G1 -->
+  <g>
+    <rect x="536" y="116" width="150" height="80" fill="#d3f9d8" stroke="#1e7e34" stroke-width="2.5"/>
+    <text x="611" y="142" font-size="13" font-weight="700" fill="#155724" text-anchor="middle">G1 · FONTE</text>
+    <text x="611" y="160" font-size="12" fill="#155724" text-anchor="middle">127 VCA → 24 VCC</text>
+    <text x="611" y="178" font-size="12" font-weight="700" fill="#155724" text-anchor="middle">10 A · 240 W</text>
+    <text x="611" y="216" font-size="10" fill="#1b4332" text-anchor="middle">OCP / OVP / SCP internas</text>
+  </g>
+
+  <!-- terra -->
+  <line x1="120" y1="182" x2="120" y2="290" stroke="#2b8a3e" stroke-width="2.5"/>
+  <line x1="120" y1="290" x2="600" y2="290" stroke="#2b8a3e" stroke-width="2.5"/>
+  <line x1="600" y1="290" x2="600" y2="196" stroke="#2b8a3e" stroke-width="2.5"/>
+  <g stroke="#2b8a3e" stroke-width="2.5">
+    <line x1="290" y1="290" x2="290" y2="308"/>
+    <line x1="272" y1="308" x2="308" y2="308"/>
+    <line x1="278" y1="315" x2="302" y2="315"/>
+    <line x1="285" y1="322" x2="295" y2="322"/>
+  </g>
+  <text x="332" y="314" font-size="11" font-weight="700" fill="#2b8a3e">PE — barra de terra</text>
+  <text x="332" y="330" font-size="10" fill="#2b8a3e">⚡ ponto ÚNICO de ligação 0 V ↔ PE</text>
+
+  <!-- barramento 24 V -->
+  <line x1="686" y1="156" x2="740" y2="156" stroke="#e8590c" stroke-width="3" marker-end="url(#ar)"/>
+  <rect x="746" y="132" width="90" height="26" fill="#ffe8cc" stroke="#e8590c" stroke-width="2"/>
+  <text x="791" y="150" font-size="12" font-weight="700" fill="#a63e00" text-anchor="middle">+24 V</text>
+  <rect x="746" y="176" width="90" height="26" fill="#e9ecef" stroke="#495057" stroke-width="2"/>
+  <text x="791" y="194" font-size="12" font-weight="700" fill="#212529" text-anchor="middle">0 V</text>
+  <line x1="791" y1="202" x2="791" y2="290" stroke="#495057" stroke-width="2.5"/>
+  <line x1="600" y1="290" x2="791" y2="290" stroke="#2b8a3e" stroke-width="2.5"/>
+
+  <!-- fusíveis F1 F2 F3 -->
+  <line x1="836" y1="145" x2="880" y2="145" stroke="#e8590c" stroke-width="2.5"/>
+  <line x1="880" y1="145" x2="880" y2="255" stroke="#e8590c" stroke-width="2.5"/>
+  <g>
+    <line x1="880" y1="145" x2="930" y2="145" stroke="#e8590c" stroke-width="2.5"/>
+    <rect x="930" y="136" width="34" height="18" fill="#fff3bf" stroke="#b8860b" stroke-width="2"/>
+    <text x="947" y="150" font-size="10" font-weight="700" fill="#5c4a00" text-anchor="middle">F1</text>
+    <line x1="964" y1="145" x2="1010" y2="145" stroke="#e8590c" stroke-width="2.5" marker-end="url(#ar)"/>
+    <text x="1062" y="142" font-size="12" font-weight="700" fill="#a63e00" text-anchor="middle">R1 · 6 A</text>
+    <text x="1062" y="157" font-size="10" fill="#a63e00" text-anchor="middle">6,00 A</text>
+  </g>
+  <g>
+    <line x1="880" y1="200" x2="930" y2="200" stroke="#e8590c" stroke-width="2.5"/>
+    <rect x="930" y="191" width="34" height="18" fill="#fff3bf" stroke="#b8860b" stroke-width="2"/>
+    <text x="947" y="205" font-size="10" font-weight="700" fill="#5c4a00" text-anchor="middle">F2</text>
+    <line x1="964" y1="200" x2="1010" y2="200" stroke="#e8590c" stroke-width="2.5" marker-end="url(#ar)"/>
+    <text x="1062" y="197" font-size="12" font-weight="700" fill="#a63e00" text-anchor="middle">R2 · 2 A</text>
+    <text x="1062" y="212" font-size="10" fill="#a63e00" text-anchor="middle">0,18 A</text>
+  </g>
+  <g>
+    <line x1="880" y1="255" x2="930" y2="255" stroke="#e8590c" stroke-width="2.5"/>
+    <rect x="930" y="246" width="34" height="18" fill="#fff3bf" stroke="#b8860b" stroke-width="2"/>
+    <text x="947" y="260" font-size="10" font-weight="700" fill="#5c4a00" text-anchor="middle">F3</text>
+    <line x1="964" y1="255" x2="1010" y2="255" stroke="#e8590c" stroke-width="2.5" marker-end="url(#ar)"/>
+    <text x="1062" y="252" font-size="12" font-weight="700" fill="#a63e00" text-anchor="middle">R3 · 2 A</text>
+    <text x="1062" y="267" font-size="10" fill="#a63e00" text-anchor="middle">0,49 A</text>
+  </g>
+
+  <!-- ============ NÍVEL 2 — LINHA ============ -->
+  <rect x="50" y="372" width="1060" height="96" fill="#fff9db" stroke="#b8860b" stroke-width="2"/>
+  <text x="66" y="394" font-size="13" font-weight="700" fill="#8a6d00">LINHA DE DISTRIBUIÇÃO SOBRE POSTES — 24 Vcc (SELV) · 3 ramais + retorno comum</text>
+  <g stroke="#b87333" stroke-width="3" fill="none">
+    <path d="M120 414 Q400 422 700 414 T1080 414"/>
+    <path d="M120 428 Q400 436 700 428 T1080 428"/>
+    <path d="M120 442 Q400 450 700 442 T1080 442"/>
+  </g>
+  <line x1="120" y1="458" x2="1080" y2="458" stroke="#495057" stroke-width="4"/>
+  <text x="1092" y="418" font-size="11" font-weight="700" fill="#7f4f21">R1</text>
+  <text x="1092" y="432" font-size="11" font-weight="700" fill="#7f4f21">R2</text>
+  <text x="1092" y="446" font-size="11" font-weight="700" fill="#7f4f21">R3</text>
+  <text x="1092" y="462" font-size="11" font-weight="700" fill="#212529">0 V</text>
+  <g>
+    <rect x="298" y="404" width="7" height="60" fill="#adb5bd" stroke="#495057" stroke-width="1.5"/>
+    <text x="301" y="480" font-size="10" font-weight="700" fill="#495057" text-anchor="middle">P1</text>
+    <rect x="598" y="404" width="7" height="60" fill="#adb5bd" stroke="#495057" stroke-width="1.5"/>
+    <text x="601" y="480" font-size="10" font-weight="700" fill="#495057" text-anchor="middle">P2</text>
+    <rect x="898" y="404" width="7" height="60" fill="#adb5bd" stroke="#495057" stroke-width="1.5"/>
+    <text x="901" y="480" font-size="10" font-weight="700" fill="#495057" text-anchor="middle">P3</text>
+  </g>
+  <text x="700" y="482" font-size="10" fill="#8a6d00">Queda de tensão calculada no trecho crítico: 0,17 V (0,71 %)</text>
+
+  <!-- ============ NÍVEL 3 — TRANSFORMADORES ============ -->
+  <!-- T2 -->
+  <line x1="301" y1="428" x2="301" y2="512" stroke="#b87333" stroke-width="2.5" marker-end="url(#ar)"/>
+  <rect x="216" y="518" width="170" height="88" fill="#d3f9d8" stroke="#1e7e34" stroke-width="2.5"/>
+  <text x="301" y="542" font-size="13" font-weight="700" fill="#155724" text-anchor="middle">T2 · LM2596</text>
+  <text x="301" y="560" font-size="12" fill="#155724" text-anchor="middle">24 V → 5,10 V</text>
+  <text x="301" y="578" font-size="11" fill="#1b4332" text-anchor="middle">5 A · CC = 1,5 A</text>
+  <text x="301" y="596" font-size="10" fill="#1b4332" text-anchor="middle">no poste P1</text>
+
+  <!-- T3 -->
+  <line x1="601" y1="442" x2="601" y2="512" stroke="#b87333" stroke-width="2.5" marker-end="url(#ar)"/>
+  <rect x="516" y="518" width="170" height="88" fill="#d3f9d8" stroke="#1e7e34" stroke-width="2.5"/>
+  <text x="601" y="542" font-size="13" font-weight="700" fill="#155724" text-anchor="middle">T3 · LM2596</text>
+  <text x="601" y="560" font-size="12" fill="#155724" text-anchor="middle">24 V → 12,0 V</text>
+  <text x="601" y="578" font-size="11" fill="#1b4332" text-anchor="middle">5 A · CC = 1,5 A</text>
+  <text x="601" y="596" font-size="10" fill="#1b4332" text-anchor="middle">no poste P2</text>
+
+  <!-- K1 + T1 -->
+  <line x1="901" y1="414" x2="901" y2="492" stroke="#b87333" stroke-width="3"/>
+  <g>
+    <rect x="846" y="492" width="110" height="28" fill="#e0cffc" stroke="#6741d9" stroke-width="2"/>
+    <text x="901" y="511" font-size="11" font-weight="700" fill="#3b1a94" text-anchor="middle">K1 · contato NA2</text>
+  </g>
+  <line x1="901" y1="520" x2="901" y2="530" stroke="#b87333" stroke-width="3" marker-end="url(#ar)"/>
+  <rect x="816" y="536" width="170" height="88" fill="#c3e6cb" stroke="#1e7e34" stroke-width="3"/>
+  <text x="901" y="560" font-size="13" font-weight="700" fill="#155724" text-anchor="middle">P1 · DERIVAÇÃO</text>
+  <text x="901" y="578" font-size="12" fill="#155724" text-anchor="middle">24 V → 12,0 V</text>
+  <text x="901" y="596" font-size="11" fill="#1b4332" text-anchor="middle">8 A · CC = 7,0 A</text>
+  <text x="901" y="614" font-size="10" fill="#1b4332" text-anchor="middle">pedestal + cooler 40 mm</text>
+  <text x="1000" y="506" font-size="10" font-weight="700" fill="#6741d9">⚡ corte de</text>
+  <text x="1000" y="519" font-size="10" font-weight="700" fill="#6741d9">emergência (HW)</text>
+
+  <!-- ============ NÍVEL 4 — PROTEÇÃO DE SAÍDA + CARGAS ============ -->
+  <rect x="50" y="646" width="1060" height="228" fill="#f8f9fa" stroke="#495057" stroke-width="2"/>
+  <text x="66" y="668" font-size="13" font-weight="700" fill="#212529">PAINEL DE COMANDO — proteção de saída e distribuição</text>
+
+  <!-- ramo 5V -->
+  <line x1="301" y1="606" x2="301" y2="684" stroke="#e8590c" stroke-width="2.5"/>
+  <rect x="282" y="684" width="38" height="18" fill="#fff3bf" stroke="#b8860b" stroke-width="2"/>
+  <text x="301" y="698" font-size="10" font-weight="700" fill="#5c4a00" text-anchor="middle">(sem fusível)</text>
+  <line x1="301" y1="702" x2="301" y2="726" stroke="#e8590c" stroke-width="2.5"/>
+  <g>
+    <line x1="301" y1="716" x2="352" y2="716" stroke="#1971c2" stroke-width="2"/>
+    <path d="M352 710 L352 722 M346 716 L358 716" stroke="#1971c2" stroke-width="2"/>
+    <polygon points="346,708 358,708 352,718" fill="none" stroke="#1971c2" stroke-width="2"/>
+    <text x="378" y="713" font-size="10" font-weight="700" fill="#1971c2">(sem Zener)</text>
+    <text x="378" y="726" font-size="10" fill="#1971c2">5V6 5W</text>
+  </g>
+  <rect x="226" y="732" width="150" height="26" fill="#ffe8cc" stroke="#e8590c" stroke-width="2"/>
+  <text x="301" y="750" font-size="12" font-weight="700" fill="#a63e00" text-anchor="middle">RÉGUA +5 V</text>
+  <text x="301" y="778" font-size="10" fill="#495057" text-anchor="middle">Arduino Mega · Nextion</text>
+  <text x="301" y="793" font-size="10" fill="#495057" text-anchor="middle">SD · RTC · lógica dos BTS</text>
+  <text x="301" y="808" font-size="10" fill="#495057" text-anchor="middle">4 LEDs · relé K0</text>
+
+  <!-- ramo 12V aux -->
+  <line x1="601" y1="606" x2="601" y2="732" stroke="#e8590c" stroke-width="2.5"/>
+  <rect x="526" y="732" width="150" height="26" fill="#fff9db" stroke="#b8860b" stroke-width="2"/>
+  <text x="601" y="750" font-size="12" font-weight="700" fill="#8a6d00" text-anchor="middle">RÉGUA 12V-AUX</text>
+  <text x="601" y="778" font-size="10" fill="#495057" text-anchor="middle">cooler do dissipador (RPM)</text>
+  <text x="601" y="793" font-size="10" fill="#495057" text-anchor="middle">cooler dos BTS · 2 coolers Peltier · fans</text>
+  <text x="601" y="808" font-size="10" fill="#495057" text-anchor="middle">iluminação da maquete</text>
+
+  <!-- ramo 12V pot -->
+  <line x1="901" y1="624" x2="901" y2="684" stroke="#e8590c" stroke-width="3"/>
+  <rect x="880" y="684" width="42" height="18" fill="#ffa8a8" stroke="#c92a2a" stroke-width="2"/>
+  <text x="901" y="698" font-size="10" font-weight="700" fill="#7a0b0b" text-anchor="middle">(sem fusível)</text>
+  <line x1="901" y1="702" x2="901" y2="732" stroke="#e8590c" stroke-width="3"/>
+  <rect x="826" y="732" width="150" height="26" fill="#ffc9c9" stroke="#c92a2a" stroke-width="2"/>
+  <text x="901" y="750" font-size="12" font-weight="700" fill="#7a0b0b" text-anchor="middle">RÉGUA 24V-POT</text>
+  <text x="901" y="778" font-size="10" fill="#495057" text-anchor="middle">BTS7960 #1 → 2x Peltier série</text>
+  <text x="901" y="793" font-size="10" fill="#495057" text-anchor="middle">BTS7960 #2 → PTC 24 V</text>
+  <text x="901" y="808" font-size="10" fill="#495057" text-anchor="middle">4 fans internas</text>
+
+  <!-- 24 V direto -->
+  <line x1="901" y1="428" x2="1064" y2="428" stroke="#b87333" stroke-width="2" stroke-dasharray="5 3"/>
+  <path d="M1064 428 L1064 700 L1010 700" fill="none" stroke="#e8590c" stroke-width="2" stroke-dasharray="5 3"/>
+  <rect x="1000" y="732" width="100" height="26" fill="#ffe3e3" stroke="#a61e4d" stroke-width="2"/>
+  <text x="1050" y="750" font-size="11" font-weight="700" fill="#7a0b3a" text-anchor="middle">+24 V direto</text>
+  <text x="1050" y="778" font-size="10" fill="#495057" text-anchor="middle">DNLCB30</text>
+  <text x="1050" y="793" font-size="10" fill="#495057" text-anchor="middle">→ ESP32 3,3 V</text>
+  <text x="1050" y="808" font-size="10" fill="#495057" text-anchor="middle">bobina do K1</text>
+
+  <!-- retorno comum -->
+  <line x1="90" y1="848" x2="1090" y2="848" stroke="#212529" stroke-width="4"/>
+  <text x="120" y="866" font-size="12" font-weight="700" fill="#212529">0 V — BORNE CENTRAL (star ground, 6 mm²) → retorno para a subestação</text>
+  <g stroke="#212529" stroke-width="2">
+    <line x1="301" y1="818" x2="301" y2="848"/>
+    <line x1="601" y1="818" x2="601" y2="848"/>
+    <line x1="901" y1="818" x2="901" y2="848"/>
+    <line x1="1050" y1="818" x2="1050" y2="848"/>
+  </g>
+
+  <!-- ============ RODAPÉ ============ -->
+  <g font-size="11">
+    <rect x="50" y="892" width="1060" height="72" fill="#f1f3f5" stroke="#adb5bd"/>
+    <text x="66" y="912" font-size="12" font-weight="700" fill="#111">BALANÇO DE POTÊNCIA</text>
+    <text x="66" y="932" fill="#333">R1 (potência, SEM conversor): 144 W → 6,00 A     ·     R2 (comando): 3,5 W → 0,19 A     ·     R3 (auxiliares): 18,1 W → 0,75 A</text>
+    <text x="66" y="950" fill="#333">TOTAL: ≈ 167 W · 6,9 A @ 24 V     ·     Fonte de 240 W → folga de 1,44×     ·     Corrente CA de entrada: 2,38 A</text>
+    <text x="800" y="912" font-size="12" font-weight="700" fill="#c92a2a">SELETIVIDADE</text>
+    <text x="800" y="932" fill="#7a0b0b">Q0 (6 A C) &gt; F1 (10 A) &gt; proteção interna do BTS7960</text>
+    <text x="800" y="950" fill="#7a0b0b">Falha em um ramal não derruba os demais</text>
+  </g>
+</svg>

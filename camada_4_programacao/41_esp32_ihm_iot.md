@@ -1,0 +1,363 @@
+# CAMADA 4 · Doc 41 — ESP32, IHM Nextion e IoT
+
+> A camada de interface: a IHM local (Nextion), o gateway de rede (ESP32) e o dashboard remoto via MQTT.
+>
+> ✅ **Pré-requisito:** [Doc 40](40_firmware_arduino.md) — firmware do Arduino funcionando em malha fechada.
+
+---
+
+## 41.1 Arquitetura de comunicação
+
+```
+   ┌──────────────────┐  Serial2 (9600)   ┌──────────────────┐
+   │                  │◄─────────────────►│  NEXTION 3.2"    │  IHM local
+   │                  │  comandos ASCII   │  (na porta)      │  (sempre funciona)
+   │  ARDUINO MEGA    │                   └──────────────────┘
+   │                  │
+   │  ● PID           │  Serial1 (115200) ┌──────────────────┐
+   │  ● Segurança     │◄─────────────────►│  DNLCB30 + ESP32 │
+   │  ● Log SD        │  JSON             │  alimentado 24 V │
+   └──────────────────┘                   └────────┬─────────┘
+                                                   │ Wi-Fi
+                                          ┌────────▼─────────┐
+                                          │  BROKER MQTT     │
+                                          └────────┬─────────┘
+                                                   │
+                                    ┌──────────────┴──────────────┐
+                                    │                             │
+                            ┌───────▼────────┐          ┌─────────▼────────┐
+                            │   DASHBOARD    │          │  CELULAR / APP   │
+                            └────────────────┘          └──────────────────┘
+```
+
+> 🛡️ **Princípio de projeto (offline-first):** o Arduino **nunca** depende do ESP32 nem da rede. Se o Wi-Fi cair, o controle continua, a IHM continua e o log no SD continua. A telemetria é "melhor esforço". Isso é o oposto de um projeto IoT amador, em que tudo para quando o Wi-Fi some.
+
+### Por que a DNLCB30 recebe 24 V
+
+| Item | Valor |
+|---|---|
+| Faixa de entrada da DNLCB30 | **7 – 35 V** |
+| Alimentação escolhida | **24 V direto do barramento** |
+| Saída interna | 3,3 V regulado para o ESP32 |
+| Conversão de nível | 3,3 ↔ 5 V automática em todos os pinos |
+
+✅ **É por isso que o projeto não precisa de um quarto conversor para 3,3 V.** A DNLCB30 já faz esse papel, e ainda resolve a adaptação de níveis lógicos entre o Mega (5 V) e o ESP32 (3,3 V) — sem level shifter externo.
+
+> ⚠️ **Nunca ligue o pino de 3,3 V do ESP32 em nenhuma fonte externa.** Ele é uma **saída** do regulador da DNLCB30.
+
+---
+
+## 41.2 Protocolo Arduino → ESP32 (JSON)
+
+Uma linha por segundo, terminada em `\n`:
+
+```json
+{"ts":"2026-08-12T14:32:05","temp":5.2,"umid":65.2,"temp_am":5.0,"sp":5.0,
+ "modo":"COOL","duty":67,"i_pelt":5.21,"i_ptc":0.00,"rpm":1850,
+ "estado":"RODANDO","pot":true,"alerta":null}
+```
+
+| Campo | Tipo | Descrição |
+|---|---|---|
+| `ts` | string | Timestamp ISO 8601 vindo do RTC |
+| `temp` | float | Temperatura de controle (DS18B20, centro da câmara) |
+| `umid` | float | Umidade relativa (AM2315C) |
+| `temp_am` | float | Temperatura de referência (AM2315C) |
+| `sp` | float | Setpoint atual |
+| `modo` | string | `COOL` · `HEAT` · `IDLE` · `DEFROST` |
+| `duty` | int | 0–100 % aplicado ao atuador |
+| `i_pelt` / `i_ptc` | float | Corrente medida pelos pinos IS (−1 = não medido nesta janela) |
+| `rpm1` | int | RPM do cooler do dissipador da **Peltier #1** |
+| `rpm2` | int | RPM do cooler do dissipador da **Peltier #2** |
+| `estado` | string | `BOOT` · `AGUARDA_START` · `RODANDO` · `EMERGENCIA` · `FALHA` |
+| `pot` | bool | **24 V** presentes no BD-POT (divisor 22k/4k7 no pino D25). `false` = emergência acionada ou fusível aberto |
+| `alerta` | string/null | `FAN_PARADA`, `SOBRECORRENTE`, `CARGA_ABERTA`, `EMERGENCIA`, `DEGELO` |
+
+```cpp
+// No Arduino — montar sem a biblioteca ArduinoJson (economiza RAM no Mega)
+void enviarJSON() {
+    Serial1.print(F("{\"ts\":\""));      Serial1.print(timestampAtual);
+    Serial1.print(F("\",\"temp\":"));    Serial1.print(entrada, 2);
+    Serial1.print(F(",\"umid\":"));      Serial1.print(umidade, 1);
+    Serial1.print(F(",\"temp_am\":"));   Serial1.print(tempAm, 2);
+    Serial1.print(F(",\"sp\":"));        Serial1.print(setpoint, 1);
+    Serial1.print(F(",\"modo\":\""));    Serial1.print(nomeModo());
+    Serial1.print(F("\",\"duty\":"));    Serial1.print((int)fabs(saidaPID));
+    Serial1.print(F(",\"i_pelt\":"));    Serial1.print(iPeltier, 2);
+    Serial1.print(F(",\"i_ptc\":"));     Serial1.print(iPtc, 2);
+    Serial1.print(F(",\"rpm\":"));       Serial1.print(rpmAtual);
+    Serial1.print(F(",\"estado\":\""));  Serial1.print(nomeEstado());
+    Serial1.print(F("\",\"pot\":"));     Serial1.print(potenciaDisponivel() ? "true" : "false");
+    Serial1.print(F(",\"alerta\":"));
+    if (alerta[0]) { Serial1.print('"'); Serial1.print(alerta); Serial1.print('"'); }
+    else             Serial1.print(F("null"));
+    Serial1.println('}');
+}
+```
+
+---
+
+## 41.3 Protocolo ESP32 → Arduino (comandos)
+
+O ESP32 repassa pela mesma serial, em formato simples e curto:
+
+| Comando | Efeito | Segurança |
+|---|---|---|
+| `SP:7.5\n` | Altera o setpoint para 7,5 °C | ✅ Permitido — só muda uma referência |
+| `STOP\n` | Para o processo (equivale ao botão STOP) | ✅ Permitido — comando **para o estado seguro** |
+| `ACK\n` | Reconhece um alerta (sai de `FALHA`) | ⚠️ Permitido, mas registrado no log |
+| ~~`START`~~ **por MQTT** | — | ⛔ **BLOQUEADO** |
+
+> ✅ **Pela IHM Nextion o START é PERMITIDO.** A diferença é a distância: quem toca a tela está **na frente da máquina** e enxerga a câmara — é um comando local, igual ao botão do painel. Já o MQTT vem de qualquer lugar do mundo, sem ninguém olhando. Por isso a IHM tem botão INICIAR e o dashboard não.
+
+> ### ⛔ Por que o START por MQTT é proibido
+>
+> Ligar uma máquina pela internet, sem ninguém olhando para ela, viola o princípio básico de segurança de máquinas: **a partida deve ser um ato local e deliberado, com o operador vendo a zona de risco.**
+>
+> Pela IHM isso está satisfeito — quem toca a tela está na frente da câmara. Pelo celular, não.
+>
+> Comandos **para o estado seguro** (STOP) podem ser remotos. Comandos **para o estado energizado** (START) não.
+>
+> 📌 Diga isso na apresentação. É o tipo de decisão que mostra maturidade de projeto — e se a banca perguntar "por que não dá para ligar pelo celular?", você tem a resposta pronta.
+
+```cpp
+// No Arduino
+void processarComandoRemoto() {
+    if (!Serial1.available()) return;
+    String cmd = Serial1.readStringUntil('\n');
+    cmd.trim();
+
+    if (cmd.startsWith("SP:")) {
+        double novo = cmd.substring(3).toFloat();
+        if (novo >= -10.0 && novo <= 60.0) {     // ⚠ sempre validar a faixa
+            setpoint = novo;
+            registrarEvento("SETPOINT_REMOTO");
+        }
+    }
+    else if (cmd == "STOP") {
+        desligarTudo();
+        estado = AGUARDA_START;
+        registrarEvento("STOP_REMOTO");
+    }
+    // START por MQTT NÃO é implementado — por decisão de projeto.
+    // (pela IHM Nextion o START existe: ver lerNextion(), §41.5)
+}
+```
+
+---
+
+## 41.4 Firmware do ESP32
+
+```cpp
+#include <WiFi.h>
+#include <PubSubClient.h>
+
+const char* SSID    = "SUA_REDE";
+const char* SENHA   = "SUA_SENHA";
+const char* BROKER  = "broker.hivemq.com";   // ou um broker local/privado
+const int   PORTA   = 1883;
+
+const char* TOPICO_PUB = "camarafrigorifica/telemetria";
+const char* TOPICO_SUB = "camarafrigorifica/comando";
+
+WiFiClient   wifi;
+PubSubClient mqtt(wifi);
+
+void aoReceberComando(char* topico, byte* payload, unsigned int tam) {
+    String cmd;
+    for (unsigned int i = 0; i < tam; i++) cmd += (char)payload[i];
+    cmd.trim();
+
+    // Repassa apenas os comandos permitidos
+    if (cmd.startsWith("SP:") || cmd == "STOP" || cmd == "ACK") {
+        Serial.println(cmd);          // vai para o Arduino pela Serial1
+    }
+}
+
+void reconectar() {
+    static unsigned long ultimaTentativa = 0;
+    if (mqtt.connected() || millis() - ultimaTentativa < 5000) return;
+    ultimaTentativa = millis();
+
+    String id = "camara-" + String((uint32_t)ESP.getEfuseMac(), HEX);
+    if (mqtt.connect(id.c_str())) {
+        mqtt.subscribe(TOPICO_SUB);
+        mqtt.publish("camarafrigorifica/status", "online", true);   // retained
+    }
+}
+
+void setup() {
+    Serial.begin(115200);             // ligado ao Serial1 do Mega pela DNLCB30
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(SSID, SENHA);
+    mqtt.setServer(BROKER, PORTA);
+    mqtt.setCallback(aoReceberComando);
+    mqtt.setBufferSize(512);          // ⚠ o JSON passa dos 256 B padrão
+}
+
+void loop() {
+    if (WiFi.status() != WL_CONNECTED) { WiFi.reconnect(); delay(500); return; }
+    reconectar();
+    mqtt.loop();
+
+    if (Serial.available()) {
+        String json = Serial.readStringUntil('\n');
+        json.trim();
+        if (json.length() > 10 && mqtt.connected())
+            mqtt.publish(TOPICO_PUB, json.c_str());
+        // Se o MQTT estiver fora do ar, simplesmente descarta:
+        // o Arduino já gravou tudo no cartão SD.
+    }
+}
+```
+
+### Detalhes que costumam dar problema
+
+| Detalhe | Por quê |
+|---|---|
+| `mqtt.setBufferSize(512)` | O buffer padrão do PubSubClient é de 256 bytes. O JSON tem ~230 e cresce com os alertas — sem isso, as mensagens são **silenciosamente descartadas** |
+| Reconexão **não bloqueante** | Um `while (!mqtt.connected())` trava o loop e faz o buffer da serial estourar, perdendo telemetria |
+| `WiFi.mode(WIFI_STA)` | Sem isso o ESP32 pode subir em modo AP+STA e consumir mais energia sem necessidade |
+| **Antena externa** | O ESP32-WROOM-32U **não tem antena embutida** — sem a antena IPEX conectada, o alcance é de poucos centímetros |
+| Mensagem `retained` de status | O dashboard sabe imediatamente se o dispositivo está online ao se conectar |
+
+---
+
+## 41.5 IHM Nextion
+
+### Telas
+
+| Tela | Conteúdo | Navegação |
+|---|---|---|
+| **T0 — Principal** | Temperatura grande, setpoint, modo, estado, **botões INICIAR e PARAR**, ícone de Wi-Fi | Padrão ao ligar |
+| **T1 — Ajuste** | Setpoint com botões `+` / `−`, passo de 0,5 °C | Botão "AJUSTE" na T0 |
+| **T2 — Diagnóstico** | Umidade, correntes, RPM, duty, tempo de operação | Botão "DIAG" na T0 |
+| **T3 — Alarme** | Fundo vermelho, mensagem do alerta, instrução de rearme | Automática ao entrar em `FALHA`/`EMERGENCIA` |
+
+### Comandos do Arduino para a Nextion
+
+O protocolo da Nextion é texto seguido de **três bytes 0xFF**:
+
+```cpp
+void nexEnviar(const char* cmd) {
+    Serial2.print(cmd);
+    Serial2.write(0xFF); Serial2.write(0xFF); Serial2.write(0xFF);
+}
+
+void atualizarNextion() {
+    char buf[48];
+
+    snprintf(buf, sizeof(buf), "t_temp.txt=\"%.1f\"", entrada);        nexEnviar(buf);
+    snprintf(buf, sizeof(buf), "t_sp.txt=\"%.1f\"",   setpoint);       nexEnviar(buf);
+    snprintf(buf, sizeof(buf), "t_modo.txt=\"%s\"",   nomeModo());     nexEnviar(buf);
+    snprintf(buf, sizeof(buf), "t_est.txt=\"%s\"",    nomeEstado());   nexEnviar(buf);
+    snprintf(buf, sizeof(buf), "j_duty.val=%d",  (int)fabs(saidaPID)); nexEnviar(buf);
+
+    if (alerta[0]) {                                   // vai para a tela de alarme
+        nexEnviar("page 3");
+        snprintf(buf, sizeof(buf), "t_alarme.txt=\"%s\"", alerta);  nexEnviar(buf);
+    }
+}
+```
+
+### Recebendo o setpoint da tela
+
+Na Nextion, programe os botões `+` e `−` para enviar um evento:
+
+```
+// No Editor Nextion, evento "Touch Release" do botão "+":
+printh 53 50 2B      // envia os bytes ASCII "SP+"
+```
+
+```cpp
+// No Arduino
+void lerNextion() {
+    if (!Serial2.available()) return;
+    String r = Serial2.readStringUntil('\n');
+
+    // ---- ajuste de setpoint ----
+    if      (r.indexOf("SP+") >= 0) setpoint = min(setpoint + 0.5, 60.0);
+    else if (r.indexOf("SP-") >= 0) setpoint = max(setpoint - 0.5, -10.0);
+
+    // ---- START e STOP pela tela ----
+    // Exatamente equivalentes aos botões do painel: apenas levantam a flag,
+    // e a máquina de estados decide se pode ou não iniciar.
+    else if (r.indexOf("GO")   >= 0) pedidoStart = true;
+    else if (r.indexOf("HALT") >= 0) pedidoStop  = true;
+}
+```
+
+> ⚠️ **Sempre limite a faixa do setpoint** (`-10 °C` a `+60 °C`). Sem isso, um toque acidental pode pedir −50 °C, e o PID vai manter as Peltier em 100 % indefinidamente, cozinhando os dissipadores.
+
+---
+
+## 41.6 Dashboard
+
+Opções, da mais simples à mais completa:
+
+| Opção | Esforço | Resultado |
+|---|---|---|
+| **MQTT Explorer** (desktop) | Nenhum | Mostra as mensagens cruas — bom para depurar, ruim para apresentar |
+| **App IoT MQTT Panel** (Android) | Baixo | Painel no celular com mostradores e gráfico. **Melhor custo-benefício para a defesa** |
+| **Node-RED + dashboard** | Médio | Gráficos históricos, alarmes, automações. Roda no PC ou num Raspberry Pi |
+| **Página HTML com MQTT over WebSocket** | Médio | Roda no navegador, sem instalar nada — impressiona na apresentação |
+
+### Sugestão de layout do dashboard
+
+```
+┌───────────────────────────────────────────────────────────┐
+│  CÂMARA FRIGORÍFICA CF-01                    ● ONLINE     │
+├───────────────────────┬───────────────────────────────────┤
+│                       │  Setpoint    5,0 °C   [−] [+]     │
+│      5,2 °C           │  Umidade    65,2 %                │
+│      ▼ RESFRIANDO     │  Duty          67 %               │
+│                       │  RPM fan 1/2 1850 / 1820          │
+│                       │  Corrente    5,21 A               │
+├───────────────────────┴───────────────────────────────────┤
+│  ┌─────────────────────────────────────────────────────┐  │
+│  │        gráfico temperatura × tempo (24 h)           │  │
+│  │  ---- setpoint    ——— temperatura medida            │  │
+│  └─────────────────────────────────────────────────────┘  │
+├───────────────────────────────────────────────────────────┤
+│  Estado: RODANDO    K1: ARMADO    Alerta: —    [ STOP ]   │
+└───────────────────────────────────────────────────────────┘
+```
+
+> ⚠️ **O dashboard tem botão STOP, mas não tem botão START** — pelo motivo explicado na §41.3. Na **IHM Nextion**, os dois existem.
+
+---
+
+## 41.7 Segurança de rede (pergunta provável da banca)
+
+| Risco | Mitigação adotada |
+|---|---|
+| Broker público (`broker.hivemq.com`) é aberto — qualquer um pode publicar no tópico | Usar tópicos com sufixo aleatório, ou **broker local com usuário e senha** (Mosquitto no PC da apresentação) |
+| Comando malicioso ligando a máquina | **START remoto não existe.** O pior que um atacante consegue é parar o processo |
+| Setpoint absurdo | Validação de faixa no Arduino (`−10 a +60 °C`) |
+| Perda de conexão | Irrelevante para o controle — arquitetura offline-first |
+| Credenciais de Wi-Fi no código | Usar um arquivo `credenciais.h` fora do repositório; nunca mostrar a senha no slide |
+
+---
+
+## 41.8 ✅ Checklist de aceitação
+
+- [ ] DNLCB30 alimentada com **24 V** (não 5 V); ESP32 recebendo 3,3 V dela
+- [ ] **Antena IPEX conectada** ao ESP32-WROOM-32U
+- [ ] Serial1 do Mega ↔ Serial do ESP32 trocando dados (teste com texto simples)
+- [ ] `mqtt.setBufferSize(512)` aplicado
+- [ ] JSON publicado a 1 Hz e visível no MQTT Explorer
+- [ ] Comando `SP:` funcionando e validado por faixa
+- [ ] Comando `STOP` remoto funcionando
+- [ ] **START por MQTT confirmadamente ausente** do código
+- [ ] **START pela IHM funcionando**, equivalente ao botão físico
+- [ ] Reconexão testada: derrubar o Wi-Fi por 1 min → o controle e o log **não** param, e o MQTT volta sozinho
+- [ ] 4 telas da Nextion criadas e navegáveis
+- [ ] Setpoint ajustável pela IHM, com limite de faixa
+- [ ] Tela de alarme abrindo automaticamente em `FALHA` / `EMERGENCIA`
+- [ ] Dashboard montado e testado no ambiente da apresentação (**teste o Wi-Fi do local antes!**)
+
+> 💡 **Plano B para a apresentação:** o Wi-Fi de escola/auditório costuma bloquear a porta 1883. **Leve um roteador portátil ou use o hotspot do celular**, e tenha o broker Mosquitto rodando no seu notebook. Teste tudo no local antes.
+
+---
+
+📄 **Anterior:** [Doc 40 — Firmware Arduino](40_firmware_arduino.md) · **Próximo:** [Doc 42 — Simulação e Testes](42_simulacao_e_testes.md)

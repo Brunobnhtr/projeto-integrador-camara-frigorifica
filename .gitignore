@@ -1,0 +1,24 @@
+# ─── Dependências (regeneráveis com "npm install") ───────────────────────
+node_modules/
+
+# ─── Saídas de build e render (regeneráveis) ─────────────────────────────
+tutoriais_video/out/
+tutoriais_video/build/
+simulacao/wokwi/build/
+__pycache__/
+*.pyc
+
+# ─── Backup do repositório-template do Remotion ──────────────────────────
+tutoriais_video/_git_template_backup/
+
+# ─── Arquivos temporários do Office ──────────────────────────────────────
+~$*
+*.tmp
+
+# ─── Sistema ─────────────────────────────────────────────────────────────
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# ─── Sessão local do Claude Code (não faz sentido versionar) ─────────────
+.claude/settings.local.json

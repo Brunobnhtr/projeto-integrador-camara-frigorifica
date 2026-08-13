@@ -1,0 +1,252 @@
+# CAMADA 4 · Doc 42 — Simulação e Testes sem Hardware
+
+> Como testar a lógica do projeto **antes de comprar ou montar qualquer coisa**. Serve para ajustar o PID, validar o modo ciclo, provar que a emergência não religa sozinha e estimar quanto tempo o ensaio vai durar.
+>
+> 📁 Arquivos: [`simulacao/`](../simulacao/)
+
+---
+
+## 42.1 Qual ferramenta para qual coisa
+
+Nenhuma ferramenta simula tudo. Cada uma resolve uma parte:
+
+| O que você quer testar | Ferramenta | Custo |
+|---|---|---|
+| **Ajustar Kp, Ki, Kd** e ver a curva de temperatura | **`simulacao/simulador.py`** (feito para este projeto) | grátis |
+| Validar o **modo ciclo**, tempos e nº de ciclos | `simulador.py --cenario ciclo` | grátis |
+| Estimar a **duração real do ensaio** | `simulador.py` | grátis |
+| **Rodar o código C++ de verdade** (o mesmo que vai para o Mega) | **Wokwi** — extensão do VS Code (já instalada) ou [wokwi.com](https://wokwi.com) | grátis |
+| Ver o **PWM lento piscando**, testar botões e interrupção de RPM | Wokwi | grátis |
+| Simular o **circuito de comando** (KA1, KA2, selo, emergência) | **Falstad** — [falstad.com/circuit](https://www.falstad.com/circuit/) | grátis |
+| Simular relés, transistores e o lado **eletrônico analógico** | **SimulIDE** (desktop) | grátis |
+| Simulação completa com **BTS7960, motores e cargas reais** | **Proteus** (Labcenter) | pago |
+
+> 📌 **Comece pelo `simulador.py`.** Ele responde a pergunta mais cara do projeto — "meus ganhos de PID estão bons?" — em 3 segundos, sem hardware nenhum.
+
+---
+
+## 42.2 O simulador de bancada (`simulador.py`)
+
+Simula a câmara **e** a lógica de controle. Não precisa de biblioteca nenhuma além do Python padrão.
+
+```powershell
+cd simulacao
+python simulador.py                       # curva de pull-down (padrão)
+python simulador.py --cenario ciclo       # ensaio de ciclagem térmica
+python simulador.py --cenario falha-fan   # a fan do dissipador para
+python simulador.py --cenario emergencia  # emergência, destrava, rearme, start
+python simulador.py --cenario stop        # STOP e novo START
+python simulador.py --cenario degrau      # resposta ao degrau (para ajustar o PID)
+
+python simulador.py --kp 12 --ki 0.4 --kd 2        # testar outros ganhos
+python simulador.py --ambiente 32                   # dia quente
+python simulador.py --cenario ciclo --csv ensaio.csv  # exportar para o Excel
+```
+
+### O modelo físico
+
+Usa exatamente os números calculados no [Doc 12](../camada_1_maquete/12_camara_termica.md):
+
+| Parâmetro | Valor | De onde vem |
+|---|---|---|
+| `UA` (perda pelo envelope) | 0,30 W/K | Doc 12 §12.2 — paredes + porta dupla + infiltração |
+| `C` (capacidade térmica) | 600 J/K | ar + acrílico + bandeja |
+| Peltier | **2× em série: 144 W elétricos · Qc = 114 W a ΔT=0** · ΔTmax = 66 K | 2× TEC1-12706 em 24 V |
+| Dissipador | 4 W/K com a fan girando · **0,45 W/K com ela parada** | cooler de CPU |
+| PTC | 60 W | Doc 03 |
+| Fans internas | +3 W **dentro** da câmara | o trabalho elétrico vira calor |
+
+> 🔬 **O acoplamento da Peltier é resolvido por iteração.** Ela bombeia menos calor conforme o lado quente sobe — e o lado quente sobe justamente porque ela está bombeando. O simulador resolve esse laço a cada passo, que é por isso que ele consegue mostrar o efeito da fan parada de forma realista.
+
+### O que a saída mostra
+
+```
+  27.0 │
+  25.8 │-
+  24.5 │ o
+  ...
+   5.8 │ ·················oo··········---·····oooooo···oooooooooooooooooooo
+   4.6 │                    ooo    ---              ooo
+       └───────────────────────────────────────────────────────────────────
+       0 min                                              60 min
+
+  Legenda:  o = resfriando   ^ = aquecendo   - = parado   · = setpoint
+
+  MÉTRICAS
+   Tempo até atingir o setpoint (±0,5 °C) : 10.2 min
+   Erro em regime permanente              : 0.01 °C
+   Sobressinal (overshoot)                : 2.17 °C
+   Duty médio                             : 40.0 %
+   Lado quente da Peltier no fim          : 32.1 °C
+   Carga térmica implícita no duty médio  : ≈ 11.5 W
+```
+
+> ✅ **A última linha é a mais valiosa.** O Doc 12 calculou a carga térmica em **9,5 W** por teoria. O simulador, partindo do duty médio, chega a **≈ 11,5 W**. Bater na mesma ordem de grandeza por dois caminhos independentes é uma validação forte do dimensionamento — e é exatamente o tipo de coisa que se coloca no relatório.
+
+### Três descobertas do simulador
+
+| Descoberta | O que fazer |
+|---|---|
+| **O aquecimento passa mais do setpoint que o resfriamento** (overshoot de ~4,6 °C no patamar quente contra ~2,2 °C no frio) | O PTC de 60 W é muito mais forte, em relação à carga, do que a Peltier. Vale usar **ganhos diferentes** para cada modo, ou limitar o duty do quente a ~60 % |
+| **Com a fan parada, o lado quente dispara** e o Qc vai a zero — a câmara para de esfriar antes mesmo de a pastilha queimar | Confirma que o trip por RPM tem que atuar rápido: aos 5 s já não adianta mais insistir |
+| **2 ciclos completos levam ~57 min** com patamares de 5 min | Para a apresentação, use patamares de 2 min. O ensaio "de verdade" (10 min × 3) leva ~2 h 30 e tem que ser feito antes |
+
+---
+
+## 42.3 Wokwi — rodando o código C++ de verdade
+
+O `simulador.py` testa a **lógica**. O Wokwi testa o **código que vai para o Mega**, compilado de verdade, com as interrupções e o tempo reais.
+
+### Caminho A — VS Code (já está instalado e compilado) ⭐
+
+O ambiente já foi montado. O que existe na pasta [`simulacao/wokwi/`](../simulacao/wokwi/):
+
+| Arquivo | Para que serve |
+|---|---|
+| `sketch.ino` | O firmware de simulação |
+| `diagram.json` | O circuito (Mega, DS18B20, botões, LEDs, chave) |
+| `wokwi.toml` | Diz ao Wokwi onde está o firmware compilado |
+| `compilar.ps1` | Roda o `arduino-cli` e gera o `.hex` |
+| `.vscode/tasks.json` | **Ctrl+Shift+B** compila |
+| `build/` | Firmware compilado (gerado, não versionado) |
+
+**Já instalado nesta máquina:** extensão `wokwi.wokwi-vscode` v3.6.0 · `arduino-cli` 1.5.1 · core `arduino:avr` 1.8.8 · bibliotecas `OneWire` e `DallasTemperature`.
+
+#### Para rodar
+
+```powershell
+# 1. Abrir a pasta no VS Code (o wokwi.toml precisa estar na RAIZ do workspace)
+code "simulacao/wokwi"
+
+# 2. Compilar
+.\compilar.ps1          # ou Ctrl+Shift+B dentro do VS Code
+```
+
+```
+# 3. No VS Code:  F1  →  "Wokwi: Start Simulator"
+```
+
+> ⚠️ **Na primeira vez o Wokwi pede uma licença gratuita.** Faça `F1 → "Wokwi: Request a New License"`. Abre o navegador, você entra com uma conta (GitHub/Google) e a licença volta sozinha para o VS Code. É grátis para uso pessoal e educacional, e só precisa ser feito **uma vez**.
+>
+> Esse é o único passo que não dá para automatizar — depende de um login no navegador.
+
+#### Depois de mexer no `sketch.ino`
+
+Sempre **recompile** antes de simular: `Ctrl+Shift+B`. O Wokwi roda o `.hex`, não o `.ino` — se você editar o código e não compilar, ele continua rodando a versão anterior. É o erro mais comum de quem usa a extensão.
+
+**Verificação rápida da compilação** (a saída esperada):
+
+```
+Sketch uses 12024 bytes (4%) of program storage space. Maximum is 253952 bytes.
+Global variables use 572 bytes (6%) of dynamic memory, leaving 7620 bytes.
+```
+
+> 📊 **4 % da flash e 6 % da RAM.** O firmware final terá SD, RTC, Nextion e JSON, então vai crescer bastante — mas essa folga confirma que o **Mega é folgado para este projeto**. Um Uno (32 KB / 2 KB) ficaria apertado, e é mais um argumento para a escolha do Mega no relatório.
+
+### Caminho B — navegador, sem instalar nada
+
+1. Entre em **[wokwi.com](https://wokwi.com)** e crie um projeto novo para **Arduino Mega**.
+2. Cole o conteúdo de [`simulacao/wokwi/sketch.ino`](../simulacao/wokwi/sketch.ino) na aba do código.
+3. Abra a aba **`diagram.json`** e cole o conteúdo de [`simulacao/wokwi/diagram.json`](../simulacao/wokwi/diagram.json).
+4. Clique em **▶ Play**.
+
+> No navegador o Wokwi compila sozinho — não precisa do `arduino-cli` nem de licença. É o caminho mais rápido para os alunos que vão só olhar.
+
+### O que está montado
+
+| Componente real | No Wokwi | Como usar |
+|---|---|---|
+| DS18B20 (centro da câmara) | DS18B20 | **Clique nele e arraste a temperatura** para simular a câmara esquentando ou esfriando |
+| Botão START / STOP / EMERGÊNCIA | Pushbuttons | Clique |
+| KA1 + KA2 (**24 V** presentes) | Chave deslizante no D25 | Desligue para simular a emergência cortando em hardware |
+| BTS7960 #1 e #2 | LEDs ciano e laranja | **Você vê o PWM lento de 1 Hz piscando** |
+| LEDs RUN / FRIO / QUENTE / FALHA | LEDs | Iguais aos do painel |
+| Fan do dissipador | Pino D30 ligado por fio ao D3 | O sketch gera os pulsos do tacômetro — **testa a interrupção de verdade** |
+| Nextion | Monitor Serial | Mostra estado, fase, ciclo, duty e RPM a cada segundo |
+
+### Os 6 testes que valem a pena fazer no Wokwi
+
+| # | Teste | Como | O que tem que acontecer |
+|---:|---|---|---|
+| 1 | **Interrupção de RPM** | Rode e olhe o `rpm1=` / `rpm2=` no Serial | ~2400 RPM nos dois. Se um ficar em 0, o `attachInterrupt` (D3) ou o PCINT (A8) está no pino errado |
+| 2 | **PWM lento** | Dê START com a temperatura em 25 °C | O LED ciano pisca a 1 Hz, com o tempo aceso proporcional ao duty |
+| 3 | **Intertravamento** | Force um modo e olhe os dois LEDs | **Nunca** os dois acesos ao mesmo tempo |
+| 4 | **Intervalo de 30 s** | Passe rapidamente a temperatura de 30 °C para 0 °C | Os dois LEDs ficam apagados por 30 s antes de trocar de modo |
+| 5 | **START recusado sem potência** | Desligue a chave do D25 e aperte START | Serial: `START recusado: 24 V ausentes` |
+| 6 | **Emergência não religa** | Aperte a emergência, solte, e **não** aperte START | Fica em `AGUARDA_START`. **Não pode voltar a rodar sozinho** |
+
+> ⚠️ **Se algum componente aparecer com erro** ao colar o `diagram.json`, é só nome de peça ou de pino que mudou de versão. Apague a peça e arraste uma equivalente pela interface — as ligações estão descritas na tabela acima.
+
+### O que o Wokwi NÃO simula
+
+| Não tem | O que fazer |
+|---|---|
+| **BTS7960** | Substituído por LEDs. O comportamento do driver é trivial (liga/desliga o que entra) |
+| **Nextion** | Substituída pelo Monitor Serial. Teste a IHM depois, com a tela na mão |
+| **AM2315C** | Não é crítico — é sensor de referência, não de controle |
+| **Comportamento térmico** | O DS18B20 é ajustado à mão. Para a dinâmica térmica, use o `simulador.py` |
+| **ESP32 + MQTT junto com o Mega** | O Wokwi simula ESP32, mas não dois microcontroladores conversando. Teste separado |
+
+---
+
+## 42.4 Falstad — o circuito de comando
+
+O [Falstad Circuit Simulator](https://www.falstad.com/circuit/) é ideal para provar o **circuito de dois estágios** ([Doc 31 §31.2](../camada_3_eletrica/31_comando_e_protecoes.md)) antes de comprar os relés.
+
+### Como montar (leva 10 minutos)
+
+1. Abra o simulador e apague o circuito de exemplo (`Circuits → Blank Circuit`).
+2. Fonte de 24 V: `Draw → Inputs and Sources → Voltage Source (two-terminal)`.
+3. Botões: `Draw → Switches → SPST Switch` (um para cada: emergência, rearme, stop).
+4. Relés: `Draw → Passive Components → Relay`. Configure a corrente de acionamento.
+5. Monte o **estágio 1**: fonte → emergência (fechada) → nó → (rearme **em paralelo com** o contato do relé KA1) → bobina do KA1 → terra.
+6. Monte o **estágio 2**: contato do KA1 → stop (fechado) → bobina do KA2 → terra.
+7. Uma lâmpada no contato do KA2 representa a carga.
+
+### Os 4 comportamentos a verificar
+
+| Ação no simulador | Esperado |
+|---|---|
+| Ligar a fonte, sem tocar em nada | Lâmpada **apagada** — o selo do KA1 nasce aberto |
+| Clicar em REARME | KA1 sela, KA2 liga, **lâmpada acende** |
+| Clicar em STOP (mantendo pressionado) | Lâmpada apaga. **Ao soltar, acende de novo** |
+| Clicar em EMERGÊNCIA e soltar | Lâmpada apaga e **NÃO volta** ao soltar. Só volta com o REARME |
+
+> 🎯 **O último teste é o que valida todo o desenho.** Se, ao soltar a emergência, a lâmpada acender sozinha, o selo está ligado errado — provavelmente o contato de selo ficou antes do botão de emergência em vez de depois.
+
+---
+
+## 42.5 Ordem recomendada
+
+```
+1. simulador.py --cenario degrau     → ajuste Kp, Ki, Kd até a curva ficar boa
+2. simulador.py --cenario ciclo      → confira os tempos e a duração do ensaio
+3. simulador.py --cenario falha-fan  → veja a proteção atuar
+4. Falstad                            → prove o circuito de comando dos 2 estágios
+5. Wokwi                              → rode o código C++ real, teste botões e IHM
+6. Bancada com o Arduino de verdade   → LEDs no lugar dos BTS, sem Peltier ainda
+7. Bancada com os BTS e carga resistiva (lâmpada automotiva)
+8. Só então: as **2 Peltier em série**, o **PTC de 24 V** e a câmara montada
+```
+
+> ⚠️ **Não pule o passo 6.** Gravar o firmware num Mega solto, com LEDs no lugar dos drivers, custa 20 minutos e pega a maior parte dos erros de lógica — antes de qualquer risco de queimar uma Peltier.
+
+---
+
+## 42.6 ✅ Checklist
+
+- [ ] `simulador.py` rodado nos 6 cenários
+- [ ] Ganhos do PID escolhidos com base na curva do `--cenario degrau`
+- [ ] Overshoot do patamar quente avaliado (é maior que o do frio)
+- [ ] Duração do ensaio de ciclagem estimada e compatível com o tempo da apresentação
+- [ ] CSV exportado e gráfico feito no Excel para o relatório
+- [ ] Licença gratuita do Wokwi ativada no VS Code (`F1 → Wokwi: Request a New License`)
+- [ ] `.\compilar.ps1` rodando sem erro
+- [ ] Projeto Wokwi rodando, com os 6 testes da §42.3 aprovados
+- [ ] **Teste 6 do Wokwi aprovado**: a emergência liberada não religa sozinha
+- [ ] Circuito de dois estágios verificado no Falstad
+- [ ] Firmware testado em bancada com LEDs antes de qualquer atuador real
+
+---
+
+📄 **Anterior:** [Doc 41 — ESP32, IHM e IoT](41_esp32_ihm_iot.md) · **Próximo:** [Doc 50 — Montagem e Comissionamento](../camada_5_integracao/50_montagem_e_comissionamento.md)

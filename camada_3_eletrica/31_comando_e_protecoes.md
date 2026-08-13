@@ -1,0 +1,423 @@
+# CAMADA 3 · Doc 31 — Comando, Proteções e Aterramento
+
+> O acionamento do processo em **dois estágios** (segurança com trava + processo sem trava), a emergência em hardware, o que fica em software, a seletividade das proteções e o aterramento. **É o documento com mais conteúdo puro de eletrotécnica do projeto.**
+>
+> ✅ **Pré-requisito:** [Doc 30](30_forca_e_distribuicao.md) — força energizada e medida.
+> 🖼️ **Desenho:** [Diagrama de comando](../desenhos/06_diagrama_comando.svg)
+
+---
+
+## 31.0 O acionamento em dois estágios
+
+O acionamento precisa satisfazer quatro exigências **ao mesmo tempo**:
+
+| # | Exigência | Consequência |
+|---|---|---|
+| 1 | **STOP corta a energia em hardware** | Não pode depender do firmware |
+| 2 | **EMERGÊNCIA corta a energia em hardware** | Idem |
+| 3 | **Ao soltar a emergência, a energia NÃO pode voltar sozinha** | Exige **trava (selo)** — e trava só se desfaz com um comando deliberado |
+| 4 | **START e STOP normais funcionam pela IHM** | O operador não pode ser obrigado a ir ao painel a cada parada |
+
+> ⚠️ **As exigências 3 e 4 se contradizem se você tentar resolver as duas com o mesmo circuito.** Se o STOP travar, o rearme tem que ser físico — e aí a exigência 4 morre. Se nada travar, a exigência 3 morre.
+>
+> **A saída é separar em dois estágios**, que é exatamente o que a norma de parada de emergência (ISO 13850) determina: a emergência **trava e exige rearme manual**; a parada normal **corta mas não trava**.
+
+### Os dois estágios
+
+```
+╔═══ ESTÁGIO 1 · SEGURANÇA ══════ trava · só a emergência derruba ═══════════╗
+║                                                                            ║
+║   +24 V ──[ S0 · EMERGÊNCIA (NF) ]──┬──[ S3 · REARME (NA) ]──┐            ║
+║                                      │                        │            ║
+║                                      └── KA1 · contato SELO ──┤            ║
+║                                                                │            ║
+║                                                    A1 [ KA1 ] A2 ── 0 V    ║
+╚════════════════════════════════════════════════════════════════════════════╝
+                    │ KA1 · contato de saída
+                    ▼
+╔═══ ESTÁGIO 2 · PROCESSO ═══════ corta, mas não trava ═════════════════════╗
+║                                                                            ║
+║   KA1 ──[ S2 · STOP (NF) ]──────────────────► A1 [ KA2 ] A2 ── 0 V        ║
+║                                                                            ║
+╚════════════════════════════════════════════════════════════════════════════╝
+                    │ KA2 · contato de potência (≥ 10 A)
+                    ▼
+   P1 (24 V) ──► KA2 ──► BD-POT ──► BTS7960 #1 e #2
+```
+
+### O que acontece em cada situação
+
+| Situação | KA1 | KA2 | 24 V nos BTS | Como volta |
+|---|---|---|---|---|
+| Operação normal | ✅ selado | ✅ | ✅ presente | — |
+| **STOP pressionado** | ✅ segue selado | ❌ **abre** | ❌ **cortado em HW** | Soltar o STOP; **religa pela IHM** |
+| **EMERGÊNCIA pressionada** | ❌ **selo perdido** | ❌ | ❌ **cortado em HW** | — |
+| **Cogumelo destravado** | ❌ **continua caído** | ❌ | ❌ **continua cortado** | Só com o **botão REARME** |
+| REARME pressionado | ✅ sela de novo | ❌ | ✅ disponível | Processo ainda parado; dar START |
+| **Saída do Arduino travada ligada** | ✅ | depende | — | **STOP corta enquanto pressionado; EMERGÊNCIA corta e trava** |
+
+> 🎯 **Resposta direta à sua pergunta "se a saída do Arduino travar, como desligo?"**
+> O **STOP** corta enquanto você o mantém pressionado — é hardware puro, não passa por semicondutor nenhum. E se o problema for permanente, a **EMERGÊNCIA** corta **e trava**: mesmo soltando o cogumelo, a energia não volta. Só volta com o botão REARME, que é uma decisão consciente de uma pessoa.
+>
+> **É exatamente por isso que as duas botoeiras existem.** O STOP é comando de operação; a emergência é função de segurança, e por isso ela trava.
+
+### Os três componentes
+
+| | **KA1 — habilitação** | **KA2 — processo** | **S3 — rearme** |
+|---|---|---|---|
+| **O que é** | Relé de interface, trilho DIN | Relé de interface, trilho DIN | Botoeira 22 mm **azul** |
+| **Bobina** | 24 Vcc | 24 Vcc | — |
+| **Contatos** | **2 reversíveis**, 6 A basta | **1 reversível, ≥ 10 A** ⚠️ | 1 bloco NA |
+| **Corrente que passa** | mA (selo + bobina do KA2) | **6,0 A em 24 Vcc** (a carga) | mA |
+| **Busca no ML** | `relé de interface 24vdc 2 contatos din` | `relé de interface 24vdc 10a trilho din` | `botão pulsador azul 22mm` |
+| **Preço** | R$ 40–60 | R$ 40–60 | R$ 18 |
+
+> ⚠️ **Só o KA2 precisa de 10 A.** O KA1 conduz apenas o próprio selo e a bobina do KA2 — corrente de miliampères. Um relé de interface comum de 6 A serve, e é mais barato.
+>
+> **Opções premium:** Finder **55.32.9.024.0040** (2 CO) para o KA1 e Finder **46.61.9.024.0040** (16 A) + base **95.05** para o KA2.
+
+### Por que dois relés e não um
+
+Porque eles precisam estar em **estados diferentes ao mesmo tempo**. Depois de um STOP normal:
+
+- **KA1 continua ligado** — a máquina segue habilitada, ninguém precisa rearmar nada
+- **KA2 está desligado** — o processo parou
+
+Um relé só não consegue estar ligado e desligado ao mesmo tempo. É essa a razão, e é a única.
+
+### Por que o botão REARME existe
+
+A norma de parada de emergência exige que **destravar o cogumelo não religue a máquina** — o rearme tem que ser um ato separado e deliberado. Um botão azul de REARME é a forma padrão de fazer isso em painel industrial.
+
+> 💡 **Dá para economizar o botão** usando o próprio START como rearme (o primeiro toque rearma, o segundo inicia). Funciona, mas fica ambíguo para quem opera, e um botão de R$ 18 resolve. **Recomendo o botão dedicado.**
+
+### O papel do Arduino
+
+O Arduino **não comanda relé nenhum**. Ele liga e desliga o processo pelo **`R_EN` dos BTS7960** — o pino de habilitação dos drivers:
+
+| Ação | Como o Arduino faz |
+|---|---|
+| START (botão físico ou IHM) | Habilita o `R_EN` do driver do modo escolhido |
+| STOP (botão físico ou IHM) | `R_EN` dos dois em nível baixo |
+| Trip por fan parada / sobrecorrente | `R_EN` dos dois em nível baixo + LED FAULT + registro |
+
+Para esse canal ser confiável, dois reforços de R$ 0,20:
+
+| Reforço | Por quê |
+|---|---|
+| **Pull-down de 10 kΩ** entre cada `R_EN` e 0 V | Arduino resetado → pinos viram entrada → **pino solto = driver desabilitado** |
+| **Watchdog de 2 s** no firmware | Programa travado → Mega reseta → pull-down age → drivers desligam |
+
+> 📌 **Note a divisão de responsabilidades:** o Arduino cuida do **processo** (ligar, desligar, controlar). Os relés cuidam da **segurança** (emergência e parada). As duas coisas não se misturam, e nenhuma depende da outra.
+
+---
+
+## 31.1 O que é hardware e o que é software
+
+| Função | Onde vive | Funciona com o Arduino morto? |
+|---|---|---|
+| **EMERGÊNCIA corta a energia** | **Hardware** — S0 em série com a bobina do KA1 | ✅ **Sim** |
+| **EMERGÊNCIA não religa sozinha** | **Hardware** — o selo do KA1 se perde | ✅ **Sim** |
+| **STOP corta a energia** | **Hardware** — S2 em série com a bobina do KA2 | ✅ **Sim** |
+| **REARME** | **Hardware** — S3 refaz o selo do KA1 | ✅ **Sim** |
+| START do processo | Software (`R_EN`) | ❌ Não (e não precisa) |
+| Escolha entre frio e quente | Software | ❌ Não |
+| Trip por fan parada | Software + pull-down + watchdog | ⚠️ Parcial |
+| Intertravamento Peltier ⊕ PTC | Software | ❌ Não |
+
+> 🎯 **Tudo o que envolve PARAR está em hardware. Só o que envolve LIGAR está em software.** É a assimetria correta: a máquina desliga por caminhos que não dependem de nada; para ligar, ela depende de tudo estar certo.
+
+---
+
+## 31.2 O circuito completo
+
+```
+   +24 V (BD-24V, protegido pelo F3)
+     │
+     │  S0 · EMERGÊNCIA (cogumelo com trava)
+     │  ┌────────┐
+     ├──┤   NF   ├──────┬──────────────────────────────┐
+     │  └────────┘      │                              │
+     │                  │  S3 · REARME (azul)          │
+     │                  │  ┌────────┐                  │
+     │                  ├──┤   NA   ├──────────────────┤
+     │                  │  └────────┘                  │
+     │                  │                              │
+     │                  │  KA1 · contato de SELO       │
+     │                  │  ┌────────┐                  │
+     │                  └──┤   NA   ├──────────────────┤
+     │                     └────────┘                  │
+     │                                        A1 ──────┴───── A2
+     │                                          [ KA1 · 24 V ]
+     │                                              │
+     ├──────────────────────────────────────────────┴────────── 0 V
+     │
+     │  KA1 · contato de SAÍDA        S2 · STOP
+     │  ┌────────┐                    ┌────────┐
+     └──┤   NA   ├────────────────────┤   NF   ├───── A1 [ KA2 · 24 V ] A2 ── 0 V
+        └────────┘                    └────────┘
+
+
+   POTÊNCIA:
+   P1 (derivação 24 V) ──► PG9 ──► KA2 (11→14) ──► BD-POT ──► BTS #1 e #2
+```
+
+### Sequência completa
+
+| Passo | O que acontece |
+|---|---|
+| **1. Painel energizado** | KA1 desligado (o selo nasce aberto). **Sem 24 V nos BTS** |
+| **2. Operador aperta REARME** | KA1 sela. O contato de saída fecha |
+| **3. STOP solto** | KA2 energiza → **24 V disponíveis nos BTS** |
+| **4. Arduino boota** | `R_EN` dos dois em nível baixo. Nada aciona ainda |
+| **5. Configura o ciclo** | Pela IHM Nextion |
+| **6. START** | Botão físico **ou** IHM → o firmware habilita o `R_EN` do modo escolhido |
+| **7. STOP** | Botão físico → **KA2 abre, corta em hardware**. IHM → o firmware baixa o `R_EN` |
+| **8. Novo START** | **Pela IHM ou pelo painel.** O KA1 nunca caiu, então nada precisa ser rearmado |
+| **9. EMERGÊNCIA** | KA1 perde o selo → KA2 cai → **24 V cortados**. O 2º bloco avisa o Arduino |
+| **10. Cogumelo destravado** | **Nada acontece.** O KA1 continua caído, a energia continua cortada |
+| **11. REARME** | KA1 sela de novo → energia disponível. **O processo continua parado** — exige START |
+
+> ⚠️ **O passo 10 é o coração do requisito:** destravar o cogumelo **não** devolve a energia. Isso está garantido pelo selo, em hardware — não por uma variável do firmware.
+
+---
+
+## 31.3 As botoeiras
+
+| Botão | Cor | Blocos | Ligação |
+|---|---|---|---|
+| **S0 — EMERGÊNCIA** (cogumelo com trava) | Vermelho | **2 NF** | Bloco 1 em **24 V**: série com a bobina do KA1 · Bloco 2 em **5 V**: pino **D24** |
+| **S1 — START** | Verde | **1 NA** | Pino **D22**, `INPUT_PULLUP` |
+| **S2 — STOP** | Vermelho | **1 NF + 1 NA** | Bloco NF em **24 V**: série com a bobina do KA2 · Bloco NA em **5 V**: pino **D23** |
+| **S3 — REARME** | **Azul** | **1 NA** | Só em **24 V**: refaz o selo do KA1. O Arduino nem precisa saber |
+
+### Lógica de leitura no Arduino (todos com `INPUT_PULLUP`)
+
+| Pino | Contato | Repouso | Acionado | No código |
+|---|---|---|---|---|
+| D22 (START) | NA | HIGH | **LOW** | `LOW` = pressionado |
+| D23 (STOP) | NA | HIGH | **LOW** | `LOW` = pressionado |
+| **D24 (EMERG)** | **NF** | **LOW** | **HIGH** | `HIGH` = **emergência acionada** |
+| **D25 (24 V presente)** | divisor **22 k / 4,7 k** | LOW | **HIGH** | `HIGH` = **potência disponível** |
+
+### ⚠️ Por que EMERGÊNCIA e STOP são NF
+
+**Princípio à prova de falhas.** Se o fio romper, o terminal soltar ou o contato oxidar, o circuito **abre** — e a máquina **para**. A falha leva ao estado seguro.
+
+Se fossem NA, um fio partido significaria que apertar o botão **não faria nada** — e ninguém perceberia até o dia em que precisasse dele.
+
+O REARME é NA justamente pelo motivo inverso: **um fio partido no rearme impede a máquina de ligar**, que também é o estado seguro.
+
+### Realimentação: o Arduino sabe se há energia
+
+```
+   BD-POT (24 V) ──[ 22 kΩ ]──┬──► Arduino D25
+                               │
+                            [ 4,7 kΩ ]    ══╪══ 100 nF
+                               │             │
+   0 V ───────────────────────┴─────────────┴──
+
+   Com 24 V:  D25 lê 24 × 4,7/26,7 = 4,22 V  →  HIGH  ✅
+   Sem 24 V:  D25 puxado a 0 V               →  LOW
+```
+
+> ⚠️ **Os valores mudaram com a adoção do Plano B.** O BD-POT passou de 12 V para **24 V**; com o divisor antigo de 10 k / 4,7 k chegariam **7,67 V** no pino D25 e a entrada do Arduino seria danificada. Montagem detalhada, perna por perna, em [Doc 33 §33.2](33_placa_interface_componentes.md).
+
+Com isso o firmware **sabe** quando a energia foi cortada por hardware — e registra no log qual foi o motivo, mesmo sem ter causado o corte.
+
+---
+
+
+## 31.4 Tabela de proteções e seletividade
+
+| Nível | Dispositivo | Ajuste | Protege contra | Tempo de atuação |
+|---:|---|---|---|---|
+| 0 | Disjuntor do quadro da instalação | 20 A (existente no local) | Falha geral da rede | — |
+| 1 | **Q0 — Disjuntor 2P** | **6 A curva C** | Curto/sobrecarga na entrada AC e na fonte | 5–10× In instantâneo |
+| 2 | **OCP/OVP/SCP interna da fonte** | ~11 A @ 24 V | Sobrecarga da própria fonte | eletrônica, ~µs |
+| 3 | **F1** | **10 A** | Curto no ramal R1 — **linha, derivação do P1 e todo o caminho de potência até os BTS** | I²t do fusível |
+| 3 | **F2** | 2 A | Curto no ramal R2 (linha, T2, comando) | idem |
+| 3 | **F3** | 2 A | Curto no ramal R3 (linha, T3, auxiliares) | idem |
+| 4 | **Proteção interna do LM2596 (T2)** | ~3,6 A típ. + shutdown térmico | Sobrecarga e curto no barramento de 5 V | eletrônica, ciclo a ciclo |
+| 4 | **Proteção interna do LM2596 (T3)** | idem | Sobrecarga e curto no 12 V auxiliar | idem |
+| 4 | **Proteção interna do BTS7960** | limitação de corrente + shutdown térmico | Curto na Peltier ou no PTC | eletrônica |
+| ~~5~~ | ~~F4 / F5~~ | — | **Eliminados** — eram os fusíveis de saída do crowbar. O caminho de potência é protegido pelo **F1** | — |
+| ~~6~~ | ~~Crowbars Zener~~ | — | **Eliminados** — proteção nativa no CI do LM2596. Ver [Doc 02 §2.6](../camada_0_fundamentos/02_arquitetura_de_energia.md) | — |
+| 5 | **KA1 + KA2 + botoeiras** | — | Comando e parada de emergência **em hardware** | ~15 ms |
+| 5 | **Pull-down de 10 kΩ no `R_EN`** | — | Acionamento indevido com o Arduino ausente ou resetado | imediato |
+| 8 | **Monitoramento de RPM** | rpm = 0 | Fan do dissipador parada → Peltier queima | 1 s |
+| 8 | **Diagnóstico IS dos BTS** | limiar calibrado | Atuador desconectado ou em curto | 1 s |
+| 9 | **Intertravamento por software** | — | Peltier e PTC ligadas juntas | imediato |
+
+### Verificação de seletividade
+
+> **Seletividade** significa: em uma falha, atua **apenas** o dispositivo mais próximo dela, sem derrubar o resto do sistema.
+
+| Falha simulada | Quem deve atuar | Quem NÃO pode atuar | Verificado? |
+|---|---|---|---|
+| Curto na saída de 5 V (barramento do Arduino) | **Proteção interna do T2** (limita e/ou desliga por temperatura) | F2, F1, Q0 | ☐ |
+| Curto na saída de 12 V auxiliar | **Proteção interna do T3** | F3, F1, Q0 | ☐ |
+| Curto na saída de um BTS (Peltier/PTC) | **Proteção interna do BTS**, depois **F1 (10 A)** | F2, F3, Q0 | ☐ |
+| Curto entre R1 e 0 V na linha dos postes | **F1 (10 A)** | Q0, OCP da fonte | ☐ |
+| Curto entre R2 e 0 V na linha | **F2 (2 A)** | F1, F3, Q0 | ☐ |
+| Curto na entrada AC da fonte | **Q0 (6 A curva C)** | Disjuntor do quadro | ☐ |
+
+> ✅ **A seletividade funciona aqui porque as correntes de cada nível são bem separadas:** **10 A no R1** (que conduz 6,0 A), 2 A nos ramais leves (que conduzem menos de 0,8 A), e 6 A curva C na entrada AC (≈ 60 A de disparo instantâneo, contra 2,4 A de operação). Uma falha em um ramal de 2 A jamais chega perto de disparar o Q0.
+>
+> 📌 **A hierarquia ficou mais curta com a revisão do Plano B, e isso é bom.** Antes havia 5 níveis entre a fonte e a carga térmica (F1 → limite CC do T1 → F5 → crowbar → KA2). Hoje são 3 (**F1 → proteção interna do BTS → KA2**). **Menos níveis significa seletividade mais fácil de provar** — e cada nível a menos é um componente a menos que pode falhar sem ninguém perceber.
+>
+> 📋 **Coloque esta tabela no relatório com a coluna "Verificado" preenchida.** Testar seletividade é um ensaio real de comissionamento de painel — e demonstra que você entendeu a hierarquia de proteção, não só copiou uma lista de fusíveis.
+
+---
+
+## 31.5 Aterramento
+
+### Os três "terras" do projeto (não confundir)
+
+| Nome | Símbolo | O que é | Onde |
+|---|---|---|---|
+| **Terra de proteção (PE)** | ⏚ | Condutor verde/amarelo do plugue. Leva corrente de falta ao disjuntor | Só na subestação |
+| **Terra funcional / 0 V** | ⏛ | O retorno comum do sistema de 24 V | Toda a maquete |
+| **Blindagem** | — | Malha dos cabos de sinal | Câmara → painel |
+
+### Ligação equipotencial (o ponto único)
+
+```
+                     PLUGUE (pino terra)
+                            │
+                  ┌─────────▼──────────┐
+                  │  BARRA DE TERRA    │   (dentro da subestação)
+                  │        (PE)        │
+                  └──┬──────────────┬──┘
+                     │              │
+      carcaça da ────┘              └──── ⚡ PONTO ÚNICO DE EQUIPOTENCIALIZAÇÃO
+      fonte 24 V                            │
+                                            │  fio verde/amarelo 1,5 mm²
+                                            │
+                                     ┌──────▼──────┐
+                                     │  BORNE 0 V  │  (saída da fonte)
+                                     └──────┬──────┘
+                                            │
+                                    ═══════ ▼ ═══════ retorno comum da maquete
+                                            │
+                                     ┌──────▼───────────┐
+                                     │ BLOCO  BD-0V     │  (painel — star ground)
+                                     └──────────────────┘
+```
+
+### ⚠️ Por que ligar o 0 V ao PE — e por que em UM SÓ ponto
+
+**Por que ligar:**
+
+| Motivo | Explicação |
+|---|---|
+| **Segurança** | Se a isolação interna da fonte falhar, os 127 V apareceriam no barramento de 24 V. Com o 0 V aterrado, essa falta vira uma **corrente de curto que dispara o Q0** em vez de energizar toda a maquete |
+| **Referência definida** | Um sistema flutuante pode assumir qualquer potencial em relação ao ambiente por acoplamento capacitivo — ruído e leituras erráticas |
+| **Descarga eletrostática** | Dá caminho para a ESD que a pessoa acumula ao andar sobre a sala e descarrega ao tocar a maquete |
+
+**Por que apenas um ponto:**
+
+Se o 0 V for ligado ao PE em dois lugares, cria-se um **laço de terra**: uma espira fechada de área grande que capta campo magnético e injeta corrente circulante no retorno dos sinais. O resultado prático são leituras de temperatura oscilando, I²C travando e a serial corrompendo. **Um único ponto de ligação, na subestação. Nada mais.**
+
+### Star ground dentro do painel
+
+```
+   BTS #1 0V ────┐
+   BTS #2 0V ────┤
+   Fans 0V    ───┤
+   Arduino GND ──┼──►  BLOCO BD-0V (entrada 10 mm²)  ──►  0 V da subestação
+   ESP32 GND  ───┤            (ponto único)
+   Nextion GND ──┤
+   SD/RTC GND ───┤
+   Sensores GND ─┘
+```
+
+| Regra | Motivo |
+|---|---|
+| **Nunca** ligar o 0 V de dois dispositivos diretamente entre si | Cada um deve ter seu próprio caminho até o ponto central |
+| O bloco BD-0V tem entrada de **10 mm²** e 8 saídas | Ele conduz a soma de todas as correntes de retorno, e cada dispositivo tem sua própria saída |
+| Cabos de retorno de potência (BTS) em **1,5 mm²** | A corrente de 6,0 A precisa de caminho de baixa impedância |
+| Retorno de sinal separado do retorno de potência **até o BD-0V** | O retorno dos BTS carrega os pulsos de chaveamento; se compartilhar o fio com o retorno dos sensores, esses pulsos aparecem como ruído na medição |
+
+### Blindagem dos cabos de sinal
+
+| Cabo | Blindagem aterrada em... | Nunca |
+|---|---|---|
+| I²C (AM2315C) câmara → painel | **Só no painel**, no BD-0V | Nos dois lados |
+| 1-Wire (DS18B20) câmara → painel | **Só no painel** | Nos dois lados |
+| Sinal de RPM do cooler | Não precisa de blindagem (é digital e robusto) | — |
+
+> Blindagem aterrada nas duas pontas = laço de terra pela malha. Aterrada em uma ponta só = ela funciona como escudo eletrostático sem fechar espira.
+
+---
+
+## 31.6 Tabela de estados do sistema
+
+| Evento | KA1 | KA2 | 24 V nos BTS | `R_EN` | Nextion | LED |
+|---|---|---|---|---|---|---|
+| Painel energizado, antes do REARME | ❌ | ❌ | ❌ ausente | ❌ | "REARMAR" | — |
+| **REARME pressionado** | ✅ sela | ✅ | ✅ presente | ❌ | "AGUARD. START" | — |
+| **START** (botão ou IHM) | ✅ | ✅ | ✅ | ✅ do modo ativo | "RODANDO" | 🟢 RUN |
+| Modo frio ativo | ✅ | ✅ | ✅ | ✅ BTS #1 | "FRIO — 5,2 °C" | 🟢 + 🔵 |
+| Modo quente ativo | ✅ | ✅ | ✅ | ✅ BTS #2 | "QUENTE — 38 °C" | 🟢 + 🟡 |
+| **STOP físico** | ✅ segue selado | ❌ **abre em HW** | ❌ **cortado em HW** | ❌ | "PARADO" | — |
+| STOP solto | ✅ | ✅ volta | ✅ volta | ❌ (firmware trava) | "AGUARD. START" | — |
+| **STOP pela IHM** | ✅ | ✅ | ✅ | ❌ os dois baixos | "PARADO" | — |
+| **EMERGÊNCIA acionada** | ❌ **selo perdido** | ❌ | ❌ **cortado em HW** | ❌ | "EMERGENCIA" | 🔴 FAULT |
+| **Cogumelo destravado** | ❌ **continua caído** | ❌ | ❌ **continua cortado** | ❌ | "REARMAR" | 🔴 FAULT |
+| **REARME após emergência** | ✅ sela | ✅ | ✅ volta | ❌ | "AGUARD. START" | — |
+| **Trip por RPM = 0** | ✅ | ✅ | ✅ | ❌ **cortado** | "FALHA FAN" | 🔴 FAULT |
+| **Arduino trava** | ✅ | ✅ | ✅ | ❌ (watchdog + pull-down) | reinicia | — |
+| **Saída do Arduino travada** | ✅ | STOP corta enquanto pressionado | — | travado | — | — |
+| **↳ solução definitiva** | ❌ **EMERGÊNCIA trava tudo** | ❌ | ❌ | ❌ | "EMERGENCIA" | 🔴 |
+
+> ⚠️ Em **todos** os casos de desligamento, é obrigatório um **novo START manual**. O sistema nunca religa sozinho.
+
+---
+
+## 31.7 Ensaios de segurança (obrigatórios antes da apresentação)
+
+| # | Ensaio | Procedimento | Resultado esperado |
+|---:|---|---|---|
+| 1 | **START pela IHM** | Configurar e apertar INICIAR na tela | O processo começa sem tocar no painel |
+| 2 | **STOP nos dois lugares** | Parar pelo botão físico; reiniciar; parar pela IHM | Os dois funcionam igual |
+| 3 | **Emergência em carga** | Com a Peltier em 100 %, socar o cogumelo | Desliga instantaneamente; medir **0 V no BD-POT** |
+| 4 | **Não religamento (o ensaio mais importante)** | Acionar a emergência, depois **destravar o cogumelo** e medir o BD-POT | **0 V.** A energia NÃO pode voltar ao destravar |
+| 5 | **Rearme** | Apertar o botão azul **REARME** | O KA1 sela, o **24 V** volta — mas o processo **continua parado** |
+| 5b | **Rearme não inicia** | Após o REARME, medir o `R_EN` dos dois drivers | Continua em 0 V até alguém dar START |
+| 6 | **Fio partido (fail-safe)** | Desconectar um fio do bloco NF de 24 V da **emergência** | O KA1 abre e a potência cai |
+| 6b | **STOP em hardware** | Com o Arduino DESLIGADO e o KA1 selado, apertar o STOP | O KA2 abre e o BD-POT vai a 0 V |
+| 6c | **Saída travada** | Forçar `R_EN = HIGH` num sketch de teste e apertar STOP | A potência cai mesmo com a saída travada |
+| 7 | **Trip do software** | Com a Peltier ligada, parar a fan externa com o dedo (cuidado!) | Desliga em ≤ 2 s, LED FAULT acende |
+| 7b | **Watchdog** | Gravar um sketch com um `while(1);` proposital dentro do loop | O Mega reseta em ~2 s e a saída cai |
+| 7c | **Pull-down do `R_EN`** | Com o Arduino DESLIGADO, medir a tensão em cada `R_EN` | Deve ser ~0 V, nunca flutuante |
+| 8 | **Queda de energia** | Desligar a chave rotativa e religar | Sistema volta em "AGUARD. START", **não** rodando |
+| 9 | **Continuidade do PE** | Multímetro: pino terra do plugue → carcaça da fonte | < 1 Ω |
+| 10 | **Ligação única 0 V–PE** | Medir resistência 0 V → PE no painel e desligar o jumper da subestação | Deve subir para MΩ (prova que só existe uma ligação) |
+
+> 📋 **Registre os 10 ensaios com foto ou vídeo.** É material excelente para a apresentação e comprova que o projeto foi comissionado, não só montado.
+
+---
+
+## 31.8 ✅ Checklist de aceitação
+
+- [ ] **KA1 · relé de interface 24 Vcc, 2 contatos** instalado (selo + saída)
+- [ ] **KA2 · relé de interface 24 Vcc, contato de ≥ 10 A** instalado
+- [ ] Emergência (bloco NF de 24 V) **em série com a bobina do KA1**
+- [ ] REARME (NA) e contato de selo do KA1 **em paralelo**
+- [ ] STOP (bloco NF de 24 V) **em série com a bobina do KA2**
+- [ ] Contato do KA2 entre o prensa-cabo de entrada (24 V do P1) e o BD-POT
+- [ ] **Botão azul de REARME** instalado e etiquetado
+- [ ] S0 com **2 blocos NF** · S1 com **1 NA** · S2 com **1 NF + 1 NA** · S3 com **1 NA**
+- [ ] **Pull-down de 10 kΩ** em cada `R_EN` dos BTS7960
+- [ ] Divisor **22 k / 4,7 k** do BD-POT (24 V) para o pino D25 — medir **4,2 V**. ⚠️ Os resistores ficam na **placa PI-1**, não no meio do cabo ([Doc 33](33_placa_interface_componentes.md))
+- [ ] **Watchdog habilitado** no firmware e testado
+- [ ] Ligação **única** 0 V ↔ PE, na subestação
+- [ ] Bloco **BD-0V** instalado (entrada 10 mm², 8 saídas); todos os retornos convergindo nele
+- [ ] Blindagens aterradas **só no painel**
+- [ ] Tabela de seletividade (§31.4) preenchida e verificada
+- [ ] **10 ensaios de segurança (§31.7) aprovados e registrados**
+
+---
+
+📄 **Anterior:** [Doc 30 — Força e Distribuição](30_forca_e_distribuicao.md) · **Próximo:** [Doc 32 — Sinais e Sensores](32_sinais_e_sensores.md)

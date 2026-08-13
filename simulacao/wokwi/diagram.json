@@ -1,0 +1,89 @@
+{
+  "version": 1,
+  "author": "Projeto Integrador — Camara Frigorifica",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-arduino-mega", "id": "mega", "top": 0, "left": 0, "attrs": {} },
+
+    { "type": "wokwi-ds18b20", "id": "temp", "top": -140, "left": 320,
+      "attrs": { "temperature": "25" } },
+    { "type": "wokwi-resistor", "id": "rPullup", "top": -80, "left": 300,
+      "attrs": { "value": "4700" } },
+
+    { "type": "wokwi-pushbutton", "id": "btStart", "top": 300, "left": -230,
+      "attrs": { "color": "green", "label": "START" } },
+    { "type": "wokwi-pushbutton", "id": "btStop", "top": 360, "left": -230,
+      "attrs": { "color": "red", "label": "STOP" } },
+    { "type": "wokwi-pushbutton", "id": "btEmerg", "top": 420, "left": -230,
+      "attrs": { "color": "red", "label": "EMERGENCIA" } },
+
+    { "type": "wokwi-slide-switch", "id": "swPot", "top": 490, "left": -230,
+      "attrs": { "label": "KA1/KA2 - 12V" } },
+
+    { "type": "wokwi-led", "id": "ledRun", "top": -140, "left": 60,
+      "attrs": { "color": "green", "label": "RUN" } },
+    { "type": "wokwi-led", "id": "ledCool", "top": -140, "left": 120,
+      "attrs": { "color": "blue", "label": "FRIO" } },
+    { "type": "wokwi-led", "id": "ledHeat", "top": -140, "left": 180,
+      "attrs": { "color": "yellow", "label": "QUENTE" } },
+    { "type": "wokwi-led", "id": "ledFault", "top": -140, "left": 240,
+      "attrs": { "color": "red", "label": "FALHA" } },
+
+    { "type": "wokwi-led", "id": "ledBts1", "top": 60, "left": 380,
+      "attrs": { "color": "cyan", "label": "BTS1 PWM" } },
+    { "type": "wokwi-led", "id": "ledBts2", "top": 120, "left": 380,
+      "attrs": { "color": "orange", "label": "BTS2 PWM" } },
+
+    { "type": "wokwi-resistor", "id": "r1", "top": -60, "left": 60,  "attrs": { "value": "220" } },
+    { "type": "wokwi-resistor", "id": "r2", "top": -60, "left": 120, "attrs": { "value": "220" } },
+    { "type": "wokwi-resistor", "id": "r3", "top": -60, "left": 180, "attrs": { "value": "220" } },
+    { "type": "wokwi-resistor", "id": "r4", "top": -60, "left": 240, "attrs": { "value": "220" } },
+    { "type": "wokwi-resistor", "id": "r5", "top": 60,  "left": 440, "attrs": { "value": "220" } },
+    { "type": "wokwi-resistor", "id": "r6", "top": 120, "left": 440, "attrs": { "value": "220" } }
+  ],
+
+  "connections": [
+    [ "temp:VCC", "mega:5V", "red", [] ],
+    [ "temp:GND", "mega:GND.1", "black", [] ],
+    [ "temp:DQ", "mega:2", "yellow", [] ],
+    [ "rPullup:1", "mega:2", "yellow", [] ],
+    [ "rPullup:2", "mega:5V", "red", [] ],
+
+    [ "mega:30", "mega:3", "magenta", [] ],
+
+    [ "btStart:1.l", "mega:22", "green", [] ],
+    [ "btStart:2.l", "mega:GND.2", "black", [] ],
+    [ "btStop:1.l", "mega:23", "red", [] ],
+    [ "btStop:2.l", "mega:GND.2", "black", [] ],
+    [ "btEmerg:1.l", "mega:24", "red", [] ],
+    [ "btEmerg:2.l", "mega:GND.2", "black", [] ],
+
+    [ "swPot:2", "mega:25", "blue", [] ],
+    [ "swPot:3", "mega:5V", "red", [] ],
+    [ "swPot:1", "mega:GND.2", "black", [] ],
+
+    [ "mega:9",  "r1:1", "green", [] ],
+    [ "r1:2", "ledRun:A", "green", [] ],
+    [ "ledRun:C", "mega:GND.3", "black", [] ],
+
+    [ "mega:10", "r2:1", "blue", [] ],
+    [ "r2:2", "ledCool:A", "blue", [] ],
+    [ "ledCool:C", "mega:GND.3", "black", [] ],
+
+    [ "mega:11", "r3:1", "gold", [] ],
+    [ "r3:2", "ledHeat:A", "gold", [] ],
+    [ "ledHeat:C", "mega:GND.3", "black", [] ],
+
+    [ "mega:12", "r4:1", "red", [] ],
+    [ "r4:2", "ledFault:A", "red", [] ],
+    [ "ledFault:C", "mega:GND.3", "black", [] ],
+
+    [ "mega:5", "r5:1", "cyan", [] ],
+    [ "r5:2", "ledBts1:A", "cyan", [] ],
+    [ "ledBts1:C", "mega:GND.1", "black", [] ],
+
+    [ "mega:6", "r6:1", "orange", [] ],
+    [ "r6:2", "ledBts2:A", "orange", [] ],
+    [ "ledBts2:C", "mega:GND.1", "black", [] ]
+  ]
+}

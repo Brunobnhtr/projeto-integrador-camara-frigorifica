@@ -1,0 +1,210 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 790" width="1120" height="790" font-family="Segoe UI, Arial, sans-serif">
+  <rect width="1120" height="790" fill="#ffffff"/>
+
+  <text x="60" y="40" font-size="23" font-weight="700" fill="#111">PAINEL DE COMANDO — LAYOUT</text>
+  <text x="60" y="63" font-size="13" fill="#555">400 × 500 × 200 mm · escala 1:1 · cotas em milímetros · origem no canto inferior esquerdo</text>
+
+  <text x="280" y="96" font-size="15" font-weight="700" fill="#212529" text-anchor="middle">FUNDO (backplate) — vista interna</text>
+  <text x="820" y="96" font-size="15" font-weight="700" fill="#212529" text-anchor="middle">PORTA — vista externa</text>
+
+  <!-- ==================== BACKPLATE ==================== -->
+  <rect x="80" y="110" width="400" height="500" fill="#f1f3f5" stroke="#212529" stroke-width="2.5"/>
+
+  <!-- canaletas verticais -->
+  <rect x="80" y="110" width="30" height="500" fill="#dfe6e9" stroke="#7f8c8d" stroke-width="1"/>
+  <rect x="450" y="110" width="30" height="500" fill="#dfe6e9" stroke="#7f8c8d" stroke-width="1"/>
+  <text x="95" y="370" font-size="10" fill="#5d6d7e" text-anchor="middle" transform="rotate(-90 95 370)">CANALETA · GRUPO A (potência)</text>
+  <text x="465" y="370" font-size="10" fill="#5d6d7e" text-anchor="middle" transform="rotate(-90 465 370)">CANALETA · GRUPO C (sinais)</text>
+
+  <!-- canaletas horizontais -->
+  <g fill="#dfe6e9" stroke="#7f8c8d" stroke-width="1">
+    <rect x="110" y="140" width="340" height="40"/>
+    <rect x="110" y="270" width="340" height="40"/>
+    <rect x="110" y="400" width="340" height="40"/>
+    <rect x="110" y="530" width="340" height="40"/>
+  </g>
+
+  <!-- ===== TRILHO 1 — DISTRIBUIÇÃO (Y=385 -> svg 225) ===== -->
+  <rect x="110" y="221" width="340" height="8" fill="#b2bec3" stroke="#2d3436" stroke-width="1.5"/>
+  <text x="118" y="196" font-size="11" font-weight="700" fill="#2d3436">TRILHO DIN 1 — DISTRIBUIÇÃO E PROTEÇÃO</text>
+  <g>
+    <rect x="120" y="196" width="18" height="56" fill="#ffe066" stroke="#b8860b" stroke-width="1.3"/>
+    <text x="129" y="228" font-size="8" fill="#5c4a00" text-anchor="middle" transform="rotate(-90 129 228)">(livre)</text>
+    <rect x="138" y="196" width="18" height="56" fill="#ffa8a8" stroke="#c92a2a" stroke-width="1.3"/>
+    <text x="147" y="228" font-size="8" fill="#7a0b0b" text-anchor="middle" transform="rotate(-90 147 228)">(livre)</text>
+    <rect x="161" y="196" width="45" height="56" fill="#d0ebff" stroke="#1971c2" stroke-width="1.3"/>
+    <text x="183" y="222" font-size="9" fill="#0b4a86" text-anchor="middle">(livre)</text>
+    <text x="183" y="236" font-size="8" fill="#0b4a86" text-anchor="middle">expansão</text>
+    <rect x="211" y="196" width="11" height="56" fill="#e9ecef" stroke="#495057" stroke-width="1"/>
+    <rect x="222" y="196" width="11" height="56" fill="#e9ecef" stroke="#495057" stroke-width="1"/>
+    <text x="222" y="268" font-size="8" fill="#495057" text-anchor="middle">24V-POT</text>
+    <rect x="233" y="196" width="11" height="56" fill="#fff9db" stroke="#495057" stroke-width="1"/>
+    <rect x="244" y="196" width="11" height="56" fill="#fff9db" stroke="#495057" stroke-width="1"/>
+    <text x="249" y="188" font-size="8" fill="#495057" text-anchor="middle">12V-AUX</text>
+    <rect x="255" y="196" width="16" height="56" fill="#ffe8cc" stroke="#495057" stroke-width="1"/>
+    <text x="263" y="268" font-size="8" fill="#495057" text-anchor="middle">+5V</text>
+    <rect x="271" y="196" width="11" height="56" fill="#ffc9c9" stroke="#495057" stroke-width="1"/>
+    <text x="277" y="188" font-size="8" fill="#495057" text-anchor="middle">+24V</text>
+    <rect x="287" y="196" width="14" height="56" fill="#495057" stroke="#000" stroke-width="1.5"/>
+    <text x="294" y="268" font-size="8" font-weight="700" fill="#111" text-anchor="middle">0V-CENTRAL</text>
+    <rect x="301" y="196" width="32" height="56" fill="#ced4da" stroke="#495057" stroke-width="1"/>
+    <text x="317" y="188" font-size="8" fill="#495057" text-anchor="middle">0V (6×)</text>
+  </g>
+
+  <!-- ===== TRILHO 2 — POTÊNCIA (Y=255 -> svg 355) ===== -->
+  <rect x="110" y="351" width="340" height="8" fill="#b2bec3" stroke="#2d3436" stroke-width="1.5"/>
+  <text x="118" y="326" font-size="11" font-weight="700" fill="#2d3436">TRILHO DIN 2 — POTÊNCIA</text>
+  <g>
+    <rect x="120" y="326" width="105" height="58" fill="#c3e6cb" stroke="#1e7e34" stroke-width="1.5"/>
+    <text x="172" y="350" font-size="11" font-weight="700" fill="#155724" text-anchor="middle">BTS7960 #1</text>
+    <text x="172" y="366" font-size="9" fill="#155724" text-anchor="middle">FRIO · 2x Peltier</text>
+    <text x="172" y="379" font-size="8" fill="#155724" text-anchor="middle">D5 / D4 / A0</text>
+    <rect x="230" y="326" width="105" height="58" fill="#f8d7da" stroke="#c92a2a" stroke-width="1.5"/>
+    <text x="282" y="350" font-size="11" font-weight="700" fill="#7a0b0b" text-anchor="middle">BTS7960 #2</text>
+    <text x="282" y="366" font-size="9" fill="#7a0b0b" text-anchor="middle">QUENTE · PTC 24V</text>
+    <text x="282" y="379" font-size="8" fill="#7a0b0b" text-anchor="middle">D6 / D7 / A1</text>
+    <rect x="340" y="326" width="27" height="58" fill="#e0cffc" stroke="#6741d9" stroke-width="1.5"/>
+    <text x="353" y="358" font-size="10" font-weight="700" fill="#3b1a94" text-anchor="middle" transform="rotate(-90 353 358)">K1 · 4PDT</text>
+    <rect x="372" y="326" width="50" height="58" fill="#d3f9d8" stroke="#2b8a3e" stroke-width="1.5"/>
+    <text x="397" y="352" font-size="10" font-weight="700" fill="#1b4332" text-anchor="middle">K0</text>
+    <text x="397" y="368" font-size="8" fill="#1b4332" text-anchor="middle">relé 5 V</text>
+    <text x="397" y="380" font-size="8" fill="#1b4332" text-anchor="middle">trip D26</text>
+  </g>
+  <!-- cooler -->
+  <circle cx="230" cy="290" r="15" fill="none" stroke="#0b7285" stroke-width="2"/>
+  <path d="M230 275 A15 15 0 0 1 245 290" fill="none" stroke="#0b7285" stroke-width="2.5"/>
+  <path d="M230 308 L230 318 M224 312 L230 306 L236 312" stroke="#0b7285" stroke-width="2" fill="none"/>
+  <text x="258" y="294" font-size="10" font-weight="700" fill="#0b7285">cooler 40 mm ↑ (obrigatório)</text>
+
+  <!-- ===== TRILHO 3 — CONTROLE (Y=125 -> svg 485) ===== -->
+  <rect x="110" y="481" width="340" height="8" fill="#b2bec3" stroke="#2d3436" stroke-width="1.5"/>
+  <text x="118" y="456" font-size="11" font-weight="700" fill="#2d3436">TRILHO DIN 3 — CONTROLE</text>
+  <g>
+    <rect x="120" y="456" width="110" height="58" fill="#cfe2ff" stroke="#0b4a86" stroke-width="1.5"/>
+    <text x="175" y="480" font-size="11" font-weight="700" fill="#0b4a86" text-anchor="middle">ARDUINO MEGA</text>
+    <text x="175" y="496" font-size="9" fill="#0b4a86" text-anchor="middle">2560 + Shield</text>
+    <text x="175" y="509" font-size="8" fill="#0b4a86" text-anchor="middle">alimentação: pino 5V</text>
+    <rect x="235" y="456" width="90" height="58" fill="#ffe3e3" stroke="#a61e4d" stroke-width="1.5"/>
+    <text x="280" y="480" font-size="11" font-weight="700" fill="#7a0b3a" text-anchor="middle">DNLCB30</text>
+    <text x="280" y="496" font-size="9" fill="#7a0b3a" text-anchor="middle">+ ESP32</text>
+    <text x="280" y="509" font-size="8" fill="#7a0b3a" text-anchor="middle">alimentação: 24 V</text>
+    <rect x="330" y="456" width="60" height="58" fill="#fff3bf" stroke="#b8860b" stroke-width="1.5"/>
+    <text x="360" y="482" font-size="10" font-weight="700" fill="#5c4a00" text-anchor="middle">SD + RTC</text>
+    <text x="360" y="498" font-size="8" fill="#5c4a00" text-anchor="middle">SPI / I²C</text>
+  </g>
+
+  <!-- prensa-cabos -->
+  <g>
+    <circle cx="150" cy="590" r="9" fill="#adb5bd" stroke="#343a40" stroke-width="1.5"/>
+    <circle cx="230" cy="590" r="9" fill="#adb5bd" stroke="#343a40" stroke-width="1.5"/>
+    <circle cx="310" cy="590" r="9" fill="#adb5bd" stroke="#343a40" stroke-width="1.5"/>
+    <text x="150" y="608" font-size="8" fill="#495057" text-anchor="middle">entrada</text>
+    <text x="230" y="608" font-size="8" fill="#495057" text-anchor="middle">potência</text>
+    <text x="310" y="608" font-size="8" fill="#495057" text-anchor="middle">sinais</text>
+  </g>
+
+  <!-- CONECTOR SMA — LATERAL DIREITA, PARTE ALTA (X=100 / Y=430) -->
+  <g>
+    <rect x="480" y="176" width="14" height="14" fill="#c9a227" stroke="#7a5c00" stroke-width="1.5"/>
+    <circle cx="487" cy="183" r="3" fill="#f1f3f5" stroke="#7a5c00" stroke-width="1"/>
+    <line x1="494" y1="183" x2="516" y2="160" stroke="#212529" stroke-width="3"/>
+    <line x1="516" y1="160" x2="522" y2="122" stroke="#212529" stroke-width="4"/>
+    <text x="500" y="200" font-size="9.5" font-weight="700" fill="#7a5c00">ANTENA Wi-Fi</text>
+    <text x="500" y="212" font-size="8.5" fill="#7a5c00">conector SMA de painel</text>
+    <text x="500" y="223" font-size="8.5" fill="#7a5c00">LATERAL DIREITA · Y = 430</text>
+    <path d="M487 190 Q470 300 330 470" fill="none" stroke="#a61e4d" stroke-width="1.6" stroke-dasharray="5 3"/>
+    <text x="392" y="330" font-size="8.5" fill="#a61e4d" transform="rotate(-52 392 330)">pigtail IPEX → SMA (30 cm)</text>
+  </g>
+
+  <!-- cotas backplate -->
+  <g stroke="#c92a2a" stroke-width="1.2" fill="#c92a2a" font-size="11">
+    <line x1="54" y1="110" x2="54" y2="610"/>
+    <line x1="48" y1="110" x2="60" y2="110"/><line x1="48" y1="610" x2="60" y2="610"/>
+    <text x="42" y="360" text-anchor="middle" font-weight="700" transform="rotate(-90 42 360)">500</text>
+    <line x1="80" y1="640" x2="480" y2="640"/>
+    <line x1="80" y1="634" x2="80" y2="646"/><line x1="480" y1="634" x2="480" y2="646"/>
+    <text x="280" y="656" text-anchor="middle" font-weight="700">400</text>
+    <!-- alturas dos trilhos -->
+    <line x1="500" y1="225" x2="530" y2="225" stroke-dasharray="3 2"/>
+    <text x="536" y="229" font-size="10">Y = 385 (trilho 1)</text>
+    <line x1="500" y1="355" x2="530" y2="355" stroke-dasharray="3 2"/>
+    <text x="536" y="359" font-size="10">Y = 255 (trilho 2)</text>
+    <line x1="500" y1="485" x2="530" y2="485" stroke-dasharray="3 2"/>
+    <text x="536" y="489" font-size="10">Y = 125 (trilho 3)</text>
+  </g>
+
+  <!-- ==================== PORTA ==================== -->
+  <rect x="620" y="110" width="400" height="500" fill="#e9ecef" stroke="#212529" stroke-width="2.5"/>
+  <rect x="616" y="110" width="6" height="500" fill="#868e96" stroke="#343a40" stroke-width="1"/>
+
+  <!-- seccionadora (60,470) -->
+  <circle cx="680" cy="140" r="11" fill="#f8f9fa" stroke="#212529" stroke-width="2"/>
+  <line x1="680" y1="140" x2="686" y2="132" stroke="#212529" stroke-width="2.5"/>
+  <text x="680" y="168" font-size="10" font-weight="700" fill="#212529" text-anchor="middle">Q1</text>
+  <text x="680" y="180" font-size="9" fill="#495057" text-anchor="middle">GERAL 24 V</text>
+  <rect x="860" y="126" width="140" height="28" fill="#fff3cd" stroke="#b8860b" stroke-width="1.5"/>
+  <text x="930" y="145" font-size="11" font-weight="700" fill="#8a6d00" text-anchor="middle">⚠ RISCO ELÉTRICO</text>
+
+  <!-- nextion -->
+  <rect x="771" y="206" width="98" height="57" fill="#212529" stroke="#000" stroke-width="2"/>
+  <text x="820" y="228" font-size="12" font-weight="700" fill="#8ce99a" text-anchor="middle">5.2 °C</text>
+  <text x="820" y="245" font-size="9" fill="#63e6be" text-anchor="middle">FRIO · SP 5.0</text>
+  <text x="820" y="282" font-size="10" fill="#495057" text-anchor="middle">NEXTION 3.2" — recorte 98 × 57</text>
+
+  <!-- LEDs y=275 -> svg 335 -->
+  <g>
+    <circle cx="710" cy="335" r="11" fill="#8ce99a" stroke="#2b8a3e" stroke-width="2"/>
+    <text x="710" y="362" font-size="9" font-weight="700" fill="#2b8a3e" text-anchor="middle">H1 RUN</text>
+    <circle cx="785" cy="335" r="11" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+    <text x="785" y="362" font-size="9" font-weight="700" fill="#1971c2" text-anchor="middle">H2 FRIO</text>
+    <circle cx="860" cy="335" r="11" fill="#ffec99" stroke="#b8860b" stroke-width="2"/>
+    <text x="860" y="362" font-size="9" font-weight="700" fill="#8a6d00" text-anchor="middle">H3 QUENTE</text>
+    <circle cx="935" cy="335" r="11" fill="#ffa8a8" stroke="#c92a2a" stroke-width="2"/>
+    <text x="935" y="362" font-size="9" font-weight="700" fill="#c92a2a" text-anchor="middle">H4 FALHA</text>
+  </g>
+
+  <!-- botoeiras y=195 -> svg 415 -->
+  <g>
+    <circle cx="710" cy="415" r="17" fill="#e03131" stroke="#7a0b0b" stroke-width="2.5"/>
+    <circle cx="710" cy="415" r="9" fill="#ff6b6b" stroke="#7a0b0b" stroke-width="1.5"/>
+    <text x="710" y="448" font-size="10" font-weight="700" fill="#7a0b0b" text-anchor="middle">S0 EMERGÊNCIA</text>
+    <circle cx="820" cy="415" r="11" fill="#40c057" stroke="#1b4332" stroke-width="2"/>
+    <text x="820" y="448" font-size="10" font-weight="700" fill="#1b4332" text-anchor="middle">S1 LIGA</text>
+    <circle cx="930" cy="415" r="11" fill="#fa5252" stroke="#7a0b0b" stroke-width="2"/>
+    <text x="930" y="448" font-size="10" font-weight="700" fill="#7a0b0b" text-anchor="middle">S2 DESLIGA</text>
+  </g>
+
+  <!-- bolsa -->
+  <rect x="700" y="480" width="240" height="90" fill="#f8f9fa" stroke="#868e96" stroke-width="1.5" stroke-dasharray="5 3"/>
+  <text x="820" y="520" font-size="11" fill="#6c757d" text-anchor="middle">BOLSA PORTA-DOCUMENTOS</text>
+  <text x="820" y="538" font-size="10" fill="#868e96" text-anchor="middle">(diagrama elétrico do painel)</text>
+  <text x="820" y="592" font-size="9" fill="#868e96" text-anchor="middle">Alimentação: 24 Vcc · Consumo: 105 W · Painel CF-01</text>
+
+  <!-- cotas porta -->
+  <g stroke="#c92a2a" stroke-width="1.2" fill="#c92a2a" font-size="10">
+    <line x1="620" y1="640" x2="710" y2="640"/>
+    <line x1="620" y1="634" x2="620" y2="646"/><line x1="710" y1="634" x2="710" y2="646"/>
+    <text x="665" y="656" text-anchor="middle">90</text>
+    <line x1="710" y1="640" x2="820" y2="640"/>
+    <line x1="820" y1="634" x2="820" y2="646"/>
+    <text x="765" y="656" text-anchor="middle">110</text>
+    <line x1="820" y1="640" x2="930" y2="640"/>
+    <line x1="930" y1="634" x2="930" y2="646"/>
+    <text x="875" y="656" text-anchor="middle">110</text>
+    <line x1="1044" y1="415" x2="1044" y2="610"/>
+    <line x1="1038" y1="415" x2="1050" y2="415"/><line x1="1038" y1="610" x2="1050" y2="610"/>
+    <text x="1060" y="516" font-weight="700">195</text>
+    <line x1="1076" y1="335" x2="1076" y2="610"/>
+    <line x1="1070" y1="335" x2="1082" y2="335"/><line x1="1070" y1="610" x2="1082" y2="610"/>
+    <text x="1092" y="474" font-weight="700">275</text>
+  </g>
+
+  <!-- ==================== NOTAS ==================== -->
+  <g font-size="12">
+    <rect x="60" y="678" width="1000" height="88" fill="#fff8e1" stroke="#b8860b" stroke-width="1.5"/>
+    <text x="76" y="698" font-weight="700" fill="#8a6d00">⚠ VERIFICAR ANTES DE FURAR</text>
+    <text x="76" y="718" font-size="11" fill="#5c4a00">1 · A emergência (2 blocos empilhados) ocupa ~70 mm atrás da porta e fica em frente ao TRILHO 2. Confirme que não há colisão — se houver, mova S0 para X = 60.</text>
+    <text x="76" y="736" font-size="11" fill="#5c4a00">2 · Imprima um gabarito 1:1 desta porta em A3, cole sobre o MDF e fure através dele.  ·  3 · Grupos A (potência) e C (sinais) SEMPRE em canaletas opostas.</text>
+    <text x="76" y="754" font-size="11" font-weight="700" fill="#c92a2a">4 · ANTENA: conector SMA de painel na LATERAL DIREITA, parte alta. NUNCA passe o pigtail coaxial por prensa-cabo — o aperto esmaga o dielétrico e destrói o alcance.</text>
+  </g>
+</svg>

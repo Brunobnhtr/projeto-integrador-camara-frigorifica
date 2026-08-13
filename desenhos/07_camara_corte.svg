@@ -1,0 +1,188 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 900" width="1180" height="900" font-family="Segoe UI, Arial, sans-serif">
+  <rect width="1180" height="900" fill="#ffffff"/>
+
+  <defs>
+    <marker id="fl" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 z" fill="#1971c2"/>
+    </marker>
+    <pattern id="xps" width="10" height="10" patternUnits="userSpaceOnUse">
+      <rect width="10" height="10" fill="#e3f0f7"/>
+      <circle cx="3" cy="3" r="1.3" fill="#a9cbe0"/><circle cx="8" cy="8" r="1.3" fill="#a9cbe0"/>
+    </pattern>
+    <pattern id="fita" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <rect width="3" height="6" fill="#c0c8cc"/><rect x="3" width="3" height="6" fill="#8f9a9f"/>
+    </pattern>
+  </defs>
+
+  <text x="50" y="38" font-size="23" font-weight="700" fill="#111">CÂMARA TÉRMICA — CORTE VERTICAL</text>
+  <text x="50" y="61" font-size="13" fill="#555">Camadas de isolamento, circulação de ar (modo FRIO) e dreno · escala ≈ 1,5:1 · cotas em milímetros reais</text>
+
+  <!-- ============ ENVELOPE EXTERNO ============ -->
+  <!-- cobertura branca 3 mm -->
+  <rect x="120" y="140" width="513" height="489" fill="#f5f7f8" stroke="#5d6d7e" stroke-width="2"/>
+  <!-- barreira de vapor (fita de alumínio) -->
+  <rect x="124" y="144" width="505" height="481" fill="url(#fita)" stroke="none"/>
+  <!-- XPS -->
+  <rect x="129" y="149" width="495" height="471" fill="url(#xps)" stroke="#7fb3d5" stroke-width="1.5"/>
+
+  <!-- ============ DUTOS LATERAIS ============ -->
+  <rect x="174" y="200" width="45" height="330" fill="#eaf6fd" stroke="#2e86c1" stroke-width="2"/>
+  <rect x="534" y="200" width="45" height="330" fill="#eaf6fd" stroke="#2e86c1" stroke-width="2"/>
+  <text x="196" y="372" font-size="11" font-weight="700" fill="#1b4f72" text-anchor="middle" transform="rotate(-90 196 372)">DUTO 30 × 30</text>
+  <text x="556" y="372" font-size="11" font-weight="700" fill="#1b4f72" text-anchor="middle" transform="rotate(-90 556 372)">DUTO 30 × 30</text>
+
+  <!-- ============ CAIXA DE ACRÍLICO 5 mm ============ -->
+  <rect x="219" y="194" width="315" height="381" fill="none" stroke="#0b5394" stroke-width="7"/>
+  <rect x="226" y="201" width="301" height="367" fill="#ffffff" stroke="#7fb3d5" stroke-width="1"/>
+
+  <!-- ============ PELTIER + DISSIPADOR ============ -->
+  <rect x="300" y="60" width="150" height="60" fill="#d5dbdb" stroke="#5d6d7e" stroke-width="2"/>
+  <g stroke="#95a5a6" stroke-width="1.4">
+    <line x1="308" y1="68" x2="442" y2="68"/><line x1="308" y1="78" x2="442" y2="78"/>
+    <line x1="308" y1="88" x2="442" y2="88"/><line x1="308" y1="98" x2="442" y2="98"/>
+  </g>
+  <circle cx="375" cy="90" r="18" fill="none" stroke="#5d6d7e" stroke-width="2"/>
+  <path d="M375 72 A18 18 0 0 1 393 90" fill="none" stroke="#5d6d7e" stroke-width="3"/>
+  <text x="470" y="76" font-size="12" font-weight="700" fill="#5d6d7e">COOLER DE CPU</text>
+  <text x="470" y="92" font-size="10.5" fill="#7f8c8d">rejeita ~100 W · 3 fios (RPM → D3)</text>
+  <text x="470" y="108" font-size="10.5" font-weight="700" fill="#c92a2a">⚠ sem eles as Peltier queimam em &lt; 1 min</text>
+  <rect x="316" y="120" width="118" height="14" fill="#e8590c" stroke="#a63e00" stroke-width="1.5"/>
+  <text x="278" y="131" font-size="10" fill="#a63e00" text-anchor="end">pasta térmica</text>
+  <rect x="316" y="134" width="118" height="26" fill="#dee2e6" stroke="#212529" stroke-width="2"/>
+  <text x="375" y="151" font-size="11" font-weight="700" fill="#212529" text-anchor="middle">2x PELTIER TEC1-12706 (SÉRIE)</text>
+  <rect x="316" y="160" width="118" height="10" fill="#1971c2" stroke="#0b4a86" stroke-width="1.5"/>
+  <rect x="300" y="170" width="150" height="24" fill="#aed6f1" stroke="#1b4f72" stroke-width="2"/>
+  <text x="375" y="186" font-size="10.5" font-weight="700" fill="#1b4f72" text-anchor="middle">placa fria + fan 40 mm ↓</text>
+  <text x="292" y="180" font-size="10" fill="#c92a2a" text-anchor="end">lado FRIO</text>
+  <text x="292" y="152" font-size="10" fill="#c92a2a" text-anchor="end">lado QUENTE ↑</text>
+
+  <!-- ============ INTERIOR ============ -->
+  <text x="375" y="232" font-size="13" font-weight="700" fill="#0b5394" text-anchor="middle">ESPAÇO ÚTIL — 200 × 100 × 250 mm = 5,0 L</text>
+
+  <!-- fluxo de ar modo frio -->
+  <g stroke="#1971c2" stroke-width="3" fill="none" marker-end="url(#fl)">
+    <line x1="375" y1="250" x2="375" y2="440"/>
+    <path d="M375 470 Q300 500 250 500"/>
+    <path d="M250 500 Q222 500 210 470"/>
+    <line x1="196" y1="500" x2="196" y2="230"/>
+    <path d="M196 214 Q240 205 300 210"/>
+    <path d="M375 470 Q450 500 500 500"/>
+    <path d="M500 500 Q528 500 540 470"/>
+    <line x1="556" y1="500" x2="556" y2="230"/>
+    <path d="M556 214 Q512 205 452 210"/>
+  </g>
+  <text x="392" y="330" font-size="12" font-weight="700" fill="#1971c2">ar frio desce</text>
+  <text x="392" y="348" font-size="11" fill="#1971c2">(fans sopram ↓)</text>
+  <text x="252" y="536" font-size="11" font-weight="700" fill="#1971c2" text-anchor="middle">plenum de retorno 30 mm</text>
+
+  <!-- sensor -->
+  <circle cx="330" cy="330" r="7" fill="#40c057" stroke="#1b4332" stroke-width="2"/>
+  <line x1="330" y1="330" x2="330" y2="201" stroke="#40c057" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <text x="316" y="316" font-size="10.5" font-weight="700" fill="#1b4332" text-anchor="end">DS18B20</text>
+  <text x="316" y="330" font-size="9.5" fill="#1b4332" text-anchor="end">no centro, suspenso</text>
+  <circle cx="420" cy="330" r="6" fill="#fab005" stroke="#8a6d00" stroke-width="2"/>
+  <text x="434" y="334" font-size="10.5" font-weight="700" fill="#8a6d00">AM2315C</text>
+
+  <!-- base interna + PTC -->
+  <rect x="240" y="470" width="273" height="8" fill="#ced4da" stroke="#495057" stroke-width="2"/>
+  <text x="376" y="464" font-size="10.5" fill="#495057" text-anchor="middle">base interna 190 × 90 (removível, apoiada em 4 cubinhos)</text>
+  <rect x="248" y="478" width="14" height="22" fill="#adb5bd" stroke="#495057" stroke-width="1.5"/>
+  <rect x="492" y="478" width="14" height="22" fill="#adb5bd" stroke="#495057" stroke-width="1.5"/>
+  <rect x="316" y="428" width="118" height="42" fill="#ffd8a8" stroke="#a63e00" stroke-width="2"/>
+  <text x="375" y="446" font-size="11" font-weight="700" fill="#7a3000" text-anchor="middle">PTC 24 V 60 W</text>
+  <text x="375" y="462" font-size="10" fill="#7a3000" text-anchor="middle">+ fan 60 mm ↑ (modo quente)</text>
+
+  <!-- bandeja e dreno -->
+  <path d="M244 552 L508 546" fill="none" stroke="#868e96" stroke-width="4"/>
+  <text x="376" y="542" font-size="10.5" fill="#495057" text-anchor="middle">bandeja de alumínio — inclinada 3°</text>
+  <line x1="508" y1="546" x2="508" y2="620" stroke="#1971c2" stroke-width="3"/>
+  <path d="M508 620 L508 680 Q508 706 534 706 Q560 706 560 680 Q560 654 586 654 L586 700" fill="none" stroke="#1971c2" stroke-width="4"/>
+  <text x="620" y="672" font-size="12" font-weight="700" fill="#1971c2">SIFÃO (obrigatório)</text>
+  <text x="620" y="690" font-size="10.5" fill="#0b4a86">bloqueia ar e vapor</text>
+  <text x="620" y="705" font-size="10.5" fill="#0b4a86">e equaliza a pressão</text>
+  <rect x="570" y="700" width="34" height="30" fill="#d0ebff" stroke="#1971c2" stroke-width="1.5"/>
+  <text x="587" y="746" font-size="10" fill="#0b4a86" text-anchor="middle">coletor</text>
+
+  <!-- ============ CHAMADAS DAS CAMADAS ============ -->
+  <g font-size="11">
+    <line x1="122" y1="300" x2="70" y2="300" stroke="#5d6d7e" stroke-width="1.2"/>
+    <text x="66" y="304" fill="#5d6d7e" text-anchor="end">acrílico BRANCO 3 mm</text>
+    <line x1="126" y1="330" x2="70" y2="330" stroke="#5d6d7e" stroke-width="1.2"/>
+    <text x="66" y="334" font-weight="700" fill="#c92a2a" text-anchor="end">FITA DE ALUMÍNIO — barreira de vapor</text>
+    <line x1="150" y1="360" x2="70" y2="360" stroke="#5d6d7e" stroke-width="1.2"/>
+    <text x="66" y="364" font-weight="700" fill="#1971c2" text-anchor="end">XPS 30 mm  (k = 0,033)</text>
+    <line x1="222" y1="390" x2="70" y2="390" stroke="#5d6d7e" stroke-width="1.2"/>
+    <text x="66" y="394" fill="#0b5394" text-anchor="end">acrílico 5 mm (estrutura)</text>
+  </g>
+
+  <!-- ============ DETALHE DA PORTA ============ -->
+  <g transform="translate(700,150)">
+    <rect x="0" y="0" width="440" height="250" fill="#f8f9fa" stroke="#0b5394" stroke-width="2"/>
+    <text x="220" y="26" font-size="14" font-weight="700" fill="#0b5394" text-anchor="middle">DETALHE — PORTA DUPLA (corte horizontal)</text>
+
+    <text x="40" y="52" font-size="11" fill="#495057">EXTERNO 25 °C</text>
+    <text x="400" y="52" font-size="11" fill="#495057" text-anchor="end">INTERNO 5 °C</text>
+
+    <rect x="60" y="62" width="22" height="120" fill="#d6eaf8" stroke="#2e86c1" stroke-width="2"/>
+    <rect x="82" y="62" width="45" height="120" fill="#ffffff" stroke="#7fb3d5" stroke-width="1" stroke-dasharray="4 3"/>
+    <rect x="127" y="62" width="22" height="120" fill="#d6eaf8" stroke="#2e86c1" stroke-width="2"/>
+    <text x="71" y="200" font-size="10" fill="#1b4f72" text-anchor="middle">5 mm</text>
+    <text x="104" y="200" font-size="10" font-weight="700" fill="#1b4f72" text-anchor="middle">ar 10 mm</text>
+    <text x="138" y="200" font-size="10" fill="#1b4f72" text-anchor="middle">5 mm</text>
+    <circle cx="104" cy="168" r="6" fill="#f783ac" stroke="#a61e4d" stroke-width="1.5"/>
+    <text x="104" y="222" font-size="10" font-weight="700" fill="#a61e4d" text-anchor="middle">2 g de sílica gel</text>
+    <text x="104" y="236" font-size="9.5" fill="#a61e4d" text-anchor="middle">(impede embaçar por dentro)</text>
+
+    <rect x="149" y="62" width="10" height="120" fill="#495057" stroke="#212529" stroke-width="1"/>
+    <text x="176" y="80" font-size="10" fill="#212529">EPDM tubular 9 × 6</text>
+    <rect x="159" y="62" width="14" height="120" fill="#e9ecef" stroke="#868e96" stroke-width="1.5"/>
+    <text x="176" y="96" font-size="10" fill="#495057">batente (acrílico 3 mm)</text>
+
+    <line x1="230" y1="70" x2="230" y2="240" stroke="#adb5bd"/>
+    <text x="248" y="88" font-size="12" font-weight="700" fill="#c92a2a">PORTA SIMPLES 10 mm</text>
+    <text x="248" y="106" font-size="11" fill="#7a0b0b">U = 3,80 · Q = 3,8 W</text>
+    <text x="248" y="122" font-size="11" fill="#7a0b0b">face externa a <tspan font-weight="700">15,1 °C</tspan></text>
+    <text x="248" y="138" font-size="11" font-weight="700" fill="#c92a2a">❌ CONDENSA (orvalho 18,2 °C)</text>
+
+    <text x="248" y="170" font-size="12" font-weight="700" fill="#2b8a3e">PORTA DUPLA</text>
+    <text x="248" y="188" font-size="11" fill="#1b4332">U = 2,42 · Q = 2,4 W</text>
+    <text x="248" y="204" font-size="11" fill="#1b4332">face externa a <tspan font-weight="700">18,7 °C</tspan></text>
+    <text x="248" y="220" font-size="11" font-weight="700" fill="#2b8a3e">✅ NÃO CONDENSA</text>
+    <text x="248" y="238" font-size="10" fill="#495057">visor limpo durante toda a apresentação</text>
+  </g>
+
+  <!-- ============ NÚMEROS ============ -->
+  <g font-size="11.5">
+    <rect x="700" y="420" width="440" height="230" fill="#f1f3f5" stroke="#adb5bd" stroke-width="1.5"/>
+    <text x="716" y="442" font-size="13" font-weight="700" fill="#111">BALANÇO TÉRMICO (ambiente 25 °C · interno 5 °C · ΔT = 20 K)</text>
+    <line x1="716" y1="452" x2="1124" y2="452" stroke="#adb5bd"/>
+    <text x="716" y="474" fill="#333">Paredes isoladas — U = 0,86 · A = 0,181 m²</text>
+    <text x="1110" y="474" fill="#333" text-anchor="end">3,1 W</text>
+    <text x="716" y="496" fill="#333">Porta dupla — U = 2,42 · A = 0,050 m²</text>
+    <text x="1110" y="496" fill="#333" text-anchor="end">2,4 W</text>
+    <text x="716" y="518" fill="#333">Dissipação das 2 fans internas</text>
+    <text x="1110" y="518" fill="#333" text-anchor="end">3,0 W</text>
+    <text x="716" y="540" fill="#333">Sensores, cabos e infiltração</text>
+    <text x="1110" y="540" fill="#333" text-anchor="end">1,0 W</text>
+    <line x1="716" y1="550" x2="1124" y2="550" stroke="#adb5bd"/>
+    <text x="716" y="572" font-weight="700" fill="#111">CARGA TÉRMICA TOTAL</text>
+    <text x="1110" y="572" font-weight="700" fill="#111" text-anchor="end">≈ 9,5 W</text>
+    <text x="716" y="596" fill="#2b8a3e">Capacidade das 2 Peltier a ΔT = 20 K</text>
+    <text x="1110" y="596" font-weight="700" fill="#2b8a3e" text-anchor="end">≈ 30 W</text>
+    <text x="716" y="618" font-weight="700" fill="#2b8a3e">MARGEM DE PROJETO</text>
+    <text x="1110" y="618" font-weight="700" fill="#2b8a3e" text-anchor="end">3,2 ×</text>
+    <text x="716" y="640" font-size="10.5" fill="#7a0b0b">⚠ O gargalo não são as Peltier — é a dissipação do lado quente (~200 W, 2 conjuntos).</text>
+  </g>
+
+  <!-- ============ NOTAS ============ -->
+  <g font-size="11.5">
+    <rect x="50" y="770" width="1090" height="100" fill="#fff8e1" stroke="#b8860b" stroke-width="1.5"/>
+    <text x="66" y="792" font-size="13" font-weight="700" fill="#8a6d00">⚠ OS 4 ERROS QUE ARRUÍNAM O ISOLAMENTO</text>
+    <text x="66" y="814" fill="#5c4a00">1 · Esquecer a fita de alumínio: o vapor entra no XPS, condensa dentro e o isolante perde desempenho PARA SEMPRE.</text>
+    <text x="66" y="832" fill="#5c4a00">2 · Deixar os dutos fora do isolamento: eles conduzem ar já condicionado — precisam estar DENTRO do envelope.</text>
+    <text x="66" y="850" fill="#5c4a00">3 · Dreno sem sifão: vira um furo aberto para o ambiente — infiltração contínua de ar quente e úmido.</text>
+    <text x="620" y="814" fill="#5c4a00">4 · Silicone acético: ataca o acrílico e provoca microfissuras. Use SEMPRE silicone NEUTRO.</text>
+    <text x="620" y="832" font-weight="700" fill="#8a6d00">Modo QUENTE: as fans invertem o sentido — ar sobe no centro,</text>
+    <text x="620" y="850" font-weight="700" fill="#8a6d00">entra nos dutos pelo topo e desce pelas laterais.</text>
+  </g>
+</svg>
