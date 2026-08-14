@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #181a20;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+/* Wire flow animation */
+@keyframes wire-flow {
+  from { stroke-dashoffset: 120; }
+  to   { stroke-dashoffset: 0; }
+}
+
+.wire-animated {
+  stroke-dasharray: 10 5;
+  animation: wire-flow 1.2s linear infinite;
+}
+
+/* Step-by-step: wire appears progressively (duration set inline per wire).
+   --wire-len is set inline by WireEdge to the actual path length in px. */
+@keyframes wire-reveal {
+  from { stroke-dashoffset: var(--wire-len, 9999px); }
+  to   { stroke-dashoffset: 0; }
+}
+
+.wire-reveal {
+  /* strokeDasharray, animationDuration, --wire-len set inline by WireEdge */
+}
+
+/* ReactFlow overrides */
+.react-flow__edge-path { pointer-events: none; }
+
+/* Modo Leitura (padrão): handles sempre invisíveis e sem interação */
+.panel-readonly .react-flow__handle {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  cursor: default !important;
+}
+
+/* Modo Edição: handles visíveis ao hover */
+.panel-edit .react-flow__handle {
+  opacity: 0;
+  width: 10px;
+  height: 10px;
+  background: #22c55e;
+  border: 2px solid #15803d;
+}
+.panel-edit .react-flow__handle:hover {
+  opacity: 1;
+  cursor: crosshair;
+}
+.panel-edit .react-flow__handle.react-flow__handle-connecting {
+  opacity: 1;
+  background: #fbbf24;
+}

@@ -1,0 +1,98 @@
+<!DOCTYPE html><html lang='pt-BR'><head><meta charset='UTF-8'>
+<title>Relatório de Cabeamento</title>
+<style>
+    @page { size: A4; margin: 12mm 14mm; }
+    * { box-sizing: border-box; }
+    body { font-family: Arial, Helvetica, sans-serif; font-size: 10pt; color: #000; margin: 0; }
+    h1 { font-size: 16pt; margin: 0 0 4mm 0; padding-bottom: 2mm; border-bottom: 0.6mm solid #000; }
+    h2 { font-size: 12pt; margin: 6mm 0 2mm 0; padding: 1.5mm 2mm; background: #e8e8e8; border-left: 4mm solid #0066cc; }
+    .summary { background: #f0f8ff; padding: 3mm 4mm; margin-bottom: 4mm; border-left: 1mm solid #0066cc; font-size: 10pt; }
+    .summary b { font-size: 12pt; color: #0066cc; }
+    table { width: 100%; border-collapse: collapse; font-size: 9.5pt; margin-bottom: 4mm; }
+    th, td { border: 0.2mm solid #999; padding: 1.3mm 2mm; text-align: left; }
+    th { background: #f0f0f0; font-weight: bold; }
+    td.num { text-align: right; font-family: 'Courier New', monospace; }
+    tr.alert td { background: #ffe6e6; }
+    tr.warn td { background: #fff8e0; }
+    tr.heavy td { background: #e6f3ff; }
+    .legenda { font-size: 8.5pt; color: #555; margin-top: 1.5mm; }
+    </style></head><body>
+<h1>Relatório de Cabeamento</h1>
+<div class='summary'><b>32</b> cabos &middot; <b>5</b> jumpers &middot; <b>17</b> redes &middot; <b>51</b> terminais conectados</div>
+<h2>Ramificação por rede</h2>
+<table><thead><tr><th>#</th><th>Rede</th><th>Descrição</th><th>Terminais</th><th>Fios</th><th>Componentes</th></tr></thead><tbody>
+<tr class='heavy'><td class='num'>1</td><td><b>F1</b></td><td>Rede nativa 22</td><td class='num'>7</td><td class='num'>6</td><td>K1, K2, K3, Kax, X</td></tr>
+<tr class=''><td class='num'>2</td><td><b>F2</b></td><td>Rede nativa 11</td><td class='num'>2</td><td class='num'>1</td><td>K2, M</td></tr>
+<tr class=''><td class='num'>3</td><td><b>F3</b></td><td>Rede nativa 10</td><td class='num'>3</td><td class='num'>2</td><td>K1, K3, M</td></tr>
+<tr class=''><td class='num'>4</td><td><b>F4</b></td><td>Rede nativa 18</td><td class='num'>3</td><td class='num'>2</td><td>K3</td></tr>
+<tr class=''><td class='num'>5</td><td><b>F5</b></td><td>Rede nativa 9</td><td class='num'>3</td><td class='num'>2</td><td>K1, K3, M</td></tr>
+<tr class=''><td class='num'>6</td><td><b>F6</b></td><td>Rede nativa 16</td><td class='num'>3</td><td class='num'>2</td><td>K1, K2, X</td></tr>
+<tr class=''><td class='num'>7</td><td><b>F7</b></td><td>Rede nativa 12</td><td class='num'>2</td><td class='num'>1</td><td>K2, M</td></tr>
+<tr class=''><td class='num'>8</td><td><b>F8</b></td><td>Rede nativa 8</td><td class='num'>3</td><td class='num'>2</td><td>K1, K3, M</td></tr>
+<tr class=''><td class='num'>9</td><td><b>F9</b></td><td>Rede nativa 17</td><td class='num'>4</td><td class='num'>3</td><td>K1, K2, S0, X</td></tr>
+<tr class=''><td class='num'>10</td><td><b>F10</b></td><td>Rede nativa 13</td><td class='num'>2</td><td class='num'>1</td><td>K2, M</td></tr>
+<tr class='heavy'><td class='num'>11</td><td><b>F11</b></td><td>Rede nativa 2</td><td class='num'>6</td><td class='num'>5</td><td>K1, K2, Kax, S0, S1, S2</td></tr>
+<tr class=''><td class='num'>12</td><td><b>F12</b></td><td>Rede nativa 3</td><td class='num'>3</td><td class='num'>2</td><td>K1, S1, S2</td></tr>
+<tr class=''><td class='num'>13</td><td><b>F13</b></td><td>Rede nativa 23</td><td class='num'>2</td><td class='num'>1</td><td>K2, S2</td></tr>
+<tr class=''><td class='num'>14</td><td><b>F14</b></td><td>Rede nativa 24</td><td class='num'>2</td><td class='num'>1</td><td>K1, K2</td></tr>
+<tr class=''><td class='num'>15</td><td><b>F15</b></td><td>Rede nativa 19</td><td class='num'>3</td><td class='num'>2</td><td>K1, Kax</td></tr>
+<tr class=''><td class='num'>16</td><td><b>F16</b></td><td>Rede nativa 20</td><td class='num'>3</td><td class='num'>2</td><td>K2, Kax, S2</td></tr>
+<tr class=''><td class='num'>17</td><td><b>F17</b></td><td>Rede nativa 21</td><td class='num'>3</td><td class='num'>2</td><td>K2, K3, Kax</td></tr>
+</tbody></table>
+<div class='legenda'>Linha azul = rede com 5+ terminais (prioridade na ordem de montagem por ter mais ramificações).</div>
+<h2>Carga por terminal</h2>
+<table><thead><tr><th>Terminal</th><th>Fios</th><th>Status</th></tr></thead><tbody>
+<tr class='alert'><td><b>Kax:14</b></td><td class='num'>4</td><td>EXCEDIDO (4>3)</td></tr>
+<tr class=''><td><b>K1:1</b></td><td class='num'>2</td><td>OK</td></tr>
+<tr class=''><td><b>K1:13</b></td><td class='num'>2</td><td>OK</td></tr>
+<tr class=''><td><b>K1:14</b></td><td class='num'>2</td><td>OK</td></tr>
+<tr class=''><td><b>K1:5</b></td><td class='num'>2</td><td>OK</td></tr>
+<tr class=''><td><b>K1:A2</b></td><td class='num'>2</td><td>OK</td></tr>
+<tr class=''><td><b>K2:1</b></td><td class='num'>2</td><td>OK</td></tr>
+<tr class=''><td><b>K2:3</b></td><td class='num'>2</td><td>OK</td></tr>
+<tr class=''><td><b>K2:5</b></td><td class='num'>2</td><td>OK</td></tr>
+<tr class=''><td><b>K2:A2</b></td><td class='num'>2</td><td>OK</td></tr>
+<tr class=''><td><b>K3:3</b></td><td class='num'>2</td><td>OK</td></tr>
+<tr class=''><td><b>Kax:13</b></td><td class='num'>2</td><td>OK</td></tr>
+<tr class=''><td><b>Kax:A2</b></td><td class='num'>2</td><td>OK</td></tr>
+<tr class=''><td><b>M:U1</b></td><td class='num'>2</td><td>OK</td></tr>
+<tr class=''><td><b>M:V1</b></td><td class='num'>2</td><td>OK</td></tr>
+<tr class=''><td><b>M:W1</b></td><td class='num'>2</td><td>OK</td></tr>
+<tr class=''><td><b>S0:12</b></td><td class='num'>2</td><td>OK</td></tr>
+<tr class=''><td><b>S1:13</b></td><td class='num'>2</td><td>OK</td></tr>
+<tr class=''><td><b>S1:14</b></td><td class='num'>2</td><td>OK</td></tr>
+<tr class=''><td><b>S2:13</b></td><td class='num'>2</td><td>OK</td></tr>
+<tr class=''><td><b>S2:14</b></td><td class='num'>2</td><td>OK</td></tr>
+<tr class=''><td><b>K1:2</b></td><td class='num'>1</td><td>OK</td></tr>
+<tr class=''><td><b>K1:3</b></td><td class='num'>1</td><td>OK</td></tr>
+<tr class=''><td><b>K1:4</b></td><td class='num'>1</td><td>OK</td></tr>
+<tr class=''><td><b>K1:6</b></td><td class='num'>1</td><td>OK</td></tr>
+<tr class=''><td><b>K1:A1</b></td><td class='num'>1</td><td>OK</td></tr>
+<tr class=''><td><b>K2:11</b></td><td class='num'>1</td><td>OK</td></tr>
+<tr class=''><td><b>K2:12</b></td><td class='num'>1</td><td>OK</td></tr>
+<tr class=''><td><b>K2:13</b></td><td class='num'>1</td><td>OK</td></tr>
+<tr class=''><td><b>K2:14</b></td><td class='num'>1</td><td>OK</td></tr>
+<tr class=''><td><b>K2:2</b></td><td class='num'>1</td><td>OK</td></tr>
+<tr class=''><td><b>K2:4</b></td><td class='num'>1</td><td>OK</td></tr>
+<tr class=''><td><b>K2:6</b></td><td class='num'>1</td><td>OK</td></tr>
+<tr class=''><td><b>K2:A1</b></td><td class='num'>1</td><td>OK</td></tr>
+<tr class=''><td><b>K3:1</b></td><td class='num'>1</td><td>OK</td></tr>
+<tr class=''><td><b>K3:2</b></td><td class='num'>1</td><td>OK</td></tr>
+<tr class=''><td><b>K3:4</b></td><td class='num'>1</td><td>OK</td></tr>
+<tr class=''><td><b>K3:5</b></td><td class='num'>1</td><td>OK</td></tr>
+<tr class=''><td><b>K3:6</b></td><td class='num'>1</td><td>OK</td></tr>
+<tr class=''><td><b>K3:A1</b></td><td class='num'>1</td><td>OK</td></tr>
+<tr class=''><td><b>K3:A2</b></td><td class='num'>1</td><td>OK</td></tr>
+<tr class=''><td><b>Kax:A1</b></td><td class='num'>1</td><td>OK</td></tr>
+<tr class=''><td><b>M:U2</b></td><td class='num'>1</td><td>OK</td></tr>
+<tr class=''><td><b>M:V2</b></td><td class='num'>1</td><td>OK</td></tr>
+<tr class=''><td><b>M:W2</b></td><td class='num'>1</td><td>OK</td></tr>
+<tr class=''><td><b>S0:11</b></td><td class='num'>1</td><td>OK</td></tr>
+<tr class=''><td><b>S2:11</b></td><td class='num'>1</td><td>OK</td></tr>
+<tr class=''><td><b>S2:12</b></td><td class='num'>1</td><td>OK</td></tr>
+<tr class=''><td><b>X:L1</b></td><td class='num'>1</td><td>OK</td></tr>
+<tr class=''><td><b>X:L2</b></td><td class='num'>1</td><td>OK</td></tr>
+<tr class=''><td><b>X:L3</b></td><td class='num'>1</td><td>OK</td></tr>
+</tbody></table>
+<div class='legenda'>Cada borne físico aceita até 3 fios. Vermelho = capacidade ultrapassada (revisar layout). Amarelo = no limite (sem folga pra alteração futura).</div>
+</body></html>

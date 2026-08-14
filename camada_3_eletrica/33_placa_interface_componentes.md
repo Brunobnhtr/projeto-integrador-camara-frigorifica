@@ -471,6 +471,107 @@ I = (5 V − 3,1 V) / 220 Ω = 8,6 mA   ✅ brilho adequado para cenografia
 > - [**Esquema elétrico**](../desenhos/08_placa_pi1_esquema.svg) — mostra **como funciona** (os 4 circuitos separados)
 > - [**Diagrama de ligação**](../desenhos/09_placa_pi1_montagem.svg) ⭐ — mostra **onde cada fio vai**. **É este que você usa para montar**
 
+### ⭐ J1 = ENTRADAS · J2 = SAÍDAS
+
+**O fluxo é sempre o mesmo:** o fio chega em **J1**, atravessa o componente eletrônico, e sai por **J2** para o destino.
+
+```
+   vem de algum lugar ──► J1 ──► [componente] ──► J2 ──► vai para algum lugar
+```
+
+#### J1 — ENTRADAS (11 vias) · de onde vem cada fio
+
+| Via | Sinal | **Vem de** | Cor |
+|---|---|---|---|
+| 1 | `IS#1` | **BTS7960 #1**, pino `R_IS` | amarelo |
+| 2 | `IS#2` | **BTS7960 #2**, pino `R_IS` | amarelo |
+| 3 | `DATA` | **DS18B20** na câmara (fio de dados) | amarelo |
+| 4 | `24V-POT` | **BD-POT** — 24 V comutado pelo KA2 | vermelho ⚠️ |
+| 5 | `D9` | **Arduino** pino D9 | azul |
+| 6 | `D10` | **Arduino** pino D10 | azul |
+| 7 | `D11` | **Arduino** pino D11 | azul |
+| 8 | `D12` | **Arduino** pino D12 | azul |
+| 9 | `0V` | **BD-0V** — o star ground | preto |
+| 10 | `24V-SRV` | **BD-24V** — 24 V permanente | vermelho ⚠️ |
+| 11 | `+5V` | **BD-5V** | vermelho |
+
+#### J2 — SAÍDAS (8 vias) · para onde vai cada fio
+
+| Via | Sinal | **Vai para** | Cor |
+|---|---|---|---|
+| 1 | `A0` | **Arduino** pino A0 (sinal já filtrado) | amarelo |
+| 2 | `A1` | **Arduino** pino A1 (sinal já filtrado) | amarelo |
+| 3 | `D2` | **Arduino** pino D2 (com pull-up aplicado) | amarelo |
+| 4 | `D25` | **Arduino** pino D25 (24 V reduzidos a 4,2 V) | azul |
+| 5 | `L1−` | Sinaleiro **verde** (RUN) — terminal negativo | preto |
+| 6 | `L2−` | Sinaleiro **azul** (COOL) | preto |
+| 7 | `L3−` | Sinaleiro **amarelo** (HEAT) | preto |
+| 8 | `L4−` | Sinaleiro **vermelho** (FAULT) | preto |
+
+> ⚠️ **As duas vias de 24 V têm origens diferentes e não podem ser trocadas.** `24V-POT` vem do barramento **comutado** (cai na emergência) e serve só para **medir**; `24V-SRV` vem do **permanente** e alimenta o CI, para o sinaleiro de FALHA continuar aceso quando a emergência for acionada. **Anilhas de cores diferentes nas duas.**
+
+> 📌 **O positivo dos sinaleiros não passa pela placa.** Vai direto do BD-24V às lâmpadas; só o negativo volta para a PI-1, onde o ULN2803 o puxa para o 0 V.
+
+### 🔌 O 0 V é ÚNICO no projeto inteiro
+
+Dúvida comum: *"são 3 neutros — o do 24 V, o do 12 V e o do 5 V?"* **Não.**
+
+Os **LM2596 são conversores NÃO ISOLADOS**: o 0 V da entrada e o da saída são o **mesmo condutor**, ligado por dentro do módulo.
+
+```
+   FONTE 24 V
+    +24 ──────────────► [LM2596] ──────► +5,10 V
+      0 ────────────────────┴───────────────┴──── 0 V
+                        ▲ é o MESMO fio, atravessa reto
+```
+
+**E tem que ser único, não é só conveniência:** o Arduino mede o pino A0 **em relação ao 0 V dele**. Se o 0 V do BTS fosse outro ponto, a leitura não significaria nada. Sinal só tem sentido contra uma referência comum.
+
+> ⚠️ **A confusão vem de pensar em corrente alternada**, onde cada secundário de transformador tem o seu neutro isolado. Em CC com conversor buck, **o negativo passa direto**.
+
+Por isso existe **um único bloco BD-0V**, e o nome dele é **star ground**: todos os retornos convergem para um ponto só. Se você emendasse um retorno no outro, a corrente de uma carga criaria queda de tensão que a seguinte enxergaria como ruído.
+
+### 📐 Esquema elétrico — 4 circuitos independentes
+
+> 🖼️ **Três desenhos, com finalidades diferentes:**
+> - [**Circuito em norma IEC**](../desenhos/10_placa_pi1_circuito.png) ⭐ — esquema elétrico com símbolos normalizados. **Arquivo editável:** [`10_placa_pi1_circuito.cddx`](../desenhos/10_placa_pi1_circuito.cddx)
+> - [**Diagrama de ligação**](../desenhos/09_placa_pi1_montagem.svg) — a placa vista de cima, com o caminho físico de cada fio
+> - [**Esquema em blocos**](../desenhos/08_placa_pi1_esquema.svg) — os 4 circuitos separados, com explicação
+>
+> 💡 **Para editar o `.cddx`:** abra o [editor web do Circuit Diagram](https://www.circuit-diagram.org/editor) (gratuito, roda no navegador, não instala nada) e arraste o arquivo para dentro. Dá para mover peças, mudar valores e exportar de novo.
+>
+> ⚙️ **Como o desenho foi gerado:** o `.cddx` é um formato aberto (ZIP com XML). Ele foi escrito por script e renderizado com a `circuit-diagram-cli` oficial. Se você mudar o circuito, dá para regerar a imagem sem abrir editor nenhum.
+>
+> 📌 Os capacitores aparecem como **100000 pF**, que é a mesma coisa que **100 nF** — é só a notação que a ferramenta escolhe.
+
+### Como ler o desenho do circuito
+
+**A linha horizontal grossa embaixo é o barramento de 0 V.** Os pontinhos cheios sobre ela são **nós** — onde os fios realmente se juntam. Repare que C1, C2, R2 e C3 descem todos até ela: é o mesmo 0 V para todos, e por isso existe **um único borne "0 V"**.
+
+**Os quatro circuitos de cima não se tocam entre si** — só se encontram no barramento. Da esquerda para a direita:
+
+| Circuito | O que faz |
+|---|---|
+| **C1** entre `J1·A0` e o 0 V | Filtra o ruído do pino IS do BTS #1 |
+| **C2** entre `J1·A1` e o 0 V | Idem, BTS #2 |
+| **R3** entre `J2·+5V` e `J1·D2` | Pull-up do sensor. **Não desce ao 0 V** |
+| **R1 + R2 + C3** | Divisor: os 24 V entram por `J2·24V-POT`, viram 4,2 V no nó e saem por `J1·D25` |
+
+**No ULN2803, cada pino mostra o número real do CI e para onde vai o fio.** Confira contra o chip físico: o pino 1 fica ao lado do chanfro.
+
+| Pino | Liga em |
+|---|---|
+| 1 · IN1 · 2 · IN2 · 3 · IN3 · 4 · IN4 | `J1·D9` · `D10` · `D11` · `D12` |
+| **9 · GND** | Barramento de 0 V |
+| **10 · COM** | `J2·24V-SRV` (24 V permanente) |
+| 18 · OUT1 · 17 · OUT2 · 16 · OUT3 · 15 · OUT4 | `J2·L1−` · `L2−` · `L3−` · `L4−` |
+
+⚠️ **Repare na numeração:** entradas e saídas ficam **frente a frente** — IN1 em cima à esquerda, OUT1 em cima à direita. Os pinos 5 a 8 e 11 a 14 ficam sem uso.
+
+> 🖼️ **Detalhamento adicional:**
+> - [**Esquema elétrico**](../desenhos/08_placa_pi1_esquema.svg) — mostra **como funciona** (os 4 circuitos separados)
+> - [**Diagrama de ligação**](../desenhos/09_placa_pi1_montagem.svg) ⭐ — mostra **onde cada fio vai**. **É este que você usa para montar**
+
 ### ⚠️ Os bornes NÃO são "entrada" e "saída"
 
 Confusão comum, e a nomenclatura anterior tinha culpa. Eles são divididos por **para onde o fio vai fisicamente**:

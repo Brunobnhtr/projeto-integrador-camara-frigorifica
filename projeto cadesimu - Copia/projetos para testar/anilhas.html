@@ -1,0 +1,88 @@
+<!DOCTYPE html><html lang='pt-BR'><head><meta charset='UTF-8'>
+<title>Anilhas</title>
+<style>
+    @page { size: A4; margin: 8mm; }
+    * { box-sizing: border-box; }
+    body { font-family: Arial, Helvetica, sans-serif; font-size: 9pt; color: #000; margin: 0; }
+    h1 { font-size: 14pt; margin: 0 0 3mm 0; padding-bottom: 1.5mm; border-bottom: 0.5mm solid #000; }
+    h2 { font-size: 11pt; margin: 4mm 0 2mm 0; padding: 1mm 2mm; background: #e8e8e8; border-left: 3mm solid #0066cc; }
+    .legenda { font-size: 7.5pt; background: #fff8dc; border-left: 1mm solid #d4a000; padding: 1.5mm 2mm; margin-bottom: 3mm; line-height: 1.3; }
+    .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1mm 1.5mm; }
+    .label { display: grid; grid-template-columns: 1fr auto 1fr; border: 0.2mm dashed #aaa; height: 11mm; page-break-inside: avoid; }
+    .label.control { height: 9mm; }
+    .label .text { display: flex; flex-direction: column; justify-content: center; align-items: center; font-weight: 900; font-size: 9pt; line-height: 1.05; padding: 0.3mm 0.5mm; text-align: center; }
+    .label .text .num { font-size: 6.5pt; color: #0066cc; font-weight: bold; }
+    .label .gap { width: 14mm; border-left: 0.15mm dashed #999; border-right: 0.15mm dashed #999; background: repeating-linear-gradient(45deg, #fff, #fff 0.8mm, #f0f0f0 0.8mm, #f0f0f0 1.6mm); }
+    .label.control .gap { width: 11mm; }
+    .page-break { page-break-after: always; }
+    </style></head><body>
+<h1>Anilhas do Painel</h1>
+<div class='legenda'>Cada CABO gera 2 anilhas espelhadas (uma por ponta). JUMPs não recebem anilha. Número pequeno em azul = passo no checklist. Enrole o gap no cabo e cole as duas abas em bandeira.</div>
+<h2>FORÇA – Anilhas (4 mm²)</h2>
+<div class='grid'>
+<div class='label'><div class='text'><div class='num'>F01</div><div>X:L1</div><div>K2:5</div></div><div class='gap'></div><div class='text'><div class='num'>F01</div><div>X:L1</div><div>K2:5</div></div></div>
+<div class='label'><div class='text'><div class='num'>F01</div><div>K2:5</div><div>X:L1</div></div><div class='gap'></div><div class='text'><div class='num'>F01</div><div>K2:5</div><div>X:L1</div></div></div>
+<div class='label'><div class='text'><div class='num'>F03</div><div>K2:A2</div><div>K1:5</div></div><div class='gap'></div><div class='text'><div class='num'>F03</div><div>K2:A2</div><div>K1:5</div></div></div>
+<div class='label'><div class='text'><div class='num'>F03</div><div>K1:5</div><div>K2:A2</div></div><div class='gap'></div><div class='text'><div class='num'>F03</div><div>K1:5</div><div>K2:A2</div></div></div>
+<div class='label'><div class='text'><div class='num'>F05</div><div>K1:A2</div><div>Kax:A2</div></div><div class='gap'></div><div class='text'><div class='num'>F05</div><div>K1:A2</div><div>Kax:A2</div></div></div>
+<div class='label'><div class='text'><div class='num'>F05</div><div>Kax:A2</div><div>K1:A2</div></div><div class='gap'></div><div class='text'><div class='num'>F05</div><div>Kax:A2</div><div>K1:A2</div></div></div>
+<div class='label'><div class='text'><div class='num'>F06</div><div>Kax:A2</div><div>K3:A2</div></div><div class='gap'></div><div class='text'><div class='num'>F06</div><div>Kax:A2</div><div>K3:A2</div></div></div>
+<div class='label'><div class='text'><div class='num'>F06</div><div>K3:A2</div><div>Kax:A2</div></div><div class='gap'></div><div class='text'><div class='num'>F06</div><div>K3:A2</div><div>Kax:A2</div></div></div>
+<div class='label'><div class='text'><div class='num'>F07</div><div>M:W2</div><div>K2:6</div></div><div class='gap'></div><div class='text'><div class='num'>F07</div><div>M:W2</div><div>K2:6</div></div></div>
+<div class='label'><div class='text'><div class='num'>F07</div><div>K2:6</div><div>M:W2</div></div><div class='gap'></div><div class='text'><div class='num'>F07</div><div>K2:6</div><div>M:W2</div></div></div>
+<div class='label'><div class='text'><div class='num'>F08</div><div>K1:6</div><div>M:W1</div></div><div class='gap'></div><div class='text'><div class='num'>F08</div><div>K1:6</div><div>M:W1</div></div></div>
+<div class='label'><div class='text'><div class='num'>F08</div><div>M:W1</div><div>K1:6</div></div><div class='gap'></div><div class='text'><div class='num'>F08</div><div>M:W1</div><div>K1:6</div></div></div>
+<div class='label'><div class='text'><div class='num'>F09</div><div>M:W1</div><div>K3:2</div></div><div class='gap'></div><div class='text'><div class='num'>F09</div><div>M:W1</div><div>K3:2</div></div></div>
+<div class='label'><div class='text'><div class='num'>F09</div><div>K3:2</div><div>M:W1</div></div><div class='gap'></div><div class='text'><div class='num'>F09</div><div>K3:2</div><div>M:W1</div></div></div>
+<div class='label'><div class='text'><div class='num'>F12</div><div>K1:4</div><div>M:V1</div></div><div class='gap'></div><div class='text'><div class='num'>F12</div><div>K1:4</div><div>M:V1</div></div></div>
+<div class='label'><div class='text'><div class='num'>F12</div><div>M:V1</div><div>K1:4</div></div><div class='gap'></div><div class='text'><div class='num'>F12</div><div>M:V1</div><div>K1:4</div></div></div>
+<div class='label'><div class='text'><div class='num'>F13</div><div>M:V1</div><div>K3:4</div></div><div class='gap'></div><div class='text'><div class='num'>F13</div><div>M:V1</div><div>K3:4</div></div></div>
+<div class='label'><div class='text'><div class='num'>F13</div><div>K3:4</div><div>M:V1</div></div><div class='gap'></div><div class='text'><div class='num'>F13</div><div>K3:4</div><div>M:V1</div></div></div>
+<div class='label'><div class='text'><div class='num'>F14</div><div>X:L2</div><div>K2:3</div></div><div class='gap'></div><div class='text'><div class='num'>F14</div><div>X:L2</div><div>K2:3</div></div></div>
+<div class='label'><div class='text'><div class='num'>F14</div><div>K2:3</div><div>X:L2</div></div><div class='gap'></div><div class='text'><div class='num'>F14</div><div>K2:3</div><div>X:L2</div></div></div>
+<div class='label'><div class='text'><div class='num'>F15</div><div>K2:3</div><div>K1:3</div></div><div class='gap'></div><div class='text'><div class='num'>F15</div><div>K2:3</div><div>K1:3</div></div></div>
+<div class='label'><div class='text'><div class='num'>F15</div><div>K1:3</div><div>K2:3</div></div><div class='gap'></div><div class='text'><div class='num'>F15</div><div>K1:3</div><div>K2:3</div></div></div>
+<div class='label'><div class='text'><div class='num'>F16</div><div>M:V2</div><div>K2:4</div></div><div class='gap'></div><div class='text'><div class='num'>F16</div><div>M:V2</div><div>K2:4</div></div></div>
+<div class='label'><div class='text'><div class='num'>F16</div><div>K2:4</div><div>M:V2</div></div><div class='gap'></div><div class='text'><div class='num'>F16</div><div>K2:4</div><div>M:V2</div></div></div>
+<div class='label'><div class='text'><div class='num'>F17</div><div>K1:2</div><div>M:U1</div></div><div class='gap'></div><div class='text'><div class='num'>F17</div><div>K1:2</div><div>M:U1</div></div></div>
+<div class='label'><div class='text'><div class='num'>F17</div><div>M:U1</div><div>K1:2</div></div><div class='gap'></div><div class='text'><div class='num'>F17</div><div>M:U1</div><div>K1:2</div></div></div>
+<div class='label'><div class='text'><div class='num'>F18</div><div>M:U1</div><div>K3:6</div></div><div class='gap'></div><div class='text'><div class='num'>F18</div><div>M:U1</div><div>K3:6</div></div></div>
+<div class='label'><div class='text'><div class='num'>F18</div><div>K3:6</div><div>M:U1</div></div><div class='gap'></div><div class='text'><div class='num'>F18</div><div>K3:6</div><div>M:U1</div></div></div>
+<div class='label'><div class='text'><div class='num'>F19</div><div>X:L3</div><div>K2:1</div></div><div class='gap'></div><div class='text'><div class='num'>F19</div><div>X:L3</div><div>K2:1</div></div></div>
+<div class='label'><div class='text'><div class='num'>F19</div><div>K2:1</div><div>X:L3</div></div><div class='gap'></div><div class='text'><div class='num'>F19</div><div>K2:1</div><div>X:L3</div></div></div>
+<div class='label'><div class='text'><div class='num'>F20</div><div>K2:1</div><div>K1:1</div></div><div class='gap'></div><div class='text'><div class='num'>F20</div><div>K2:1</div><div>K1:1</div></div></div>
+<div class='label'><div class='text'><div class='num'>F20</div><div>K1:1</div><div>K2:1</div></div><div class='gap'></div><div class='text'><div class='num'>F20</div><div>K1:1</div><div>K2:1</div></div></div>
+<div class='label'><div class='text'><div class='num'>F21</div><div>K1:1</div><div>S0:11</div></div><div class='gap'></div><div class='text'><div class='num'>F21</div><div>K1:1</div><div>S0:11</div></div></div>
+<div class='label'><div class='text'><div class='num'>F21</div><div>S0:11</div><div>K1:1</div></div><div class='gap'></div><div class='text'><div class='num'>F21</div><div>S0:11</div><div>K1:1</div></div></div>
+<div class='label'><div class='text'><div class='num'>F22</div><div>M:U2</div><div>K2:2</div></div><div class='gap'></div><div class='text'><div class='num'>F22</div><div>M:U2</div><div>K2:2</div></div></div>
+<div class='label'><div class='text'><div class='num'>F22</div><div>K2:2</div><div>M:U2</div></div><div class='gap'></div><div class='text'><div class='num'>F22</div><div>K2:2</div><div>M:U2</div></div></div>
+<div class='label'><div class='text'><div class='num'>F23</div><div>S0:12</div><div>S1:13</div></div><div class='gap'></div><div class='text'><div class='num'>F23</div><div>S0:12</div><div>S1:13</div></div></div>
+<div class='label'><div class='text'><div class='num'>F23</div><div>S1:13</div><div>S0:12</div></div><div class='gap'></div><div class='text'><div class='num'>F23</div><div>S1:13</div><div>S0:12</div></div></div>
+<div class='label'><div class='text'><div class='num'>F24</div><div>S1:13</div><div>S2:13</div></div><div class='gap'></div><div class='text'><div class='num'>F24</div><div>S1:13</div><div>S2:13</div></div></div>
+<div class='label'><div class='text'><div class='num'>F24</div><div>S2:13</div><div>S1:13</div></div><div class='gap'></div><div class='text'><div class='num'>F24</div><div>S2:13</div><div>S1:13</div></div></div>
+<div class='label'><div class='text'><div class='num'>F25</div><div>S2:13</div><div>Kax:13</div></div><div class='gap'></div><div class='text'><div class='num'>F25</div><div>S2:13</div><div>Kax:13</div></div></div>
+<div class='label'><div class='text'><div class='num'>F25</div><div>Kax:13</div><div>S2:13</div></div><div class='gap'></div><div class='text'><div class='num'>F25</div><div>Kax:13</div><div>S2:13</div></div></div>
+<div class='label'><div class='text'><div class='num'>F26</div><div>S0:12</div><div>K1:13</div></div><div class='gap'></div><div class='text'><div class='num'>F26</div><div>S0:12</div><div>K1:13</div></div></div>
+<div class='label'><div class='text'><div class='num'>F26</div><div>K1:13</div><div>S0:12</div></div><div class='gap'></div><div class='text'><div class='num'>F26</div><div>K1:13</div><div>S0:12</div></div></div>
+<div class='label'><div class='text'><div class='num'>F27</div><div>K1:13</div><div>K2:13</div></div><div class='gap'></div><div class='text'><div class='num'>F27</div><div>K1:13</div><div>K2:13</div></div></div>
+<div class='label'><div class='text'><div class='num'>F27</div><div>K2:13</div><div>K1:13</div></div><div class='gap'></div><div class='text'><div class='num'>F27</div><div>K2:13</div><div>K1:13</div></div></div>
+<div class='label'><div class='text'><div class='num'>F28</div><div>S1:14</div><div>S2:11</div></div><div class='gap'></div><div class='text'><div class='num'>F28</div><div>S1:14</div><div>S2:11</div></div></div>
+<div class='label'><div class='text'><div class='num'>F28</div><div>S2:11</div><div>S1:14</div></div><div class='gap'></div><div class='text'><div class='num'>F28</div><div>S2:11</div><div>S1:14</div></div></div>
+<div class='label'><div class='text'><div class='num'>F29</div><div>S1:14</div><div>K1:14</div></div><div class='gap'></div><div class='text'><div class='num'>F29</div><div>S1:14</div><div>K1:14</div></div></div>
+<div class='label'><div class='text'><div class='num'>F29</div><div>K1:14</div><div>S1:14</div></div><div class='gap'></div><div class='text'><div class='num'>F29</div><div>K1:14</div><div>S1:14</div></div></div>
+<div class='label'><div class='text'><div class='num'>F30</div><div>S2:12</div><div>K2:11</div></div><div class='gap'></div><div class='text'><div class='num'>F30</div><div>S2:12</div><div>K2:11</div></div></div>
+<div class='label'><div class='text'><div class='num'>F30</div><div>K2:11</div><div>S2:12</div></div><div class='gap'></div><div class='text'><div class='num'>F30</div><div>K2:11</div><div>S2:12</div></div></div>
+<div class='label'><div class='text'><div class='num'>F31</div><div>K2:12</div><div>K1:A1</div></div><div class='gap'></div><div class='text'><div class='num'>F31</div><div>K2:12</div><div>K1:A1</div></div></div>
+<div class='label'><div class='text'><div class='num'>F31</div><div>K1:A1</div><div>K2:12</div></div><div class='gap'></div><div class='text'><div class='num'>F31</div><div>K1:A1</div><div>K2:12</div></div></div>
+<div class='label'><div class='text'><div class='num'>F32</div><div>K1:14</div><div>Kax:14</div></div><div class='gap'></div><div class='text'><div class='num'>F32</div><div>K1:14</div><div>Kax:14</div></div></div>
+<div class='label'><div class='text'><div class='num'>F32</div><div>Kax:14</div><div>K1:14</div></div><div class='gap'></div><div class='text'><div class='num'>F32</div><div>Kax:14</div><div>K1:14</div></div></div>
+<div class='label'><div class='text'><div class='num'>F34</div><div>S2:14</div><div>Kax:13</div></div><div class='gap'></div><div class='text'><div class='num'>F34</div><div>S2:14</div><div>Kax:13</div></div></div>
+<div class='label'><div class='text'><div class='num'>F34</div><div>Kax:13</div><div>S2:14</div></div><div class='gap'></div><div class='text'><div class='num'>F34</div><div>Kax:13</div><div>S2:14</div></div></div>
+<div class='label'><div class='text'><div class='num'>F35</div><div>S2:14</div><div>K2:14</div></div><div class='gap'></div><div class='text'><div class='num'>F35</div><div>S2:14</div><div>K2:14</div></div></div>
+<div class='label'><div class='text'><div class='num'>F35</div><div>K2:14</div><div>S2:14</div></div><div class='gap'></div><div class='text'><div class='num'>F35</div><div>K2:14</div><div>S2:14</div></div></div>
+<div class='label'><div class='text'><div class='num'>F36</div><div>Kax:14</div><div>K3:A1</div></div><div class='gap'></div><div class='text'><div class='num'>F36</div><div>Kax:14</div><div>K3:A1</div></div></div>
+<div class='label'><div class='text'><div class='num'>F36</div><div>K3:A1</div><div>Kax:14</div></div><div class='gap'></div><div class='text'><div class='num'>F36</div><div>K3:A1</div><div>Kax:14</div></div></div>
+<div class='label'><div class='text'><div class='num'>F37</div><div>Kax:14</div><div>K2:A1</div></div><div class='gap'></div><div class='text'><div class='num'>F37</div><div>Kax:14</div><div>K2:A1</div></div></div>
+<div class='label'><div class='text'><div class='num'>F37</div><div>K2:A1</div><div>Kax:14</div></div><div class='gap'></div><div class='text'><div class='num'>F37</div><div>K2:A1</div><div>Kax:14</div></div></div>
+</div>
+</body></html>
