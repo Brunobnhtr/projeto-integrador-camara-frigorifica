@@ -67,6 +67,7 @@
 |---|---|---|
 | 10 | [Base e Chão de Fábrica](camada_1_maquete/10_base_e_chao_de_fabrica.md) | **Base 1500×500**, percurso linear da energia, **rua externa com carros e iluminação**, muro e portão, piso industrial, demarcação NR-10, roteamento por baixo |
 | 11 | [Subestação e Postes](camada_1_maquete/11_subestacao_e_postes.md) | Caixa da subestação, pátio com brita e cerca, 3 postes com cruzeta e isoladores, 3 transformadores (um por poste) com leitor digital, rede compacta protegida |
+| **13** ⭐ | [**Posições de Ensaio e Detecção de Falha**](camada_1_maquete/13_posicoes_de_ensaio.md) | **Os dispositivos energizados dentro da cabine, proteção individual por posição e detecção de dispositivo morto por medição de corrente (INA219)** |
 | 12 | [Câmara Térmica](camada_1_maquete/12_camara_termica.md) | Cálculo de carga térmica, escolha do isolante, barreira de vapor, **porta dupla anticondensação**, dreno com sifão, 28 peças de acrílico |
 
 ### CAMADA 2 — PAINEL
