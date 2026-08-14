@@ -197,12 +197,47 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 
 | Item | Qtd | Especificação | Aplicação | Link |
 |---|---:|---|---|---|
-| Porta-fusível mini automotivo DIN | 3 | Trilho DIN 35 mm | **F1, F2, F3** — entrada dos 3 ramais | |
+| Porta-fusível mini automotivo | 3 | **Fusível de LÂMINA (automotivo)**, não de vidro. Trilho DIN 35 mm **ou** bloco parafusado — ver nota abaixo | **F1, F2, F3** — entrada dos 3 ramais, **na subestação** | |
+| *Alternativa:* **bloco de 3 posições para fusível lâmina** | 1 | Substitui os 3 suportes acima. ⚠️ Conferir: **fusível lâmina** · **≥ 10 A por posição** · **≥ 32 Vdc** · preferir **entrada comum** (1 entrada + 3 saídas). Parafusa na parede da caixa — dispensa trilho DIN na subestação | idem | |
 | **Fusível mini automotivo 10 A** | 2 | 1 uso + 1 reserva | **F1** — ramal R1 (potência 24 V, 6,0 A) | |
 | Fusível mini automotivo 2 A | 4 | 2 usos + 2 reservas | **F2** (comando) e **F3** (auxiliares) | |
 | Terminal olhal M4 amarelo | 10 | Aterramento e barramento de 0 V | — | |
 
 > ⚠️ **F1 subiu de 6 A para 10 A.** O ramal de potência agora conduz 6,0 A contínuos em 24 V; um fusível de 6 A abriria em operação normal. **Confira antes de comprar** — é o erro mais fácil de cometer copiando a lista antiga.
+
+> ### ⚠️ Os 3 ramais são TODOS de 24 V — confusão comum
+>
+> É natural olhar "3 ramais" e pensar "24 V, 12 V e 5 V". **Não é isso.** No ponto onde ficam os fusíveis, os três conduzem **24 V**:
+>
+> ```
+> FONTE 24 V
+>     ├──[F1 10A]──► R1 · 24 V ──► poste P1 ──► 24 V DIRETO ──► BTS/Peltier
+>     ├──[F2  2A]──► R2 · 24 V ──► poste P2 ──► [LM2596] ──► 5,10 V
+>     └──[F3  2A]──► R3 · 24 V ──► poste P3 ──► [LM2596] ──► 12,0 V
+>          ▲                                       ▲
+>     tudo 24 V aqui                  é AQUI que a tensão muda
+> ```
+>
+> **O que difere entre os ramais é a CORRENTE, não a tensão.** O R1 leva 6,0 A (as duas Peltier); R2 e R3 levam menos de 1 A cada. Por isso F1 é de 10 A e os outros de 2 A.
+>
+> ### 📍 E eles ficam na SUBESTAÇÃO, não no painel
+>
+> Na saída da fonte de 24 V, dentro da caixa fechada. O motivo é a função: eles protegem **a linha que atravessa a maquete pelos postes**. Se ficassem no painel, justamente o trecho mais longo e mais exposto do projeto ficaria sem proteção.
+>
+> É o mesmo princípio da chave fusível real: ela fica **no poste, na origem do ramal** — não na casa do consumidor.
+
+> ### 🔩 Lâmina ou vidro? Use LÂMINA
+>
+> | Tipo | Corrente do suporte | Serve para o F1 (10 A)? |
+> |---|---|---|
+> | **Lâmina (automotivo)** ✅ | ~30 A por posição | **Sim, com folga** |
+> | Vidro 5 × 20 mm | 5 A ou 6,3 A | ❌ **Não** |
+> | Vidro/cerâmico 6 × 30 mm | 15–20 A | Sim, mas ver abaixo |
+>
+> **Três motivos para a lâmina, além da corrente:**
+> 1. **É projetada para corrente contínua de 12 a 32 V** — exatamente o nosso barramento de 24 Vdc. Fusível de vidro é pensado para 250 V **AC**; funciona aqui, mas fora da aplicação natural.
+> 2. **2 A e 10 A são valores padrão de linha** — acha em qualquer auto peças.
+> 3. **O corpo é translúcido**: dá para ver o elemento queimado sem instrumento. Num projeto didático isso vale ponto na apresentação.
 
 > 🗑️ **Os 6 diodos Zener e os fusíveis F4/F5 saíram do projeto.** O circuito *crowbar* existia para proteger contra a falha do conversor em curto; o LM2596 já traz **limite de corrente e desligamento térmico no próprio CI**, e o barramento que mais preocupava (os 12 V de potência do T1) deixou de existir. Resultado: **8 componentes a menos**, nenhum deles em fio volante. O raciocínio completo está em [Doc 02 §2.6](02_arquitetura_de_energia.md), inclusive o risco residual que se está aceitando.
 >
