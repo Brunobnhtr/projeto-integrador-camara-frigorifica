@@ -430,6 +430,97 @@ I = (5 V − 3,1 V) / 220 Ω = 8,6 mA   ✅ brilho adequado para cenografia
 
 > 📌 **O terminal POSITIVO dos 4 sinaleiros não passa pela placa.** Vai direto do **BD-24V** para os sinaleiros na porta. Só o negativo volta para a PI-1, onde o ULN2803 o puxa para 0 V. Isso economiza 4 vias de borne e deixa a fiação da porta mais limpa.
 
+### 📐 Esquema elétrico — 4 circuitos independentes
+
+> 🖼️ **Desenho completo:** [Esquema da placa PI-1](../desenhos/08_placa_pi1_esquema.svg)
+
+**A chave para não se perder:** os 4 circuitos da placa **não se tocam** — a única coisa que compartilham é o barramento de 0 V. Estude um de cada vez.
+
+#### Bloco A — Filtro dos pinos IS (são 2, idênticos)
+
+```
+   J1·A0 ──────●──────► nó A0            J1·A1 ──────●──────► nó A1
+                │                                     │
+              ══╪══ C1 · 100 nF                     ══╪══ C2 · 100 nF
+                │                                     │
+               ─┴─ 0 V                               ─┴─ 0 V
+```
+
+#### Bloco B — Divisor que lê os 24 V
+
+```
+   J2·24V-POT ───┤ R1 · 22 kΩ ├───●─────────────► J1·D25
+                                  │
+                        ┌─────────┴─────────┐
+                        │                   │
+                  ┤ R2 · 4,7 kΩ ├         ══╪══ C3 · 100 nF
+                        │                   │
+                       ─┴─ 0 V             ─┴─ 0 V
+```
+
+⚠️ **R2 e C3 ficam em PARALELO**, os dois ligados do **nó D25** ao 0 V. O C3 não tem relação nenhuma com os pinos dos sinaleiros.
+
+#### Bloco C — Pull-up do sensor de temperatura
+
+```
+   J2·+5V ───┤ R3 · 4,7 kΩ ├─── J1·D2
+```
+
+Um resistor entre dois pontos. **Não toca no 0 V.**
+
+#### Bloco D — Driver dos sinaleiros
+
+```
+                    ┌──────────────────────┐
+     J1·D9  ────────┤ 1  IN1      OUT1  18 ├──────► J2·L1−
+     J1·D10 ────────┤ 2  IN2      OUT2  17 ├──────► J2·L2−
+     J1·D11 ────────┤ 3  IN3      OUT3  16 ├──────► J2·L3−
+     J1·D12 ────────┤ 4  IN4      OUT4  15 ├──────► J2·L4−
+                    │ 5..8  IN5-8  OUT5-8 11..14│  (livres)
+        0 V ────────┤ 9  GND      COM   10 ├──────► J2·24V-SRV
+                    └──────────────────────┘
+                            ULN2803A
+```
+
+### Lista de ligações — confira uma a uma
+
+| # | De | Para | Componente |
+|---|---|---|---|
+| 1 | J1 · **A0** | barramento 0 V | **C1** (100 nF) |
+| 2 | J1 · **A1** | barramento 0 V | **C2** (100 nF) |
+| 3 | J1 · **D2** | J2 · **+5V** | **R3** (4,7 kΩ) |
+| 4 | J2 · **24V-POT** | J1 · **D25** | **R1** (22 kΩ) |
+| 5 | J1 · **D25** | barramento 0 V | **R2** (4,7 kΩ) |
+| 6 | J1 · **D25** | barramento 0 V | **C3** (100 nF) |
+| 7–10 | J1 · **D9 · D10 · D11 · D12** | soquete **pinos 1 · 2 · 3 · 4** | fio |
+| 11 | soquete **pino 9** (GND) | barramento 0 V | fio |
+| 12 | soquete **pino 10** (COM) | J2 · **24V-SRV** | fio |
+| 13–16 | soquete **pinos 18 · 17 · 16 · 15** | J2 · **L1− · L2− · L3− · L4−** | fio |
+| 17 | J2 · **0V** | barramento 0 V | fio |
+
+**17 ligações · 7 componentes · 1 barramento.**
+
+### ⚠️ O passo do borne tem que ser 5,08 mm
+
+| Passo | Casa com a placa ilhada? |
+|---|---|
+| 3,5 mm (KF350) | ❌ **Não** — a placa tem furos a cada 2,54 mm |
+| **5,08 mm (KF301 / KRE)** | ✅ **Sim — é exatamente 2 furos** |
+
+Com **8 vias por borne**, a largura fica `8 × 5,08 = 40,6 mm` e cabe na placa de 45 mm. Dá para usar 8 em vez de 10 porque **os sinais que compartilham nó não precisam de dois bornes**: o fio que vem do BTS e o fio que vai à placa se encontram no próprio borne do shield do Arduino.
+
+### O barramento de 0 V
+
+Um **fio de cobre nu** soldado numa fileira reta de furos, atravessando a placa. Todos os retornos se ligam a ele pelo furo mais próximo, em vez de correrem individualmente até o borne.
+
+```
+   ══════●═══●═══●═══●═══●══════
+         │   │   │   │   │
+        C1  C2  R2  C3  pino 9
+```
+
+**Solde o fio nu primeiro**, bem esticado, antes de qualquer componente.
+
 ### Roteiro de montagem
 
 1. **Corte a placa ilhada** em ~45 × 75 mm com estilete e régua (risque dos dois lados e quebre) ou com serra de joalheiro.

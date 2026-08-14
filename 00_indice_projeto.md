@@ -116,6 +116,7 @@
 | Diagrama unifilar | [05_diagrama_unifilar.svg](desenhos/05_diagrama_unifilar.svg) | Toda a cadeia de energia e proteções |
 | Diagrama de comando | [06_diagrama_comando.svg](desenhos/06_diagrama_comando.svg) | Relé de interface KA1, canal de hardware × canal de software |
 | Corte da câmara | [07_camara_corte.svg](desenhos/07_camara_corte.svg) | Camadas de isolamento e circulação de ar |
+| **Esquema da placa PI-1** | [08_placa_pi1_esquema.svg](desenhos/08_placa_pi1_esquema.svg) | **Os 4 circuitos da placa de interface, separados: filtros IS, divisor do D25, pull-up 1-Wire e driver ULN2803** |
 
 > Abra os `.svg` no navegador ou direto no VS Code. Para imprimir, use o navegador (Ctrl+P) — o SVG é vetorial e imprime em qualquer escala sem perder qualidade.
 

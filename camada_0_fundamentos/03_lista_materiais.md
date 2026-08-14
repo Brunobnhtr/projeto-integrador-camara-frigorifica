@@ -609,7 +609,7 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 |---|---:|---|---|
 | **Placa ilhada (padrão furos isolados)** | 1 | ~5 × 7 cm. ⚠️ **Ilhada, não de barramento** — na de barramento você acaba tendo que cortar trilha, e é dali que saem os curtos difíceis de achar | |
 | **Caixa modular para trilho DIN — 3 módulos (52,5 mm)** | 1 | Invólucro da PI-1. Cabe no espaço livre do trilho 3, ao lado do Arduino. Buscar `caixa para trilho din 3m modular` | |
-| **Borne KF350 / KRE passo 3,5 mm — 10 vias** | 2 | Um borne superior (lado Arduino) e um inferior (lado campo). Passo de 3,5 mm porque todos os cabos são de 0,25 mm² | |
+| **Borne KF301 / KRE passo 5,08 mm — 8 vias** | 2 | Um borne superior (lado Arduino) e um inferior (lado campo). ⚠️ **Passo 5,08 mm, não 3,5 mm** — 5,08 é exatamente **2 furos** da placa ilhada (2,54 mm); o de 3,5 mm não encaixa em furo nenhum | |
 | **CI ULN2803A** (DIP 18 pinos) | 2 | **Driver dos 4 sinaleiros de 24 V** — 8 canais Darlington, 500 mA/50 V, com diodos de proteção internos. 1 uso + 1 reserva (o CI é barato e é o único ponto onde 24 V encosta na lógica) | |
 | **Soquete DIP 18 pinos** | 1 | ⚠️ **Solde o soquete, não o CI.** Permite trocar o chip sem dessoldar nada | |
 | Fio rígido 0,25 mm² para interligação | 1 m | Ligações por baixo da placa. ⚠️ Não usar "sobra de perna" de componente em trecho longo — oxida e não é isolada | |
