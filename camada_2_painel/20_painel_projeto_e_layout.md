@@ -7,6 +7,87 @@
 
 ---
 
+## 🟢 Em palavras simples — o painel é o "quadro de luz" da máquina
+
+Você já viu o quadro de disjuntores da sua casa. O painel de comando é a mesma ideia, mas para uma máquina: **uma caixa onde mora toda a inteligência e toda a proteção**, com os botões do lado de fora.
+
+Esta camada é só **montagem mecânica**. Nenhum fio é ligado aqui — isso é a Camada 3. Aqui você fura, parafusa e encaixa.
+
+> 🎯 **A regra que faz esta etapa existir:** é infinitamente mais fácil furar uma caixa vazia do que uma caixa com 60 cabos dentro. Por isso separamos: primeiro tudo mecânico, depois tudo elétrico.
+
+### As 3 peças que organizam um painel
+
+**1. O trilho DIN** — uma barra de metal com um formato padrão, parafusada no fundo. Todo componente industrial tem um encaixe que "estala" nela.
+
+```
+      componente
+         ↓ estala
+    ═══╤═══╤═══╤═══     ← trilho DIN
+```
+
+Por que isso importa: você **encaixa e desencaixa sem parafuso**. Se um relé queimar às vésperas da apresentação, troca em 10 segundos.
+
+**2. A canaleta** — um "corredor" plástico com tampa, onde os fios correm escondidos. Os fios entram pelos rasgos laterais e saem perto do componente.
+
+Sem canaleta, os fios ficam soltos: feio, frágil e impossível de dar manutenção. Com canaleta, você fecha a tampa e o painel fica limpo.
+
+**3. O bloco de distribuição** — resolve um problema chato. Os 5 V precisam chegar em 6 lugares diferentes. Sem bloco, você faria "rabichos" ligando borne em borne, num emaranhado. O bloco tem **uma entrada grossa e várias saídas**, todas ligadas por dentro.
+
+```
+              BLOCO DE DISTRIBUIÇÃO
+   entrada                    saídas
+   5 V ──►┌──────────────────────┐──► Arduino
+          │ ●   ● ● ● ● ● ●      │──► Nextion
+          │ └───┴─┴─┴─┴─┴─┘      │──► SD/RTC
+          │  (ligados por dentro) │──► ...
+          └──────────────────────┘
+```
+
+### Por que três trilhos, e não um só
+
+Porque **potência e sinal não se dão bem**. Os drivers chaveiam 6 ampères; os sensores trabalham com milivolts. Se os cabos correrem juntos, o ruído da potência corrompe a leitura dos sensores — a temperatura fica pulando sem motivo.
+
+Então separamos por altura:
+
+| Trilho | O que fica | Por quê |
+|---|---|---|
+| **1 (em cima)** | Distribuição — os blocos de tensão | Tudo se serve daqui |
+| **2 (no meio)** | Potência — drivers e relés | Fonte de ruído, fica isolado |
+| **3 (embaixo)** | Controle — Arduino, ESP32, SD/RTC, placa PI-1 | Sensível a ruído, fica longe |
+
+E a regra que acompanha: quando um cabo de potência precisar cruzar um de sinal, **cruze a 90°**. Paralelos, eles "conversam"; perpendiculares, quase não.
+
+### O que vai na porta, e por quê
+
+A porta tem só o que a pessoa precisa **tocar ou ver**:
+
+| Peça | Função |
+|---|---|
+| **Botão cogumelo vermelho** | Emergência. Grande e vermelho por norma — para ser achado sem pensar |
+| **START / STOP** | Liga e para o processo |
+| **REARME (azul)** | Destrava depois de uma emergência |
+| **Seletora LOCAL/REMOTO** | Define quem manda: o painel ou o dashboard |
+| **4 sinaleiros** | Verde = rodando · Azul = esfriando · Amarelo = aquecendo · Vermelho = falha |
+| **Tela Nextion** | Mostra temperatura, setpoint e estado |
+
+> ⚠️ **Uma armadilha real desta etapa:** o botão de emergência com 2 blocos de contato ocupa **7 cm atrás da chapa**. Confira se ele não bate no trilho antes de furar — está detalhado na §20.6, e é o erro que obriga a refazer a porta.
+
+### Dicionário rápido
+
+| Termo | O que quer dizer |
+|---|---|
+| **Backplate** | A chapa do fundo do painel, onde tudo é parafusado |
+| **Trilho DIN** | Barra padrão de encaixe. "35 mm" é a medida universal |
+| **Canaleta** | Corredor plástico com tampa por onde os fios correm |
+| **Bloco de distribuição** | 1 entrada, várias saídas da mesma tensão |
+| **Trava-fim** | Peça que impede os componentes de deslizarem no trilho |
+| **Prensa-cabo** | Peça rosqueada por onde o cabo entra na caixa sem se machucar |
+| **Anilha** | Etiqueta numerada no fio. **Exigida em painel industrial** |
+| **Star ground** | Todos os retornos convergindo a **um único ponto**, para não criar ruído |
+| **22 mm** | O diâmetro padrão de furo para botões industriais |
+
+---
+
 ## 20.1 Dimensionamento
 
 | Dimensão | Valor | Origem |

@@ -7,6 +7,66 @@
 
 ---
 
+## 🟢 Em palavras simples — você vai construir a rua elétrica em miniatura
+
+Olhe pela janela. Aqueles postes com fios e um "tambor" pendurado são a rede elétrica que abastece a sua casa. É **exatamente isso** que esta etapa constrói, em escala.
+
+### O caminho da energia na vida real — e na maquete
+
+| Na cidade | Na sua maquete | Peça física |
+|---|---|---|
+| A usina gera energia | A tomada da parede | Cabo de força |
+| A **subestação** abaixa a tensão para distribuir | Caixa fechada com a fonte de 24 V | Caixa de MDF, 26 × 19 × 15 cm |
+| Os fios correm de poste em poste, no alto | 4 fios sobre 3 postes | Tubo de alumínio Ø 8 mm |
+| O **transformador do poste** abaixa para 127 V perto da sua casa | Conversores nos postes P2 e P3 | Tubo de PVC Ø 50 mm |
+| O fio desce do poste e entra na sua casa | O fio desce por dentro do poste e vai ao painel | Fio flexível |
+
+### Por que o poste P1 não tem transformador
+
+Essa é a parte mais interessante para explicar na banca.
+
+Repare: **nem todo mundo recebe um transformador de poste.** Uma casa recebe, porque precisa de 127 V. Mas uma **indústria grande** recebe a energia **na tensão alta mesmo** e monta a própria subestação lá dentro — porque ela consome tanto que compensa.
+
+Na maquete acontece igual:
+
+- **P2 e P3** têm transformador, porque o Arduino precisa de 5 V e os ventiladores de 12 V
+- **P1 não tem**, porque a carga dele — as pastilhas Peltier e o aquecedor — **já trabalha em 24 V**, a mesma tensão da linha. Não há nada a transformar
+
+> 🎓 **Frase para a defesa:** *"O P1 representa o consumidor industrial atendido em tensão primária. Ele não recebe transformador porque sua carga já opera na tensão da rede — exatamente como acontece com um grande consumidor real."*
+
+### Por que os fios são encapados, se na rua são nus
+
+Boa pergunta, e a resposta é técnica: **em corrente contínua, o arco elétrico não se apaga sozinho.**
+
+Na rua, a corrente é alternada — ela passa por zero 120 vezes por segundo, e o arco morre nesses instantes. Em corrente contínua isso nunca acontece: se dois fios se tocam, o arco **continua queimando** até alguém desligar.
+
+Como a maquete vai ser transportada e manuseada, dois fios nus a 3,5 cm de distância são um curto esperando acontecer. Por isso: **todos encapados, sem exceção.**
+
+E há um bônus: a rede moderna de verdade também é assim. Chama-se **rede compacta protegida**, e está substituindo a rede nua justamente por segurança.
+
+### Por que o fio azul é mais grosso que os outros
+
+Os 3 fios de cima ("as fases") levam energia para os três caminhos. O fio azul embaixo é o **retorno** — por onde tudo volta.
+
+Como tudo volta por ele, **ele conduz a soma das três correntes**. Por isso é o mais grosso: 1,5 mm² contra 1,0 e 0,5 mm² dos outros.
+
+> 💡 **Aponte esse fio com o dedo na apresentação.** Numa rede trifásica de corrente alternada acontece o **contrário** — o neutro é o mais fino, porque as três fases se cancelam entre si. Em corrente contínua não existe esse cancelamento. É o detalhe que mostra que você entendeu, e não só copiou o visual.
+
+### Dicionário rápido
+
+| Termo | O que quer dizer |
+|---|---|
+| **Subestação** | Onde a tensão é transformada. Aqui: 127 V CA → 24 V CC |
+| **Cruzeta** | A barra horizontal no topo do poste, que sustenta os fios afastados |
+| **Isolador** | A peça (aqui, uma miçanga) que segura o fio sem deixá-lo tocar o metal |
+| **Ramal** | Cada um dos 3 caminhos de energia |
+| **Derivação** | Puxar um fio da linha **sem cortá-la** — o fio continua para o próximo poste |
+| **Rede compacta protegida** | Rede com condutores cobertos, usada hoje por segurança |
+| **Retorno / neutro** | O caminho de volta da corrente |
+| **Flecha** | A barriguinha que o fio faz entre dois postes. Fio esticado demais arrebenta |
+
+---
+
 ## 11.1 O que cada elemento representa
 
 ```

@@ -7,6 +7,77 @@
 
 ---
 
+## 🟢 Em palavras simples — uma geladeira que também sabe ser forno
+
+A cabine é uma caixa de **5 litros** (do tamanho de uma caixa de sapato) que consegue **esfriar até abaixo de zero** e **esquentar até uns 50 °C**, sob comando.
+
+Dentro dela ficam os dispositivos sendo testados, ligados e funcionando. O ensaio é isso: variar a temperatura e ver se eles aguentam.
+
+### Como se faz frio sem compressor
+
+A geladeira da sua casa usa gás e um compressor. A nossa usa uma **pastilha Peltier** — uma placa fina de cerâmica que tem uma propriedade estranha e útil:
+
+> **Quando passa corrente por ela, um lado fica gelado e o outro fica quente.**
+
+Não há gás, não há partes móveis, não faz barulho. O lado frio aponta para dentro da cabine; o lado quente fica do lado de fora, com um cooler soprando nele.
+
+⚠️ **E aqui está o perigo dela.** A Peltier não "produz frio" — ela **transporta calor de um lado para o outro**. Se o lado quente não conseguir se livrar desse calor, ele volta atravessando a pastilha, o frio some, e ela **se destrói em menos de um minuto**.
+
+> **É por isso que o projeto monitora a rotação dos coolers.** Se um cooler parar, o sistema desliga a Peltier na hora. Sem essa proteção, o componente mais caro do projeto queima antes de você perceber.
+
+### Como se faz calor com segurança
+
+Um aquecedor comum (resistência) tem um problema: se o controle travar ligado, ele esquenta até pegar fogo.
+
+Usamos um **PTC**, que é uma resistência com um comportamento protetor embutido:
+
+> **Quanto mais quente ela fica, MENOS corrente ela puxa.**
+
+Ela se limita sozinha. Mesmo com o controle travado em 100 %, ela estabiliza numa temperatura e para de subir. É segurança que vem de fábrica, sem depender de software.
+
+### Por onde o calor entra (e por que a porta é o vilão)
+
+Isolar significa **atrasar** a entrada de calor — nunca impedir. E o cálculo deste documento mostra algo que surpreende:
+
+| Por onde entra | % do calor total |
+|---|---:|
+| **A porta** (que é só 22 % da área) | **44 %** ⚠️ |
+| Todas as paredes isoladas juntas | 32 % |
+| Os ventiladores de dentro (motor esquenta) | 24 % |
+
+> 🎯 **A porta é o elo fraco de qualquer câmara fria**, porque tem que ser transparente para você ver dentro — e transparente significa mal isolado. Por isso ela é **dupla, com ar entre os dois vidros**: o ar parado é um ótimo isolante, e é exatamente o mesmo princípio da janela de vidro duplo.
+
+### O problema que quase ninguém prevê: água
+
+Ar tem umidade. Quando o ar encosta numa superfície fria, essa umidade **vira água** — é o que acontece no copo de cerveja gelada.
+
+Dentro da cabine, isso gera dois problemas:
+
+| Problema | Consequência | Solução no projeto |
+|---|---|---|
+| Água escorrendo lá dentro | Pinga na eletrônica em ~1 h de operação | **Bandeja + dreno** para fora |
+| Gelo na placa fria | Vira uma "manta" isolante e a câmara **para de esfriar** | **Ciclo de degelo** automático no firmware |
+| Embaçamento **por fora** da porta | Você não vê nada durante a apresentação | **Porta dupla** — o cálculo prova que a simples embaça |
+
+> 💡 **O cálculo de condensação da §12.2 é o melhor argumento técnico deste documento.** Ele prova, com números, que a porta simples **embaça por fora a 15,1 °C** (abaixo do ponto de orvalho de 18,2 °C) e a dupla não embaça (18,7 °C). Não é opinião — é conta.
+
+### Dicionário rápido
+
+| Termo | O que quer dizer |
+|---|---|
+| **Peltier (TEC)** | Placa que esfria de um lado e esquenta do outro quando recebe corrente |
+| **PTC** | Aquecedor que puxa menos corrente conforme esquenta — se autolimita |
+| **Carga térmica** | Quanto calor entra na câmara por segundo. É o que a Peltier precisa vencer |
+| **ΔT (delta T)** | Diferença de temperatura entre dentro e fora |
+| **Ponto de orvalho** | Temperatura em que o ar "solta" a água que carrega. Abaixo dela, condensa |
+| **Barreira de vapor** | Camada que impede a umidade de entrar no isolante e estragá-lo |
+| **Plenum** | O espaço vazio por onde o ar circula, embaixo do piso interno |
+| **XPS** | Isopor de célula fechada. Não absorve água, corta limpo |
+| **Qc** | Quanto calor a Peltier consegue bombear para fora |
+| **Degelo** | Aquecer de leve, de propósito, para derreter o gelo acumulado |
+
+---
+
 ## 12.1 Dimensões
 
 | Medida | Valor |

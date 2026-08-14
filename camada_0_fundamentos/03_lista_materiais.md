@@ -19,6 +19,62 @@
 
 ---
 
+## 🟢 Em palavras simples — como usar esta lista sem se perder
+
+Esta é a **lista de compras** do projeto. Ela é longa, e isso assusta. Mas há três coisas que tornam ela fácil de usar:
+
+**1. Ela está na ordem em que você vai construir, não por tipo de peça.**
+Não procure "todos os resistores" — eles estão espalhados de propósito, cada um perto da etapa em que é usado. Você compra o que precisa quando precisa.
+
+**2. Você não compra tudo de uma vez.** São 5 lotes:
+
+| Lote | Quando | Por quê |
+|---|---|---|
+| **A** | Agora | Coisas que demoram a chegar. Se atrasar, atrasa o projeto inteiro |
+| **B** | Agora também | Acrílico e MDF — a gráfica leva de 5 a 10 dias para cortar |
+| **C** | Ao começar o painel | Não adianta ter borne com a caixa do painel ainda por fazer |
+| **D** | Ao começar a fiação | Cabos e terminais |
+| **E** | No fim | Tinta, figuras, acabamento |
+
+**3. As colunas querem dizer isto:**
+
+| Coluna | O que é |
+|---|---|
+| **Item** | O nome pelo qual procurar |
+| **Qtd** | Quantos comprar — já inclui reservas onde faz sentido |
+| **Especificação** | Os detalhes que **não podem** estar errados. É aqui que mora o motivo de o item ser aquele e não outro |
+| **Link** | Deixado em branco de propósito, para você colar o anúncio escolhido |
+
+> ⚠️ **Leia a coluna Especificação antes de comprar, sempre.** Muitos itens deste projeto têm um "sósia" mais barato que **não serve**. Exemplos reais: relé de 10 A que só vale 5 A em corrente contínua; PTC de 12 V no lugar do de 24 V; fusível de 6 A onde precisa de 10 A. Todos parecem certos no anúncio.
+
+### Os 6 erros de compra mais fáceis de cometer
+
+Se você já tinha uma lista antiga em mãos, **confira estes seis antes de fechar o pedido**:
+
+| ⚠️ | Item | O erro |
+|---|---|---|
+| 1 | **Peltier** | Comprar 1. São **3** (2 em uso + 1 reserva), do mesmo lote |
+| 2 | **PTC** | Comprar o de 12 V. Tem que ser **24 V** — e é o item mais difícil de achar |
+| 3 | **Cooler externo 80 mm** | Comprar 1. São **2**, e os dois com **3 fios** |
+| 4 | **Fusível F1** | Comprar 6 A. Tem que ser **10 A** |
+| 5 | **Fio rígido** | Comprar fino. **Vermelho 1,00 mm²** e **azul 1,50 mm²** |
+| 6 | **Fonte** | Comprar a de 150 W. **Só a de 240 W atende** |
+
+### Dicionário rápido de compras
+
+| Termo no anúncio | O que quer dizer |
+|---|---|
+| **Trilho DIN** | Barra metálica padrão onde os componentes do painel encaixam. Tudo "DIN" encaixa nela |
+| **Borne** | Peça onde o fio é preso com parafuso. Organiza e permite desmontar |
+| **Step-down** | Abaixa a tensão |
+| **CC / CV** | Corrente Constante / Tensão Constante — modos de ajuste de um conversor |
+| **NA / NF** | Contato Normalmente Aberto / Normalmente Fechado |
+| **Bivolt / auto-range** | Funciona em 110 e 220 V sem chavinha |
+| **Terminal tubular (ilhós)** | Ponteira que se crimpa na ponta do fio antes de parafusar. **Obrigatório** em painel |
+| **3 fios** (num cooler) | Tem o fio extra que informa a rotação. O projeto **depende** disso |
+
+---
+
 ## Índice de compras por prioridade
 
 | Lote | Quando comprar | Itens | Custo estimado |

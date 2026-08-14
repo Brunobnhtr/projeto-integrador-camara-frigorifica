@@ -7,6 +7,68 @@
 
 ---
 
+## 🟢 Em palavras simples — você está construindo o terreno
+
+Antes de existir fábrica, existe **terreno**. É isso que esta etapa é: uma chapa de madeira de **1,5 metro por meio metro** que vai receber tudo o mais.
+
+Parece a parte boba do projeto. **Não é.** É a etapa em que um erro custa mais caro, e o motivo é simples: tudo que vem depois é parafusado, colado ou passado por dentro dela. Furar depois de pintar significa lixar e repintar. Descobrir que a fiação não passa por baixo significa desmontar o que já está colado.
+
+### As três coisas que realmente importam nesta etapa
+
+**1. A base tem que estar em esquadro (quadrada de verdade).**
+Se os cantos não forem de 90°, nada encaixa direito depois. O teste é simples: **meça as duas diagonais com uma trena**. Se derem medidas diferentes, está torta. Tolerância: 2 mm.
+
+```
+   ┌─────────────────────┐
+   │ ╲                 ╱ │
+   │   ╲             ╱   │     As duas diagonais têm
+   │     ╲         ╱     │     que dar a MESMA medida
+   │       ╲     ╱       │
+   │         ╳           │     Diferença > 2 mm = fora de esquadro
+   │       ╱     ╲       │
+   └─────────────────────┘
+```
+
+**2. Existe um vão de 4 cm por baixo, e ele precisa ser contínuo.**
+A base não é uma tábua sólida — é uma tábua com uma "moldura" embaixo que a levanta 40 mm do chão. **Toda a fiação do projeto passa por esse vão**, escondida.
+
+Como a moldura tem travessas de reforço no meio (senão a base entorta com o peso), essas travessas precisam de **entalhes** — recortes por onde o cabo atravessa. Sem os entalhes, o vão vira quatro compartimentos fechados e você não consegue passar fio de um lado ao outro.
+
+```
+   VISTA DE BAIXO — o que os entalhes fazem
+
+   SEM entalhe                    COM entalhe ✅
+   ┌───┬───┬───┬───┐              ┌─┬─┬─┬─┬─┬─┬─┐
+   │ 1 │ 2 │ 3 │ 4 │              │  ═══════════ │  ← o cabo
+   └───┴───┴───┴───┘              └─┴─┴─┴─┴─┴─┴─┘     atravessa
+   4 caixas isoladas              1 caminho contínuo
+```
+
+**3. Todos os furos são feitos ANTES de pintar.**
+São 12 furos: 3 para os postes, 1 para a saída da subestação, 3 para as entradas do painel, 1 para o chicote da câmara, 1 para o dreno e 3 para os postes de iluminação da rua. Furar depois de pintar arranca a tinta na borda e o acabamento fica ruim.
+
+### O truque para acertar a furação: fure em duas etapas
+
+1. Fure **primeiro com broca fina de 3 mm**, que é fácil de guiar e corrige desvio
+2. Só depois **alargue** para o diâmetro final
+
+Furar direto com broca grossa em MDF faz a broca "puxar" e sair fora do lugar marcado.
+
+### Dicionário rápido
+
+| Termo | O que quer dizer |
+|---|---|
+| **Esquadro** | Cantos de 90° de verdade. Confere-se pelas diagonais |
+| **MDF** | Chapa de madeira reconstituída. Corta bem, mas é **porosa** — bebe tinta |
+| **Fundo selador** | Tinta-base que fecha os poros do MDF. Sem ela a tinta final mancha |
+| **Inserto rosqueado** | Bucha de metal que se crava no MDF para receber parafuso. Evita espanar a rosca |
+| **Travessa** | Ripa de reforço embaixo da base, para ela não entortar |
+| **Entalhe** | O recorte na travessa por onde o cabo passa |
+| **Chicote** | Conjunto de vários fios amarrados juntos, seguindo o mesmo caminho |
+| **Demarcação** | As faixas coloridas no piso. Não é enfeite — é exigência de norma |
+
+---
+
 ## 10.1 O conceito: a energia caminha da esquerda para a direita
 
 A maquete conta uma história em linha reta. Quem olha de frente lê o percurso da energia como se lesse um texto:

@@ -18,6 +18,71 @@
 
 ---
 
+## 🟢 Em palavras simples — a energia é como água encanada
+
+Este documento inteiro fica fácil se você aceitar uma comparação: **eletricidade se comporta como água em canos.**
+
+| Na água | Na eletricidade | O que significa |
+|---|---|---|
+| **Pressão** | **Tensão** (volt) | O quanto "empurra" |
+| **Vazão** | **Corrente** (ampère) | O quanto "passa" |
+| **Diâmetro do cano** | **Bitola do fio** (mm²) | O quanto cabe passar sem forçar |
+| Cano fino com muita vazão esquenta e perde pressão | Fio fino com muita corrente esquenta e perde tensão | Por isso existe cálculo de bitola |
+
+Agora a pergunta central do projeto:
+
+> **Como levar bastante energia de um ponto ao outro sem usar cabo grosso?**
+
+**Resposta: aumentando a pressão.** Se você dobra a pressão, entrega a mesma quantidade de água com **metade da vazão** — e aí um cano fino resolve.
+
+Na eletricidade é idêntico. O nosso sistema precisa entregar **166 W**. Podia fazer isso de dois jeitos:
+
+| | Com 12 V | Com **24 V** |
+|---|---:|---:|
+| Corrente necessária | 14 A | **7 A** |
+| Fio necessário | grosso | **fino** |
+| Perda de tensão no caminho | 3,4 % ❌ | **0,86 %** ✅ |
+
+**É exatamente por isso que a rede elétrica da rua transmite em alta tensão** e só abaixa perto da sua casa, no transformador do poste. Nós fazemos a mesma coisa em miniatura — e essa é a lição de eletrotécnica que a maquete demonstra.
+
+### Por que 24 V e não 127 V, então?
+
+Porque a partir de certo ponto a pressão passa a ser perigosa. **Acima de 60 V em corrente contínua, a eletricidade atravessa a pele e pode matar.** Abaixo disso, ela é considerada segura e recebe o nome de **SELV** — *Extra Baixa Tensão de Segurança*.
+
+Os 24 V são o meio-termo que a indústria adotou: **alto o bastante para ser eficiente, baixo o bastante para ninguém tomar choque.**
+
+> ⚡ **A regra de ouro do projeto:** os 127 V da tomada existem **só dentro da caixa fechada da subestação**. Tudo que o público toca, vê e manipula durante a apresentação está em 24 V ou menos.
+
+### O caminho da energia, em 4 passos
+
+```
+1. TOMADA          127 V da parede — perigoso, fica trancado na caixa
+        ▼
+2. FONTE           transforma em 24 V — daqui pra frente é seguro
+        ▼
+3. POSTES          leva os 24 V pela maquete, em 3 caminhos separados
+        ▼
+4. CONSUMO         cada equipamento recebe a tensão de que precisa
+```
+
+E os "3 caminhos separados" existem por um motivo prático: **se der problema em um, os outros continuam funcionando.** Isso se chama **seletividade**, e é o que impede que um curto na ventilação desligue o computador de bordo.
+
+### Dicionário rápido deste documento
+
+| Termo | O que quer dizer, sem enrolação |
+|---|---|
+| **Barramento** | Um "cano principal" de energia, do qual vários equipamentos se servem |
+| **Ramal** | Uma derivação do barramento, com proteção própria |
+| **Conversor step-down** | Aparelho que **abaixa** a tensão (de 24 V para 5 V, por exemplo) |
+| **SELV** | Faixa de tensão considerada segura ao toque (até 60 V em CC) |
+| **Seletividade** | Quando dá problema, só a proteção mais perto dele desliga — o resto continua |
+| **Queda de tensão** | A "pressão" que se perde no caminho por causa da resistência do fio |
+| **Rendimento (η)** | Quanto da energia que entra realmente sai útil. O resto vira calor |
+| **Inrush** | O "tranco" de corrente no instante em que se liga um equipamento |
+| **Derivação** | Puxar um fio de uma linha sem cortá-la |
+
+---
+
 ## 2.1 As três perguntas que originaram esta arquitetura
 
 ### ❌ "A fonte ATX consegue entregar 24 V?"
