@@ -169,10 +169,12 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 | Cabo PP 3×1,5 mm² + plugue | 1,5 m | Cabo de entrada AC com plugue 2P+T 10 A | `cabo pp 3x1,5 com plugue` | |
 | Prensa-cabo PG9 / PG13 | 3 | Entrada e saída de cabos da caixa da subestação | `prensa cabo pg9` | |
 | Borne DIN 4 mm² | 6 | Distribuição 24 V e 0 V na subestação | `borne trilho din 4mm parafuso` | |
-| **Cooler 60 mm 24 V** | 1 | Exaustão da caixa da subestação (~18 W de perda). ⚠️ **24 V** — é a única tensão que existe dentro da caixa. Alternativa: 2× de 12 V **em série** | `cooler 60mm 24v` | |
+| **Cooler 60 mm 24 V** | 1 | Exaustão da **casa de comando** (~29 W de perda da fonte). ⚠️ **Obrigatório, não opcional** — a casinha encolheu para 250 × 150 × 90 mm e a fonte continua dissipando o mesmo. ⚠️ **24 V**: é a única tensão de saída disponível. Alternativa: 2× de 12 V **em série** | `cooler 60mm 24v` | |
 | Grade + filtro 60 mm | 1 | Veneziana de entrada de ar da subestação | `grade cooler 60mm com filtro` | |
 
-> ⚠️ **A caixa da subestação deve ser fechada e aparafusada.** É o único lugar do projeto com 127 V AC. Sinalize com etiqueta **"PERIGO — 127 V CA"** na tampa.
+> ⚠️ **A CASA DE COMANDO deve ser fechada e aparafusada.** É o único lugar do projeto com 127 V AC. Sinalize com etiqueta **"PERIGO — 127 V CA"** na tampa.
+>
+> 🔄 **A subestação é um PÁTIO ABERTO** (cercado, com brita), com uma **casa de comando** fechada dentro dele — como numa subestação real ao tempo. Só a fonte, o disjuntor e a chave ficam trancados; os fusíveis de 24 V ficam **visíveis no pátio**. Ver [Doc 11 §11.3](../camada_1_maquete/11_subestacao_e_postes.md).
 
 ## E.2 — Conversores de tensão (os "transformadores" da maquete)
 
@@ -265,9 +267,11 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 
 | Item | Qtd | Especificação | Link |
 |---|---:|---|---|
-| MDF 9 mm ou acrílico opaco 4 mm | — | Caixa **260 × 190 × 150 mm** (L×P×A), frente voltada para a rua | |
+| MDF 9 mm ou acrílico opaco 4 mm | — | **CASA DE COMANDO 250 × 150 × 90 mm** (L×P×A), face de operação voltada para a rua. Abriga **apenas** fonte, disjuntor e chave — os fusíveis de 24 V ficam no pátio aberto | |
+| **Fio verde-amarelo 0,75 mm²** | 1 m | ⚡ **Aterramento das estruturas metálicas do pátio** à barra de terra (equipotencialização). Torre real é aterrada — vale ponto na defesa | |
+| *Opcional:* **arame / barra de latão 1,5–2 mm** | 2 m | Estruturas treliçadas do pátio. ⚠️ **Latão aceita solda de estanho; alumínio não** — se quiser treliça soldada, é latão | |
 | Dobradiça pequena + fecho | 1 jogo | Tampa de manutenção | |
-| Tela metálica / alambrado miniatura | 1 | Cerca do pátio da subestação (tela de aço, malha 3 mm) | |
+| Tela metálica / alambrado miniatura | 1 | Cerca do pátio (tela de aço, malha 3 mm). ⚠️ **Funcional, não decorativa**: com o pátio aberto, é ela que delimita a área e impede aproximação — mesma função da cerca de uma subestação real | |
 | Pedrisco / brita fina (aquário) | 500 g | Piso do pátio da subestação — como nas subestações reais | |
 | Placa "PERIGO ALTA TENSÃO" | 2 | Impressa em papel adesivo, ~15 × 10 mm | |
 
@@ -541,7 +545,7 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 | **Energia** | 1× fonte 24 V/10 A ⚠️ **240 W é o mínimo** · 1× disjuntor 2P 6 A · **1× kit 2 LM2596 com display** · 3× porta-fusível |
 | **Proteção** | fusíveis **10 A (F1)** e 2 A (F2/F3) · **KA1 (2 contatos) + KA2 (10 A em DC)** · botão de REARME · **sem Zener, sem crowbar** |
 | **Controle** | 1× Arduino Mega · 1× ESP32 · 1× DNLCB30 · 1× Nextion 3.2" · 1× SD · 1× RTC · **1× placa PI-1 com ULN2803** |
-| **Potência** | 2× BTS7960 · **2× Peltier EM SÉRIE** (+1 reserva) · **1× PTC 24 V 60 W** · 4× fan interna · **2× cooler externo 3 fios** |
+| **Potência** | 2× BTS7960 · **2× Peltier EM SÉRIE** (+1 reserva) · **1× PTC 24 V 80 W** · 4× fan interna · **2× cooler externo 3 fios** |
 | **Sensores** | 1× DS18B20 · 1× AM2315C |
 | **Maquete** | 3× poste Ø 8 mm · ~8 m de fio rígido ENCAPADO (4 cores, **R1 e 0 V mais grossos**) · 2× "transformador" + **1× caixa de derivação** · 3× janela de acrílico · 1× caixa de subestação |
 | **Comando** | 1× emergência (2 NF) · 1× START · 1× STOP (NF+NA) · 1× **REARME azul** · 1× seccionadora · **4× sinaleiro 22 mm de 24 V** |

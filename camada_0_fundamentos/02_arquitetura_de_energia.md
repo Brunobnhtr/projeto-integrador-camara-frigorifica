@@ -51,12 +51,12 @@ Porque a partir de certo ponto a pressão passa a ser perigosa. **Acima de 60 V 
 
 Os 24 V são o meio-termo que a indústria adotou: **alto o bastante para ser eficiente, baixo o bastante para ninguém tomar choque.**
 
-> ⚡ **A regra de ouro do projeto:** os 127 V da tomada existem **só dentro da caixa fechada da subestação**. Tudo que o público toca, vê e manipula durante a apresentação está em 24 V ou menos.
+> ⚡ **A regra de ouro do projeto:** os 127 V da tomada existem **só dentro da casa de comando — fechada e aparafusada**, dentro do pátio da subestação. Tudo que o público toca, vê e manipula durante a apresentação está em 24 V ou menos.
 
 ### O caminho da energia, em 4 passos
 
 ```
-1. TOMADA          127 V da parede — perigoso, fica trancado na caixa
+1. TOMADA          127 V da parede — perigoso, fica na casa de comando
         ▼
 2. FONTE           transforma em 24 V — daqui pra frente é seguro
         ▼
@@ -178,7 +178,7 @@ Na maquete, 3 condutores de +24 V na cruzeta + 1 condutor de 0 V embaixo fica **
 │ NÍVEL 4 — CONSUMO                                    (PAINEL + CÂMARA)  │
 │                                                                          │
 │ 24 V POT ─[KA2]─► BTS #1 ─► 2× PELTIER EM SÉRIE   (6,0 A · 144 W)       │
-│                   BTS #2 ─► PTC CERÂMICO 24 V     (2,5 A · 60 W)        │
+│                   BTS #2 ─► PTC CERÂMICO 24 V     (3,3 A · 80 W)        │
 │                             ⤷ intertravados por software: nunca juntos  │
 │                                                                          │
 │  5 V ──► Arduino · Nextion · SD + RTC · lógica dos BTS · LEDs da rua    │
@@ -233,7 +233,7 @@ Esta é a tabela para colocar no relatório e usar na defesa. **É o que transfo
 | Carga | V | I | P | Observação |
 |---|---:|---:|---:|---|
 | **2× Peltier TEC1-12706 em SÉRIE** | 24 | 6,0 A | **144 W** | Cada pastilha vê 12 V e as duas compartilham a **mesma** corrente de 6 A. Máximo, com ΔT baixo |
-| **PTC cerâmico 24 V / 60 W** | 24 | 2,5 A | 60 W | **nunca junto com as Peltier** (intertravamento por software) |
+| **PTC cerâmico 24 V / 80 W** | 24 | 3,3 A | 80 W | **nunca junto com as Peltier** (intertravamento por software) |
 | **Pior caso do ramal** | **24** | **6,0 A** | **144 W** | modo FRIO em 100 % de duty |
 
 > ⚠️ **SÉRIE, não paralelo.** Duas TEC1-12706 em série formam uma carga de 24 V nominais: a corrente é a mesma de uma só pastilha (6 A), e a potência dobra porque a tensão dobrou. **Em paralelo cada pastilha receberia 24 V** — o dobro do nominal — e as duas queimam em segundos. Marque a polaridade e confira a ligação com o multímetro (deve medir ~2× a resistência de uma pastilha isolada) **antes** de energizar.

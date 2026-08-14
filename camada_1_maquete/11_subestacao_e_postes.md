@@ -146,31 +146,81 @@ Compre **fio rígido 750 V** nas quatro cores. É o mesmo fio de instalação pr
 
 ---
 
-## 11.3 SUBESTAÇÃO — a única parte com 127 V
+## 11.3 SUBESTAÇÃO — pátio aberto + casa de comando
+
+### 🟢 Em palavras simples — por que a subestação é aberta
+
+Uma subestação de verdade **não é uma caixa**. É um **pátio ao tempo, cercado**, com os equipamentos à vista: transformadores, chaves, barramentos. E dentro desse pátio existe um prediozinho fechado — a **casa de comando** — onde ficam os painéis de proteção e os serviços auxiliares.
+
+A maquete reproduz exatamente isso:
+
+```
+        PÁTIO ABERTO (cercado, com brita)          CASA DE COMANDO
+   ┌─────────────────────────────────────┐        ┌──────────────┐
+   │  estrutura metálica treliçada       │        │ ⚡ 127 V     │
+   │  bloco de fusíveis F1/F2/F3 (24 V)  │◄───────┤  fonte       │
+   │  bornes de 24 V                     │  24 V  │  disjuntor   │
+   │  ┌── a linha sobe para os postes    │        │  chave       │
+   └──┼──────────────────────────────────┘        └──────────────┘
+      │     tudo aqui é 24 V = SELV                  FECHADA e
+      ▼     pode ser tocado                          APARAFUSADA
+```
+
+> 🎯 **Ganho didático:** os fusíveis F1/F2/F3 ficam **visíveis no pátio**, como as chaves fusíveis de uma subestação real. Antes estavam escondidos dentro de uma caixa. Eles são de **24 V** — seguros ao toque.
 
 ### ⚠️ Regra de segurança inegociável
 
-> **A caixa da subestação é o único lugar da maquete com tensão perigosa.** Ela deve ser:
+> **A CASA DE COMANDO é o único lugar da maquete com tensão perigosa.** Ela deve ser:
 > - **Fechada e aparafusada** com 4 parafusos (nada de tampa de encaixe ou fecho rápido)
 > - **Opaca** (nada de acrílico transparente mostrando os 127 V)
 > - **Etiquetada:** "⚡ PERIGO — 127 V CA — ABRIR SOMENTE DESENERGIZADO"
 > - **Aberta somente com o plugue fora da tomada**
 >
-> Da caixa para fora **só sai 24 V CC**. Todo o resto da maquete é **SELV** e pode ser tocado com segurança.
+> Da casa de comando para fora **só sai 24 V CC**. Todo o resto da maquete — pátio, estruturas, postes, painel — é **SELV** e pode ser tocado com segurança.
+
+### O que fica dentro e o que fica fora
+
+| Fica **DENTRO** da casa de comando (127 V) | Fica **NO PÁTIO**, à vista (24 V) |
+|---|---|
+| Plugue de entrada e prensa-cabo AC | Bloco de fusíveis **F1, F2, F3** |
+| **Q0** — disjuntor 2P 6 A curva C | Bornes de distribuição de 24 V e 0 V |
+| **S3** — chave rotativa 0-1 | Estrutura treliçada de saída da linha |
+| **Fonte chaveada 24 V / 240 W** | Cerca, brita, placas de sinalização |
+| Barra de terra (PE) | |
+
+> 🔧 **O disjuntor e a chave montam NA PAREDE da casinha** — corpo e terminais por dentro, manopla por fora. É assim que todo painel industrial funciona: você opera sem abrir nada. Furo de 22 mm para a chave rotativa; recorte retangular para a manopla do disjuntor.
 
 ### Dimensões e posição
 
 | Item | Especificação |
 |---|---|
-| Dimensão externa | **260 × 190 × 150 mm** (largura × profundidade × altura) |
-| **Orientação** | Comprimento no sentido de **X** (frente da caixa voltada para a rua) |
-| **Posição na base** | X 25 → 285 · Y 295 → 485 |
+| **Casa de comando** | **250 × 150 × 90 mm** (L × P × A) — encolheu, porque os fusíveis saíram |
+| **Orientação** | Face de operação voltada para a **rua** (chave e disjuntor acessíveis) |
 | Material | MDF 9 mm ou acrílico **opaco** 4 mm |
 | Tampa | Superior, removível, **4 parafusos M3 com inserto** |
 | Acabamento | Cinza claro fosco + etiquetas de perigo |
-| Pátio | Cercado com brita, X 10 → 300 · Y 285 → 490 |
+| **Pátio aberto** | Cercado com brita, X 10 → 300 · Y 285 → 490 |
+| **Cerca** | ⚠️ **Funcional, não decorativa** — ver abaixo |
 
-> 📏 **MEÇA SUA FONTE ANTES DE CORTAR.** Fontes de 240 W variam entre 199 × 98 × 38 mm e 215 × 115 × 50 mm. A caixa foi dimensionada para a maior, com folga de ventilação.
+> 📏 **MEÇA SUA FONTE ANTES DE CORTAR.** Fontes de 240 W variam entre 199 × 98 × 38 mm e 215 × 115 × 50 mm. A casinha foi dimensionada para a maior, com folga de ventilação.
+
+> ⚠️ **A ventilação virou crítica.** A fonte dissipa ~29 W, e agora numa caixa **menor** que antes. O **cooler de 60 mm de 24 V + a grade de entrada de ar deixaram de ser opcionais**. Sem eles a fonte trabalha quente, envelhece rápido e pode desarmar por temperatura no meio da apresentação.
+
+### 🚧 A cerca agora é proteção, não cenografia
+
+Em subestação real, a cerca é a barreira que impede aproximação de equipamento energizado. Na maquete ela passa a cumprir a mesma função: **delimita a área do pátio e impede que alguém encoste nos componentes por reflexo**.
+
+Ela continua sendo tela de aço com malha de 3 mm, mas agora vale mencioná-la na apresentação como item de segurança, com as placas "PERIGO ALTA TENSÃO" fixadas nela — exatamente como no original.
+
+### ⚡ Aterramento das estruturas metálicas
+
+Se você usar **estruturas metálicas treliçadas** no pátio (latão, alumínio ou aço), elas precisam ser **ligadas à barra de terra (PE)** por um fio verde-amarelo.
+
+**Por quê:** torre de transmissão real é aterrada — é o caminho de escoamento do para-raios e o que garante que a estrutura nunca fique com potencial diferente do solo. Chama-se **equipotencialização**, e é conteúdo direto de eletrotécnica.
+
+> 🎓 **Vale ponto na defesa.** Custa um fio e permite responder à pergunta *"e se um condutor encostar na estrutura?"* — com a estrutura aterrada, a proteção enxerga a falta e atua; com ela isolada, o defeito ficaria escondido esperando alguém tocar.
+
+> 💡 **Latão solda; alumínio não.** Se a intenção é montar treliças soldando barra por barra, **use arame ou barra de latão** — ele aceita solda de estanho com ferro comum. O alumínio exige processo e material específicos, e é por isso que os postes do projeto são tubo montado com cinta, não soldado.
 
 ### Layout interno (vista superior, tampa removida)
 

@@ -126,7 +126,7 @@ Usa exatamente os números calculados no [Doc 12](../camada_1_maquete/12_camara_
 | `C` (capacidade térmica) | 600 J/K | ar + acrílico + bandeja |
 | Peltier | **2× em série: 144 W elétricos · Qc = 114 W a ΔT=0** · ΔTmax = 66 K | 2× TEC1-12706 em 24 V |
 | Dissipador | 4 W/K com a fan girando · **0,45 W/K com ela parada** | cooler de CPU |
-| PTC | 60 W | Doc 03 |
+| PTC | **80 W** (24 V · 3,3 A) | Doc 03 |
 | Fans internas | +3 W **dentro** da câmara | o trabalho elétrico vira calor |
 
 > 🔬 **O acoplamento da Peltier é resolvido por iteração.** Ela bombeia menos calor conforme o lado quente sobe — e o lado quente sobe justamente porque ela está bombeando. O simulador resolve esse laço a cada passo, que é por isso que ele consegue mostrar o efeito da fan parada de forma realista.
@@ -160,7 +160,7 @@ Usa exatamente os números calculados no [Doc 12](../camada_1_maquete/12_camara_
 
 | Descoberta | O que fazer |
 |---|---|
-| **O aquecimento passa mais do setpoint que o resfriamento** (overshoot de ~4,6 °C no patamar quente contra ~2,2 °C no frio) | O PTC de 60 W é muito mais forte, em relação à carga, do que a Peltier. Vale usar **ganhos diferentes** para cada modo, ou limitar o duty do quente a ~60 % |
+| **O aquecimento passa mais do setpoint que o resfriamento** (overshoot de ~4,6 °C no patamar quente contra ~2,2 °C no frio) | O PTC de 80 W é muito mais forte, em relação à carga, do que a Peltier. Vale usar **ganhos diferentes** para cada modo, ou limitar o duty do quente a ~60 % |
 | **Com a fan parada, o lado quente dispara** e o Qc vai a zero — a câmara para de esfriar antes mesmo de a pastilha queimar | Confirma que o trip por RPM tem que atuar rápido: aos 5 s já não adianta mais insistir |
 | **2 ciclos completos levam ~57 min** com patamares de 5 min | Para a apresentação, use patamares de 2 min. O ensaio "de verdade" (10 min × 3) leva ~2 h 30 e tem que ser feito antes |
 

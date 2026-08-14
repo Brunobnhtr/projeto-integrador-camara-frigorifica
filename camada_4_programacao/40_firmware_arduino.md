@@ -137,7 +137,7 @@ E existe uma regra que atravessa tudo:
 #define BTS1_RPWM     5    // 2x PELTIER EM SERIE (FRIO)  24 V / 6,0 A - PWM lento
 #define BTS1_REN      4    // Peltier  enable
 #define BTS1_IS      A0    // Peltier  diagnóstico de corrente (cap 100 nF na PI-1)
-#define BTS2_RPWM     6    // PTC 24 V (QUENTE)            24 V / 2,5 A - PWM lento
+#define BTS2_RPWM     6    // PTC 24 V (QUENTE)            24 V / 3,3 A - PWM lento
 #define BTS2_REN      7    // PTC      enable
 #define BTS2_IS      A1    // PTC      diagnóstico de corrente (cap 100 nF na PI-1)
 

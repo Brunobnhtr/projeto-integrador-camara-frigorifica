@@ -12,7 +12,7 @@ Serve para:
   4. Estimar quanto tempo o ensaio vai durar de verdade
 
 O modelo térmico usa os mesmos números calculados no Doc 12:
-UA = 0,30 W/K, capacidade térmica 600 J/K, Peltier TEC1-12706, PTC de 60 W.
+UA = 0,30 W/K, capacidade termica 600 J/K, 2x Peltier TEC1-12706 em serie, PTC de 80 W.
 
     python simulador.py                      # cenário padrão (pull-down)
     python simulador.py --cenario ciclo      # ensaio de ciclagem

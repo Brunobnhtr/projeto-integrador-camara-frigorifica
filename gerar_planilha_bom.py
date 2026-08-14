@@ -461,7 +461,7 @@ def gerar(itens: list[dict], destino: Path) -> None:
         ("Refrigeração", "2 × TEC1-12706 EM SÉRIE · 24 V · 6,0 A · 144 W"),
         ("Capacidade das Peltier a ΔT = 20 K", "≈ 60 W (margem de 6,3×)"),
         ("Dissipação no lado quente", "≈ 200 W — 2 conjuntos dissipador + cooler 80 mm"),
-        ("Aquecimento", "PTC cerâmico de 24 V · 60 W · 2,5 A"),
+        ("Aquecimento", "PTC cerâmico de 24 V · 80 W · 3,3 A"),
         ("Isolamento", "XPS 30 mm + barreira de vapor · U = 0,86 W/m²·K"),
         ("Porta", "Dupla · U = 2,42 W/m²·K (não condensa)"),
         ("Base da maquete", "1500 × 500 mm · escala cenográfica 1:50"),

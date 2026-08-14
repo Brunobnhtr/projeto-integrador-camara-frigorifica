@@ -36,13 +36,13 @@ Curso Técnico em Eletrotécnica · maquete funcional de uma **planta industrial
         BTS #2 → PTC 24 V          SD/RTC/PI-1         LEDs · ESP32
 ```
 
-⚡ Os **127 V AC existem apenas dentro da caixa fechada da subestação**. Tudo que o público toca opera em **24 Vcc ou menos (SELV)**.
+⚡ Os **127 V AC existem apenas dentro da casa de comando — fechada e aparafusada**, no pátio da subestação. Tudo que o público toca opera em **24 Vcc ou menos (SELV)**.
 
 | Grandeza | Valor |
 |---|---|
 | Consumo calculado | ≈ 166 W · 6,9 A @ 24 V |
 | Refrigeração | 2× TEC1-12706 **em série** · 24 V · 144 W |
-| Aquecimento | PTC cerâmico 24 V · 60 W |
+| Aquecimento | PTC cerâmico 24 V · 80 W |
 | Controle | Arduino Mega 2560 (PID, PWM 1 Hz) + ESP32 (MQTT) |
 
 ---

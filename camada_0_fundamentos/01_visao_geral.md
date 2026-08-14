@@ -70,7 +70,7 @@ Pense numa geladeira que também sabe ser forno, e que obedece a uma receita: *"
 Uma **mini câmara** capaz de **aquecer ou resfriar** um volume interno de forma controlada:
 
 - **2× Célula Peltier TEC1-12706 ligadas em SÉRIE (24 V / 6 A / 144 W)** — resfria. Alimentadas **direto do barramento de 24 V** pelo BTS #1, sem conversor intermediário
-- **Aquecedor PTC cerâmico de 24 V / 60 W** — aquece (autolimitado por natureza: a resistência sobe com a temperatura). Também **direto no barramento de 24 V**, pelo BTS #2
+- **Aquecedor PTC cerâmico de 24 V / 80 W** — aquece (autolimitado por natureza: a resistência sobe com a temperatura). Também **direto no barramento de 24 V**, pelo BTS #2
 - **Controle PID com PWM lento (1 Hz)** — regula a potência entregue
 - **Intertravamento por software** — Peltier e PTC **nunca** ligam juntas
 - **Dreno de condensado** — obrigatório, item de segurança elétrica
@@ -225,7 +225,7 @@ A empresa **não pode parar os ensaios** enquanto o projeto acontece. Arrancar o
                                                              DNLCB30 → ESP32
 ```
 
-> ⚡ **Regra de ouro de segurança do projeto:** os **127 V AC existem apenas dentro da caixa fechada da subestação**. Tudo que o público toca, vê e manipula durante a apresentação opera em **24 Vcc ou menos (SELV)**.
+> ⚡ **Regra de ouro de segurança do projeto:** os **127 V AC existem apenas dentro da CASA DE COMANDO — fechada e aparafusada — dentro do pátio da subestação**. Tudo que o público toca, vê e manipula durante a apresentação opera em **24 Vcc ou menos (SELV)**, inclusive os fusíveis e as estruturas do pátio aberto.
 
 > 🔎 **Por que o poste P1 não tem transformador?** Porque a carga dele — as Peltier e o PTC — **já trabalha na tensão da linha (24 V)**. Isso reproduz exatamente o que acontece na rede real: consumidores pequenos recebem um transformador de poste que abaixa a tensão; **consumidores industriais de grande porte são atendidos na própria tensão primária** e montam a sua subestação. P1 é o poste de derivação desse "grande consumidor"; P2 e P3 são os transformadores de distribuição dos consumidores comuns.
 

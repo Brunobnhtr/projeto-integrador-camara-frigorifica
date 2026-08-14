@@ -172,7 +172,7 @@ npx remotion render Camada1-Doc10-Base out/aula.mp4
 | Carga térmica calculada | **≈ 9,5 W** |
 | Refrigeração | **2× TEC1-12706 em SÉRIE** · 24 V · 6,0 A · 144 W |
 | Capacidade das Peltier a ΔT = 20 K | **~60 W** (margem de 6,3×) |
-| Aquecimento | **PTC cerâmico de 24 V** · 60 W · 2,5 A |
+| Aquecimento | **PTC cerâmico de 24 V** · 80 W · 3,3 A |
 | Componentes discretos | **6 + 1 CI (ULN2803) na placa PI-1** · 2 soldados nos BTS7960 · 4 nos postes da maquete (Doc 33) |
 | Sinalização | **4 sinaleiros 22 mm de 24 V** no painel (via ULN2803, em barramento permanente) · **4 LEDs brancos de 5 V** na iluminação da maquete |
 | Isolamento | XPS 30 mm + barreira de vapor · U = 0,86 W/m²·K |
