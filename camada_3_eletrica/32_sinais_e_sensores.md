@@ -125,7 +125,8 @@ Duas armadilhas do Arduino Mega estão documentadas aqui, e as duas eram silenci
 | **D7** | BTS #2 `R_EN` | Enable do driver do PTC |
 | **A0** | BTS #1 `R_IS` | Diagnóstico de corrente — **capacitor 100 nF para 0 V** |
 | **A1** | BTS #2 `R_IS` | Diagnóstico de corrente — **capacitor 100 nF para 0 V** |
-| GND | `LPWM` e `L_EN` dos dois | Fixos em nível baixo (carga unidirecional) |
+| GND | `LPWM` dos dois | Fixo em nível baixo (carga unidirecional) |
+| **D4 / D7** | `L_EN` dos dois, **junto com o `R_EN`** | ⚠️ **NÃO aterrar** — a corrente volta pela metade L. Ver §32.3 |
 
 ### Sensores e armazenamento
 
@@ -187,19 +188,56 @@ ARDUINO MEGA 2560
 | BTS #1 RPWM | 0,25 mm² | Arduino D5 → BTS #1 `RPWM` |
 | BTS #1 R_EN | 0,25 mm² | Arduino D4 → BTS #1 `R_EN` **+ pull-down 10 kΩ → 0 V** |
 | BTS #1 LPWM | 0,25 mm² | 0 V → BTS #1 `LPWM` |
-| BTS #1 L_EN | 0,25 mm² | 0 V → BTS #1 `L_EN` |
+| BTS #1 L_EN | 0,25 mm² | ⚠️ **Arduino D4 → BTS #1 `L_EN`** (mesmo nó do `R_EN`) — **corrigido, ver nota** |
 | BTS #1 R_IS | 0,25 mm² | BTS #1 `R_IS` → Arduino A0 **+ cap 100 nF → 0 V** |
 | BTS #1 VCC | 0,25 mm² | Régua +5V → BTS #1 `VCC` (lógica) |
 | BTS #1 GND lógica | 0,25 mm² | Bloco BD-0V → BTS #1 `GND` |
 | BTS #2 RPWM | 0,25 mm² | Arduino D6 → BTS #2 `RPWM` |
 | BTS #2 R_EN | 0,25 mm² | Arduino D7 → BTS #2 `R_EN` **+ pull-down 10 kΩ → 0 V** |
 | BTS #2 LPWM | 0,25 mm² | 0 V → BTS #2 `LPWM` |
-| BTS #2 L_EN | 0,25 mm² | 0 V → BTS #2 `L_EN` |
+| BTS #2 L_EN | 0,25 mm² | ⚠️ **Arduino D7 → BTS #2 `L_EN`** (mesmo nó do `R_EN`) — **corrigido, ver nota** |
 | BTS #2 R_IS | 0,25 mm² | BTS #2 `R_IS` → Arduino A1 **+ cap 100 nF → 0 V** |
 | BTS #2 VCC | 0,25 mm² | Régua +5V → BTS #2 `VCC` |
 | BTS #2 GND lógica | 0,25 mm² | Bloco BD-0V → BTS #2 `GND` |
 
-> Os dois drivers usam apenas o lado **R** (`RPWM` / `R_EN`) porque a carga é unidirecional — não há necessidade de inverter a polaridade.
+> ### ⚠️ Correção: `L_EN` vai JUNTO com o `R_EN`, não ao 0 V
+>
+> A versão anterior mandava aterrar o `L_EN`. **Isso gera ~5 W de calor desnecessário por driver**, e a razão é sutil.
+>
+> **O módulo IBT-2 é UMA ponte H, não dois canais.** As metades R e L compartilham o mesmo par de saída (`M+` / `M−`):
+>
+> ```
+>              B+ (24 V)
+>         ┌──────┴──────┐
+>       [R alta]     [L alta]
+>         │             │
+>        M+ ─── CARGA ── M−        ← só existe UM par de saída
+>         │             │
+>       [R baixa]   [L baixa]
+>         └──────┬──────┘
+>              B−
+> ```
+>
+> A corrente percorre: `B+ → R alta → M+ → carga → M− → L baixa → B−`. **Ela precisa atravessar a metade L para voltar.**
+>
+> Com `L_EN` aterrado, a metade L fica desabilitada e a corrente volta pelo **diodo de corpo** do MOSFET inferior — o diodo parasita que existe dentro de todo MOSFET:
+>
+> | Caminho de retorno | Queda | Perda a 6,0 A |
+> |---|---:|---:|
+> | Diodo de corpo (errado) | ~0,9 V | **~5,4 W** 🔥 |
+> | MOSFET conduzindo (correto) | ~0,1 V | **~0,6 W** ✅ |
+>
+> ✅ **Ligação correta para carga unidirecional:**
+> - **`R_EN` e `L_EN` juntos**, no mesmo pino do Arduino (D4 no BTS #1, D7 no BTS #2), **com o mesmo resistor de pull-down de 10 kΩ** cobrindo os dois
+> - **`RPWM`** recebe o PWM · **`LPWM`** fica em 0 V
+>
+> Assim a metade L mantém o MOSFET inferior conduzindo, e o retorno passa por silício de baixa resistência em vez de por um diodo.
+>
+> 📌 **A segurança não muda:** com o pino do Arduino em nível baixo, as **duas** metades ficam desabilitadas e nenhuma corrente circula. O pull-down continua garantindo que pino solto = driver desligado.
+>
+> 🔍 **Confirme no comissionamento:** com a carga a 100 % de duty por 5 minutos, os dois chips do módulo devem estar em temperatura **parecida**. Se um estiver bem mais quente que o outro, o `L_EN` daquele módulo ainda está aterrado.
+
+> **Alternativa igualmente válida:** ligar a carga entre `M+` e `B−`, deixando o `M−` sem uso. Aí só a metade R participa, o `L_EN` pode ficar aterrado e a corrente atravessa um único MOSFET. Funciona e dissipa um pouco menos — mas foge da ligação padrão do módulo, cujos bornes são rotulados como par `M+`/`M−`.
 
 ### O filtro do pino IS
 
@@ -336,7 +374,8 @@ Fans padrão geram 2 pulsos por rotação:
 - [ ] **RPM do cooler #1 no D3 (INT1)**, não no D13
 - [ ] **RPM do cooler #2 no A8 (PCINT16)** — com 2 Peltier, são 2 tacômetros a monitorar
 - [ ] Serial1 (D18/D19) → DNLCB30 · Serial2 (D16/D17) → Nextion, cabos < 200 mm
-- [ ] BTS #1: D5 / D4 / A0 · BTS #2: D6 / D7 / A1 · `LPWM` e `L_EN` em 0 V nos dois
+- [ ] BTS #1: D5 / D4 / A0 · BTS #2: D6 / D7 / A1 · **`LPWM` em 0 V** nos dois
+- [ ] ⚠️ **`L_EN` ligado JUNTO com o `R_EN`** nos dois módulos — **não** ao 0 V. Teste: 5 min a 100 % de duty, os 2 chips do módulo em temperatura parecida
 - [ ] Capacitores de 100 nF em A0 e A1, **junto ao Arduino**
 - [ ] DS18B20 no D2 com pull-up de 4,7 kΩ para +5 V
 - [ ] AM2315C e DS3231 no I²C em **5 V**

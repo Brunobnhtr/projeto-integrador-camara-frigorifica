@@ -155,8 +155,14 @@ E existe uma regra que atravessa tudo:
 #define POTENCIA_OK  25    // divisor 22k/4k7 do BD-POT -> HIGH = 24 V presente
 // D26 ficou LIVRE (era o comando do antigo relé K0)
 
-// ⚠ Cada R_EN precisa de um resistor de 10 kΩ para 0 V (pull-down externo),
-//   SOLDADO NO PRÓPRIO BTS7960 entre R_EN e GND — não na placa PI-1.
+// ⚠ R_EN e L_EN de cada modulo vao JUNTOS no mesmo pino do Arduino.
+//   O IBT-2 e UMA ponte H: a corrente sai por M+ e VOLTA por M-, entao
+//   a metade L precisa estar habilitada para o retorno passar pelo
+//   MOSFET. Com L_EN aterrado, o retorno vai pelo diodo de corpo e
+//   dissipa ~5 W a mais por driver. Ver Doc 32 §32.3.
+//
+// ⚠ Cada R_EN/L_EN precisa de um resistor de 10 kΩ para 0 V (pull-down
+//   externo), SOLDADO NO PRÓPRIO BTS7960 — não na placa PI-1.
 //   Assim, quando o Arduino reseta e os pinos viram entrada, OU quando o cabo
 //   se solta, os drivers ficam DESABILITADOS. É isso que torna o watchdog
 //   realmente eficaz. Ver Doc 33 §33.4.
@@ -168,6 +174,8 @@ E existe uma regra que atravessa tudo:
 #define LED_FAULT    12    // vermelho
 
 // Desabilita os dois drivers imediatamente. É o corte de potência do software.
+// BTS1_REN comanda R_EN E L_EN do modulo 1 (ligados no mesmo pino).
+// Nivel baixo desabilita as DUAS metades da ponte -> nenhuma corrente.
 inline void desabilitarDrivers() {
     digitalWrite(BTS1_REN, LOW);   digitalWrite(BTS1_RPWM, LOW);
     digitalWrite(BTS2_REN, LOW);   digitalWrite(BTS2_RPWM, LOW);

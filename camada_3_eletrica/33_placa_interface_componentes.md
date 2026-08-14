@@ -352,7 +352,7 @@ I = (5 V − 3,1 V) / 220 Ω = 8,6 mA   ✅ brilho adequado para cenografia
 
 | Componente | Perna | Vai para |
 |---|---|---|
-| **R8** (10 kΩ) | 1 | Pino **`R_EN`** do **BTS #1** (no barra de pinos do módulo) |
+| **R8** (10 kΩ) | 1 | Pino **`R_EN`** do **BTS #1** — que está ligado ao **`L_EN`** do mesmo módulo, então um resistor cobre os dois ([Doc 32 §32.3](32_sinais_e_sensores.md)) |
 | | 2 | Pino **`GND`** do **mesmo** módulo BTS #1 |
 | **R9** (10 kΩ) | 1 | Pino **`R_EN`** do **BTS #2** |
 | | 2 | Pino **`GND`** do **mesmo** módulo BTS #2 |

@@ -499,7 +499,7 @@ R_total = 0,0344 Ω
 | ~~T1 / XL4016~~ | **0 W** ⭐ (era ~10 W) | — | **Eliminado** — ganho direto do Plano B |
 | T2 / LM2596 (η ≈ 78 %) | ~1,0 W | Dentro do "trafo" do poste P2 | Dissipador colado no CI + furos de Ø 3 mm |
 | T3 / LM2596 (η ≈ 88 %) | ~1,4 W | Dentro do "trafo" do poste P3 | Dissipador colado no CI + furos — **obrigatório** (ver cálculo abaixo) |
-| BTS7960 (×2) | ~4 W | Dentro do painel | Cooler 40 mm soprando neles |
+| BTS7960 (×2) | ~4 W | Dentro do painel | Cooler 40 mm soprando neles. ⚠️ **Só vale com `L_EN` habilitado** — com ele aterrado o retorno passa pelo diodo de corpo e a dissipação triplica ([Doc 32 §32.3](../camada_3_eletrica/32_sinais_e_sensores.md)) |
 | **Total dissipado (conversão)** | **~36 W** | | |
 
 **Verificação térmica do T3 (o mais carregado):** 1,4 W em um LM2596S (encapsulamento TO-263) na plaquinha nua tem θJA de ~55 °C/W → **88 °C acima do ambiente**, o que estoura o limite dentro de um tubo fechado. Com um dissipador pequeno colado (θJA ~28 °C/W) a elevação cai para **~45 °C** — aceitável com os furos de ventilação. **Por isso o dissipador do T3 não é opcional.**
