@@ -443,11 +443,31 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 | Driver ponte-H **BTS7960** | 2 | 43 A, pino IS de diagnóstico | |
 | Suporte SPCI4 trilho DIN | 2 | Fixa PCI 100 × 79 mm | |
 | Cooler 40 mm 12 V | 1 | Refrigeração dos BTS | |
-| **KA1 — Relé de interface 24 Vcc, 2 contatos** | 1 | Faz o **selo** (habilitação) e alimenta a bobina do KA2. Conduz só miliampères — **6 A basta**. Buscar `relé de interface 24vdc 2 contatos din`. Premium: Finder **55.32.9.024.0040** | |
-| **KA2 — Relé de interface 24 Vcc, contato ≥ 10 A** | 1 | É ele que chaveia os **24 V / 6,0 A** de potência dos BTS. ⚠️ **Confirme os 10 A no anúncio** — a maioria dos slim é de 6 A — **e confirme que a corrente é declarada em DC**: muito relé de 10 A/250 VAC cai para 5 A ou menos em 24 Vcc, porque corrente contínua não tem passagem por zero e o arco custa mais a extinguir. Buscar `relé de interface 24vdc 10a trilho din`. Premium: Finder **46.61.9.024.0040** + base **95.05** (16 A) | |
+| **KA1 — Relé de interface 24 Vcc, 2 contatos reversíveis** | 1 | **2 contatos reversíveis (2CO / DPDT)** — um faz o selo, o outro alimenta a bobina do KA2. Conduz só miliampères, **5 a 8 A já sobra**. Buscar `relé de interface 24vdc 2 contatos din`. No AliExpress: `Omron G2R-2-SN DC24` + soquete `P2RF-08-E` · `Finder 40.52 24VDC` + soquete `95.05` · `Hongfa HF115F 024-2ZS4` | |
+| **KA2 — Relé de interface 24 Vcc, 1 contato reversível ≥ 10 A DC** | 1 | Chaveia os **24 V / 6,0 A** dos BTS. ⚠️ **A ficha técnica tem que trazer o valor em CORRENTE CONTÍNUA** — procure a linha `10A 250VAC / 10A 30VDC`. Se só aparecer o de VAC, o valor em DC é desconhecido e costuma ser menor. 💡 **Prefira 16 A a 10 A**: quando o KA2 fecha, os capacitores de entrada dos 2 BTS carregam de uma vez (pico curto de dezenas de A) e vão desgastando o contato. Buscar `relé de interface 24vdc 10a trilho din`. No AliExpress: `Hongfa HF115F 024-1ZS3` (16 A) · `Finder 46.61 24VDC` + `95.05` (16 A) · `Omron G2R-1-SN DC24` + `P2RF-05-E` (10 A) | |
 | **Resistor 10 kΩ 1/4 W** | 4 | **Pull-down** em cada `R_EN` dos BTS7960 (2) + reservas. ⚠️ Garante que **pino solto = driver desligado** — ficou ainda mais crítico com os 24 V permanentes na entrada dos BTS | |
 | **Resistor 22 kΩ 1/4 W** ⬆ | 2 | **Braço superior** do divisor de realimentação de tensão para o pino D25 | |
 | **Resistor 4,7 kΩ 1/4 W** | 2 | **Braço inferior** do mesmo divisor | |
+
+> ### 🛒 Como ler um anúncio de relé — o vocabulário que engana
+>
+> "Reversível" vira outra palavra em inglês, e o anúncio quase nunca usa a que você espera:
+>
+> | Português | No anúncio | Serve? |
+> |---|---|---|
+> | 1 contato **NA** só | `SPST-NO` · `1A` · `1 Form A` | ❌ Não serve para o KA1 |
+> | **1 reversível** | `SPDT` · **`1CO`** · `1Z` · `1 Form C` | ✅ KA2 |
+> | **2 reversíveis** | `DPDT` · **`2CO`** · `2Z` · `2 Form C` | ✅ **KA1** |
+>
+> 🔑 **"CO" = changeover = reversível.** Buscar `2CO 24VDC relay` já filtra quase tudo que não serve.
+>
+> ⚠️ **Muitos anúncios escrevem só "24V".** Tem que ser **24VDC** — bobina de 24VAC não funciona no nosso barramento.
+>
+> ⚠️ **Módulo pronto ou relé avulso?** `interface relay module` / `relay with socket` vem com base DIN, LED e diodo. Só `relay` vem sem a base.
+>
+> ⚠️ **Confirme "with LED and diode"** (ou *freewheeling diode*). A documentação assume que o módulo já traz o diodo de roda-livre — foi por isso que os 4× 1N4007 saíram do painel. **Se o seu não tiver, o diodo volta**, em antiparalelo com a bobina.
+>
+> 📌 **Sobre importar:** a recomendação de comprar nacional existe por causa do **datasheet com a corrente em DC**, que anúncio genérico não fornece. Isso não impede importar — impede comprar **sem marca**. Um Omron, Finder ou Hongfa com número de modelo você consulta antes de clicar; um "24V 10A Relay Module" sem fabricante, não.
 
 > ⚠️ **O divisor de realimentação mudou de escala.** Ele antes lia os 12 V do T1 (10 kΩ + 4,7 kΩ → 3,84 V no ADC). Agora precisa ler o **barramento de 24 V**, e com os resistores antigos entregaria **7,67 V no pino D25 — o suficiente para danificar a entrada do Arduino**. Com **22 kΩ + 4,7 kΩ** a leitura fica em `24 × 4,7/26,7 = 4,22 V`, dentro da faixa segura e com margem para o barramento oscilar. 📌 **Sinalizar em [Doc 32](../camada_3_eletrica/32_sinais_e_sensores.md):** o esquema do divisor e a constante de conversão do firmware precisam ser atualizados junto.
 | Diodo 1N4007 | 4 | ⚠️ **Sobressalente, não vai no painel.** Os relés de interface KA1/KA2 já trazem o diodo de roda-livre embutido. Guarde no saquinho de reposição — ver [Doc 33 §33.5](../camada_3_eletrica/33_placa_interface_componentes.md) | |

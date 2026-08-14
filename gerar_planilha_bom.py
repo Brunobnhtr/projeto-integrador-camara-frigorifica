@@ -129,6 +129,11 @@ def url_amazon(termo: str) -> str:
 # Por isso a lista abaixo é CURADA: só aparece link de AliExpress no item
 # que faz sentido importar. Ausência de link aqui é recomendação, não falha.
 BUSCA_ALIEXPRESS = {
+    # Reles: so entram com MARCA e MODELO. O criterio nao e "importado e
+    # ruim" - e que o datasheet precisa declarar a corrente em DC, e
+    # anuncio generico ("24V 10A Relay Module") nao declara.
+    "ka1":                       "Hongfa HF115F 024-2ZS4 relay 2CO 24VDC",
+    "ka2":                       "Hongfa HF115F 024-1ZS3 relay 16A 24VDC",
     "peltier tec1-12706":        "TEC1-12706 peltier module",
     "aquecedor ptc":             "24V PTC heater element with fan",
     "sensor ina219":             "INA219 current sensor module",
