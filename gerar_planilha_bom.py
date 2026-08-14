@@ -132,8 +132,8 @@ BUSCA_ALIEXPRESS = {
     # Reles: so entram com MARCA e MODELO. O criterio nao e "importado e
     # ruim" - e que o datasheet precisa declarar a corrente em DC, e
     # anuncio generico ("24V 10A Relay Module") nao declara.
-    "ka1":                       "Hongfa HF115F 024-2ZS4 relay 2CO 24VDC",
-    "ka2":                       "Hongfa HF115F 024-1ZS3 relay 16A 24VDC",
+    "ka1":                       "JQX-13F LY2N 24VDC relay 8 pin 2CO with socket",
+    "ka2":                       "JQX-13F LY2N 24VDC relay 10A 8 pin PTF08A socket",
     "peltier tec1-12706":        "TEC1-12706 peltier module",
     "aquecedor ptc":             "24V PTC heater element with fan",
     "sensor ina219":             "INA219 current sensor module",

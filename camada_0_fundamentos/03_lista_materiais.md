@@ -443,11 +443,26 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 | Driver ponte-H **BTS7960** | 2 | 43 A, pino IS de diagnóstico | |
 | Suporte SPCI4 trilho DIN | 2 | Fixa PCI 100 × 79 mm | |
 | Cooler 40 mm 12 V | 1 | Refrigeração dos BTS | |
-| **KA1 — Relé de interface 24 Vcc, 2 contatos reversíveis** | 1 | **2 contatos reversíveis (2CO / DPDT)** — um faz o selo, o outro alimenta a bobina do KA2. Conduz só miliampères, **5 a 8 A já sobra**. Buscar `relé de interface 24vdc 2 contatos din`. No AliExpress: `Omron G2R-2-SN DC24` + soquete `P2RF-08-E` · `Finder 40.52 24VDC` + soquete `95.05` · `Hongfa HF115F 024-2ZS4` | |
-| **KA2 — Relé de interface 24 Vcc, 1 contato reversível ≥ 10 A DC** | 1 | Chaveia os **24 V / 6,0 A** dos BTS. ⚠️ **A ficha técnica tem que trazer o valor em CORRENTE CONTÍNUA** — procure a linha `10A 250VAC / 10A 30VDC`. Se só aparecer o de VAC, o valor em DC é desconhecido e costuma ser menor. 💡 **Prefira 16 A a 10 A**: quando o KA2 fecha, os capacitores de entrada dos 2 BTS carregam de uma vez (pico curto de dezenas de A) e vão desgastando o contato. Buscar `relé de interface 24vdc 10a trilho din`. No AliExpress: `Hongfa HF115F 024-1ZS3` (16 A) · `Finder 46.61 24VDC` + `95.05` (16 A) · `Omron G2R-1-SN DC24` + `P2RF-05-E` (10 A) | |
+| **KA1 — Relé acoplador 24 Vcc, 2 contatos reversíveis** | 1 | **2 contatos reversíveis (2CO)** — um faz o selo, o outro alimenta a bobina do KA2. Conduz só miliampères: **6 a 8 A já sobra**. 🇧🇷 **Buscar como `relé acoplador`, não "relé de interface"** — é o termo usado no Brasil. Modelos: **Finder 49.52.7.024.0050** (8 A, ~R$ 73) · **Finder 48.52.7.024.0050** · **PR-115F-024-2ZS4** (Proauto) · **CC2R** (3Pinus, 8 A) | |
+| **KA2 — Relé 24 Vcc, contato ≥ 10 A em DC** | 1 | Chaveia os **24 V / 6,0 A** dos BTS. ⚠️ **NÃO use relé acoplador comum**: quase todo modelo vendido no Brasil é de **6 a 8 A**, e a carga é 6,0 A — 100 % da capacidade, sem margem. ✅ **Opção A (barata, clássica de painel):** relé de **8 pinos** `JQX-13F` / `LY2N 24VDC` (2 contatos de 10 A) + **base `PTF08A` / `PYF08A`** para trilho DIN — ~R$ 25–35 + ~R$ 12–18. **O mesmo modelo serve para o KA1**, então dá para comprar 2 iguais + 1 reserva. ✅ **Opção B:** **Finder 46.61 24VDC** (16 A) + base **95.05**, ~R$ 80–110. ⚠️ **Em qualquer opção, exija a linha `10A 30VDC`** no anúncio ou datasheet — só `250VAC` não basta | |
 | **Resistor 10 kΩ 1/4 W** | 4 | **Pull-down** em cada `R_EN` dos BTS7960 (2) + reservas. ⚠️ Garante que **pino solto = driver desligado** — ficou ainda mais crítico com os 24 V permanentes na entrada dos BTS | |
 | **Resistor 22 kΩ 1/4 W** ⬆ | 2 | **Braço superior** do divisor de realimentação de tensão para o pino D25 | |
 | **Resistor 4,7 kΩ 1/4 W** | 2 | **Braço inferior** do mesmo divisor | |
+
+> ### 🇧🇷 A palavra que destrava a busca no Brasil: **relé ACOPLADOR**
+>
+> Procurar "relé de interface" no Mercado Livre quase não retorna nada. O termo comercial usado aqui é **relé acoplador** (ou *acoplador a relé*).
+>
+> | Busca que funciona |
+> |---|
+> | `relé acoplador 24vcc` |
+> | `relé acoplador 2 contatos reversíveis 24v` |
+> | `relé 8 pinos 24vdc base trilho din` |
+> | `relé 24v trilho din` |
+>
+> ⚠️ **Descoberta importante da pesquisa de mercado:** praticamente **todo relé acoplador vendido no Brasil é de 6 a 8 A**. Isso resolve o **KA1** (que conduz miliampères) mas **não resolve o KA2** (6,0 A de carga = 100 % da capacidade, sem margem nenhuma).
+>
+> **Para o KA2, o caminho prático é o relé de 8 pinos + base** — o arranjo clássico de painel brasileiro, com 2 contatos de 10 A, barato e disponível em qualquer lugar. E como ele também atende o KA1, dá para padronizar: **2 iguais + 1 reserva**.
 
 > ### 🛒 Como ler um anúncio de relé — o vocabulário que engana
 >
