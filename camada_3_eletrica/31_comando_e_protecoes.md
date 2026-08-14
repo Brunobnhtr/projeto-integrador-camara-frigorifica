@@ -77,6 +77,44 @@ O REARME é o contrário (NA), pelo mesmo raciocínio invertido: fio partido no 
 
 A máquina desliga por caminhos que não dependem de nada. Para ligar, ela depende de tudo estar certo.
 
+### ⚡ Os dois caminhos — o relé NÃO está no caminho do comando
+
+Esta é a confusão mais fácil de ter, e vale deixar explícita: **potência e comando são dois caminhos separados**, e eles só se encontram dentro do chip do BTS7960.
+
+```
+ CAMINHO DA POTÊNCIA (energia)          CAMINHO DO COMANDO (informação)
+ ══════════════════════════════         ═══════════════════════════════
+
+  FONTE 24 V                                    ARDUINO
+      │                                            │
+   [F1 10A]                                    D4 (enable)
+      │                                        D5 (PWM 1 Hz)
+   poste P1                                        │
+      │                                            │  fios de 0,25 mm²
+   [ KA2 ]  ◄── abre só na emergência/STOP         │
+      │                                            │
+   BD-POT ──────────────► B+ ┌──────────────┐ ◄────┘
+                             │   BTS7960    │
+                             │  (os MOSFETs)│
+                             └──────┬───────┘
+                                 M+ │ M−
+                                    ▼
+                              2× PELTIER
+```
+
+**O comando vai `Arduino → BTS → Peltier`.** Nunca `Arduino → relé → BTS`.
+
+| | **KA2 (relé)** | **BTS7960** |
+|---|---|---|
+| Função | Chave de **segurança** | Chave de **controle** |
+| Quem comanda | **As botoeiras**, em hardware | O Arduino, em software |
+| Quantas vezes atua | **Dezenas**, na vida do projeto | **86.400 por dia** (1 Hz) |
+| Se falhar | A emergência não corta ⚠️ | O processo não controla |
+
+> ⚠️ **Por que o relé não pode fazer o PWM:** um relé típico tem vida elétrica de ~100.000 operações. A 1 Hz são 86.400 por dia — **ele acabaria em cerca de 28 horas**. Chaveamento rápido é trabalho de semicondutor; relé é para abrir e fechar poucas vezes, com segurança.
+
+> 🎯 **Repare que o Arduino não tem nenhum pino ligado ao KA1 ou ao KA2.** Ele só **lê** (pelo divisor no pino D25) se a potência chegou. Isso é intencional: se o Arduino pudesse religar o relé, a emergência dependeria do software — e aí não seria emergência.
+
 ### Dicionário rápido
 
 | Termo | O que quer dizer |
