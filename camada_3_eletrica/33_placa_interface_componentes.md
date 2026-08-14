@@ -432,7 +432,30 @@ I = (5 V − 3,1 V) / 220 Ω = 8,6 mA   ✅ brilho adequado para cenografia
 
 ### 📐 Esquema elétrico — 4 circuitos independentes
 
-> 🖼️ **Desenho completo:** [Esquema da placa PI-1](../desenhos/08_placa_pi1_esquema.svg)
+> 🖼️ **Dois desenhos, com finalidades diferentes:**
+> - [**Esquema elétrico**](../desenhos/08_placa_pi1_esquema.svg) — mostra **como funciona** (os 4 circuitos separados)
+> - [**Diagrama de ligação**](../desenhos/09_placa_pi1_montagem.svg) ⭐ — mostra **onde cada fio vai**. **É este que você usa para montar**
+
+### ⚠️ Os bornes NÃO são "entrada" e "saída"
+
+Confusão comum, e a nomenclatura anterior tinha culpa. Eles são divididos por **para onde o fio vai fisicamente**:
+
+| Borne | Todos os fios dele vão para... |
+|---|---|
+| **J1** (borda de cima) | O **Arduino**, que fica ao lado na mesma calha |
+| **J2** (borda de baixo) | O **painel** — blocos BD-5V, BD-0V, BD-POT, BD-24V e as lâmpadas da porta |
+
+**É geografia, não direção de sinal.** Dentro de cada borne há sinal indo e vindo:
+
+| Via | Direção real |
+|---|---|
+| J1 · D9 | Arduino **→** placa (entra) |
+| J1 · A0 | Nó compartilhado — o capacitor só encosta nele |
+| J2 · +5V | Painel **→** placa (entra) |
+| **J2 · 24V-POT** | Painel **→** placa (entra, para ser medido) |
+| J2 · L1− | Placa **→** lâmpada (sai) |
+
+📌 **É por isso que os dois 24 V ficam em J2:** eles vêm dos blocos de distribuição do **trilho 1**, não do Arduino. Colocá-los em J1 obrigaria a puxar 24 V até o lado do Arduino sem necessidade.
 
 **A chave para não se perder:** os 4 circuitos da placa **não se tocam** — a única coisa que compartilham é o barramento de 0 V. Estude um de cada vez.
 

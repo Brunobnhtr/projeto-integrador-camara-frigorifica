@@ -6,7 +6,7 @@
 
   <!-- ═══════════════ BORNE J1 ═══════════════ -->
   <rect x="50" y="88" width="1100" height="58" fill="#eef4fb" stroke="#1f7bb6" stroke-width="2.5"/>
-  <text x="62" y="112" font-size="13" font-weight="700" fill="#1f7bb6">J1 — BORNE SUPERIOR · lado ARDUINO · 8 vias · passo 5,08 mm</text>
+  <text x="62" y="112" font-size="13" font-weight="700" fill="#1f7bb6">J1 — BORNE SUPERIOR · todos estes fios vão para o ARDUINO · 8 vias · passo 5,08 mm</text>
   <g font-size="13" font-weight="700" fill="#0b4a86" text-anchor="middle">
     <rect x="112" y="118" width="70" height="22" fill="#fff" stroke="#1f7bb6"/><text x="147" y="134">A0</text>
     <rect x="242" y="118" width="70" height="22" fill="#fff" stroke="#1f7bb6"/><text x="277" y="134">A1</text>
@@ -171,7 +171,7 @@
 
   <!-- ═══════════════ BORNE J2 ═══════════════ -->
   <rect x="50" y="900" width="1100" height="58" fill="#fdf3ee" stroke="#e8590c" stroke-width="2.5"/>
-  <text x="62" y="924" font-size="13" font-weight="700" fill="#a63e00">J2 — BORNE INFERIOR · lado CAMPO · 8 vias · passo 5,08 mm</text>
+  <text x="62" y="924" font-size="13" font-weight="700" fill="#a63e00">J2 — BORNE INFERIOR · todos estes fios vão para o PAINEL · 8 vias · passo 5,08 mm</text>
   <g font-size="12" font-weight="700" fill="#a63e00" text-anchor="middle">
     <rect x="72" y="930" width="88" height="22" fill="#fff" stroke="#e8590c"/><text x="116" y="946">+5V</text>
     <rect x="182" y="930" width="88" height="22" fill="#fff" stroke="#e8590c"/><text x="226" y="946">0V</text>
