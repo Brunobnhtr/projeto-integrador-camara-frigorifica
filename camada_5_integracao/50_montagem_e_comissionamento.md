@@ -198,6 +198,7 @@ Um relatório que diz *"os 24 V foram medidos em 24,1 V no poste P3, com queda d
 - [ ] STOP funciona pelo **botão físico** e pela **IHM**
 - [ ] Emergência corta em carga → 0 V medidos no bloco BD-POT
 - [ ] Ao destravar o cogumelo **e apertar o REARME**, os **24 V** voltam mas **o processo não reinicia sozinho**
+- [ ] ⭐ **Antes do REARME: BD-POT em 0 V.** Depois do REARME: 24,0 V. Confirma que o KA2 é a barreira e que os BTS não recebem tensão ao ligar o painel
 - [ ] ⭐ **Com a emergência acionada, o sinaleiro vermelho de FALHA continua aceso** — se apagar, os sinaleiros foram ligados no BD-POT em vez do BD-24V permanente
 - [ ] Rearme com novo START (painel ou IHM)
 - [ ] **Watchdog testado** e **pull-down dos `R_EN` medido** com o Arduino desligado

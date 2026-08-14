@@ -527,8 +527,8 @@ As duas Peltier são o maior movimento de calor do projeto e **não entram na co
 ```
 1. Disjuntor 2P ON            → só energiza a entrada da subestação
 2. Chave rotativa 0 → 1       → fonte 24 V liga
-3. Fonte estabiliza (~0,5 s)  → 24 V presentes nos 3 ramais
-                                 ⚠ inclusive na ENTRADA dos BTS (P1 é passante)
+3. Fonte estabiliza (~0,5 s)  → 24 V nos 3 ramais, até o CONTATO do KA2
+                                 ⛔ BD-POT e BTS ainda em 0 V (KA2 é NA)
 4. T2 parte                   → 5,10 V → Arduino boota, Nextion inicializa
                                  os pull-downs seguram R_EN = 0 durante o boot
 5. T3 parte                   → 12,0 V aux → 2 coolers externos e fans giram
@@ -540,12 +540,35 @@ As duas Peltier são o maior movimento de calor do projeto e **não entram na co
 
 > Os passos 4 e 5 acontecem quase simultaneamente. **A ordem lógica continua sendo: comando → auxiliares → potência.**
 
-> ⚠️ **O que mudou com a eliminação do T1 — leia antes de energizar pela primeira vez.** Na arquitetura anterior, o tempo de partida do conversor T1 criava um atraso natural: a potência simplesmente **não existia** nos primeiros instantes. Agora **os 24 V estão na entrada dos BTS7960 desde o passo 3**, e o que impede um acionamento acidental durante o boot são apenas duas coisas:
+> ### ⚡ Ao ligar o painel, os BTS7960 recebem 24 V?
 >
-> 1. o **KA2 aberto** (só fecha no passo 6, depois da emergência liberada);
-> 2. os **pull-downs de 10 kΩ** mantendo `R_EN = 0` enquanto o Arduino ainda não assumiu os pinos.
+> **Não.** O KA2 usa um **contato NA (normalmente aberto)**, e ele está no meio do caminho:
 >
-> **Nenhuma das duas é opcional, e as duas devem ser testadas com o multímetro antes de as pastilhas Peltier serem instaladas.** Energize o sistema pela primeira vez com a saída dos BTS **desconectada** e confirme 0 V nela em todas as etapas do boot.
+> ```
+> FONTE 24 V → F1 → poste P1 → prensa-cabo → KA2 (terminal 11)
+>                                               │
+>                                        ⛔ CONTATO ABERTO
+>                                               │
+>                                     (terminal 14) → BD-POT → BTS B+
+> ```
+>
+> | Ponto do circuito | Ao ligar o painel |
+> |---|---|
+> | Entrada do painel · KA2 terminal 11 | **24 V** ✅ |
+> | KA2 terminal 14 · **BD-POT** · **BTS `B+`** | **0 V** ⛔ |
+>
+> Os BTS só recebem tensão no **passo 6**: emergência destravada → **REARME** → KA1 sela → KA1 alimenta a bobina do KA2 (pelo NF do STOP) → o contato fecha. **Antes disso eles estão eletricamente mortos.**
+>
+> ✅ **E a ordem ajuda:** o Arduino boota no passo 4, **antes** de a potência existir. Quando os 24 V chegam, os pinos já estão sob controle do firmware.
+
+> ⚠️ **O que realmente mudou com a eliminação do T1.** Antes havia **duas barreiras em série** entre a fonte e os BTS: o tempo de partida do conversor T1 **e** o KA2. Hoje só existe uma — **o KA2**. Os 24 V chegam ao contato dele imediatamente, sem o atraso do conversor.
+>
+> Isso não torna o sistema inseguro, mas concentra a responsabilidade:
+>
+> 1. **KA2** — se o contato dele soldar fechado, os BTS passam a receber 24 V permanentemente, e a emergência deixa de cortar. É por isso que o contato tem que ter folga sobre os 6,0 A ([Doc 03](03_lista_materiais.md))
+> 2. **Pull-downs de 10 kΩ** nos `R_EN` — mantêm a saída desligada mesmo com o `B+` energizado, durante um reset ou travamento do Arduino
+>
+> **Nenhuma das duas é opcional.** Ensaio obrigatório antes de instalar as Peltier: energize com a saída dos BTS **desconectada** e confirme **0 V no BD-POT antes do REARME** e **24 V depois dele**.
 
 > O firmware deve esperar os **dois** coolers externos estarem girando (RPM > 0) antes de liberar as Peltier — com 2 pastilhas são 2 sinais de tacômetro a monitorar, e a falha de qualquer um dos dois já é motivo de bloqueio. Ver [Camada 4](../camada_4_programacao/40_firmware_arduino.md).
 
