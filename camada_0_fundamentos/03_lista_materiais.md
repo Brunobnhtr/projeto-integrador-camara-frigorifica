@@ -133,7 +133,7 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 |---|---|
 | **Disjuntor 2P 6 A curva C** | É a proteção da entrada em 127 V. Certificação não é detalhe |
 | **Fonte chaveada 24 V / 240 W** | Faz a barreira entre 127 V e a parte SELV. Além disso é pesada — frete inviabiliza |
-| **Relés KA1 e KA2** | Você precisa do **datasheet com a corrente declarada em DC**, que o genérico importado não fornece |
+| **Relés KA1 e KA2** | Aqui você **vê o produto, tem nota fiscal e consegue trocar** se vier errado. Importado, um relé sem marca chega em 40 dias e sem recurso — e relé é peça de segurança, no caminho crítico da montagem |
 | **Porta-fusíveis, trilho DIN, canaleta, bornes** | Baratos aqui, volumosos para importar |
 | **Cabos e terminais** | Peso e volume |
 | **MDF, acrílico, tintas, cenografia** | Óbvio |
