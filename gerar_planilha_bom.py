@@ -116,6 +116,91 @@ def url_amazon(termo: str) -> str:
     return f"https://www.amazon.com.br/s?k={quote_plus(termo)}" if termo else ""
 
 
+# ── AliExpress ─────────────────────────────────────────────────────────────
+#
+# Duas diferenças em relação às lojas nacionais:
+#
+# 1. A busca precisa ser em INGLÊS. Termo em português não acha quase nada.
+# 2. Nem todo item DEVE ser importado. Componentes que fazem parte da
+#    segurança elétrica (disjuntor, relés, fonte) devem ser nacionais e
+#    certificados — o edital exige "conformidade com normas de segurança
+#    elétrica", e produto sem INMETRO não sustenta essa afirmação.
+#
+# Por isso a lista abaixo é CURADA: só aparece link de AliExpress no item
+# que faz sentido importar. Ausência de link aqui é recomendação, não falha.
+BUSCA_ALIEXPRESS = {
+    "peltier tec1-12706":        "TEC1-12706 peltier module",
+    "aquecedor ptc":             "24V PTC heater element with fan",
+    "sensor ina219":             "INA219 current sensor module",
+    "uln2803":                   "ULN2803A DIP18 darlington",
+    "soquete dip":               "DIP18 IC socket",
+    "kit 2":                     "LM2596 buck converter voltmeter display",
+    "kit lm2596":                "LM2596 buck converter voltmeter display",
+    "bts7960":                   "BTS7960 43A motor driver module",
+    "esp32-wroom":               "ESP32 WROOM 32U",
+    "arduino mega":              "Arduino Mega 2560 R3",
+    "nextion":                   "Nextion NX4024T032 3.2 inch HMI",
+    "ds18b20":                   "DS18B20 waterproof temperature sensor",
+    "am2315c":                   "AM2315C temperature humidity sensor",
+    "rtc ds3231":                "DS3231 RTC module",
+    "micro sd":                  "micro SD card module SPI arduino",
+    "cartão micro sd":           "micro SD card 16GB class 10",
+    "dissipador + cooler 80":    "80mm heatsink fan CPU cooler 3pin",
+    "dissipador de alumínio":    "aluminum heatsink small",
+    "cooler 60 mm":              "60mm fan 24V DC",
+    "cooler 40":                 "40mm fan 12V DC",
+    "fan 60":                    "60mm fan 12V DC",
+    "fan 40":                    "40mm fan 12V DC",
+    "pasta térmica":             "thermal paste syringe",
+    "fita térmica":              "thermal adhesive tape double sided",
+    "placa ilhada":              "perfboard prototype PCB",
+    "borne kf350":               "KF350 3.5mm PCB screw terminal block",
+    "espaguete termorretrátil":  "heat shrink tubing kit",
+    "termorretrátil":            "heat shrink tubing kit",
+    "sinaleiros led 22":         "22mm LED pilot indicator lamp 24V",
+    "botão de emergência":       "22mm emergency stop mushroom button",
+    "botão start":               "22mm push button switch green",
+    "botão stop":                "22mm push button switch red",
+    "botão rearme":              "22mm push button switch blue",
+    "blocos de contato":         "22mm push button contact block NO NC",
+    "voltímetro + amperímetro":  "DC voltmeter ammeter 100V 10A digital",
+    "pigtail":                   "IPEX u.FL to SMA pigtail cable",
+    "antena 2,4":                "2.4GHz SMA antenna 3dBi",
+    "conector sma":              "SMA bulkhead panel connector female",
+    "conector circular gx16":    "GX16 8 pin aviation connector",
+    "resistor":                  "1/4W resistor kit assorted",
+    "capacitor cerâmico":        "100nF ceramic capacitor",
+    "diodo 1n4007":              "1N4007 diode",
+    "led 3 mm":                  "3mm warm white LED",
+    "led 5 mm":                  "5mm diffused LED",
+    "micro-chave":               "SPDT micro switch small",
+}
+
+
+# Acessórios que CITAM o componente principal no nome mas são outra coisa.
+# Sem isto, "Suporte DIN para Arduino Mega" cai na busca de "Arduino Mega".
+ACESSORIO = re.compile(r"^\s*(suporte|base|flange|tampa|grade|cinta)\b", re.I)
+
+
+def busca_aliexpress(item: str) -> str:
+    """Devolve o termo em inglês se o item valer a pena importar."""
+    if ACESSORIO.match(item.translate(ACENTOS)):
+        return ""
+    chave = item.translate(ACENTOS).lower()
+    alvo = {k.translate(ACENTOS): v for k, v in BUSCA_ALIEXPRESS.items()}
+    for fragmento, termo_en in alvo.items():
+        if fragmento in chave:
+            return termo_en
+    return ""
+
+
+def url_aliexpress(termo_en: str) -> str:
+    if not termo_en:
+        return ""
+    slug = re.sub(r"[^a-z0-9]+", "-", termo_en.lower()).strip("-")
+    return f"https://pt.aliexpress.com/w/wholesale-{slug}.html"
+
+
 def linha_de_tabela(linha: str) -> list[str] | None:
     linha = linha.strip()
     if not linha.startswith("|") or not linha.endswith("|"):
@@ -198,6 +283,8 @@ def ler_bom(caminho: Path) -> list[dict]:
                 "busca_ml": url_mercadolivre(termo),
                 "busca_amz": url_amazon(termo),
                 "termo": termo,
+                "termo_en": busca_aliexpress(item),
+                "busca_ali": url_aliexpress(busca_aliexpress(item)),
             }
         )
 
@@ -211,14 +298,14 @@ def gerar(itens: list[dict], destino: Path) -> None:
     ws = wb.active
     ws.title = "Lista de Compras"
 
-    ws.merge_cells("A1:J1")
+    ws.merge_cells("A1:K1")
     ws["A1"] = "PROJETO INTEGRADOR — Planta Industrial Didática com Câmara Frigorífica"
     ws["A1"].font = Font(size=15, bold=True, color="FFFFFF")
     ws["A1"].fill = PatternFill("solid", fgColor=AZUL_ESCURO)
     ws["A1"].alignment = Alignment(horizontal="center", vertical="center")
     ws.row_dimensions[1].height = 30
 
-    ws.merge_cells("A2:J2")
+    ws.merge_cells("A2:K2")
     ws["A2"] = (
         f"Lista de materiais · gerada de 03_lista_materiais.md em "
         f"{datetime.now():%d/%m/%Y %H:%M} · arquitetura 127 V CA → 24 V CC → 12 / 5 / 3,3 V"
@@ -232,9 +319,10 @@ def gerar(itens: list[dict], destino: Path) -> None:
         ("Qtd", 7),
         ("Especificação", 56),
         ("Observação", 32),
-        ("🔎 Buscar no Mercado Livre", 26),
-        ("🔎 Buscar na Amazon", 22),
-        ("Link escolhido (cole aqui)", 30),
+        ("🔎 Mercado Livre", 24),
+        ("🔎 Amazon BR", 14),
+        ("🌏 AliExpress (importar)", 26),
+        ("Link escolhido (cole aqui)", 28),
         ("Preço unit. (R$)", 15),
         ("Total (R$)", 13),
     ]
@@ -256,7 +344,7 @@ def gerar(itens: list[dict], destino: Path) -> None:
     for reg in itens:
         if reg["secao"] != secao_atual:
             secao_atual = reg["secao"]
-            ws.merge_cells(start_row=linha, start_column=1, end_row=linha, end_column=10)
+            ws.merge_cells(start_row=linha, start_column=1, end_row=linha, end_column=11)
             celula = ws.cell(row=linha, column=1, value=secao_atual)
             celula.font = Font(bold=True, size=11, color=AZUL_ESCURO)
             celula.fill = PatternFill("solid", fgColor=AMBAR)
@@ -267,12 +355,12 @@ def gerar(itens: list[dict], destino: Path) -> None:
 
         numero += 1
         valores = [numero, reg["item"], reg["qtd"], reg["espec"], reg["obs"],
-                   "", "", reg["link_manual"], "", ""]
+                   "", "", "", reg["link_manual"], "", ""]
         for indice, valor in enumerate(valores, start=1):
             celula = ws.cell(row=linha, column=indice, value=valor)
             celula.border = BORDA
             celula.alignment = Alignment(
-                horizontal="center" if indice in (1, 3, 9, 10) else "left",
+                horizontal="center" if indice in (1, 3, 10, 11) else "left",
                 vertical="top",
                 wrap_text=indice in (2, 4, 5),
             )
@@ -289,22 +377,26 @@ def gerar(itens: list[dict], destino: Path) -> None:
             c = ws.cell(row=linha, column=7)
             c.value = f'=HYPERLINK("{reg["busca_amz"]}","🔎 Amazon")'
             c.font = Font(color="0563C1", underline="single", size=9)
+        if reg["busca_ali"]:
+            c = ws.cell(row=linha, column=8)
+            c.value = f'=HYPERLINK("{reg["busca_ali"]}","🌏 {reg["termo_en"][:26]}")'
+            c.font = Font(color="C55A11", underline="single", size=9)
 
-        ws.cell(row=linha, column=10).value = (
-            f"=IF(C{linha}*I{linha}=0,\"\",C{linha}*I{linha})"
+        ws.cell(row=linha, column=11).value = (
+            f"=IF(C{linha}*J{linha}=0,\"\",C{linha}*J{linha})"
         )
-        ws.cell(row=linha, column=9).number_format = "#,##0.00"
         ws.cell(row=linha, column=10).number_format = "#,##0.00"
+        ws.cell(row=linha, column=11).number_format = "#,##0.00"
         linha += 1
 
-    ws.cell(row=linha + 1, column=8, value="TOTAL GERAL").font = Font(bold=True, size=12)
-    total = ws.cell(row=linha + 1, column=10, value=f"=SUM(J{linha_cab + 1}:J{linha - 1})")
+    ws.cell(row=linha + 1, column=9, value="TOTAL GERAL").font = Font(bold=True, size=12)
+    total = ws.cell(row=linha + 1, column=11, value=f"=SUM(K{linha_cab + 1}:K{linha - 1})")
     total.font = Font(bold=True, size=12, color="FFFFFF")
     total.fill = PatternFill("solid", fgColor=VERDE)
     total.number_format = "#,##0.00"
     total.border = BORDA
 
-    ws.auto_filter.ref = f"A{linha_cab}:J{linha - 1}"
+    ws.auto_filter.ref = f"A{linha_cab}:K{linha - 1}"
 
     # ───────────────────────── aba 2: ordem de construção ──────────────────
     ws2 = wb.create_sheet("Ordem de Construção")

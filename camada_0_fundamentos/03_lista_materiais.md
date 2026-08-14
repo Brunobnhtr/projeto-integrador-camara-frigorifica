@@ -89,6 +89,74 @@ Se você já tinha uma lista antiga em mãos, **confira estes seis antes de fech
 
 ---
 
+## 🌏 Comprando no AliExpress — o que muda no planejamento
+
+A planilha gerada tem uma coluna **🌏 AliExpress** com busca pronta **em inglês** (termo em português não acha quase nada por lá). Mas importar muda três coisas no projeto, e a mais perigosa não é o preço.
+
+### 1. ⏱️ O prazo é o risco real — não o preço
+
+| Origem | Prazo típico |
+|---|---|
+| Mercado Livre / loja local | 2 a 7 dias |
+| **AliExpress** | **20 a 60 dias** |
+| AliExpress com "Envio do Brasil" | 5 a 15 dias (mais caro, estoque limitado) |
+
+> ⚠️ **Um pedido feito hoje pode chegar depois da entrega do projeto.** Faça a conta ao contrário: **data da apresentação − 60 dias = último dia para pedir.** Se essa data já passou, compre nacional e pare de discutir preço.
+
+### 2. 🔁 Não existe devolução prática — compre reserva
+
+Se um componente chegar morto, errado ou nunca chegar, **você não recebe outro a tempo**. Isso muda a lógica de quantidades:
+
+| Componente | Reserva | Por quê |
+|---|---|---|
+| Peltier | **+1** (já na lista: 3) | É o que mais queima, e queima por erro de montagem |
+| LM2596 | **+1 kit** | São os únicos conversores do projeto |
+| BTS7960 | **+1** | Sem ele não há acionamento |
+| ULN2803 | **+1** (já na lista: 2) | Custa centavos |
+| DS18B20 | **+1** | É o sensor que fecha a malha de controle |
+| ESP32 | **+1** | É o protagonista do edital |
+
+> 💡 **A regra:** se o item **para o projeto** quando falha, e vem do exterior, compre dois. A diferença de custo é de poucos reais; a diferença de risco é o projeto inteiro.
+
+### 3. 💰 O preço do anúncio não é o preço final
+
+Importação para pessoa física tem **imposto**, e as regras mudam com frequência. Trate o valor anunciado como **base**, não como total, e **confira as regras vigentes** antes de fechar o pedido.
+
+> 📌 **Regra prática de orçamento:** reserve **+40 % sobre o valor do anúncio** para imposto e frete. Se sobrar, ótimo. Se você orçar pelo preço do anúncio, vai faltar.
+
+### 4. ⚡ O que NÃO importar — e este é um argumento de norma
+
+O edital exige *"garantir conformidade com normas de segurança elétrica"*. Componentes que fazem parte da **cadeia de proteção** precisam ser certificados, e produto de importação direta não traz certificação INMETRO.
+
+| Comprar **NACIONAL** (certificado) | Por quê |
+|---|---|
+| **Disjuntor 2P 6 A curva C** | É a proteção da entrada em 127 V. Certificação não é detalhe |
+| **Fonte chaveada 24 V / 240 W** | Faz a barreira entre 127 V e a parte SELV. Além disso é pesada — frete inviabiliza |
+| **Relés KA1 e KA2** | Você precisa do **datasheet com a corrente declarada em DC**, que o genérico importado não fornece |
+| **Porta-fusíveis, trilho DIN, canaleta, bornes** | Baratos aqui, volumosos para importar |
+| **Cabos e terminais** | Peso e volume |
+| **MDF, acrílico, tintas, cenografia** | Óbvio |
+
+| Comprar **IMPORTADO** (vale muito a pena) | Economia típica |
+|---|---|
+| Peltier, PTC de 24 V, INA219, ULN2803, LM2596, BTS7960 | 3× a 5× mais barato |
+| ESP32, Arduino, Nextion, sensores, módulos SD/RTC | 2× a 4× |
+| Coolers, dissipadores, botoeiras 22 mm, sinaleiros | 2× a 3× |
+
+> ✅ **A planilha já faz essa separação sozinha:** o link do AliExpress só aparece nos itens que faz sentido importar. **Item sem link de AliExpress é recomendação de compra nacional, não falha do gerador.**
+
+### 5. 📦 Estratégia de pedido
+
+1. **Divida em 2 pedidos** com vendedores diferentes. Se um travar na alfândega ou sumir, você não fica sem nada.
+2. **Priorize o que tem prazo longo E é insubstituível**: PTC de 24 V, Peltier, LM2596.
+3. **Prefira vendedores com muitas vendas e avaliação alta**, mesmo custando um pouco mais.
+4. **Tire foto de tudo ao abrir** — é a sua única prova se algo vier errado.
+5. **Teste cada componente assim que chegar**, ainda dentro do prazo de reclamação. Não deixe para descobrir na montagem que o módulo veio morto.
+
+> 🎯 **O item mais crítico para pedir cedo é o PTC de 24 V.** No mercado nacional ele é raro; no AliExpress é comum, mas com o prazo longo. **Ele define a sua data-limite de pedido.**
+
+---
+
 # 🔌 SISTEMA DE ENERGIA (o coração da refatoração)
 
 ## E.1 — Subestação: entrada AC e fonte principal
