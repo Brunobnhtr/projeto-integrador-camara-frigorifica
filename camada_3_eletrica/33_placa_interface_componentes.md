@@ -443,6 +443,30 @@ I = (5 V − 3,1 V) / 220 Ω = 8,6 mA   ✅ brilho adequado para cenografia
 >
 > 📌 Os capacitores aparecem como **100000 pF**, que é a mesma coisa que **100 nF** — é só a notação que a ferramenta escolhe.
 
+### Como ler o desenho do circuito
+
+**A linha horizontal grossa embaixo é o barramento de 0 V.** Os pontinhos cheios sobre ela são **nós** — onde os fios realmente se juntam. Repare que C1, C2, R2 e C3 descem todos até ela: é o mesmo 0 V para todos, e por isso existe **um único borne "0 V"**.
+
+**Os quatro circuitos de cima não se tocam entre si** — só se encontram no barramento. Da esquerda para a direita:
+
+| Circuito | O que faz |
+|---|---|
+| **C1** entre `J1·A0` e o 0 V | Filtra o ruído do pino IS do BTS #1 |
+| **C2** entre `J1·A1` e o 0 V | Idem, BTS #2 |
+| **R3** entre `J2·+5V` e `J1·D2` | Pull-up do sensor. **Não desce ao 0 V** |
+| **R1 + R2 + C3** | Divisor: os 24 V entram por `J2·24V-POT`, viram 4,2 V no nó e saem por `J1·D25` |
+
+**No ULN2803, cada pino mostra o número real do CI e para onde vai o fio.** Confira contra o chip físico: o pino 1 fica ao lado do chanfro.
+
+| Pino | Liga em |
+|---|---|
+| 1 · IN1 · 2 · IN2 · 3 · IN3 · 4 · IN4 | `J1·D9` · `D10` · `D11` · `D12` |
+| **9 · GND** | Barramento de 0 V |
+| **10 · COM** | `J2·24V-SRV` (24 V permanente) |
+| 18 · OUT1 · 17 · OUT2 · 16 · OUT3 · 15 · OUT4 | `J2·L1−` · `L2−` · `L3−` · `L4−` |
+
+⚠️ **Repare na numeração:** entradas e saídas ficam **frente a frente** — IN1 em cima à esquerda, OUT1 em cima à direita. Os pinos 5 a 8 e 11 a 14 ficam sem uso.
+
 > 🖼️ **Detalhamento adicional:**
 > - [**Esquema elétrico**](../desenhos/08_placa_pi1_esquema.svg) — mostra **como funciona** (os 4 circuitos separados)
 > - [**Diagrama de ligação**](../desenhos/09_placa_pi1_montagem.svg) ⭐ — mostra **onde cada fio vai**. **É este que você usa para montar**
