@@ -517,12 +517,57 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 
 | Item | Qtd | Especificação | Link |
 |---|---:|---|---|
-| **Pastilha Peltier TEC1-12706** | **3** | 12 V / ~6 A / 60 W cada. **2 em uso, ligadas EM SÉRIE** (24 V / 6,0 A / 144 W) + 1 reserva. ⚠️ **Comprar do mesmo lote/vendedor** — em série as duas conduzem a mesma corrente, e pastilhas descasadas trabalham desequilibradas | |
+| ⭐ **Kit duplo de refrigeração Peltier** (2× TEC1-12706) | 1 | **Adotado.** Traz **2 pastilhas + radiador + 2 blocos frios + ventoinhas + montagem térmica pronta**. Anunciado como **12 V / 15 A**, ou seja, **vem ligado em PARALELO** — ⚠️ **religar em SÉRIE** para 24 V / 6,0 A (ver as 3 modificações abaixo). ~200 × 115 × 85 mm. Buscar `kit peltier duplo TEC1-12706 refrigeração` | |
+| Pastilha Peltier TEC1-12706 avulsa | 1 | **Reserva.** ⚠️ Trocar uma pastilha do kit exige desmontar a junta térmica — tenha a peça, mas conte com o trabalho | |
 | **Aquecedor PTC cerâmico 24 V / 80 W** | 1 | Com aletas e ventilador, **versão de 24 V** (~3,3 A) para ligar direto no barramento. ⚠️ **60 W não existe no mercado brasileiro** — as versões reais são **80 W, 100 W e 150 W**. Use a de **80 W**: fica bem equilibrada contra os ~60 W de capacidade de refrigeração das 2 Peltier, e mantém a corrente em 3,3 A (metade da Peltier). A de 150 W passaria a ser o pior caso do ramal (6,25 A) e desequilibra o controle. Buscar `aquecedor ptc 24v ventilador` | |
-| **Dissipador + cooler 80 mm p/ lado quente da Peltier** | **2** | **Um para cada pastilha.** ⚠️ **3 fios (com sinal de RPM)** nos dois — o firmware monitora os **dois** tacômetros e bloqueia a refrigeração se qualquer um parar | |
-| Pasta térmica | 1 | Seringa 5 g — dá para os 2 conjuntos | |
+| ⚠️ **Ventoinha de reposição do RADIADOR — 3 fios** | 2 | ⭐ **A troca mais importante do kit.** As originais são de **2 fios** e não informam rotação. Têm que ser **as do radiador (lado quente)** — se elas param, a Peltier queima em < 1 min. As dos **blocos frios** podem continuar de 2 fios. Medir o tamanho no kit antes de comprar | |
+| Pasta térmica | 1 | Seringa 5 g. **O kit já vem com a junta térmica montada** — a pasta é só para retrabalho, se você abrir para trocar uma pastilha | |
 | Fan 60 × 60 mm 12 V | 2 | Internas — lado PTC (1 sopra ↑, 1 sopra ↓) | |
 | Fan 40 × 40 mm 12 V | 2 | Internas — lado Peltier (1 sopra ↓, 1 sopra ↑) | |
+
+> ### ⭐ Kit duplo de Peltier — as 3 modificações obrigatórias
+>
+> O kit pronto foi adotado porque entrega a **montagem mecânica e térmica já feita** — radiador, blocos frios, fixação e a junta com pasta, que é justamente a parte mais fácil de errar. Mas ele vem configurado para 12 V e precisa de três mudanças:
+>
+> **1. Religar as pastilhas em SÉRIE**
+>
+> O anúncio de **12 V / 15 A** denuncia o paralelo. A conta:
+>
+> | Ligação | Tensão | Corrente |
+> |---|---:|---:|
+> | 2 em **paralelo** (como vem) | 12 V | ~12 A |
+> | 2 em **série** (o que queremos) | **24 V** | **~6 A** |
+>
+> Ligue **(+) de uma no (−) da outra**; as pontas que sobram viram o par de 24 V.
+>
+> **2. 🔥 Separar as ventoinhas das pastilhas — o erro que queima o kit**
+>
+> Kits assim costumam ter **uma entrada de 12 V só**, alimentando pastilhas e ventoinhas juntas. **Ligar 24 V nessa entrada única queima todas as ventoinhas na hora.**
+>
+> ```
+> Peltier 1 ──série── Peltier 2  ────► 24 V   (BTS #1, via BD-POT)
+> Ventoinhas (todas)  ────────────────► 12 V   (BD-AUX)
+> ```
+>
+> **3. Trocar as ventoinhas do RADIADOR por modelos de 3 fios**
+>
+> | Ventoinha | Se parar | Precisa de RPM? |
+> |---|---|---|
+> | **Do radiador** (lado quente) | ⚠️ **Peltier queima em < 1 min** | ✅ **SIM** |
+> | Dos blocos frios (lado frio) | O ar não circula bem — não destrói nada | ❌ Não |
+>
+> ⚠️ **Troque as do radiador, não as dos blocos frios.** É um erro fácil de cometer e ele anula a proteção nº 1 do projeto.
+>
+> ### 💡 Possível economia: 2 ventoinhas internas a menos
+>
+> As **2 ventoinhas dos blocos frios já sopram para dentro da câmara**. Elas podem assumir o papel das 2 ventoinhas de 40 mm que o projeto previa no lado Peltier. **Decida na montagem**, ao ver a geometria real — se aproveitar, são 2 peças a menos e menos coisa dentro da câmara.
+>
+> ### ⚠️ Dois pontos a verificar no comissionamento
+>
+> | Verificação | Por quê |
+> |---|---|
+> | **Temperatura do radiador** com as 2 pastilhas em 100 % | O radiador do kit é dimensionado para ~120 W, e o lado quente rejeita até ~200 W no *pull-down*. Se passar de **60 °C**, o ΔT despenca e a câmara para de esfriar. Em regime (duty ~40 %) não deve ser problema |
+> | **Corrente total das ventoinhas** do kit | O ramal de 12 V (T3) está em 0,87 A, ou seja **58 % do limite seguro do LM2596**. Há folga, mas não é infinita — meça antes de fechar |
 
 > ⚠️ **As duas Peltier ficam em SÉRIE, nunca em paralelo.** Em série cada pastilha recebe 12 V (o nominal dela) e as duas compartilham os mesmos 6 A. **Em paralelo cada uma receberia os 24 V inteiros e queima em segundos.** Antes de energizar, meça a resistência do conjunto com o multímetro: deve dar **o dobro** da resistência de uma pastilha isolada. Se der metade, a ligação está em paralelo — corrija.
 

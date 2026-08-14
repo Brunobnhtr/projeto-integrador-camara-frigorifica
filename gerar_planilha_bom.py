@@ -134,7 +134,9 @@ BUSCA_ALIEXPRESS = {
     # anuncio generico ("24V 10A Relay Module") nao declara.
     "ka1":                       "JQX-13F LY2N 24VDC relay 8 pin 2CO with socket",
     "ka2":                       "JQX-13F LY2N 24VDC relay 10A 8 pin PTF08A socket",
+    "kit duplo de refrigera":     "dual TEC1-12706 peltier cooler kit 12V",
     "peltier tec1-12706":        "TEC1-12706 peltier module",
+    "ventoinha de reposi":       "80mm fan 12V 3 pin PWM tachometer",
     "aquecedor ptc":             "24V PTC heater element with fan",
     "sensor ina219":             "INA219 current sensor module",
     "uln2803":                   "ULN2803A DIP18 darlington",
