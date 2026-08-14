@@ -112,7 +112,7 @@ A porta tem só o que a pessoa precisa **tocar ou ver**:
 
 > 🔄 **O que mudou em relação à versão anterior:** o painel cresceu de 300 × 450 para **400 × 500 mm** e ganhou um **terceiro trilho DIN**, para acomodar os blocos de distribuição. A fonte saiu do painel (foi para a subestação).
 >
-> 🔄 **Revisão "Potência em 24 V":** saíram do **trilho 1** os porta-fusíveis **F4/F5** e a **placa de proteção Zener** (91 mm liberados — o crowbar foi eliminado, ver [Doc 02 §2.6](../camada_0_fundamentos/02_arquitetura_de_energia.md)). Entrou no **trilho 3** a **placa de interface PI-1** (52,5 mm), que recolhe os 9 componentes discretos que antes ficariam soltos no chicote — ver [Doc 33](../camada_3_eletrica/33_placa_interface_componentes.md).
+> 🔄 **Revisão "Potência em 24 V":** saíram do **trilho 1** os porta-fusíveis **F4/F5** e a **placa de proteção Zener** (91 mm liberados — o crowbar foi eliminado, ver [Doc 02 §2.6](../camada_0_fundamentos/02_arquitetura_de_energia.md)). Entrou no **trilho 3** a **placa de interface PI-1** (**70 mm**, caixa de 4 módulos), que recolhe os 9 componentes discretos que antes ficariam soltos no chicote — ver [Doc 33](../camada_3_eletrica/33_placa_interface_componentes.md).
 
 ---
 
@@ -235,8 +235,12 @@ A porta tem só o que a pessoa precisa **tocar ou ver**:
 | 4 | **BD-24V** — bloco de distribuição **24 V permanente** (serviços) · 1 entrada + **4 saídas** | 36 mm | 148 |
 | 5 | Separador | 5 mm | 184 |
 | 6 | **BD-0V** — bloco de distribuição do retorno (**star ground**) · 1 entrada 10 mm² + **8 saídas** | 46 mm | 189 |
-| 7 | Trava-fim de trilho | 10 mm | 235 |
-| | **Ocupação total** | **~205 mm** | **livre até 360 — sobram 125 mm** |
+| 7 | Separador | 5 mm | 235 |
+| 8 | 🔄 **Módulo Micro SD + RTC DS3231** em suporte DIN | 60 mm | 240 |
+| 9 | Trava-fim de trilho | 10 mm | 300 |
+| | **Ocupação total** | **~270 mm** | **livre até 360 — sobram 60 mm** |
+
+> 🔄 **O SD/RTC veio do trilho 3** para abrir espaço à PI-1, que cresceu para 4 módulos. Ele fica na **ponta oposta ao BD-0V**, longe da entrada de 10 mm² por onde passa a soma de todas as correntes de retorno.
 
 > 🔄 **O trilho 1 encolheu 91 mm** com a revisão "Potência em 24 V": saíram os porta-fusíveis **F4** e **F5** e a **placa de proteção Zener**, que existiam por causa do circuito crowbar. Os fusíveis de ramal **F1, F2 e F3 continuam na subestação**, não no painel. Ver [Doc 02 §2.6](../camada_0_fundamentos/02_arquitetura_de_energia.md).
 >
@@ -290,14 +294,17 @@ Você precisa puxar **vários fios da mesma tensão** dentro do painel: os 5 V v
 | Ordem | Componente | Largura | X inicial |
 |---:|---|---:|---:|
 | 1 | **Arduino Mega 2560 + Sensor Shield** em suporte DIN | 110 mm | 40 |
-| 2 | ⭐ **Placa de Interface PI-1** em caixa modular DIN de 3M | **52,5 mm** | **150** |
-| 3 | **DNLCB30 + ESP32** | 90 mm | 203 |
-| 4 | **Módulo Micro SD + RTC DS3231** em suporte DIN | 60 mm | 293 |
-| | **Ocupação total** | **~313 mm** | livre até 360 |
+| 2 | ⭐ **Placa de Interface PI-1** em caixa modular DIN de **4M** | **70 mm** | **155** |
+| 3 | **DNLCB30 + ESP32** | 90 mm | 230 |
+| | **Ocupação total** | **~280 mm** | livre até 360 — sobram 80 mm |
+
+> 🔄 **O módulo SD + RTC mudou para o trilho 1.** A PI-1 cresceu de 52,5 para 70 mm (o borne J1 tem 11 vias e não cabia em 3 módulos), e os três componentes juntos passariam de 360 mm. Entre mudar a PI-1 ou o SD, **a PI-1 tem de ficar colada no Arduino**: ela existe para *filtrar o sinal logo antes de ele chegar no pino*. Filtrar e depois percorrer meio painel desfaz o filtro.
 
 > ⭐ **A PI-1 fica encostada no Arduino, e a posição não é arbitrária.** Ela concentra os 9 componentes discretos do projeto — filtros dos pinos IS, divisor de realimentação, pull-up do 1-Wire e limitadores dos LEDs — e **todos eles precisam estar eletricamente junto ao Arduino** para cumprirem a função. Montagem detalhada, borne por borne, no [Doc 33 §33.3](../camada_3_eletrica/33_placa_interface_componentes.md).
 >
-> ⚠️ **Os vãos de 5 mm entre componentes foram zerados neste trilho** para abrir os 52,5 mm da PI-1. Encaixe tudo justo e trave com as travas-fim nas duas pontas.
+> ✅ **Os vãos de 5 mm voltaram a caber neste trilho** com a saída do SD/RTC. Não precisa mais encaixar tudo justo.
+>
+> ⚠️ **O cabo SPI do SD ficou longo (~450 mm) e isso tem preço.** Use cabo **flat (ribbon) intercalando um fio de 0 V entre os sinais**, ou par trançado, e passe-o pela canaleta **mais afastada dos BTS7960**. Se aparecer erro de gravação no cartão, **reduza a velocidade do SPI** no firmware antes de suspeitar do módulo — `SD.begin(CS, SPI_HALF_SPEED)` resolve a maioria dos casos.
 >
 > 📌 **Os 2 resistores de 10 kΩ de pull-down NÃO ficam na PI-1** — vão soldados dentro dos próprios BTS7960, no trilho 2. Motivo em [Doc 33 §33.4](../camada_3_eletrica/33_placa_interface_componentes.md).
 

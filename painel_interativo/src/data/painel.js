@@ -140,11 +140,12 @@ export const COMPONENTES = [
     tensao: 'SINAL', largura: 52,
     ehPlaca: true,
     terminais: {
-      'J1-1': 'entra IS#1', 'J1-2': 'entra IS#2', 'J1-3': 'entra DATA', 'J1-4': 'entra 24V-POT',
+      'J1-1': 'entra IS#1', 'J1-2': 'entra IS#2', 'J1-3': 'entra DATA', 'J1-4': 'entra +5V',
       'J1-5': 'entra D9', 'J1-6': 'entra D10', 'J1-7': 'entra D11', 'J1-8': 'entra D12',
-      'J1-9': 'entra 0V', 'J1-10': 'entra 24V-SRV', 'J1-11': 'entra +5V',
-      'J2-1': 'sai A0', 'J2-2': 'sai A1', 'J2-3': 'sai D2', 'J2-4': 'sai D25',
-      'J2-5': 'sai L1−', 'J2-6': 'sai L2−', 'J2-7': 'sai L3−', 'J2-8': 'sai L4−',
+      'J1-9': 'entra 0V', 'J1-10': 'entra 24V-SRV', 'J1-11': 'entra 24V-POT',
+      'J2-1': 'sai A0', 'J2-2': 'sai A1', 'J2-3': 'sai D2',
+      'J2-4': 'sai L1−', 'J2-5': 'sai L2−', 'J2-6': 'sai L3−', 'J2-7': 'sai L4−',
+      'J2-8': 'sai D25',
     },
   },
   {
@@ -215,7 +216,7 @@ export const CABOS = [
     nota: '⚠️ No pino 5V, NUNCA no VIN' },
   { n: 52, de: 'BD-5V:O4', para: 'BTS1:VCC', tensao: '5V', bitola: '0,25 mm²', cor: 'vermelho' },
   { n: 53, de: 'BD-5V:O5', para: 'BTS2:VCC', tensao: '5V', bitola: '0,25 mm²', cor: 'vermelho' },
-  { n: 54, de: 'BD-5V:O6', para: 'PI1:J1-11', tensao: '5V', bitola: '0,25 mm²', cor: 'vermelho',
+  { n: 54, de: 'BD-5V:O6', para: 'PI1:J1-4', tensao: '5V', bitola: '0,25 mm²', cor: 'vermelho',
     nota: 'Alimenta o pull-up do sensor' },
 
   // 0 V
@@ -260,9 +261,9 @@ export const CABOS = [
     nota: 'Vem do sensor dentro da câmara' },
   { n: 120, de: 'PI1:J2-3', para: 'MEGA:D2', tensao: 'SINAL', bitola: '0,25 mm²', cor: 'amarelo',
     nota: 'Sai com o pull-up de 4,7 kΩ aplicado' },
-  { n: 57.8, de: 'BD-POT:O3', para: 'PI1:J1-4', tensao: '24V_POT', bitola: '0,25 mm²', cor: 'vermelho',
+  { n: 57.8, de: 'BD-POT:O3', para: 'PI1:J1-11', tensao: '24V_POT', bitola: '0,25 mm²', cor: 'vermelho',
     nota: '⚠️ Só para MEDIR. Não confundir com o 24V-SRV' },
-  { n: 57.9, de: 'PI1:J2-4', para: 'MEGA:D25', tensao: 'SINAL', bitola: '0,25 mm²', cor: 'azul',
+  { n: 57.9, de: 'PI1:J2-8', para: 'MEGA:D25', tensao: 'SINAL', bitola: '0,25 mm²', cor: 'azul',
     nota: 'Os 24 V viraram 4,2 V no divisor' },
 
   // sinaleiros
@@ -270,10 +271,10 @@ export const CABOS = [
   { n: 122, de: 'MEGA:D10', para: 'PI1:J1-6', tensao: 'SINAL', bitola: '0,25 mm²', cor: 'azul' },
   { n: 123, de: 'MEGA:D11', para: 'PI1:J1-7', tensao: 'SINAL', bitola: '0,25 mm²', cor: 'azul' },
   { n: 124, de: 'MEGA:D12', para: 'PI1:J1-8', tensao: 'SINAL', bitola: '0,25 mm²', cor: 'azul' },
-  { n: 125, de: 'PI1:J2-5', para: 'H1:-', tensao: '24V_SRV', bitola: '0,25 mm²', cor: 'preto' },
-  { n: 126, de: 'PI1:J2-6', para: 'H2:-', tensao: '24V_SRV', bitola: '0,25 mm²', cor: 'preto' },
-  { n: 127, de: 'PI1:J2-7', para: 'H3:-', tensao: '24V_SRV', bitola: '0,25 mm²', cor: 'preto' },
-  { n: 128, de: 'PI1:J2-8', para: 'H4:-', tensao: '24V_SRV', bitola: '0,25 mm²', cor: 'preto' },
+  { n: 125, de: 'PI1:J2-4', para: 'H1:-', tensao: '24V_SRV', bitola: '0,25 mm²', cor: 'preto' },
+  { n: 126, de: 'PI1:J2-5', para: 'H2:-', tensao: '24V_SRV', bitola: '0,25 mm²', cor: 'preto' },
+  { n: 127, de: 'PI1:J2-6', para: 'H3:-', tensao: '24V_SRV', bitola: '0,25 mm²', cor: 'preto' },
+  { n: 128, de: 'PI1:J2-7', para: 'H4:-', tensao: '24V_SRV', bitola: '0,25 mm²', cor: 'preto' },
   { n: 129, de: 'BD-24V:O3', para: 'H1:+', tensao: '24V_SRV', bitola: '0,5 mm²', cor: 'vermelho',
     nota: 'O positivo dos 4 sinaleiros NÃO passa pela PI-1' },
 

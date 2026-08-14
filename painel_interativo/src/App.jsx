@@ -5,6 +5,7 @@ import {
 import '@xyflow/react/dist/style.css';
 
 import { COMPONENTES, CABOS, TENSOES, PI1_INTERNO, paraOndeVai } from './data/painel';
+import ZoomComponente from './components/ZoomComponente';
 
 /* ── posição de cada trilho na tela ───────────────────────────────── */
 const LINHA_Y = { 1: 60, 2: 300, 3: 540, porta: 800 };
@@ -49,7 +50,7 @@ function NoComponente({ data, selected }) {
 const nodeTypes = { comp: NoComponente };
 
 /* ── painel lateral de detalhe ────────────────────────────────────── */
-function Detalhe({ comp, onIrPara, onFechar }) {
+function Detalhe({ comp, onIrPara, onFechar, onAbrirZoom }) {
   if (!comp) return null;
   const t = TENSOES[comp.tensao] ?? TENSOES.SINAL;
   return (
@@ -70,6 +71,14 @@ function Detalhe({ comp, onIrPara, onFechar }) {
           }}>×</button>
         </div>
       </div>
+
+      <button onClick={() => onAbrirZoom(comp)} style={{
+        display: 'block', width: 'calc(100% - 32px)', margin: '12px 16px 0',
+        background: '#f08c00', color: '#fff', border: 'none', borderRadius: 6,
+        padding: '9px 12px', cursor: 'pointer', fontSize: 12.5, fontWeight: 700,
+      }}>
+        🔍 {comp.ehPlaca ? 'Abrir a placa furo por furo' : 'Ver a pinagem em detalhe'}
+      </button>
 
       {comp.detalhe && (
         <div style={{ padding: '12px 16px', background: '#f8f9fa', fontSize: 12.5,
@@ -150,6 +159,7 @@ function Detalhe({ comp, onIrPara, onFechar }) {
 function Painel() {
   const [selId, setSelId] = useState(null);
   const [filtro, setFiltro] = useState(null);
+  const [zoom, setZoom] = useState(null);
   const { setCenter } = useReactFlow();
 
   const nodes = useMemo(() => {
@@ -213,7 +223,7 @@ function Painel() {
       }}>
         <b style={{ fontSize: 15 }}>PAINEL DE COMANDO — Projeto Integrador CF-01</b>
         <span style={{ fontSize: 11.5, opacity: 0.75 }}>
-          clique num componente para ver os terminais · clique num destino para navegar até ele
+          clique para ver os terminais · duplo clique abre o componente em detalhe
         </span>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 6, flexWrap: 'wrap' }}>
           {Object.entries(TENSOES).map(([k, t]) => (
@@ -238,6 +248,10 @@ function Painel() {
       <ReactFlow
         nodes={nodes} edges={edges} nodeTypes={nodeTypes}
         onNodeClick={(_, n) => !n.id.startsWith('t-') && setSelId(n.id)}
+        onNodeDoubleClick={(_, n) => {
+          const c = COMPONENTES.find(x => x.id === n.id);
+          if (c) setZoom(c);
+        }}
         onPaneClick={() => setSelId(null)}
         fitView fitViewOptions={{ padding: 0.12 }}
         minZoom={0.2} maxZoom={2.5}
@@ -248,7 +262,9 @@ function Painel() {
         <MiniMap pannable zoomable nodeColor={n => (TENSOES[n.data?.tensao]?.cor ?? '#ccc')} />
       </ReactFlow>
 
-      <Detalhe comp={sel} onIrPara={irPara} onFechar={() => setSelId(null)} />
+      <Detalhe comp={sel} onIrPara={irPara} onFechar={() => setSelId(null)}
+               onAbrirZoom={setZoom} />
+      <ZoomComponente comp={zoom} onFechar={() => setZoom(null)} />
     </div>
   );
 }

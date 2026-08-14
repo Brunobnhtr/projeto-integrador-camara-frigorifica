@@ -372,9 +372,11 @@ I = (5 V − 3,1 V) / 220 Ω = 8,6 mA   ✅ brilho adequado para cenografia
 |---|---|
 | **Trilho** | **3 (controle)**, imediatamente ao lado do Arduino |
 | **Posição** | X = 310 mm (no espaço livre atual do trilho) |
-| **Invólucro** | **Caixa modular DIN de 3 módulos (52,5 mm)** |
-| **Placa interna** | Ilhada, ~45 × 75 mm |
-| **Bornes** | Tipo **KF350 (passo 3,5 mm)** — todos os fios são de 0,25 mm² |
+| **Invólucro** | **Caixa modular DIN de 4 módulos (70 mm)** |
+| **Placa interna** | Ilhada, **24 × 29 furos** = 61 × 74 mm |
+| **Bornes** | Tipo **KF301 (passo 5,08 mm)** — todos os fios são de 0,25 mm² |
+
+> ⚠️ **Por que 4 módulos e não 3.** O borne J1 tem **11 vias**. Em passo de 5,08 mm isso dá `11 × 5,08 = 55,9 mm`, e uma caixa de 3 módulos oferece só ~45 mm úteis — **não cabe**. A caixa de 4 módulos dá 61 mm de placa, com 5 mm de folga.
 
 > ⚠️ **A placa precisa dos ~52 mm que hoje estão livres no trilho 3.** Para caber, zere os vãos de 5 mm entre o Arduino, a DNLCB30 e o módulo SD/RTC. Se preferir uma placa mais folgada, o **trilho 1 tem ~86 mm livres** desde que a placa Zener e os porta-fusíveis F4/F5 saíram do projeto — mas aí o cabo SPI do SD fica mais longo, o que é pior. **Recomendação: 3M no trilho 3.**
 
@@ -576,45 +578,50 @@ Por isso existe **um único bloco BD-0V**, e o nome dele é **star ground**: tod
 
 Confusão comum, e a nomenclatura anterior tinha culpa. Eles são divididos por **para onde o fio vai fisicamente**:
 
-| Borne | Todos os fios dele vão para... |
+| Borne | Regra, sem exceção |
 |---|---|
-| **J1** (borda de cima) | O **Arduino**, que fica ao lado na mesma calha |
-| **J2** (borda de baixo) | O **painel** — blocos BD-5V, BD-0V, BD-POT, BD-24V e as lâmpadas da porta |
+| **J1** (borda de cima) | **Só ENTRA.** 11 vias. Nada sai por aqui. |
+| **J2** (borda de baixo) | **Só SAI.** 8 vias. Nada entra por aqui. |
 
-**É geografia, não direção de sinal.** Dentro de cada borne há sinal indo e vindo:
+**O fluxo é sempre o mesmo, de cima para baixo:**
 
-| Via | Direção real |
+```
+   vem de algum lugar ──► J1 ──► [componente] ──► J2 ──► vai para algum lugar
+```
+
+Isso vale até para os sinais que a placa apenas *atravessa*. O IS#1 entra por `J1-1`, encosta no capacitor e sai por `J2-1` já chamado de `A0`. **O sinal muda de nome ao atravessar a placa**, e isso é proposital: o nome diz em que ponto do caminho ele está.
+
+| Via | O que é |
 |---|---|
-| J1 · D9 | Arduino **→** placa (entra) |
-| J1 · A0 | Nó compartilhado — o capacitor só encosta nele |
-| J2 · +5V | Painel **→** placa (entra) |
-| **J2 · 24V-POT** | Painel **→** placa (entra, para ser medido) |
-| J2 · L1− | Placa **→** lâmpada (sai) |
+| `J1-5` · D9 | Arduino **→** placa |
+| `J1-11` · 24V-POT | Painel **→** placa (só para ser medido) |
+| `J2-1` · A0 | Placa **→** Arduino, já filtrado |
+| `J2-4` · L1− | Placa **→** sinaleiro |
 
-📌 **É por isso que os dois 24 V ficam em J2:** eles vêm dos blocos de distribuição do **trilho 1**, não do Arduino. Colocá-los em J1 obrigaria a puxar 24 V até o lado do Arduino sem necessidade.
+📌 **As duas vias de 24 V ficam nas pontas de J1** (`J1-10` = 24V-SRV, `J1-11` = 24V-POT), longe das vias de sinal — é ali que 24 V convive com lógica de 5 V, e um fio solto leva o Arduino junto. **Anilhas de cores diferentes nas duas.**
 
 **A chave para não se perder:** os 4 circuitos da placa **não se tocam** — a única coisa que compartilham é o barramento de 0 V. Estude um de cada vez.
 
 #### Bloco A — Filtro dos pinos IS (são 2, idênticos)
 
 ```
-   J1·A0 ──────●──────► nó A0            J1·A1 ──────●──────► nó A1
-                │                                     │
-              ══╪══ C1 · 100 nF                     ══╪══ C2 · 100 nF
-                │                                     │
-               ─┴─ 0 V                               ─┴─ 0 V
+   J1-1 (IS#1) ──●──► J2-1 (A0)     J1-2 (IS#2) ──●──► J2-2 (A1)
+                  │                                 │
+                ══╪══ C1 · 100 nF                  ══╪══ C2 · 100 nF
+                  │                                 │
+                 ─┴─ 0 V                           ─┴─ 0 V
 ```
 
 #### Bloco B — Divisor que lê os 24 V
 
 ```
-   J2·24V-POT ───┤ R1 · 22 kΩ ├───●─────────────► J1·D25
-                                  │
-                        ┌─────────┴─────────┐
-                        │                   │
-                  ┤ R2 · 4,7 kΩ ├         ══╪══ C3 · 100 nF
-                        │                   │
-                       ─┴─ 0 V             ─┴─ 0 V
+   J1-11 (24V-POT) ──┤ R1 · 22 kΩ ├──●──────────► J2-8 (D25)
+                                     │
+                           ┌─────────┴─────────┐
+                           │                   │
+                     ┤ R2 · 4,7 kΩ ├         ══╪══ C3 · 100 nF
+                           │                   │
+                          ─┴─ 0 V             ─┴─ 0 V
 ```
 
 ⚠️ **R2 e C3 ficam em PARALELO**, os dois ligados do **nó D25** ao 0 V. O C3 não tem relação nenhuma com os pinos dos sinaleiros.
@@ -622,7 +629,9 @@ Confusão comum, e a nomenclatura anterior tinha culpa. Eles são divididos por 
 #### Bloco C — Pull-up do sensor de temperatura
 
 ```
-   J2·+5V ───┤ R3 · 4,7 kΩ ├─── J1·D2
+   J1-4 (+5V) ───┤ R3 · 4,7 kΩ ├───●───► J2-3 (D2)
+                                    │
+                            J1-3 (DATA, vem do sensor)
 ```
 
 Um resistor entre dois pontos. **Não toca no 0 V.**
@@ -631,12 +640,12 @@ Um resistor entre dois pontos. **Não toca no 0 V.**
 
 ```
                     ┌──────────────────────┐
-     J1·D9  ────────┤ 1  IN1      OUT1  18 ├──────► J2·L1−
-     J1·D10 ────────┤ 2  IN2      OUT2  17 ├──────► J2·L2−
-     J1·D11 ────────┤ 3  IN3      OUT3  16 ├──────► J2·L3−
-     J1·D12 ────────┤ 4  IN4      OUT4  15 ├──────► J2·L4−
+    J1-5 (D9)  ─────┤ 1  IN1      OUT1  18 ├─────► J2-4 (L1−)
+    J1-6 (D10) ─────┤ 2  IN2      OUT2  17 ├─────► J2-5 (L2−)
+    J1-7 (D11) ─────┤ 3  IN3      OUT3  16 ├─────► J2-6 (L3−)
+    J1-8 (D12) ─────┤ 4  IN4      OUT4  15 ├─────► J2-7 (L4−)
                     │ 5..8  IN5-8  OUT5-8 11..14│  (livres)
-        0 V ────────┤ 9  GND      COM   10 ├──────► J2·24V-SRV
+           0 V ─────┤ 9  GND      COM   10 ├───── J1-10 (24V-SRV)
                     └──────────────────────┘
                             ULN2803A
 ```
@@ -645,19 +654,25 @@ Um resistor entre dois pontos. **Não toca no 0 V.**
 
 | # | De | Para | Componente |
 |---|---|---|---|
-| 1 | J1 · **A0** | barramento 0 V | **C1** (100 nF) |
-| 2 | J1 · **A1** | barramento 0 V | **C2** (100 nF) |
-| 3 | J1 · **D2** | J2 · **+5V** | **R3** (4,7 kΩ) |
-| 4 | J2 · **24V-POT** | J1 · **D25** | **R1** (22 kΩ) |
-| 5 | J1 · **D25** | barramento 0 V | **R2** (4,7 kΩ) |
-| 6 | J1 · **D25** | barramento 0 V | **C3** (100 nF) |
-| 7–10 | J1 · **D9 · D10 · D11 · D12** | soquete **pinos 1 · 2 · 3 · 4** | fio |
-| 11 | soquete **pino 9** (GND) | barramento 0 V | fio |
-| 12 | soquete **pino 10** (COM) | J2 · **24V-SRV** | fio |
-| 13–16 | soquete **pinos 18 · 17 · 16 · 15** | J2 · **L1− · L2− · L3− · L4−** | fio |
-| 17 | J2 · **0V** | barramento 0 V | fio |
+| 1 | nó **A0** | barramento 0 V | **C1** (100 nF) |
+| 2 | nó **A1** | barramento 0 V | **C2** (100 nF) |
+| 3 | **J1-4** (+5V) | nó **1-Wire** | **R3** (4,7 kΩ) |
+| 4 | **J1-11** (24V-POT) | nó **D25** | **R1** (22 kΩ) |
+| 5 | nó **D25** | barramento 0 V | **R2** (4,7 kΩ) |
+| 6 | nó **D25** | barramento 0 V | **C3** (100 nF) |
+| 7 | **J1-1** (IS#1) → nó A0 → **J2-1** | — | 2 fios |
+| 8 | **J1-2** (IS#2) → nó A1 → **J2-2** | — | 2 fios |
+| 9 | **J1-3** (DATA) → nó 1-Wire → **J2-3** | — | 2 fios |
+| 10 | nó **D25** | **J2-8** (D25) | fio |
+| 11–14 | **J1-5..8** (D9..D12) | soquete **pinos 1 · 2 · 3 · 4** | fio |
+| 15 | soquete **pino 9** (GND) | barramento 0 V | fio |
+| 16 | soquete **pino 10** (COM) | **J1-10** (24V-SRV) | fio |
+| 17–20 | soquete **pinos 18 · 17 · 16 · 15** | **J2-4..7** (L1−..L4−) | fio |
+| 21 | **J1-9** (0V) | barramento 0 V | fio |
 
-**17 ligações · 7 componentes · 1 barramento.**
+**21 ligações · 7 componentes · 1 barramento · 1 ponte de nó.**
+
+> 🖥️ **Confira no simulador antes de soldar.** O painel interativo desenha esta placa **furo por furo, em escala real**: [`painel_interativo/`](../painel_interativo/). Dê duplo clique na PI-1 e use o filtro dos 4 circuitos para estudar um de cada vez. O comando `npm run valida` confere sozinho se dois componentes disputam o mesmo furo.
 
 ### ⚠️ O passo do borne tem que ser 5,08 mm
 
@@ -666,7 +681,12 @@ Um resistor entre dois pontos. **Não toca no 0 V.**
 | 3,5 mm (KF350) | ❌ **Não** — a placa tem furos a cada 2,54 mm |
 | **5,08 mm (KF301 / KRE)** | ✅ **Sim — é exatamente 2 furos** |
 
-Com **8 vias por borne**, a largura fica `8 × 5,08 = 40,6 mm` e cabe na placa de 45 mm. Dá para usar 8 em vez de 10 porque **os sinais que compartilham nó não precisam de dois bornes**: o fio que vem do BTS e o fio que vai à placa se encontram no próprio borne do shield do Arduino.
+| Borne | Vias | Largura | Cabe nos 61 mm? |
+|---|---|---|---|
+| **J1** (entradas) | 11 | `11 × 5,08 = 55,9 mm` | ✅ com 5 mm de folga |
+| **J2** (saídas) | 8 | `8 × 5,08 = 40,6 mm` | ✅ com folga |
+
+Os pinos caem sempre em **coluna par** — via 1 na coluna 2, via 2 na coluna 4, e assim por diante. É isso que torna o desenho previsível na hora de montar.
 
 ### O barramento de 0 V
 
@@ -682,12 +702,14 @@ Um **fio de cobre nu** soldado numa fileira reta de furos, atravessando a placa.
 
 ### Roteiro de montagem
 
-1. **Corte a placa ilhada** em ~45 × 75 mm com estilete e régua (risque dos dois lados e quebre) ou com serra de joalheiro.
+1. **Corte a placa ilhada** em **24 × 29 furos** (≈ 61 × 74 mm) com estilete e régua (risque dos dois lados e quebre) ou com serra de joalheiro. **Conte os furos em vez de medir com régua** — é mais confiável.
 2. **Faça a montagem a seco primeiro:** posicione os 6 componentes discretos, o CI e os 2 bornes sem soldar, e confira que tudo cabe dentro da caixa DIN fechada.
 3. **Solde os bornes primeiro**, nas duas bordas. São o que define a geometria.
 4. **Solde um soquete DIP de 18 pinos** para o ULN2803 — não solde o CI direto. Assim você troca o chip sem dessoldar nada se ele queimar.
 5. **Solde os componentes na ordem:** primeiro os resistores deitados, depois os capacitores.
-6. **Faça as interligações por baixo** com fio rígido fino de 0,25 mm² descascado (não use "sobra de perna" para trechos longos — ela oxida e não é isolada).
+6. **Faça as interligações por baixo com fio ISOLADO** de 0,25 mm² (não use "sobra de perna" em trechos longos — ela oxida e não é isolada).
+
+> ⚠️ **Fio isolado nos jumpers, fio nu só no barramento.** São 20 jumpers, e vários precisam **cruzar por cima do barramento de 0 V** para alcançar o borne do outro lado. Se forem de fio nu, cada cruzamento vira um curto para o 0 V — e é o tipo de defeito que só aparece com tudo já montado. O **único** condutor nu da placa é o próprio barramento.
 7. ⚠️ **Confira a orientação do CI:** o **chanfro / meia-lua** do ULN2803 fica do lado dos pinos 1 e 18. Inserir o CI girado 180° liga os 24 V do COM na entrada IN e destrói tanto o chip quanto o pino do Arduino.
 8. **Confira com multímetro em modo continuidade, ANTES de energizar** (com o CI **fora** do soquete):
    - [ ] Não há continuidade entre **24V-POT** e **24V-SRV** — são circuitos diferentes
