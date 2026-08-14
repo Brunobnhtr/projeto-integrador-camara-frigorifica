@@ -432,7 +432,18 @@ I = (5 V − 3,1 V) / 220 Ω = 8,6 mA   ✅ brilho adequado para cenografia
 
 ### 📐 Esquema elétrico — 4 circuitos independentes
 
-> 🖼️ **Dois desenhos, com finalidades diferentes:**
+> 🖼️ **Três desenhos, com finalidades diferentes:**
+> - [**Circuito em norma IEC**](../desenhos/10_placa_pi1_circuito.png) ⭐ — esquema elétrico com símbolos normalizados. **Arquivo editável:** [`10_placa_pi1_circuito.cddx`](../desenhos/10_placa_pi1_circuito.cddx)
+> - [**Diagrama de ligação**](../desenhos/09_placa_pi1_montagem.svg) — a placa vista de cima, com o caminho físico de cada fio
+> - [**Esquema em blocos**](../desenhos/08_placa_pi1_esquema.svg) — os 4 circuitos separados, com explicação
+>
+> 💡 **Para editar o `.cddx`:** abra o [editor web do Circuit Diagram](https://www.circuit-diagram.org/editor) (gratuito, roda no navegador, não instala nada) e arraste o arquivo para dentro. Dá para mover peças, mudar valores e exportar de novo.
+>
+> ⚙️ **Como o desenho foi gerado:** o `.cddx` é um formato aberto (ZIP com XML). Ele foi escrito por script e renderizado com a `circuit-diagram-cli` oficial. Se você mudar o circuito, dá para regerar a imagem sem abrir editor nenhum.
+>
+> 📌 Os capacitores aparecem como **100000 pF**, que é a mesma coisa que **100 nF** — é só a notação que a ferramenta escolhe.
+
+> 🖼️ **Detalhamento adicional:**
 > - [**Esquema elétrico**](../desenhos/08_placa_pi1_esquema.svg) — mostra **como funciona** (os 4 circuitos separados)
 > - [**Diagrama de ligação**](../desenhos/09_placa_pi1_montagem.svg) ⭐ — mostra **onde cada fio vai**. **É este que você usa para montar**
 

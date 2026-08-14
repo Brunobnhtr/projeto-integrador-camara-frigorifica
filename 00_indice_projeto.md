@@ -117,7 +117,8 @@
 | Diagrama de comando | [06_diagrama_comando.svg](desenhos/06_diagrama_comando.svg) | Relé de interface KA1, canal de hardware × canal de software |
 | Corte da câmara | [07_camara_corte.svg](desenhos/07_camara_corte.svg) | Camadas de isolamento e circulação de ar |
 | **Esquema da placa PI-1** | [08_placa_pi1_esquema.svg](desenhos/08_placa_pi1_esquema.svg) | **Os 4 circuitos da placa de interface, separados: filtros IS, divisor do D25, pull-up 1-Wire e driver ULN2803** |
-| **Montagem da placa PI-1** ⭐ | [09_placa_pi1_montagem.svg](desenhos/09_placa_pi1_montagem.svg) | **Diagrama de LIGAÇÃO: a placa vista de cima, com os componentes nas posições reais, o caminho de cada fio e as 17 ligações** |
+| **Circuito da PI-1 (norma IEC)** ⭐ | [10_placa_pi1_circuito.png](desenhos/10_placa_pi1_circuito.png) | **Esquema elétrico com símbolos normalizados. Editável no navegador pelo arquivo `.cddx`** |
+| **Montagem da placa PI-1** | [09_placa_pi1_montagem.svg](desenhos/09_placa_pi1_montagem.svg) | **Diagrama de LIGAÇÃO: a placa vista de cima, com os componentes nas posições reais, o caminho de cada fio e as 17 ligações** |
 
 > Abra os `.svg` no navegador ou direto no VS Code. Para imprimir, use o navegador (Ctrl+P) — o SVG é vetorial e imprime em qualquer escala sem perder qualidade.
 
