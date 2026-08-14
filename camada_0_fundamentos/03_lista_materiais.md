@@ -115,6 +115,7 @@ Se um componente chegar morto, errado ou nunca chegar, **você não recebe outro
 | ULN2803 | **+1** (já na lista: 2) | Custa centavos |
 | DS18B20 | **+1** | É o sensor que fecha a malha de controle |
 | ESP32 | **+1** | É o protagonista do edital |
+| Arduino Mega | **+1** (já na lista: 2) | Roda o PID, o intertravamento e as proteções |
 
 > 💡 **A regra:** se o item **para o projeto** quando falha, e vem do exterior, compre dois. A diferença de custo é de poucos reais; a diferença de risco é o projeto inteiro.
 
@@ -421,7 +422,7 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 
 | Item | Qtd | Especificação | Link |
 |---|---:|---|---|
-| Arduino Mega 2560 R3 | 1 | ATmega2560, 54 GPIO, 4 UARTs | |
+| Arduino Mega 2560 R3 | **2** | ATmega2560, 54 GPIO, 4 UARTs. **1 uso + 1 reserva** — ele roda o PID e as proteções; se morrer, o projeto para. ⚙️ **Versão: CH340 + USB Type-C.** O chip USB não é o processador (o ATmega2560 é o mesmo nas três versões) — muda só a ponte USB↔serial, que só serve para gravar e depurar. ⚠️ **CH340 pode exigir driver no Windows** (site `wch.cn`): se for gravar em PC de escola sem permissão de instalar, prefira a versão com **ATmega16U2** (anunciada como "sem CH340"), que é nativa. ⚠️ **Type-C: use cabo A-para-C** — algumas placas baratas omitem os resistores de 5,1 kΩ nos pinos CC e não são reconhecidas por cabo C-para-C | |
 | Shield de expansão Mega (bornes parafuso) | 1 | Sensor Shield V2.0 | |
 | Suporte DIN para Arduino Mega | 1 | Ou SPCI4/adaptador | |
 | Tela Nextion Basic 3.2" | 1 | NX4024T032, 400×240, TTL 5 V | |
