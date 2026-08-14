@@ -7,6 +7,94 @@
 
 ---
 
+## 🟢 Em palavras simples — como a máquina para quando precisa parar
+
+Este documento responde a uma pergunta só, mas ela é a mais importante do projeto:
+
+> **Se o programa travar com a Peltier ligada, como eu desligo?**
+
+Se a resposta dependesse do software, o software seria o único ponto de falha do sistema. Então a resposta **não pode** depender dele.
+
+### Dois botões que parecem iguais e são muito diferentes
+
+| | **STOP** | **EMERGÊNCIA** (cogumelo vermelho) |
+|---|---|---|
+| Para a máquina? | Sim | Sim |
+| Como volta? | Solta o botão e liga de novo | **Não volta sozinha.** Nem soltando o cogumelo |
+| Precisa de quê para voltar | Um comando normal | Um **botão de REARME**, apertado por uma pessoa |
+| Serve para | Parar a operação | Situação de risco |
+
+**Por que a emergência trava?** Imagine que alguém aperta o cogumelo porque enfiou a mão onde não devia. Se destravar o botão religasse a máquina, ela voltaria a funcionar **com a pessoa ainda lá dentro**. A norma (ISO 13850) proíbe isso: destravar libera, mas quem religa é uma decisão consciente e separada.
+
+### Como se faz uma máquina "lembrar" que foi ligada, sem software
+
+Este é o truque mais bonito da eletrotécnica clássica, e chama-se **selo**.
+
+O problema: o botão START é de pulso — você solta e ele abre. Como manter a máquina ligada depois de soltar?
+
+A solução: **o relé segura a si mesmo.**
+
+```
+   1. Você aperta o START
+             ▼
+   2. O relé liga
+             ▼
+   3. Ao ligar, ele FECHA um contato próprio,
+      ligado em PARALELO com o botão START
+             ▼
+   4. Você solta o botão — mas o contato dele
+      mesmo continua alimentando a bobina
+             ▼
+   5. A máquina fica ligada "por memória"
+```
+
+E o melhor: **basta abrir a corrente em qualquer ponto do circuito** (emergência, STOP, falta de energia) que o relé solta, o contato abre, e o selo se perde. **Só um novo START religa.** Memória sem uma linha de código.
+
+### Por que dois relés
+
+Porque depois de um STOP normal eles precisam estar em **estados diferentes ao mesmo tempo**:
+
+| | KA1 | KA2 |
+|---|---|---|
+| Depois de um **STOP** | continua ligado (a máquina segue habilitada) | desligado (o processo parou) |
+| Depois de uma **EMERGÊNCIA** | desligado (perdeu o selo) | desligado |
+
+Um relé só não consegue estar ligado e desligado ao mesmo tempo. É essa a razão, e é a única.
+
+### Por que os botões de parada são "normalmente fechados"
+
+Um contato **NF** deixa a corrente passar quando o botão está solto, e **corta** quando você aperta. Parece invertido, mas é proposital:
+
+> **Se o fio arrebentar, o circuito abre — e a máquina para.**
+
+Ou seja: **a falha leva ao estado seguro.** Se o botão fosse "normalmente aberto", um fio partido faria o botão simplesmente **não funcionar** — e ninguém descobriria até o dia em que precisasse dele.
+
+O REARME é o contrário (NA), pelo mesmo raciocínio invertido: fio partido no rearme **impede a máquina de ligar**, que também é o estado seguro.
+
+### A divisão que organiza tudo
+
+> 🎯 **Tudo que envolve PARAR está em hardware. Só o que envolve LIGAR está em software.**
+
+A máquina desliga por caminhos que não dependem de nada. Para ligar, ela depende de tudo estar certo.
+
+### Dicionário rápido
+
+| Termo | O que quer dizer |
+|---|---|
+| **Bobina** | O eletroímã do relé. Energizou, os contatos mudam de posição |
+| **Contato NA** | Normalmente Aberto — fechado só quando a bobina está ligada |
+| **Contato NF** | Normalmente Fechado — abre quando a bobina liga |
+| **Reversível (CO)** | Um contato que tem NA e NF juntos, comutando entre eles |
+| **Selo** | O contato do próprio relé que o mantém ligado depois de soltar o botão |
+| **Relé de interface** | Relé pequeno que deixa um sinal fraco comandar uma carga forte |
+| **Intertravamento** | Impedir que duas coisas aconteçam juntas (aqui: Peltier e PTC) |
+| **Trip** | Desligamento automático por falha detectada |
+| **Watchdog** | "Cão de guarda": se o programa travar, ele reinicia o processador |
+| **Seletividade** | Só a proteção mais próxima da falha atua |
+| **Fail-safe** | Projetado para que a falha leve ao estado seguro |
+
+---
+
 ## 31.0 O acionamento em dois estágios
 
 O acionamento precisa satisfazer quatro exigências **ao mesmo tempo**:

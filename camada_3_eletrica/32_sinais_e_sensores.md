@@ -6,6 +6,70 @@
 
 ---
 
+## 🟢 Em palavras simples — os sentidos e os nervos da máquina
+
+Se o Doc 30 foi o "sistema circulatório" (a energia), este é o **sistema nervoso**: os fios finos que levam informação, não força.
+
+| Tipo de fio | O que carrega | Bitola |
+|---|---|---|
+| **Potência** (Doc 30) | Energia para fazer trabalho | 1,5 mm² |
+| **Sinal** (este documento) | Informação | 0,25 mm² |
+
+### O que a máquina "sente"
+
+| Sentido | Sensor | Para quê |
+|---|---|---|
+| Temperatura da câmara | **DS18B20** | É a variável que o PID controla |
+| Umidade | **AM2315C** | Prever condensação e gelo |
+| Rotação dos coolers | **fio de tacômetro** | ⚠️ Proteção crítica — cooler parado = Peltier queimada |
+| Corrente dos atuadores | **pino IS dos BTS7960** | Detectar atuador desconectado ou queimado |
+| Hora certa | **RTC DS3231** | Carimbar o log com data e hora reais |
+
+### Por que fio de sinal é tão sensível a ruído
+
+Um driver de potência liga e desliga 6 ampères. Cada vez que isso acontece, ele gera um "estalo" eletromagnético — como o chiado no rádio quando alguém liga a furadeira.
+
+Os fios de sinal trabalham com **milivolts**. Se correrem junto dos cabos de potência, captam esse estalo, e a leitura do sensor começa a pular sem motivo. O sistema dispara alarmes com tudo funcionando bem.
+
+**As três defesas do projeto:**
+
+| Defesa | Como funciona |
+|---|---|
+| **Separar fisicamente** | Potência de um lado da canaleta, sinal do outro. Cruzar só a 90° |
+| **Blindar** | Os fios mais sensíveis andam dentro de uma malha metálica aterrada, que funciona como guarda-chuva |
+| **Filtrar** | Capacitores de 100 nF junto ao Arduino "amortecem" o que passou |
+
+> ⚠️ **A blindagem é aterrada em UM ponto só, no painel.** Aterrar nas duas pontas cria um caminho de corrente pela malha — chama-se *loop de terra*, e transforma a proteção em antena.
+
+### Os erros de pino que este documento corrige
+
+Duas armadilhas do Arduino Mega estão documentadas aqui, e as duas eram silenciosas — o código compila, roda, e a proteção simplesmente não existe:
+
+| Erro | Por que acontece | Correção |
+|---|---|---|
+| RPM no pino **D13** | D13 **não é pino de interrupção** no Mega. `attachInterrupt` é ignorado sem aviso, e a contagem nunca acontece | Foi para o **D3** |
+| Segundo RPM sem pino | As interrupções externas acabaram (D2 é 1-Wire, D18-21 são Serial e I²C) | Foi para o **A8**, por interrupção de mudança de pino |
+
+> 🎯 **A lição:** *"compilou e rodou" não significa "funciona".* Uma proteção que não dispara é pior que proteção nenhuma, porque você confia nela.
+
+### Dicionário rápido
+
+| Termo | O que quer dizer |
+|---|---|
+| **Pinout** | O mapa de qual pino faz o quê |
+| **Interrupção** | Recurso que faz o processador largar tudo para atender um sinal na hora |
+| **Pull-up / pull-down** | Resistor que define o nível de um pino quando ninguém o comanda |
+| **1-Wire** | Protocolo que usa **um fio só** para dados. Precisa de um resistor para funcionar |
+| **I²C** | Protocolo de 2 fios onde vários sensores convivem, cada um com um endereço |
+| **SPI** | Protocolo rápido de 4 fios. Usado pelo cartão SD |
+| **UART / Serial** | Comunicação de 2 fios entre dois processadores |
+| **Tacômetro** | O fio do cooler que emite pulsos conforme ele gira |
+| **ADC** | Conversor que transforma tensão em número para o programa ler |
+| **Blindagem** | Malha metálica em volta do fio, que protege de ruído |
+| **Loop de terra** | Erro clássico: aterrar a blindagem nas 2 pontas e criar circulação de corrente |
+
+---
+
 ## 32.1 🔧 Correção importante em relação à versão anterior
 
 > ### O sinal de RPM não pode ficar no pino D13

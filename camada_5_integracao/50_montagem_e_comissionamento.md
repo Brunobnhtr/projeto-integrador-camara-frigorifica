@@ -6,6 +6,73 @@
 
 ---
 
+## 🟢 Em palavras simples — a hora de juntar tudo, sem quebrar nada
+
+**Comissionar** é uma palavra da indústria que significa: *colocar em funcionamento pela primeira vez, de forma controlada e comprovada.*
+
+Não é "ligar e ver se funciona". É ligar **por partes**, medindo cada uma, com os valores anotados — para que, se algo der errado, você saiba exatamente onde.
+
+### A regra que atravessa toda esta camada
+
+> ⚠️ **Nunca energize tudo de uma vez na primeira vez.**
+
+Se você ligar o sistema completo e ele não funcionar, o defeito pode estar em qualquer um dos 60 cabos, 15 componentes e 3 programas. Ligando por partes, o defeito está **sempre no pedaço que você acabou de acrescentar**.
+
+```
+   Ligar tudo de uma vez        Ligar por partes ✅
+   ┌───────────────────┐        ┌───┐
+   │  não funciona     │        │ ok│
+   │                   │        └───┴───┐
+   │ onde está o erro? │            │ ok│
+   │  (60 candidatos)  │            └───┴───┐
+   └───────────────────┘                │ ✗ │ ← está aqui
+                                        └───┘
+```
+
+### A ordem de montagem, e por que ela é essa
+
+| Ordem | O que | Por que antes do próximo |
+|---|---|---|
+| 1 | Maquete e painel montados **sem fio** | Furar e ajustar é fácil com tudo vazio |
+| 2 | Força: 127 V → 24 V → conversores | Sem energia certa, nada mais faz sentido testar |
+| 3 | Comando: relés, botoeiras, emergência | **A parada tem que funcionar antes de a máquina poder ligar** |
+| 4 | Sinais e sensores | O controle precisa enxergar antes de agir |
+| 5 | Firmware, ainda **sem Peltier** | Provar a lógica sem arriscar o componente caro |
+| 6 | Peltier, PTC e câmara fechada | Só agora, com tudo o mais comprovado |
+
+> 🎯 **Repare no item 3.** A emergência é testada **antes** de a máquina poder ligar. Testar o freio depois de dirigir é a ordem errada.
+
+### O que anotar — e por que isso vale nota
+
+Cada ensaio tem uma coluna **"medido"** em branco. Preencha à caneta, com o valor real.
+
+Um relatório que diz *"os 24 V foram medidos em 24,1 V no poste P3, com queda de 0,18 V na linha"* é um relatório de engenharia. Um que diz *"funcionou"* é uma anotação. **A diferença aparece na nota.**
+
+### As 3 demonstrações que mais valem na apresentação
+
+| Demonstração | Por que impressiona |
+|---|---|
+| **Percorrer a cadeia de energia com o multímetro** | A teoria virando número na frente da banca: 127 V → 24 V → 5,10 V |
+| **Socar a emergência com o sistema rodando** | Tudo para na hora e **não religa** ao destravar. É segurança visível |
+| **Abrir o jumper de uma posição de ensaio** | O alarme aparece em 2 s dizendo **qual** posição morreu. É a melhoria que o edital pediu, acontecendo ao vivo |
+
+> 💡 **Ensaie as três antes.** Demonstração que falha na hora custa mais caro do que não ter demonstrado.
+
+### Dicionário rápido
+
+| Termo | O que quer dizer |
+|---|---|
+| **Comissionamento** | Colocar em operação de forma controlada e documentada |
+| **Ensaio** | Um teste com procedimento definido e resultado esperado |
+| **Energizar** | Ligar a energia num trecho |
+| **Setpoint** | A temperatura desejada |
+| **Rastreabilidade** | Poder reconstruir depois o que aconteceu, com data e hora |
+| **Aceite** | A conferência final que declara a etapa concluída |
+| **Regime permanente** | Quando a temperatura estabilizou e parou de variar |
+| **Plano de contingência** | O que fazer se algo quebrar no dia da apresentação |
+
+---
+
 ## 50.1 Ordem de integração
 
 ```

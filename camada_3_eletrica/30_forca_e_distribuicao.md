@@ -9,6 +9,75 @@
 
 ---
 
+## 🟢 Em palavras simples — agora os fios entram
+
+Até aqui você construiu a maquete e montou o painel **sem um único fio ligado**. Nesta etapa a coisa é ligada.
+
+E aqui está a regra que evita 90 % dos acidentes e das horas perdidas:
+
+> ⚠️ **A maquete fica DESLIGADA DA TOMADA durante toda a montagem.** Só se energiza no fim de cada trecho, com o multímetro na mão, seguindo o roteiro da §30.8.
+
+### Por que a lista de cabos é numerada
+
+Este documento tem uma tabela com **mais de 60 cabos numerados**. Parece exagero. Não é — é o que separa um painel profissional de um emaranhado.
+
+| Sem numeração | Com numeração |
+|---|---|
+| "aquele fio vermelho ali" | "cabo 34" |
+| Achar um defeito = seguir fio com o dedo | Achar um defeito = olhar a tabela |
+| Só quem montou entende | Qualquer pessoa entende |
+
+Cada cabo ganha uma **anilha** (etiquetinha numerada) nas duas pontas. É exigência de norma em painel industrial, e é o que permite dar manutenção meses depois sem lembrar de nada.
+
+### Como montar sem se perder: trecho por trecho
+
+O documento divide a montagem em **5 trechos**, e a ordem não é aleatória — vai da fonte para a carga:
+
+```
+TRECHO 1   Fiação de 127 V dentro da subestação        ⚡ o único perigoso
+    ▼
+TRECHO 2   Saída de 24 V e a linha sobre os postes
+    ▼
+TRECHO 3   Derivações e conversores no topo dos postes
+    ▼
+TRECHO 4   Entrada no painel e distribuição
+    ▼
+TRECHO 5   Saídas do painel para a câmara
+```
+
+**Termine e teste um trecho antes de começar o próximo.** Se você ligar tudo e só então energizar, um erro em qualquer ponto se manifesta como "não funciona" — e você tem 60 cabos para investigar. Testando por trecho, o erro está sempre nos últimos cabos que você ligou.
+
+### O que é um diagrama unifilar
+
+É o "mapa do metrô" da instalação elétrica: mostra **por onde a energia passa e o que a protege**, sem desenhar cada fio individualmente. Um traço representa o caminho inteiro.
+
+Serve para responder de relance: *"se eu desligar isto aqui, o que apaga?"*
+
+### As duas regras de ouro da montagem
+
+**1. Terminal tubular em toda ponta que entra em borne parafuso.**
+Fio flexível é feito de muitos fiozinhos. Apertado direto no parafuso, alguns escapam, outros amassam — e daí a semanas você tem mau contato intermitente, o defeito mais difícil de achar que existe. O terminal (ilhós) prende todos juntos.
+
+**2. Potência de um lado, sinal do outro, com 5 cm de separação.**
+Quando precisarem se cruzar, cruze a **90°**. Cabos paralelos "conversam" por indução; perpendiculares, quase não.
+
+### Dicionário rápido
+
+| Termo | O que quer dizer |
+|---|---|
+| **Unifilar** | Diagrama que mostra o caminho da energia com um traço só |
+| **Trecho** | Um pedaço da instalação que se monta e testa antes de seguir |
+| **Anilha** | Etiqueta numerada no fio |
+| **Terminal tubular / ilhós** | Ponteira crimpada na ponta do fio flexível |
+| **Crimpar** | Amassar o terminal no fio com alicate próprio (não é apertar com alicate comum) |
+| **Derivação em janela** | Abrir uma "janelinha" na capa do fio e soldar outro ali, **sem cortar** o original |
+| **PE** | Fio terra (verde-amarelo) |
+| **Star ground** | Todos os retornos indo a um único ponto, em estrela |
+| **Prensa-cabo** | Passagem rosqueada do cabo pela parede do painel |
+| **BD-alguma-coisa** | Bloco de Distribuição daquela tensão (BD-5V, BD-POT...) |
+
+---
+
 ## ⚠️ Antes de começar
 
 > **A maquete permanece DESLIGADA DA TOMADA durante 100 % desta etapa.**

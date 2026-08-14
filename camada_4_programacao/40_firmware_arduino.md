@@ -6,6 +6,85 @@
 
 ---
 
+## 🟢 Em palavras simples — como o programa decide o que fazer
+
+O firmware faz três coisas, e só três:
+
+1. **Lê** a temperatura de dentro da câmara
+2. **Compara** com a temperatura que você pediu
+3. **Decide** ligar o frio, o calor, ou nada — e com que intensidade
+
+O resto do documento é o detalhamento disso.
+
+### O que é um PID, sem matemática
+
+Imagine dirigir mantendo 60 km/h. Você não pisa 100 % no acelerador nem tira o pé — você **dosa**. E dosa olhando três coisas:
+
+| Você olha | No PID chama-se | O que faz |
+|---|---|---|
+| "Estou longe dos 60?" | **P** — Proporcional | Quanto mais longe, mais forte a correção |
+| "Faz tempo que estou abaixo?" | **I** — Integral | Corrige o erro que insiste em ficar |
+| "Estou acelerando rápido demais?" | **D** — Derivativo | Segura antes de passar do ponto |
+
+O PID é isso. **É um motorista automático para temperatura**, e as letras são só três formas de olhar o mesmo erro.
+
+### Por que o PWM é lento (1 vez por segundo)
+
+**PWM** é a forma de entregar "meia potência" a algo que só sabe ligar e desligar: você liga e desliga muito rápido, e a média dá o valor intermediário. É como piscar uma lâmpada rápido demais para o olho ver — parece meia luz.
+
+O Arduino faz isso naturalmente **490 vezes por segundo**. Para a nossa Peltier, isso é péssimo:
+
+> Cada liga-desliga dá um pequeno **choque térmico** na pastilha. A 490 Hz são 490 choques por segundo — milhares de ciclos que a fadigam e descolam as junções internas. O fabricante recomenda corrente contínua ou chaveamento **muito lento**.
+
+Então usamos **1 Hz**: um ciclo por segundo. Duty de 30 % significa "ligada 0,3 s, desligada 0,7 s, e repete". Como a câmara leva **minutos** para mudar de temperatura, ela nem percebe essa ondulação — mas a pastilha agradece.
+
+### O que é uma máquina de estados
+
+É uma forma de organizar o programa que impede uma classe inteira de bug. Em vez de várias variáveis soltas (`ligado?`, `emergência?`, `falhou?`) que podem se contradizer, o sistema está **sempre em exatamente um estado**:
+
+```
+   BOOT ──► AGUARDA_START ──► RODANDO
+                  ▲              │
+                  │              ▼
+                  └────── FALHA / EMERGENCIA
+```
+
+E existe uma regra que atravessa tudo:
+
+> ⚠️ **De FALHA ou EMERGENCIA só se sai para AGUARDA_START — nunca direto para RODANDO.**
+
+É essa regra, e só ela, que impede a máquina de religar sozinha depois de um problema. **Não pode ser removida.**
+
+### As 4 proteções do firmware, em ordem de importância
+
+| # | Proteção | O que evita |
+|---|---|---|
+| 1 | **RPM dos coolers** | Peltier sem dissipação queima em < 1 min. Cooler parado = desliga na hora |
+| 2 | **Intertravamento** | Peltier e PTC ligadas juntas — brigariam, gastando energia para nada |
+| 3 | **Watchdog** | Programa travado. Se ele não "der sinal de vida" em 2 s, o processador reinicia |
+| 4 | **Diagnóstico de corrente (IS)** | Atuador desconectado ou queimado — duty alto com corrente zero |
+
+> 🎯 **O watchdog só funciona por causa de um resistor.** Quando o Arduino reinicia, os pinos viram entrada e ficam "soltos". Se não houvesse o resistor de pull-down puxando o `R_EN` para zero, o driver poderia ficar num estado indefinido justamente durante o reset. O software e o hardware se protegem **juntos** — ver [Doc 33](../camada_3_eletrica/33_placa_interface_componentes.md).
+
+### Dicionário rápido
+
+| Termo | O que quer dizer |
+|---|---|
+| **Firmware** | O programa que roda dentro do microcontrolador |
+| **Setpoint (SP)** | A temperatura que você pediu |
+| **PID** | O "motorista automático" que dosa a potência |
+| **PWM** | Ligar e desligar rápido para simular potência intermediária |
+| **Duty cycle** | A porcentagem de tempo ligado dentro de um ciclo |
+| **Banda morta** | Faixa em volta do alvo onde o sistema não age, para não ficar corrigindo à toa |
+| **Máquina de estados** | Organização do programa em situações bem definidas |
+| **Watchdog** | Cão de guarda: reinicia o processador se o programa travar |
+| **Trip** | Desligamento automático por falha |
+| **Windup** | Defeito do PID quando o integrador "acumula" durante um bloqueio |
+| **Degelo** | Aquecer de propósito, por pouco tempo, para derreter o gelo |
+| **Interrupção (ISR)** | Trecho de código que roda imediatamente quando um sinal chega |
+
+---
+
 ## 40.1 O que mudou em relação à versão anterior
 
 | # | Mudança | Motivo |
