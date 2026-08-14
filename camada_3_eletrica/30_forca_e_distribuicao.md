@@ -342,6 +342,7 @@ Esta seção descrevia uma placa com três diodos Zener (5V6 / 13 V / 15 V) que 
 | 55 | 12 V cooler dos BTS | 0,25 mm² | **BD-AUX** saída 1 → cooler 40 mm |
 | 56 | **24 V DNLCB30** | 0,5 mm² | **BD-24V** saída 1 → DNLCB30 `VIN` |
 | 57 | 24 V para a emergência | 0,5 mm² | **BD-24V** saída 2 → **S0 bloco NF de 24 V** entrada |
+| **57m–57p** | **Posições de ensaio P-1 a P-4** | 0,5 mm² | **BD-24V** saída 4 → **F-P1..F-P4** (fusíveis 500 mA) → INA219 → placa simuladora dentro da câmara. ⚠️ Barramento **permanente**: os dispositivos sob ensaio continuam energizados com a emergência acionada — ver [Doc 13](13_posicoes_de_ensaio.md) |
 | **57g** | **24 V dos sinaleiros** | 0,5 mm² | **BD-24V** saída 3 → **positivo comum dos 4 sinaleiros** na porta ⚠️ permanente, não cai com a emergência |
 | **57h** | **COM do ULN2803** | 0,25 mm² | **BD-24V** saída 3 → borne `24V-SRV` da **placa PI-1** (pino 10 do CI, retorno dos diodos internos) |
 | **57i–57l** | Negativo dos 4 sinaleiros | 0,25 mm² | Bornes `L1−` a `L4−` da **PI-1** (saídas OUT1–OUT4 do ULN2803) → terminal negativo de cada sinaleiro |

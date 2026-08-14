@@ -194,7 +194,11 @@ PORTA DUPLA (5 + ar 10 + 5 mm):
 | **Dissipação das 2 fans internas** (todo o trabalho elétrico vira calor **dentro**) | 3,0 W |
 | Sensores e cabos | 0,2 W |
 | Infiltração média (aberturas de porta) | ~0,8 W |
-| **CARGA TÉRMICA TOTAL** | **≈ 9,5 W** |
+| **CARGA TÉRMICA TOTAL (câmara vazia)** | **≈ 9,5 W** |
+| ⭐ **4 posições de ensaio energizadas** (~3 W cada) | **+12,0 W** |
+| **CARGA TÉRMICA TOTAL COM DISPOSITIVOS** | **≈ 21,5 W** |
+
+> ⭐ **Os dispositivos sob ensaio mais que dobram a carga térmica** — e é assim que tem que ser, porque um ensaio com a cabine vazia não representa a realidade. A capacidade das 2 Peltier (≈ 60 W a ΔT = 20 K) absorve isso com **margem de 2,8×**. Detalhes das posições em [Doc 13](13_posicoes_de_ensaio.md).
 
 ### As Peltier dão conta?
 

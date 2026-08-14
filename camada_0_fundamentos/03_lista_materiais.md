@@ -349,7 +349,7 @@ Se você já tinha uma lista antiga em mãos, **confira estes seis antes de fech
 | Item | Qtd | Especificação | Link |
 |---|---:|---|---|
 | **Pastilha Peltier TEC1-12706** | **3** | 12 V / ~6 A / 60 W cada. **2 em uso, ligadas EM SÉRIE** (24 V / 6,0 A / 144 W) + 1 reserva. ⚠️ **Comprar do mesmo lote/vendedor** — em série as duas conduzem a mesma corrente, e pastilhas descasadas trabalham desequilibradas | |
-| **Aquecedor PTC cerâmico 24 V / 60 W** | 1 | Com aletas, **versão de 24 V** (2,5 A) para ligar direto no barramento. **60 W, não 100 W** — equilibra as duas potências. ⚠️ Menos comum que o de 12 V: **comprar cedo, no Lote A**. Buscar também como `aquecedor ar quente ptc 24v` (incubadora / impressora 3D) | |
+| **Aquecedor PTC cerâmico 24 V / 80 W** | 1 | Com aletas e ventilador, **versão de 24 V** (~3,3 A) para ligar direto no barramento. ⚠️ **60 W não existe no mercado brasileiro** — as versões reais são **80 W, 100 W e 150 W**. Use a de **80 W**: fica bem equilibrada contra os ~60 W de capacidade de refrigeração das 2 Peltier, e mantém a corrente em 3,3 A (metade da Peltier). A de 150 W passaria a ser o pior caso do ramal (6,25 A) e desequilibra o controle. Buscar `aquecedor ptc 24v ventilador` | |
 | **Dissipador + cooler 80 mm p/ lado quente da Peltier** | **2** | **Um para cada pastilha.** ⚠️ **3 fios (com sinal de RPM)** nos dois — o firmware monitora os **dois** tacômetros e bloqueia a refrigeração se qualquer um parar | |
 | Pasta térmica | 1 | Seringa 5 g — dá para os 2 conjuntos | |
 | Fan 60 × 60 mm 12 V | 2 | Internas — lado PTC (1 sopra ↑, 1 sopra ↓) | |
@@ -368,6 +368,24 @@ Se você já tinha uma lista antiga em mãos, **confira estes seis antes de fech
 | Sensor AM2315C | 1 | I²C, umidade + temperatura, carcaça selada | |
 | Capacitor cerâmico 100 nF | **6** | Filtro dos pinos IS dos BTS (2) + filtro do divisor D25 (1) + reservas | |
 | Resistor 220 Ω 1/4 W | 6 | 4 usos + 2 reservas — **série dos LEDs brancos da iluminação da maquete (5 V)**. ⚠️ Não são mais dos sinaleiros do painel, que agora são de 24 V | |
+
+## L.4b — Posições de ensaio (dispositivos sob teste)
+
+> ⭐ **É o núcleo do problema descrito no edital.** Detalhamento completo, com esquema e ensaios, em [Doc 13](../camada_1_maquete/13_posicoes_de_ensaio.md).
+
+| Item | Qtd | Especificação | Link |
+|---|---:|---|---|
+| **Sensor INA219** (módulo I²C) | 4 | Mede tensão e corrente, ±3,2 A. ⚠️ **4 endereços selecionáveis** (0x40/0x41/0x44/0x45) — um por posição, todos no mesmo par de fios | |
+| Porta-fusível mini automotivo DIN | 4 | **F-P1 a F-P4** — proteção individual de cada posição de ensaio | |
+| Fusível mini automotivo 500 mA | 8 | 4 usos + 4 reservas | |
+| Placa ilhada pequena | 4 | ~30 × 40 mm — corpo de cada placa simuladora de dispositivo | |
+| Resistor 220 Ω / **5 W** | 4 | Carga térmica de cada simulador (~3 W). ⚠️ **5 W**, não 1/4 W | |
+| Resistor 1,2 kΩ 1/4 W | 4 | Limitador do LED indicador de cada posição | |
+| LED 5 mm difuso | 4 | Indica "posição viva", visível pela porta da câmara | |
+| **Micro-chave ou jumper** | 4 | ⭐ **Simula a falha do dispositivo** — é o que permite demonstrar a detecção ao vivo na apresentação | |
+| Borne DIN 2,5 mm² | 8 | Entrada e saída de cada posição | |
+
+> 💡 **O item mais importante desta tabela é o jumper.** Sem ele você não consegue demonstrar a detecção de falha — que é justamente a melhoria que o edital pede.
 
 ## L.5 — Placa de Interface PI-1 (onde os componentes discretos moram)
 

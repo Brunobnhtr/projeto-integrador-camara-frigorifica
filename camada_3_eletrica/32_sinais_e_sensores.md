@@ -134,7 +134,7 @@ Duas armadilhas do Arduino Mega estão documentadas aqui, e as duas eram silenci
 | **D2** | DS18B20 (1-Wire) — centro da câmara | Pull-up de **4,7 kΩ** entre DATA e +5 V |
 | **D3** | **RPM do cooler externo #1 (INT1)** ⚠️ *corrigido* | `INPUT_PULLUP` + interrupção `FALLING` |
 | **A8** | **RPM do cooler externo #2 (PCINT16)** ⭐ *novo — 2ª Peltier* | `INPUT_PULLUP` + interrupção de mudança de pino. As interrupções externas do Mega acabaram: D2 é 1-Wire, D18/19 Serial1, D20/21 I²C |
-| D20 / D21 | AM2315C + DS3231 | I²C em 5 V |
+| D20 / D21 | AM2315C + DS3231 + **4× INA219** | I²C em 5 V — 6 dispositivos no mesmo par de fios |
 | D50–D53 | Módulo Micro SD | SPI por hardware |
 
 ### Comando e sinalização
@@ -166,7 +166,8 @@ ARDUINO MEGA 2560
 ├─ D9..D12 ── ULN2803 ─► 4 SINALEIROS 22 mm de 24 V (RUN/COOL/HEAT/FAULT)
 ├─ D16/D17 ── Serial2 ────────────────────► Nextion
 ├─ D18/D19 ── Serial1 ────────────────────► DNLCB30 → ESP32
-├─ D20/D21 ── I²C ────────────────────────► AM2315C + DS3231
+├─ D20/D21 ── I²C ────────────────────────► AM2315C · DS3231
+│                                            └─► 4× INA219 (posições de ensaio)
 ├─ D22     ── START (NA)
 ├─ D23     ── STOP (NA)
 ├─ D24     ── EMERGÊNCIA (NF)
@@ -339,6 +340,7 @@ Fans padrão geram 2 pulsos por rotação:
 - [ ] Capacitores de 100 nF em A0 e A1, **junto ao Arduino**
 - [ ] DS18B20 no D2 com pull-up de 4,7 kΩ para +5 V
 - [ ] AM2315C e DS3231 no I²C em **5 V**
+- [ ] ⭐ **4× INA219 no mesmo barramento I²C**, endereços 0x40/0x41/0x44/0x45 — scanner deve achar **6 dispositivos** ([Doc 13](13_posicoes_de_ensaio.md))
 - [ ] SD nos pinos D50–D53
 - [ ] START D22 (NA), STOP D23 (NA), EMERG D24 (**NF**)
 - [ ] Divisor **22 kΩ / 4,7 kΩ** do BD-POT para o pino D25 (medir **~4,2 V** com potência presente)

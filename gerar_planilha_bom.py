@@ -59,6 +59,63 @@ def limpar(texto: str) -> str:
     return texto.strip()
 
 
+# ── links de busca ─────────────────────────────────────────────────────────
+#
+# Por que links de BUSCA e não links de anúncio: anúncio do Mercado Livre sai
+# do ar, muda de vendedor e muda de preço. Um link de busca continua válido
+# para sempre e sempre mostra o que existe HOJE. A coluna "Link escolhido"
+# fica ao lado, para você colar o anúncio depois de decidir.
+
+# Palavras que não ajudam a achar o produto — poluem a busca.
+RUIDO = {
+    "de", "da", "do", "das", "dos", "para", "com", "sem", "e", "ou", "a", "o",
+    "as", "os", "em", "no", "na", "por", "cada", "tipo", "opcional",
+}
+ACENTOS = str.maketrans("áàâãäéèêëíìîïóòôõöúùûüçÁÀÂÃÄÉÈÊËÍÌÎÏÓÒÔÕÖÚÙÛÜÇ",
+                        "aaaaaeeeeiiiiooooouuuucAAAAAEEEEIIIIOOOOOUUUUC")
+
+
+def termo_de_busca(item: str) -> str:
+    """Transforma o nome do item num termo de busca utilizável numa loja.
+
+    Devolve "" para linhas que não são itens de compra — as que começam com
+    "→" detalham o item da linha anterior (ex.: "→ T2 (poste P2)") e gerariam
+    uma busca inútil por "t2".
+    """
+    if item.lstrip().startswith(("→", "->")):
+        return ""
+    texto = item.translate(ACENTOS).lower()
+    texto = re.sub(r"\(.*?\)", " ", texto)          # tira parênteses explicativos
+
+    def palavras_de(t: str) -> list[str]:
+        t = re.sub(r"[^a-z0-9,\s]", " ", t)
+        return [p for p in t.split() if p not in RUIDO]
+
+    # Normalmente o que interessa está ANTES do travessão ("Fonte — 24 V ...").
+    # Mas em itens como "KA1 — Relé de interface 24 Vcc" o rótulo do projeto
+    # vem antes e o nome do produto vem depois. Se o começo render menos de
+    # 2 palavras úteis, ele é rótulo: usa-se o nome completo.
+    palavras = palavras_de(texto.split("—")[0].split("·")[0])
+    if len(palavras) < 2:
+        palavras = palavras_de(texto.replace("—", " ").replace("·", " "))
+        # "KA1", "T2", "F1" são identificadores do projeto, não do produto.
+        # Numa busca em loja eles só atrapalham.
+        while palavras and re.fullmatch(r"[a-z]{1,3}\d{1,2}", palavras[0]):
+            palavras.pop(0)
+
+    return " ".join(palavras[:7])                    # 7 palavras já é específico
+
+
+def url_mercadolivre(termo: str) -> str:
+    slug = re.sub(r"[^a-z0-9]+", "-", termo.lower()).strip("-")
+    return f"https://lista.mercadolivre.com.br/{slug}" if slug else ""
+
+
+def url_amazon(termo: str) -> str:
+    from urllib.parse import quote_plus
+    return f"https://www.amazon.com.br/s?k={quote_plus(termo)}" if termo else ""
+
+
 def linha_de_tabela(linha: str) -> list[str] | None:
     linha = linha.strip()
     if not linha.startswith("|") or not linha.endswith("|"):
@@ -125,6 +182,11 @@ def ler_bom(caminho: Path) -> list[dict]:
             if k.lower() not in ("link", "link de compra")
         ]
 
+        # "Busca sugerida" da BOM tem prioridade sobre o nome do item, porque
+        # foi escrita pensando em como o produto é anunciado, não em como ele
+        # é chamado no projeto.
+        termo = valores.get("Busca sugerida", "") or termo_de_busca(item)
+
         itens.append(
             {
                 "secao": secao,
@@ -132,6 +194,10 @@ def ler_bom(caminho: Path) -> list[dict]:
                 "qtd": valores.get("Qtd", ""),
                 "espec": valores.get("Especificação", ""),
                 "obs": " · ".join(x for x in extras if x),
+                "link_manual": limpar(brutos.get("Link", "")),
+                "busca_ml": url_mercadolivre(termo),
+                "busca_amz": url_amazon(termo),
+                "termo": termo,
             }
         )
 
@@ -145,14 +211,14 @@ def gerar(itens: list[dict], destino: Path) -> None:
     ws = wb.active
     ws.title = "Lista de Compras"
 
-    ws.merge_cells("A1:H1")
+    ws.merge_cells("A1:J1")
     ws["A1"] = "PROJETO INTEGRADOR — Planta Industrial Didática com Câmara Frigorífica"
     ws["A1"].font = Font(size=15, bold=True, color="FFFFFF")
     ws["A1"].fill = PatternFill("solid", fgColor=AZUL_ESCURO)
     ws["A1"].alignment = Alignment(horizontal="center", vertical="center")
     ws.row_dimensions[1].height = 30
 
-    ws.merge_cells("A2:H2")
+    ws.merge_cells("A2:J2")
     ws["A2"] = (
         f"Lista de materiais · gerada de 03_lista_materiais.md em "
         f"{datetime.now():%d/%m/%Y %H:%M} · arquitetura 127 V CA → 24 V CC → 12 / 5 / 3,3 V"
@@ -162,11 +228,13 @@ def gerar(itens: list[dict], destino: Path) -> None:
 
     colunas = [
         ("#", 5),
-        ("Item", 46),
+        ("Item", 44),
         ("Qtd", 7),
-        ("Especificação", 58),
-        ("Observação / busca", 40),
-        ("Link de compra", 34),
+        ("Especificação", 56),
+        ("Observação", 32),
+        ("🔎 Buscar no Mercado Livre", 26),
+        ("🔎 Buscar na Amazon", 22),
+        ("Link escolhido (cole aqui)", 30),
         ("Preço unit. (R$)", 15),
         ("Total (R$)", 13),
     ]
@@ -188,7 +256,7 @@ def gerar(itens: list[dict], destino: Path) -> None:
     for reg in itens:
         if reg["secao"] != secao_atual:
             secao_atual = reg["secao"]
-            ws.merge_cells(start_row=linha, start_column=1, end_row=linha, end_column=8)
+            ws.merge_cells(start_row=linha, start_column=1, end_row=linha, end_column=10)
             celula = ws.cell(row=linha, column=1, value=secao_atual)
             celula.font = Font(bold=True, size=11, color=AZUL_ESCURO)
             celula.fill = PatternFill("solid", fgColor=AMBAR)
@@ -198,31 +266,45 @@ def gerar(itens: list[dict], destino: Path) -> None:
             linha += 1
 
         numero += 1
-        valores = [numero, reg["item"], reg["qtd"], reg["espec"], reg["obs"], "", "", ""]
+        valores = [numero, reg["item"], reg["qtd"], reg["espec"], reg["obs"],
+                   "", "", reg["link_manual"], "", ""]
         for indice, valor in enumerate(valores, start=1):
             celula = ws.cell(row=linha, column=indice, value=valor)
             celula.border = BORDA
             celula.alignment = Alignment(
-                horizontal="center" if indice in (1, 3, 7, 8) else "left",
+                horizontal="center" if indice in (1, 3, 9, 10) else "left",
                 vertical="top",
                 wrap_text=indice in (2, 4, 5),
             )
             if linha % 2 == 0:
                 celula.fill = PatternFill("solid", fgColor=CINZA_CLARO)
 
-        ws.cell(row=linha, column=8).value = f"=IF(C{linha}*G{linha}=0,\"\",C{linha}*G{linha})"
-        ws.cell(row=linha, column=7).number_format = "#,##0.00"
-        ws.cell(row=linha, column=8).number_format = "#,##0.00"
+        # Links de busca clicáveis. Sempre válidos: a busca mostra o que
+        # existe hoje, enquanto um link de anúncio sai do ar.
+        if reg["busca_ml"]:
+            c = ws.cell(row=linha, column=6)
+            c.value = f'=HYPERLINK("{reg["busca_ml"]}","🔎 {reg["termo"][:28]}")'
+            c.font = Font(color="0563C1", underline="single", size=9)
+        if reg["busca_amz"]:
+            c = ws.cell(row=linha, column=7)
+            c.value = f'=HYPERLINK("{reg["busca_amz"]}","🔎 Amazon")'
+            c.font = Font(color="0563C1", underline="single", size=9)
+
+        ws.cell(row=linha, column=10).value = (
+            f"=IF(C{linha}*I{linha}=0,\"\",C{linha}*I{linha})"
+        )
+        ws.cell(row=linha, column=9).number_format = "#,##0.00"
+        ws.cell(row=linha, column=10).number_format = "#,##0.00"
         linha += 1
 
-    ws.cell(row=linha + 1, column=6, value="TOTAL GERAL").font = Font(bold=True, size=12)
-    total = ws.cell(row=linha + 1, column=8, value=f"=SUM(H{linha_cab + 1}:H{linha - 1})")
+    ws.cell(row=linha + 1, column=8, value="TOTAL GERAL").font = Font(bold=True, size=12)
+    total = ws.cell(row=linha + 1, column=10, value=f"=SUM(J{linha_cab + 1}:J{linha - 1})")
     total.font = Font(bold=True, size=12, color="FFFFFF")
     total.fill = PatternFill("solid", fgColor=VERDE)
     total.number_format = "#,##0.00"
     total.border = BORDA
 
-    ws.auto_filter.ref = f"A{linha_cab}:H{linha - 1}"
+    ws.auto_filter.ref = f"A{linha_cab}:J{linha - 1}"
 
     # ───────────────────────── aba 2: ordem de construção ──────────────────
     ws2 = wb.create_sheet("Ordem de Construção")
