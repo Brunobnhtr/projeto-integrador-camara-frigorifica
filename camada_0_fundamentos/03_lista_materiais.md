@@ -443,11 +443,37 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 | Driver ponte-H **BTS7960** | 2 | 43 A, pino IS de diagnóstico | |
 | Suporte SPCI4 trilho DIN | 2 | Fixa PCI 100 × 79 mm | |
 | Cooler 40 mm 12 V | 1 | Refrigeração dos BTS | |
-| **KA1 — Relé acoplador 24 Vcc, 2 contatos reversíveis** | 1 | **2 contatos reversíveis (2CO)** — um faz o selo, o outro alimenta a bobina do KA2. Conduz só miliampères: **6 a 8 A já sobra**. 🇧🇷 **Buscar como `relé acoplador`, não "relé de interface"** — é o termo usado no Brasil. Modelos: **Finder 49.52.7.024.0050** (8 A, ~R$ 73) · **Finder 48.52.7.024.0050** · **PR-115F-024-2ZS4** (Proauto) · **CC2R** (3Pinus, 8 A) | |
-| **KA2 — Relé 24 Vcc, contato ≥ 10 A em DC** | 1 | Chaveia os **24 V / 6,0 A** dos BTS. ⚠️ **NÃO use relé acoplador comum**: quase todo modelo vendido no Brasil é de **6 a 8 A**, e a carga é 6,0 A — 100 % da capacidade, sem margem. ✅ **Opção A (barata, clássica de painel):** relé de **8 pinos** `JQX-13F` / `LY2N 24VDC` (2 contatos de 10 A) + **base `PTF08A` / `PYF08A`** para trilho DIN — ~R$ 25–35 + ~R$ 12–18. **O mesmo modelo serve para o KA1**, então dá para comprar 2 iguais + 1 reserva. ✅ **Opção B:** **Finder 46.61 24VDC** (16 A) + base **95.05**, ~R$ 80–110. ⚠️ **Em qualquer opção, exija a linha `10A 30VDC`** no anúncio ou datasheet — só `250VAC` não basta | |
+| **KA1 e KA2 — Relé 8 pinos 24 Vcc + base DIN** | **3** | ⭐ **UM MODELO SÓ para os dois relés** — 2 em uso + 1 reserva. Relé eletromecânico **8 pinos, bobina 24 Vcc, 2 contatos reversíveis (2 NA + 2 NF) de 10 A cada**, com **base para trilho DIN inclusa**. Buscar `relé 8 pinos 24v 10a base din` · `JQX-13F 24v` · `LY2N 24vdc`. ~R$ 39 o conjunto. **KA1** usa os 2 contatos (selo + saída para o KA2); **KA2** usa 1 contato para os 6,0 A e sobra o outro | |
+| *Alternativa premium (só se sobrar orçamento)* | — | **Finder 46.61 24VDC** (1 reversível **16 A**) + base **95.05** para o KA2, ~R$ 80–110. Vale se você quiser folga grande sobre os 6,0 A e datasheet publicado | |
 | **Resistor 10 kΩ 1/4 W** | 4 | **Pull-down** em cada `R_EN` dos BTS7960 (2) + reservas. ⚠️ Garante que **pino solto = driver desligado** — ficou ainda mais crítico com os 24 V permanentes na entrada dos BTS | |
 | **Resistor 22 kΩ 1/4 W** ⬆ | 2 | **Braço superior** do divisor de realimentação de tensão para o pino D25 | |
 | **Resistor 4,7 kΩ 1/4 W** | 2 | **Braço inferior** do mesmo divisor | |
+
+> ### 🛒 Decisão de compra dos relés — por que o genérico e não o Finder
+>
+> Comparação real de dois anúncios avaliados:
+>
+> | | Finder 49.52 · R$ 58 | **Genérico 8 pinos · R$ 39** |
+> |---|---|---|
+> | Contatos | 2 reversíveis · **8 A** | 2 reversíveis · **10 A** |
+> | Serve para o **KA1**? | ✅ | ✅ |
+> | Serve para o **KA2** (6,0 A)? | ❌ **8 A é abaixo do mínimo** | ⚠️ Sim, no limite aceitável |
+> | Base inclusa? | ⚠️ Não informado | ✅ Relé **+ base** |
+> | Custo para resolver os 2 relés | R$ 58 + outro modelo para o KA2 | **R$ 78** (2 iguais) |
+>
+> ✅ **Escolhido: o genérico de 8 pinos.** O Finder é melhor relé, mas 8 A não atende o KA2 — você compraria o Finder e ainda precisaria de um segundo modelo diferente para a potência.
+>
+> **A ressalva do genérico, e por que ela é aceitável aqui:** sem marca, não há datasheet para conferir a corrente em DC. Mas **desgaste de contato é cumulativo — depende de quantas VEZES ele interrompe corrente**, não de quanto tempo fica ligado. O KA2 só abre com 6 A quando alguém aperta STOP ou a emergência: ao longo da vida do projeto, algumas dezenas de vezes. Um contato de 10 A aguenta isso com folga. O risco seria real num equipamento industrial partindo o dia inteiro — não é o caso.
+>
+> ⚠️ **Se optar pelo Finder mesmo assim, confira duas coisas:** o anúncio informa *"Tipo de montagem: Circuito impresso"* — se for literal, é relé de **soldar em placa** e não encaixa no trilho. E ele **não menciona a base**, que pode custar mais R$ 20–30.
+>
+> 📌 **Ignore os campos absurdos dos anúncios** ("Potência 1,2 kW", "Tipo de motor: Bobina Helicoidal"). É preenchimento automático do Mercado Livre, não especificação.
+>
+> ### ✅ Conferir ao receber
+> - Bobina **24 Vcc** (não Vca) — meça a resistência: ~600 a 1500 Ω
+> - 8 pinos, e a base encaixando no trilho DIN
+> - 2 NA + 2 NF (= 2 reversíveis)
+> - Alimente a bobina com 24 V e confira a comutação com o multímetro em continuidade **antes de instalar**
 
 > ### 🇧🇷 A palavra que destrava a busca no Brasil: **relé ACOPLADOR**
 >
