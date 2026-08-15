@@ -235,6 +235,18 @@ function Painel() {
                 padding: '3px 9px', fontSize: 11, cursor: 'pointer', fontWeight: 600,
               }}>{t.label}</button>
           ))}
+          <span style={{ width: 1, height: 20, background: '#ffffff33', margin: '0 2px' }} />
+          {[['LM2596', 'LM2596'], ['PELTIER', 'Kit Peltier']].map(([k, txt]) => (
+            <button key={k} title="Peça fora do painel — abre o desenho da peça real"
+              onClick={() => setZoom({
+                id: k, pinagem: k, nome: txt, terminais: {},
+                descricao: 'peça fora do painel',
+              })}
+              style={{
+                background: '#ffffff1f', color: '#fff', border: '1.5px solid #adb5bd',
+                borderRadius: 5, padding: '3px 9px', fontSize: 11, cursor: 'pointer',
+              }}>📷 {txt}</button>
+          ))}
           {(filtro || selId) && (
             <button onClick={() => { setFiltro(null); setSelId(null); }}
               style={{ background: '#ffffff2f', color: '#fff', border: '1.5px solid #fff6',

@@ -517,7 +517,7 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 
 | Item | Qtd | Especificação | Link |
 |---|---:|---|---|
-| ⭐ **Kit duplo de refrigeração Peltier** (2× TEC1-12706) | 1 | **Adotado.** Traz **2 pastilhas + radiador + 2 blocos frios + ventoinhas + montagem térmica pronta**. Anunciado como **12 V / 15 A**, ou seja, **vem ligado em PARALELO** — ⚠️ **religar em SÉRIE** para 24 V / 6,0 A (ver as 3 modificações abaixo). ~200 × 115 × 85 mm. Buscar `kit peltier duplo TEC1-12706 refrigeração` | |
+| ⭐ **Kit duplo de refrigeração Peltier** (2× TEC1-12706) | 1 | **Adotado — kit já conferido por foto** ([`imagens/peltir.avif`](../imagens/peltir.avif)): 2 conjuntos lado a lado, **cada pastilha com seu par de fios** e **cada ventoinha com cabo próprio**, o que viabiliza as modificações 1 e 2 sem cortar nada. Traz **2 pastilhas + radiador + 2 blocos frios + ventoinhas + montagem térmica pronta**. Anunciado como **12 V / 15 A**, ou seja, **vem ligado em PARALELO** — ⚠️ **religar em SÉRIE** para 24 V / 6,0 A (ver as 3 modificações abaixo). ~200 × 115 × 85 mm. Buscar `kit peltier duplo TEC1-12706 refrigeração` | |
 | Pastilha Peltier TEC1-12706 avulsa | 1 | **Reserva.** ⚠️ Trocar uma pastilha do kit exige desmontar a junta térmica — tenha a peça, mas conte com o trabalho | |
 | **Aquecedor PTC cerâmico 24 V / 80 W** | 1 | Com aletas e ventilador, **versão de 24 V** (~3,3 A) para ligar direto no barramento. ⚠️ **60 W não existe no mercado brasileiro** — as versões reais são **80 W, 100 W e 150 W**. Use a de **80 W**: fica bem equilibrada contra os ~60 W de capacidade de refrigeração das 2 Peltier, e mantém a corrente em 3,3 A (metade da Peltier). A de 150 W passaria a ser o pior caso do ramal (6,25 A) e desequilibra o controle. Buscar `aquecedor ptc 24v ventilador` | |
 | ⚠️ **Ventoinha de reposição do RADIADOR — 3 fios** | 2 | ⭐ **A troca mais importante do kit.** As originais são de **2 fios** e não informam rotação. Têm que ser **as do radiador (lado quente)** — se elas param, a Peltier queima em < 1 min. As dos **blocos frios** podem continuar de 2 fios. Medir o tamanho no kit antes de comprar | |
@@ -540,9 +540,13 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 >
 > Ligue **(+) de uma no (−) da outra**; as pontas que sobram viram o par de 24 V.
 >
+> ✅ **A foto do kit recebido confirma que dá para fazer isso.** Em [`imagens/peltir.avif`](../imagens/peltir.avif) vê-se que **cada pastilha tem o seu próprio par de fios** (vermelho e preto) saindo do chicote. Ou seja, elas **não vêm ligadas entre si de fábrica** — basta unir um (−) a um (+) para ter a série, sem cortar nada que já esteja soldado.
+>
 > **2. 🔥 Separar as ventoinhas das pastilhas — o erro que queima o kit**
 >
 > Kits assim costumam ter **uma entrada de 12 V só**, alimentando pastilhas e ventoinhas juntas. **Ligar 24 V nessa entrada única queima todas as ventoinhas na hora.**
+>
+> ✅ **A foto também resolve esta.** Cada ventoinha do kit tem **cabo próprio e independente** — não há uma entrada única de 12 V compartilhada. Isso torna a modificação 2 trivial: é só **não** juntar os chicotes. Leve os fios das pastilhas ao BD-POT (24 V) e os das ventoinhas ao BD-AUX (12 V).
 >
 > ```
 > Peltier 1 ──série── Peltier 2  ────► 24 V   (BTS #1, via BD-POT)

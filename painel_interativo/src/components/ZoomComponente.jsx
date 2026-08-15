@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { TENSOES, paraOndeVai } from '../data/painel';
+import { PINAGENS } from '../data/pinagens';
 import PlacaPI1 from './PlacaPI1';
+import PlacaReal from './PlacaReal';
 
 /* Pinagem genérica: desenha a placa como um retângulo com os pinos
    distribuídos nas duas laterais, cada um clicável. Funciona para
@@ -106,7 +108,9 @@ function PinagemGenerica({ comp }) {
 }
 
 export default function ZoomComponente({ comp, onFechar }) {
+  const [aba, setAba] = useState('real');
   if (!comp) return null;
+  const temReal = !comp.ehPlaca && !!PINAGENS[comp.pinagem ?? comp.id];
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 100, background: '#00000088',
@@ -131,10 +135,27 @@ export default function ZoomComponente({ comp, onFechar }) {
               width: 28, height: 28, cursor: 'pointer', fontSize: 16 }}>×</button>
           </div>
         )}
+        {temReal && (
+          <div style={{ display: 'flex', gap: 6, padding: '8px 16px',
+                        borderBottom: '1px solid #dee2e6', background: '#f8f9fa' }}>
+            {[['real', '📷 A placa como ela é'], ['logica', '🔌 Só a lista de ligações']]
+              .map(([k, txt]) => (
+                <button key={k} onClick={() => setAba(k)} style={{
+                  background: aba === k ? '#1d3557' : '#fff',
+                  color: aba === k ? '#fff' : '#495057',
+                  border: '1px solid #ced4da', borderRadius: 5,
+                  padding: '5px 11px', cursor: 'pointer', fontSize: 12,
+                  fontWeight: aba === k ? 700 : 400,
+                }}>{txt}</button>
+              ))}
+          </div>
+        )}
         <div style={{ flex: 1, overflow: 'hidden' }}>
           {comp.ehPlaca
             ? <PlacaPI1 onFechar={onFechar} />
-            : <PinagemGenerica comp={comp} />}
+            : (temReal && aba === 'real')
+              ? <PlacaReal chave={comp.pinagem ?? comp.id} compId={comp.id} />
+              : <PinagemGenerica comp={comp} />}
         </div>
       </div>
     </div>
