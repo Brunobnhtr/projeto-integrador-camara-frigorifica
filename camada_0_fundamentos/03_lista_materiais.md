@@ -441,9 +441,46 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 | Shield de expansão Mega (bornes parafuso) | 1 | Sensor Shield V2.0 | |
 | Suporte DIN para Arduino Mega | 1 | Ou SPCI4/adaptador | |
 | ~~Tela Nextion Basic 3.2"~~ | ~~1~~ | ~~NX4024T032~~ — **substituída pelo módulo ESP32-S3 com tela** (ver abaixo) | |
-| ⭐ **Módulo ESP32-S3 com display embutido e slot microSD** | 1 | **A IHM do projeto.** Substitui de uma vez a tela Nextion **e** o módulo de cartão SD. ⚠️ **Modelo ainda a definir** — exigências abaixo | |
+| ⭐ **ESP32-2432S028R** — display 2,8" com microSD (*Cheap Yellow Display*) | 1 | **A IHM do projeto — modelo CONFIRMADO.** Substitui de uma vez a tela Nextion **e** o módulo de cartão SD. ILI9341 240×320, toque resistivo, 5 V / 115 mA, −20 a 70 °C. Buscar `ESP32-2432S028R` ou `ESP32 2.8 display TF card` | |
 
-> ### ⭐ O módulo de tela — o que conferir ANTES de comprar
+> ### ✅ O módulo de tela — modelo confirmado e pinagem levantada
+>
+> A placa escolhida é a **ESP32-2432S028R**, apelidada de ***Cheap Yellow Display* (CYD)**. Isso é uma vantagem grande para um projeto escolar: é uma das placas mais documentadas que existem, com tutoriais e biblioteca de exemplos prontos.
+>
+> **O que ficou confirmado pela ficha e pela comunidade:**
+>
+> | Ponto | Resultado |
+> |---|---|
+> | Slot microSD | ✅ existe, e — melhor ainda — está num **barramento SPI separado** do display |
+> | Alimentação | ✅ **5 V, 115 mA** |
+> | Controlador do display | ✅ **ILI9341** — o mais bem suportado por LVGL e TFT_eSPI |
+> | Temperatura de operação | ✅ −20 a 70 °C (fica na porta, não dentro da câmara) |
+> | GPIOs livres para a serial | ⚠️ **exatamente 3** — e por sorte servem |
+> | PSRAM | ❌ **não tem** — 520 KB de SRAM apenas |
+>
+> #### 🔌 A ligação com o Arduino — os pinos que sobram
+>
+> A CYD usa quase tudo no display. Sobram só três, em dois conectores JST de 1,25 mm:
+>
+> | Pino | Conector | Observação | Uso no projeto |
+> |---|---|---|---|
+> | **GPIO35** | P3 | **só entrada**, sem pull-up interno | ⭐ **RX** — recebe do Arduino |
+> | **GPIO22** | P3 e CN1 | entrada e saída | ⭐ **TX** — envia ao Arduino |
+> | GPIO27 | CN1 | entrada e saída | reserva |
+>
+> **Deu certo por pouco, e por um acaso feliz:** o GPIO35 é *só entrada*, o que normalmente é uma limitação — mas RX é justamente um pino de entrada. Encaixou.
+>
+> ⚠️ **O GPIO35 não tem pull-up interno.** Uma linha de RX em repouso precisa ficar em nível alto; sem pull-up, ela flutua quando o Arduino está desligado e o ESP32 lê lixo. **Acrescente um resistor de 10 kΩ entre o GPIO35 e o 3,3 V.**
+>
+> 📌 **Nem o P3 nem o CN1 trazem 5 V** (o CN1 traz 3,3 V). A alimentação vai mesmo pelo cabo Type-C, como planejado.
+>
+> #### ❌ O que esta placa não faz
+>
+> **A IA da Xiaozhi não roda nela.** São 520 KB de SRAM e nenhuma PSRAM — não é questão de otimizar, os buffers de áudio não cabem. Se a Xiaozhi for requisito, a placa teria de ser uma **ESP32-S3 com 8 MB de PSRAM**, mais cara.
+>
+> Também sobra pouco para crescer: com 3 GPIOs livres e 2 já comprometidos com a serial, resta **um**.
+>
+> ### ⭐ O módulo de tela — exigências que motivaram a escolha
 >
 > A decisão de usar um ESP32-S3 com tela embutida no lugar do Nextion foi tomada, mas **nem todo módulo serve**. Antes de fechar a compra, confirme os cinco pontos:
 >
@@ -471,7 +508,7 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 >
 > É a saída prática, já que essas placas raramente têm borne. Três cuidados:
 >
-> 1. **Cabo curto, menos de 50 cm.** Cabo USB barato usa 28 AWG na alimentação; com os ~500 mA da placa (display + backlight + Wi-Fi), 1 m derruba ~340 mV e chegam 4,76 V. Prefira cabo de carga rápida (24 AWG ou melhor).
+> 1. **Cabo comum serve.** A ficha da CYD declara **115 mA**, não os ~500 mA que eu havia estimado. Mesmo 1 m de cabo barato (28 AWG) derruba só ~80 mV, e nos picos de transmissão Wi-Fi (~300 mA) não passa de 210 mV. Chega folgado acima de 4,8 V. Só evite emendas e cabos de mais de 2 m.
 > 2. ⚠️ **Nunca plugar o USB do PC com o painel energizado.** As duas entradas de alimentação da placa costumam ser paralelas por dentro: o painel empurra 5,10 V contra os 5,00 V do PC, com risco de retroalimentar a porta USB. **Desligue o BD-5V antes de gravar firmware.**
 > 3. **Procure primeiro um pino de 5 V.** Os conectores de 4 pinos 1,25 mm (`IO1`/`IO2 estendido`) normalmente trazem 5 V e GND — bem mais firme que conector USB, que não foi feito para vibração.
 >
