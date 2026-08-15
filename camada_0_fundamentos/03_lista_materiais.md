@@ -500,6 +500,37 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 > |---|---|---|
 > | **Conversor de nível lógico bidirecional 4 canais** (3,3 V ↔ 5 V) | 1 | ⚠️ **Obrigatório.** O GPIO do ESP32 aceita no máximo **3,6 V** e o Arduino Mega transmite em **5 V**. Buscar `conversor nivel logico bidirecional 4 canais` |
 >
+> ### ⚠️ "Mas eu alimento a placa com 5 V — ela não fala em 5 V?"
+>
+> **Não.** Os 5 V não chegam ao ESP32: eles entram num **regulador na própria placa**, que os converte em 3,3 V. O chip e os pinos dele trabalham em 3,3 V.
+>
+> ```
+>    5 V  ──►  [regulador da placa]  ──►  3,3 V  ──►  ESP32
+>                                                      ▲
+>                                           os GPIOs vivem AQUI
+> ```
+>
+> O projeto já tem esse mesmo arranjo: a **DNLCB30 recebe 24 V** e o ESP32 dentro dela segue em 3,3 V. **Alimentação e nível lógico são grandezas diferentes** — uma é a comida, a outra é o idioma.
+>
+> **Só um sentido precisa de conversão:**
+>
+> | Sentido | Precisa? | Por quê |
+> |---|---|---|
+> | Arduino TX (5 V) → CYD RX | ❌ **precisa** | 5 V num pino de 3,6 V no máximo |
+> | CYD TX (3,3 V) → Arduino RX | ✅ vai direto | o Mega lê acima de 3,0 V como nível alto |
+>
+> 🎁 **O módulo resolve dois problemas com um.** Os conversores baseados em BSS138 já trazem **pull-up de 10 kΩ nos dois lados de cada canal** — ou seja, ele também resolve o GPIO35 sem pull-up. Com resistores avulsos você resolveria só a conversão, e ainda ficaria com componente solto no meio do fio, contra a regra que motivou a placa PI-1.
+>
+> **Ligação:**
+>
+> | Conversor | Liga em |
+> |---|---|
+> | **LV** | CYD · 3,3 V (conector **CN1**) |
+> | **HV** | Arduino · 5 V |
+> | **GND** (os dois lados) | BD-0V |
+> | **LV1 ↔ HV1** | GPIO35 (RX) ↔ Mega **pino 16** (TX2) |
+> | **LV2 ↔ HV2** | GPIO22 (TX) ↔ Mega **pino 17** (RX2) |
+
 > **O perigo é que ligar direto *parece* funcionar.** O ESP32 tem diodos internos de proteção que grampeiam a tensão, então a comunicação estabelece e tudo aparenta estar certo. Mas passa corrente por esses diodos continuamente, e o pino degrada em semanas. Quando falhar, vai parecer defeito de fábrica do módulo.
 >
 > Quem faz essa adaptação para o **outro** ESP32 é a própria **DNLCB30** (está na serigrafia dela: *3.3V to 5V level*). O módulo de tela não tem — por isso o conversor entra na lista.
