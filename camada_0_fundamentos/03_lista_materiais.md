@@ -464,15 +464,39 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 >
 > | Pino | Conector | Observação | Uso no projeto |
 > |---|---|---|---|
-> | **GPIO35** | P3 | **só entrada**, sem pull-up interno | ⭐ **RX** — recebe do Arduino |
-> | **GPIO22** | P3 e CN1 | entrada e saída | ⭐ **TX** — envia ao Arduino |
-> | GPIO27 | CN1 | entrada e saída | reserva |
+> | **GPIO27** | CN1 | entrada e saída, **com pull-up interno** | ⭐ **RX** — recebe do Arduino |
+> | **GPIO22** | CN1 e P3 | entrada e saída | ⭐ **TX** — envia ao Arduino |
+> | GPIO35 | P3 | **só entrada**, sem pull-up | reserva |
 >
-> **Deu certo por pouco, e por um acaso feliz:** o GPIO35 é *só entrada*, o que normalmente é uma limitação — mas RX é justamente um pino de entrada. Encaixou.
+> ### 🔌 Tudo num cabo só — use o CN1
 >
-> ⚠️ **O GPIO35 não tem pull-up interno.** Uma linha de RX em repouso precisa ficar em nível alto; sem pull-up, ela flutua quando o Arduino está desligado e o ESP32 lê lixo. **Acrescente um resistor de 10 kΩ entre o GPIO35 e o 3,3 V.**
+> A placa vem com **um** cabo de 4 vias, e a tela precisa de 4 coisas: 3,3 V, GND, RX e TX. O conector **CN1 entrega exatamente isso**:
+>
+> ```
+>    CN1:   GND  ·  GPIO22 (TX)  ·  GPIO27 (RX)  ·  3,3 V
+> ```
+>
+> O `P3` **não serve sozinho**, porque não traz 3,3 V — ele tem GND, GPIO35, GPIO22 e o GPIO21 do backlight.
+>
+> ⭐ **Por que RX no GPIO27 e não no GPIO35:** o GPIO27 **tem pull-up interno**. Uma linha de RX em repouso precisa ficar em nível alto, e sem pull-up ela flutua quando o Arduino está desligado — o ESP32 lê lixo no boot. Com o GPIO27 isso se resolve **por software** (`pinMode(27, INPUT_PULLUP)`), sem resistor externo. O GPIO35 exigiria um resistor de 10 kΩ e um segundo cabo.
+>
+> ⚠️ **Confira o CN1 quando a placa chegar.** Em algumas revisões da CYD o segundo pino do CN1 vem como **NC** no lugar do GPIO22. Se for o caso, use o CN1 para 3,3 V + GND + GPIO27 e puxe o GPIO22 do P3 com um segundo cabo. **Compre um par de cabos JST 1,25 mm de 4 vias junto** — custam centavos e evitam esperar outro frete.
 >
 > 📌 **Nem o P3 nem o CN1 trazem 5 V** (o CN1 traz 3,3 V). A alimentação vai mesmo pelo cabo Type-C, como planejado.
+>
+> ### 🔌 O conversor de nível — ligação pino a pino
+>
+> O modelo de **6 pinos por lado** é o de **4 canais**: alimentação + terra + 4 vias. Usamos 2.
+>
+> | Cabo da tela (CN1) | Conversor | Arduino Mega |
+> |---|---|---|
+> | 3,3 V | `LV` | — |
+> | GND | `GND` (dos **dois** lados) | BD-0V |
+> | **GPIO27** (RX) | `LV1` ↔ `HV1` | **pino 16** (TX2) |
+> | **GPIO22** (TX) | `LV2` ↔ `HV2` | **pino 17** (RX2) |
+> | — | `HV` | **5 V** |
+>
+> Os canais 3 e 4 ficam livres para uma expansão futura.
 >
 > #### ❌ O que esta placa não faz
 >
@@ -528,7 +552,7 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 > | **LV** | CYD · 3,3 V (conector **CN1**) |
 > | **HV** | Arduino · 5 V |
 > | **GND** (os dois lados) | BD-0V |
-> | **LV1 ↔ HV1** | GPIO35 (RX) ↔ Mega **pino 16** (TX2) |
+> | **LV1 ↔ HV1** | GPIO27 (RX) ↔ Mega **pino 16** (TX2) |
 > | **LV2 ↔ HV2** | GPIO22 (TX) ↔ Mega **pino 17** (RX2) |
 
 > **O perigo é que ligar direto *parece* funcionar.** O ESP32 tem diodos internos de proteção que grampeiam a tensão, então a comunicação estabelece e tudo aparenta estar certo. Mas passa corrente por esses diodos continuamente, e o pino degrada em semanas. Quando falhar, vai parecer defeito de fábrica do módulo.
