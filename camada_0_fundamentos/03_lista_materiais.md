@@ -473,17 +473,35 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 >
 > | Conector | Pinos | Uso no projeto |
 > |---|---|---|
-> | ⭐ **UART** | **5 V · GND · TXD (IO44) · RXD (IO43)** | **alimentação E serial no mesmo cabo** |
+> | ⭐ **UART** | 5 V ⚠️ · **GND · TXD (IO44) · RXD (IO43)** | **serial** — usar só 3 fios, ver abaixo |
 > | I²C | 3,3 V · GND · SDA (IO16) · SCL (IO15) | livre — compartilhado com o toque |
 > | Expansão | IO2 · IO3 · IO14 · IO21 | 4 GPIOs livres de verdade |
 > | Speaker | — | alto-falante que vem na caixa |
 > | BAT | — | ⚠️ **não usar** — ver abaixo |
 >
-> **O conector UART traz 5 V, GND, TXD e RXD.** Ou seja: alimentação e comunicação num cabo só. Aquele plano de cortar um cabo Type-C **deixa de ser necessário**.
+> ### ⚠️ O pino de 5 V do conector UART é provavelmente SAÍDA — não ligue nele
 >
-> ⚠️ **Mas os 5 V ali são ALIMENTAÇÃO, não nível lógico.** O TXD e o RXD continuam sendo pinos do ESP32-S3, em **3,3 V**. É a mesma distinção da caixa acima — **o conversor de nível continua obrigatório**.
+> A wiki oficial lista **apenas duas** entradas de alimentação: o **Type-C** e o **conector de bateria**. O conector UART é descrito só como *"depuração, download e comunicação — requer um módulo USB-serial externo"*.
 >
-> 🔎 **Confirme na chegada se o pino de 5 V do conector UART é ENTRADA** (alimenta a placa) ou apenas saída dos 5 V do USB. A wiki menciona um transistor de controle de energia nesse conector. Se for só saída, volta o plano do cabo Type-C.
+> Ou seja, aquele pino de 5 V provavelmente existe para **alimentar o adaptador USB-serial** que se plugaria ali — é saída, não entrada.
+>
+> 🔥 **Ligá-lo no BD-5V seria ruim:** os 5,10 V do painel encontrariam os 5 V da placa, um empurrando o outro, com corrente circulando por onde não deve.
+>
+> **Regra segura: alimente pelo Type-C e use só 3 fios do cabo UART** — GND, TXD e RXD. Isole a ponta do quarto fio.
+>
+> #### 🔎 Como tirar a dúvida com multímetro, sem energizar
+>
+> Com a placa **desligada e sem nada conectado**, meça continuidade entre o pino de 5 V do conector UART e o **VBUS do Type-C** (ou o positivo do capacitor grande perto do USB):
+>
+> | Leitura | Significa |
+> |---|---|
+> | ~0 Ω nos dois sentidos | é a mesma rede → **pode alimentar por ali** |
+> | queda de diodo só num sentido | protegido / unidirecional → **só saída** |
+> | aberto | redes independentes → não alimenta |
+>
+> ### ⚠️ E o TXD/RXD são 3,3 V — o conversor continua obrigatório
+>
+> Não é suposição. São o `IO43` e o `IO44` do ESP32-S3, e três fontes batem: o **BSP no GitHub** mapeia `TX = GPIO44` e `RX = GPIO43`; a ficha declara **"tensão de operação 3,0~3,6 V"** para o módulo; e a wiki fala em *"módulo USB-serial externo"*, que para ESP32 é de 3,3 V. **Nenhuma documentação menciona conversor de nível a bordo.**
 >
 > ### ⚠️ O UART é o UART0 — o mesmo do log de boot
 >
@@ -507,7 +525,8 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 > | GND | `GND` (dos **dois** lados) | BD-0V |
 > | **RXD · IO43** (conector UART) | `LV1` ↔ `HV1` | **pino 16** (TX2) |
 > | **TXD · IO44** (conector UART) | `LV2` ↔ `HV2` | **pino 17** (RX2) |
-> | 5 V (conector UART) | `HV` | **5 V** do BD-5V |
+> | — (o `HV` vem do Arduino) | `HV` | **5 V** do BD-5V |
+> | *alimentação da tela* | — | **Type-C**, cabo à parte |
 >
 > Os canais 3 e 4 ficam livres para uma expansão futura.
 >

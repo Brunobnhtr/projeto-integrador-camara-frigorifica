@@ -73,9 +73,13 @@ export const PINAGENS = {
     grupos: [
       {
         ref: 'UART', tipo: 'borne', lado: 'baixo', x: 24, y: 45, passo: 3.2,
-        cor: '#2f9e44', legenda: '⭐ Conector UART — alimentação E serial no mesmo cabo',
+        cor: '#2f9e44', legenda: '⭐ Conector UART — a serial. Use só 3 dos 4 fios',
         pinos: [
-          { n: 1, nome: '5V', papel: 'alimentação vinda do BD-5V', usa: true, alerta: true },
+          { n: 1, nome: '5V', papel: '⚠️ NÃO LIGAR. A wiki lista só Type-C e bateria como '
+                                   + 'entradas de alimentação — este pino é provavelmente '
+                                   + 'SAÍDA, para alimentar um adaptador USB-serial. Ligá-lo '
+                                   + 'no BD-5V faria 5,10 V empurrar contra 5 V.',
+            alerta: true },
           { n: 2, nome: 'GND', papel: '0 V — barramento único', usa: true },
           { n: 3, nome: 'TXD', papel: 'IO44 → conversor LV2 → Mega pino 17 (RX2)', usa: true },
           { n: 4, nome: 'RXD', papel: 'IO43 ← conversor LV1 ← Mega pino 16 (TX2)', usa: true },
@@ -127,15 +131,17 @@ export const PINAGENS = {
       '⭐ 8 MB de PSRAM OPI — o anúncio não diz, mas a wiki oficial e o BSP do GitHub '
       + 'confirmam. É o que separa esta placa da Cheap Yellow Display: sem PSRAM a '
       + 'Xiaozhi não roda; com 8 MB, roda.',
-      '⚠️ Os 5 V do conector UART são ALIMENTAÇÃO, não nível lógico. O TXD e o RXD '
-      + 'continuam em 3,3 V — o conversor de nível é obrigatório na linha que vem do '
-      + 'Arduino.',
+      '⚠️ TXD e RXD são 3,3 V (IO44 e IO43 do ESP32-S3). Nenhuma documentação menciona '
+      + 'conversor de nível a bordo — o conversor externo é obrigatório na linha que vem '
+      + 'do Arduino.',
       '⚠️ O UART é o UART0 (IO43/IO44), o mesmo do log de boot. O Arduino vai receber '
       + '~500 bytes de texto a cada reinício da tela. O parser precisa ignorar linha '
       + 'que não siga o protocolo — boa prática de qualquer jeito.',
-      '🔎 Confirme na chegada se o pino de 5 V do conector UART é ENTRADA (alimenta a '
-      + 'placa) ou só saída dos 5 V do USB. Se for só saída, volta o plano de alimentar '
-      + 'pelo Type-C.',
+      '🔥 NÃO ligue o pino de 5 V do conector UART no BD-5V. A wiki lista apenas Type-C '
+      + 'e bateria como entradas de alimentação; esse pino é provavelmente saída. '
+      + 'Alimente pelo Type-C e use só GND, TXD e RXD do cabo UART. Para tirar a dúvida: '
+      + 'com a placa desligada, meça continuidade entre esse pino e o VBUS do Type-C — '
+      + '~0 Ω nos dois sentidos significa mesma rede, e aí pode alimentar por ali.',
       '🎁 O alto-falante que vem na caixa habilita ALARME SONORO quando um DUT morre — '
       + 'hoje o projeto só avisa pelo sinaleiro FALHA, que ninguém vê de costas.',
     ],
