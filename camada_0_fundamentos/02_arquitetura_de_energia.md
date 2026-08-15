@@ -148,7 +148,7 @@ Na maquete, 3 condutores de +24 V na cruzeta + 1 condutor de 0 V embaixo fica **
 ┌─────────────────────────────────────────────────────────────────────────┐
 │ NÍVEL 1 — GERAÇÃO / ENTRADA                    (dentro da SUBESTAÇÃO)   │
 │                                                                          │
-│  Tomada 127 V AC ─► [Disjuntor 2P 6 A C] ─► [Chave Rotativa 0-1]        │
+│  Tomada 127 V AC ─────────► [Disjuntor 2P 6 A curva C · Q0]             │
 │                                    │                                     │
 │                                    ▼                                     │
 │                     [FONTE CHAVEADA 24 Vcc / 10 A / 240 W]              │
@@ -318,7 +318,22 @@ I_AC = P_total / (V × FP × η_fonte) = 166 / (127 × 0,65 × 0,85) ≈ 2,37 A
 |---|---|---|
 | Disjuntor de entrada | **2P, 6 A, curva C** | Corrente nominal subiu para 2,37 A, mas o disjuntor de 6 A **continua correto** (2,5× a corrente de operação). Curva C porque fonte chaveada tem **corrente de inrush** alta (carga dos capacitores) — um curva B de 2 A dispararia toda vez que ligasse |
 | Cabo AC | 1,5 mm² (PP 3×1,5 mm²) | Mínimo normativo para circuitos de força; sobra folga para os 2,4 A |
-| Chave rotativa 0-1 | ≥ 6 A / 250 V AC | Comando operacional (liga/desliga) |
+
+> ### ❓ "6 A é pouco para uma fonte de 10 A?"
+>
+> É a dúvida mais comum do projeto, e a resposta é: **os 10 A não estão onde você pensa.**
+>
+> | Lado | Conta | Corrente |
+> |---|---|---:|
+> | **Saída, 24 V** | é onde estão os 10 A | **10 A** |
+> | **Entrada, 127 V** | 24 × 10 = 240 W ÷ 127 V ÷ 0,8 | **≈ 2,4 A** |
+>
+> **O que atravessa a fonte é a POTÊNCIA, não a corrente.** Como a tensão de entrada é cinco vezes maior que a de saída, a corrente de entrada é cerca de cinco vezes menor. O disjuntor de 6 A fica com mais que o dobro de folga sobre os 2,4 A reais.
+>
+> **Por que curva C e não B:** quando a fonte liga, os capacitores de entrada dela puxam dezenas de ampères por alguns milissegundos — é o *inrush*. Um disjuntor curva B dispara entre 3 e 5 vezes a corrente nominal e desarmaria toda vez que você ligasse a maquete. O curva C só dispara entre 5 e 10 vezes, e deixa o tranco passar.
+>
+> ⚠️ **Com a chave rotativa removida, o disjuntor virou também a chave geral.** A alavanca dele precisa ficar **acessível por fora** da casa de comando — monte-o atrás de uma tampa com recorte, como num quadro de luz de casa. Abrir a caixa toda vez para ligar a maquete significaria abrir uma caixa com 127 V dentro.
+| ~~Chave rotativa 0-1~~ | — | **Removida.** O próprio disjuntor acumula a função de chave geral — ver a nota abaixo |
 
 ---
 
@@ -526,7 +541,7 @@ As duas Peltier são o maior movimento de calor do projeto e **não entram na co
 
 ```
 1. Disjuntor 2P ON            → só energiza a entrada da subestação
-2. Chave rotativa 0 → 1       → fonte 24 V liga
+2. Liga o disjuntor Q0        → fonte 24 V liga
 3. Fonte estabiliza (~0,5 s)  → 24 V nos 3 ramais, até o CONTATO do KA2
                                  ⛔ BD-POT e BTS ainda em 0 V (KA2 é NA)
 4. T2 parte                   → 5,10 V → Arduino boota, tela inicializa

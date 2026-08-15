@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   TELA, AREAS, FONTE, FUSIVEIS, POSTES, ENTRADAS_PAINEL, FIOS, SAIDAS_CAMARA, LEGENDA,
-  NIVEIS,
+  NIVEIS, DISJUNTOR, DIMENSAO_REAL,
 } from '../data/maquete';
 
 /* A maquete vista de cima. Clique num fio e ele fica sozinho na tela,
@@ -49,19 +49,19 @@ export default function VistaMaquete({ onIrPara }) {
           {/* ── o tabuleiro ── */}
           <rect x={0} y={0} width={TELA.largura} height={TELA.altura} rx={6}
                 fill="#f1f3f5" stroke="#ced4da" strokeWidth={2} />
-          <text x={14} y={26} fontSize={15} fontWeight="700" fill="#868e96">
-            MAQUETE VISTA DE CIMA — 1,20 × 0,60 m
+          <text x={14} y={26} fontSize={17} fontWeight="700" fill="#868e96">
+            MAQUETE VISTA DE CIMA — {DIMENSAO_REAL}
           </text>
 
           {/* a rua */}
-          <rect x={285} y={330} width={480} height={70} fill="#e9ecef" />
-          <text x={525} y={372} textAnchor="middle" fontSize={13} fill="#adb5bd"
-                letterSpacing={4}>R U A</text>
+          <rect x={268} y={296} width={700} height={78} fill="#e9ecef" />
+          <text x={618} y={342} textAnchor="middle" fontSize={15} fill="#adb5bd"
+                letterSpacing={5}>R U A</text>
 
           {/* faixa do subterrâneo */}
-          <rect x={0} y={415} width={TELA.largura} height={TELA.altura - 415}
+          <rect x={0} y={382} width={TELA.largura} height={TELA.altura - 382}
                 fill="#e3dcc9" opacity={0.55} />
-          <line x1={0} y1={415} x2={TELA.largura} y2={415} stroke="#c9bda0"
+          <line x1={0} y1={382} x2={TELA.largura} y2={382} stroke="#c9bda0"
                 strokeWidth={2} strokeDasharray="8 5" />
           <text x={16} y={TELA.altura - 14} fontSize={12} fill="#9c8f70">
             ⌄ POR BAIXO DO TABULEIRO — cada ramal desce no seu poste e corre escondido até o painel
@@ -121,6 +121,26 @@ export default function VistaMaquete({ onIrPara }) {
             ))}
           </g>
 
+          {/* ── disjuntor Q0, antes da fonte ── */}
+          <g onClick={() => { setAlvo({ tipo: 'disjuntor' }); setSel(null); }}
+             style={{ cursor: 'pointer' }}>
+            <rect x={DISJUNTOR.x} y={DISJUNTOR.y} width={DISJUNTOR.w} height={DISJUNTOR.h}
+                  rx={3} fill="#f8f9fa" stroke="#495057" strokeWidth={2} />
+            {/* as duas alavancas do bipolar */}
+            {[0, 1].map(i => (
+              <rect key={i} x={DISJUNTOR.x + 10 + i * 20} y={DISJUNTOR.y + 5}
+                    width={12} height={9} rx={1.5} fill="#212529" />
+            ))}
+            <text x={DISJUNTOR.x + DISJUNTOR.w / 2} y={DISJUNTOR.y + 23}
+                  textAnchor="middle" fontSize={8.5} fontWeight="700" fill="#212529">
+              Q0 · 6 A
+            </text>
+            <text x={DISJUNTOR.x + DISJUNTOR.w / 2} y={DISJUNTOR.y - 5}
+                  textAnchor="middle" fontSize={8.5} fill="#868e96">
+              disjuntor 2P curva C
+            </text>
+          </g>
+
           {/* ── fusíveis ── */}
           {FUSIVEIS.map(f => (
             <g key={f.ref}>
@@ -168,10 +188,17 @@ export default function VistaMaquete({ onIrPara }) {
               {/* mastro. O P4 e vazado: desenhado como tubo */}
               {p.vazado ? (
                 <>
-                  <rect x={p.x - 6} y={NIVEIS.GND - 12} width={12} height={p.base - NIVEIS.GND + 12}
-                        fill="#e9ecef" stroke="#6c757d" strokeWidth={2} rx={2} />
-                  <line x1={p.x} y1={NIVEIS.GND - 6} x2={p.x} y2={p.base}
-                        stroke="#adb5bd" strokeWidth={1} strokeDasharray="4 3" />
+                  {/* mastro largo: o miolo e vazado e cabem 3 entradas lado a lado */}
+                  <rect x={p.x - 22} y={NIVEIS.R1 - 14} width={52}
+                        height={p.base - NIVEIS.R1 + 14}
+                        fill="#e9ecef" stroke="#495057" strokeWidth={2.5} rx={3} />
+                  {[0, 1, 2].map(i => (
+                    <line key={i} x1={p.x - 7 + i * 13} y1={NIVEIS.R1 - 8}
+                          x2={p.x - 7 + i * 13} y2={p.base}
+                          stroke="#adb5bd" strokeWidth={1} strokeDasharray="4 3" />
+                  ))}
+                  <text x={p.x + 4} y={NIVEIS.R1 - 20} textAnchor="middle" fontSize={8}
+                        fontWeight="700" fill="#495057">3 entradas</text>
                 </>
               ) : (
                 <line x1={p.x} y1={NIVEIS.R1 - 14} x2={p.x} y2={p.base}
@@ -184,11 +211,11 @@ export default function VistaMaquete({ onIrPara }) {
                       strokeWidth={1.5} />
               <text x={p.x} y={p.base + 4} textAnchor="middle" fontSize={10}
                     fontWeight="700" fill="#212529">{p.ref}</text>
-              <text x={p.x} y={p.base + 26} textAnchor="middle" fontSize={8.5}
-                    fill="#868e96">↓ {p.desce}</text>
+              <text x={p.x + (p.vazado ? 4 : 0)} y={p.base + 26} textAnchor="middle"
+                    fontSize={8.5} fill="#868e96">↓ {p.desce}</text>
               {p.vazado && (
-                <text x={p.x} y={p.base + 38} textAnchor="middle" fontSize={8}
-                      fontWeight="700" fill="#1971c2">padrão de entrada</text>
+                <text x={p.x + 4} y={p.base + 38} textAnchor="middle" fontSize={9}
+                      fontWeight="700" fill="#1971c2">PADRÃO DE ENTRADA</text>
               )}
               {p.equipa && (
                 <>
@@ -317,6 +344,51 @@ export default function VistaMaquete({ onIrPara }) {
                           borderRadius: 7, fontSize: 12, color: '#495057',
                           lineHeight: 1.6, fontStyle: 'italic' }}>
               💡 {alvo.analogia}
+            </div>
+          </div>
+        )}
+
+        {alvo?.tipo === 'disjuntor' && (
+          <div style={{ padding: '14px 16px' }}>
+            <div style={{ fontSize: 17, fontWeight: 700, color: '#c92a2a' }}>
+              {DISJUNTOR.spec}
+            </div>
+            <div style={{ fontSize: 12.5, color: '#343a40', marginTop: 8,
+                          lineHeight: 1.6 }}>{DISJUNTOR.papel}</div>
+            <div style={{ marginTop: 12, padding: 12, background: '#fff9db',
+                          border: '2px solid #ffe066', borderRadius: 7, fontSize: 12,
+                          color: '#7a5c00', lineHeight: 1.6 }}>
+              <b>❓ 6 A para uma fonte de 10 A?</b>
+              <div style={{ marginTop: 5 }}>{DISJUNTOR.porque6A}</div>
+              <table style={{ marginTop: 9, fontSize: 11.5, width: '100%' }}>
+                <tbody>
+                  <tr><td style={{ color: '#997404' }}>Lado 24 V (saída)</td>
+                      <td style={{ fontWeight: 700 }}>24 V × 10 A = 240 W</td></tr>
+                  <tr><td style={{ color: '#997404' }}>Lado 127 V (entrada)</td>
+                      <td style={{ fontWeight: 700 }}>240 W ÷ 127 V ≈ 2,4 A</td></tr>
+                </tbody>
+              </table>
+              <div style={{ marginTop: 7, fontStyle: 'italic' }}>
+                O que atravessa a fonte é a POTÊNCIA, não a corrente. Como a tensão de
+                entrada é 5 vezes maior, a corrente é 5 vezes menor.
+              </div>
+            </div>
+            <div style={{ marginTop: 10, padding: 12, background: '#f8f9fa',
+                          borderRadius: 7, fontSize: 12, color: '#343a40',
+                          lineHeight: 1.6 }}>
+              <b>Por que curva C</b>
+              <div style={{ marginTop: 5 }}>{DISJUNTOR.porqueC}</div>
+            </div>
+            <div style={{ marginTop: 10, padding: 12, background: '#fff5f5',
+                          border: '2px solid #ffc9c9', borderRadius: 7, fontSize: 12,
+                          color: '#c92a2a', lineHeight: 1.6 }}>
+              <b>⚠️ Ele virou também a chave geral</b>
+              <div style={{ marginTop: 5 }}>
+                A chave rotativa saiu do projeto. Então a alavanca do disjuntor precisa
+                ficar <b>acessível por fora</b> da casa de comando — monte-o atrás de uma
+                tampa com recorte, como num quadro de luz. Abrir a caixa para ligar a
+                maquete seria abrir uma caixa com 127 V dentro.
+              </div>
             </div>
           </div>
         )}

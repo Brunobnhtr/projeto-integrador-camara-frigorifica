@@ -11,7 +11,7 @@
 | Antes (v1) | Agora (v2) |
 |---|---|
 | Fonte ATX entregando 12 V e 5 V | **Fonte chaveada 24 Vcc + 3 conversores step-down** distribuídos na maquete |
-| Sem disjuntor, só chave rotativa | **Disjuntor 2P 6 A curva C + chave rotativa + 3 fusíveis de ramal com seletividade** |
+| Sem disjuntor, só chave rotativa | **Disjuntor 2P 6 A curva C (acumula proteção e chave geral) + 3 fusíveis de ramal com seletividade** |
 | Liga/desliga só por software | **Emergência corta a energia em hardware** (relé de interface KA1), START/STOP por software — pelo botão do painel **ou** pela IHM |
 | Câmara térmica com Arduino | **Planta industrial em miniatura** onde a câmara é a carga do processo |
 | 8 etapas soltas | **5 camadas de construção**, cada uma com checklist de aceitação |
@@ -24,7 +24,7 @@
 ## 🗺️ Mapa da cadeia de energia
 
 ```
-127 V AC ─[Q0 2P 6A]─[S3 chave 0-1]─► FONTE 24 Vcc 240 W       ◄── SUBESTAÇÃO
+127 V AC ─────[Q0 · 2P 6 A curva C]─────► FONTE 24 Vcc 240 W   ◄── SUBESTAÇÃO
                                             │                      (única parte com 127 V)
                     ┌───────────────────────┼───────────────────────┐
                  [F1 10A]                [F2 2A]                 [F3 2A]

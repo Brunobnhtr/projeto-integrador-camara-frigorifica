@@ -166,7 +166,7 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 |---|---:|---|---|---|
 | **Fonte chaveada 24 Vcc** | 1 | **24 V / 10 A / 240 W**, bivolt 110-220 V (chave seletora ou auto-range). Modelo tipo **S-240-24** | `fonte chaveada 24v 10a 240w` | |
 | **Disjuntor DIN 2P 6 A curva C** | 1 | Bipolar, 6 A, curva C (por causa do inrush da fonte), 3 kA | `disjuntor bipolar 6a curva c din` | |
-| **Chave rotativa 0-1 22 mm** | 1 | ≥ 6 A / 250 V AC, 2 posições com retenção, fixação 22 mm | `chave seletora 2 posicoes 22mm` | |
+| ~~Chave rotativa 0-1 22 mm~~ | ~~1~~ | **REMOVIDA do projeto.** O disjuntor Q0 acumula proteção e chave geral. ⚠️ Por isso ele precisa ficar **acessível por fora** da casa de comando: monte atrás de uma tampa com recorte, como num quadro de luz | `chave seletora 2 posicoes 22mm` | |
 | Cabo PP 3×1,5 mm² + plugue | 1,5 m | Cabo de entrada AC com plugue 2P+T 10 A | `cabo pp 3x1,5 com plugue` | |
 | Prensa-cabo PG9 / PG13 | 3 | Entrada e saída de cabos da caixa da subestação | `prensa cabo pg9` | |
 | Borne DIN 4 mm² | 6 | Distribuição 24 V e 0 V na subestação | `borne trilho din 4mm parafuso` | |
