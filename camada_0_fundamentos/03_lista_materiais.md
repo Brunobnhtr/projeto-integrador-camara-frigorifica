@@ -582,6 +582,25 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 > | Arduino TX (5 V) → tela RXD | ❌ **precisa** | 5 V num pino de 3,6 V no máximo |
 > | Tela TXD (3,3 V) → Arduino RX | ✅ vai direto | o Mega lê acima de 3,0 V como nível alto |
 >
+> ### 🤔 "E a DNLCB30, que já tem conversor? Não dá para aproveitar?"
+>
+> **Não, e o motivo é a topologia dela.** O conversor da DNLCB30 fica *entre o soquete do ESP32 e o borne*:
+>
+> ```
+>    borne parafuso ──[conversor]── pino do soquete ── ESP32
+>         5 V                            3,3 V
+> ```
+>
+> O lado de 5 V é o borne, acessível. O lado de **3,3 V termina no pino do soquete**, onde o ESP32 está encaixado — não existe borne para ele. Para o sinal chegar na tela, o ESP32 teria que **repassá-lo por software**, que é a arquitetura em cadeia já descartada (a tela cega se o ESP32 reiniciar).
+>
+> Grampear um fio no pino do soquete resolveria no papel, mas traz três problemas — e o terceiro é sério:
+>
+> 1. **O GPIO do ESP32 fica exposto** ao sinal. Se o firmware um dia configurar aquele pino como saída, dois circuitos disputam a mesma linha.
+> 2. **É fio soldado em header dentro de painel** — falha por vibração, e meses depois.
+> 3. ⚠️ **Retroalimentação.** No módulo dedicado, o lado `LV` é alimentado pelos **3,3 V da própria tela**: se a tela desliga, o lado baixo morre junto e nada é injetado nela. Grampeando a DNLCB30, o sinal fica vivo sempre que o **ESP32 de IoT** estiver ligado — injetando 3,3 V numa placa sem alimentação, pelos diodos de proteção dela. É o mesmo mecanismo de dano, por outro caminho.
+>
+> **Os R$ 5 do módulo compram o direito de não pensar mais nisso.**
+
 > 🎁 **O módulo resolve dois problemas com um.** Os conversores baseados em BSS138 já trazem **pull-up de 10 kΩ nos dois lados de cada canal** — ou seja, ele também resolve o GPIO35 sem pull-up. Com resistores avulsos você resolveria só a conversão, e ainda ficaria com componente solto no meio do fio, contra a regra que motivou a placa PI-1.
 >
 > **Ligação:**
