@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import {
   TELA, AREAS, FONTE, FUSIVEIS, POSTES, ENTRADAS_PAINEL, FIOS, SAIDAS_CAMARA, LEGENDA,
+  NIVEIS,
 } from '../data/maquete';
 
 /* A maquete vista de cima. Clique num fio e ele fica sozinho na tela,
@@ -58,10 +59,12 @@ export default function VistaMaquete({ onIrPara }) {
                 letterSpacing={4}>R U A</text>
 
           {/* faixa do subterrâneo */}
-          <rect x={0} y={400} width={TELA.largura} height={TELA.altura - 400}
+          <rect x={0} y={415} width={TELA.largura} height={TELA.altura - 415}
                 fill="#e3dcc9" opacity={0.55} />
+          <line x1={0} y1={415} x2={TELA.largura} y2={415} stroke="#c9bda0"
+                strokeWidth={2} strokeDasharray="8 5" />
           <text x={16} y={TELA.altura - 14} fontSize={12} fill="#9c8f70">
-            ⌄ POR BAIXO DO TABULEIRO — aqui passa só o fio de retorno
+            ⌄ POR BAIXO DO TABULEIRO — cada ramal desce no seu poste e corre escondido até o painel
           </text>
 
           {/* ── áreas ── */}
@@ -145,6 +148,11 @@ export default function VistaMaquete({ onIrPara }) {
                       strokeDasharray={f.tracejado ? '9 5' : (f.subterraneo ? '13 6' : undefined)}
                       opacity={on ? 1 : 0.06}
                       strokeLinecap="round" strokeLinejoin="round" />
+                {f.derivacoes?.map((d, i) => (
+                  <path key={i} d={traco(d)} fill="none" stroke={f.cor}
+                        strokeWidth={forte ? 4.5 : 2.4} opacity={on ? 1 : 0.06}
+                        strokeLinecap="round" strokeLinejoin="round" />
+                ))}
                 {forte && f.caminho.map((p, i) => (
                   <circle key={i} cx={p[0]} cy={p[1]} r={4} fill="#fff"
                           stroke={f.cor} strokeWidth={2} />
@@ -157,19 +165,38 @@ export default function VistaMaquete({ onIrPara }) {
           {POSTES.map(p => (
             <g key={p.ref} onClick={() => { setAlvo({ tipo: 'poste', ...p }); setSel(null); }}
                style={{ cursor: 'pointer' }}>
-              <line x1={p.x} y1={110} x2={p.x} y2={p.y + 55} stroke="#8a6d3b"
-                    strokeWidth={7} strokeLinecap="round" />
-              <circle cx={p.x} cy={p.y + 55} r={11} fill="#adb5bd" stroke="#6c757d"
+              {/* mastro. O P4 e vazado: desenhado como tubo */}
+              {p.vazado ? (
+                <>
+                  <rect x={p.x - 6} y={NIVEIS.GND - 12} width={12} height={p.base - NIVEIS.GND + 12}
+                        fill="#e9ecef" stroke="#6c757d" strokeWidth={2} rx={2} />
+                  <line x1={p.x} y1={NIVEIS.GND - 6} x2={p.x} y2={p.base}
+                        stroke="#adb5bd" strokeWidth={1} strokeDasharray="4 3" />
+                </>
+              ) : (
+                <line x1={p.x} y1={NIVEIS.R1 - 14} x2={p.x} y2={p.base}
+                      stroke="#8a6d3b" strokeWidth={7} strokeLinecap="round" />
+              )}
+              {/* cruzeta: a barra que segura os 4 condutores */}
+              <line x1={p.x - 15} y1={NIVEIS.R1 - 8} x2={p.x + 15} y2={NIVEIS.R1 - 8}
+                    stroke="#8a6d3b" strokeWidth={4} strokeLinecap="round" />
+              <circle cx={p.x} cy={p.base} r={11} fill="#adb5bd" stroke="#6c757d"
                       strokeWidth={1.5} />
-              <text x={p.x} y={p.y + 59} textAnchor="middle" fontSize={10}
+              <text x={p.x} y={p.base + 4} textAnchor="middle" fontSize={10}
                     fontWeight="700" fill="#212529">{p.ref}</text>
+              <text x={p.x} y={p.base + 26} textAnchor="middle" fontSize={8.5}
+                    fill="#868e96">↓ {p.desce}</text>
+              {p.vazado && (
+                <text x={p.x} y={p.base + 38} textAnchor="middle" fontSize={8}
+                      fontWeight="700" fill="#1971c2">padrão de entrada</text>
+              )}
               {p.equipa && (
                 <>
-                  <rect x={p.x - 20} y={p.y - 40} width={40} height={26} rx={3}
+                  <rect x={p.x - 21} y={176} width={42} height={22} rx={3}
                         fill="#1971c2" stroke="#0b4a86" strokeWidth={1.5} />
-                  <text x={p.x} y={p.y - 29} textAnchor="middle" fontSize={9.5}
+                  <text x={p.x} y={185} textAnchor="middle" fontSize={9}
                         fontWeight="700" fill="#fff">{p.equipa.ref}</text>
-                  <text x={p.x} y={p.y - 19} textAnchor="middle" fontSize={8.5}
+                  <text x={p.x} y={194} textAnchor="middle" fontSize={8}
                         fill="#a5d8ff">{p.equipa.para}</text>
                 </>
               )}
@@ -274,6 +301,18 @@ export default function VistaMaquete({ onIrPara }) {
             )}
             <div style={{ fontSize: 12.5, color: '#343a40', marginTop: 11,
                           lineHeight: 1.6 }}>{alvo.faz}</div>
+            {alvo.desce && (
+              <div style={{ marginTop: 9, fontSize: 12, color: '#495057' }}>
+                <b>Desce deste poste:</b> {alvo.desce}
+              </div>
+            )}
+            {alvo.porqueUmSo && (
+              <div style={{ marginTop: 11, padding: 11, background: '#fff9db',
+                            border: '2px solid #ffe066', borderRadius: 7,
+                            fontSize: 12, color: '#7a5c00', lineHeight: 1.6 }}>
+                {alvo.porqueUmSo}
+              </div>
+            )}
             <div style={{ marginTop: 11, padding: 11, background: '#f8f9fa',
                           borderRadius: 7, fontSize: 12, color: '#495057',
                           lineHeight: 1.6, fontStyle: 'italic' }}>
@@ -336,11 +375,13 @@ export default function VistaMaquete({ onIrPara }) {
               ['1', 'SUBESTAÇÃO', 'A tomada entrega 127 V alternados. A fonte transforma '
                   + 'em 24 V contínuos e os três fusíveis dividem a saída em três ramais.',
                 '#c92a2a'],
-              ['2', 'OS POSTES', 'Os três ramais sobem e viajam pelo alto, como fios de '
-                  + 'rua. Nos postes 2 e 3 estão os conversores, que fazem o papel dos '
-                  + 'transformadores: 24 V → 5 V e 24 V → 12 V.', '#f08c00'],
-              ['3', 'O PAINEL', 'Descem quatro fios positivos (dois de 24 V, um de 12 V '
-                  + 'e um de 5 V) e sobe um de retorno, que veio por baixo.', '#1971c2'],
+              ['2', 'A REDE AÉREA', 'Quatro condutores viajam pelo alto: os três '
+                  + 'positivos em cima e o 0 V um pouco abaixo. Nos postes 2 e 3 estão '
+                  + 'os conversores, que fazem o papel dos transformadores de rua.',
+                '#f08c00'],
+              ['3', 'AS DESCIDAS', 'Cada ramal desce no SEU poste e corre por baixo do '
+                  + 'tabuleiro até o painel. O 0 V é o único que atravessa tudo sem '
+                  + 'parar, e desce no poste 4 — o padrão de entrada.', '#1971c2'],
               ['4', 'A CÂMARA', 'O painel decide e aciona. As pastilhas esfriam, o PTC '
                   + 'aquece, e os sensores contam de volta o que está acontecendo.',
                 '#0ca678'],
@@ -358,12 +399,24 @@ export default function VistaMaquete({ onIrPara }) {
               </div>
             ))}
             <div style={{ padding: 12, background: '#e7f5ff', borderRadius: 7,
-                          fontSize: 12, color: '#0b4a86', lineHeight: 1.6 }}>
+                          fontSize: 12, color: '#0b4a86', lineHeight: 1.6,
+                          marginBottom: 9 }}>
               <b>⭐ Por que a maquete tem postes?</b>
               <div style={{ marginTop: 5 }}>
                 Porque o projeto não é só a câmara — é a <b>rede que a alimenta</b>.
                 Os postes mostram, em miniatura, o mesmo caminho que a energia faz da
                 usina até a fábrica: gera, protege, transporta, transforma e entrega.
+              </div>
+            </div>
+            <div style={{ padding: 12, background: '#fff9db', borderRadius: 7,
+                          border: '2px solid #ffe066',
+                          fontSize: 12, color: '#7a5c00', lineHeight: 1.6 }}>
+              <b>⭐ Repare no que NÃO sai dos transformadores</b>
+              <div style={{ marginTop: 5 }}>
+                Entram dois fios em cada um (24 V e 0 V) e sai <b>um só</b>: o positivo.
+                O 0 V não precisa voltar porque é o <b>mesmo condutor</b> dos dois lados —
+                os conversores não isolam nada. É por isso que existe um único 0 V no
+                projeto inteiro, e é o que deixa a fiação da maquete tão simples.
               </div>
             </div>
           </div>
