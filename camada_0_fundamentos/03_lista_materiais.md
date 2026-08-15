@@ -457,6 +457,26 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 >
 > ⚠️ **Não é o slot SD do Nextion.** No Nextion o cartão só grava o firmware da tela; aqui ele é **armazenamento de verdade**, no barramento SPI do próprio ESP32. É essa diferença que permite o módulo acumular as duas funções.
 >
+> ### 🔥 O item que é fácil esquecer e queima a placa
+>
+> | Item | Qtd | Por quê |
+> |---|---|---|
+> | **Conversor de nível lógico bidirecional 4 canais** (3,3 V ↔ 5 V) | 1 | ⚠️ **Obrigatório.** O GPIO do ESP32 aceita no máximo **3,6 V** e o Arduino Mega transmite em **5 V**. Buscar `conversor nivel logico bidirecional 4 canais` |
+>
+> **O perigo é que ligar direto *parece* funcionar.** O ESP32 tem diodos internos de proteção que grampeiam a tensão, então a comunicação estabelece e tudo aparenta estar certo. Mas passa corrente por esses diodos continuamente, e o pino degrada em semanas. Quando falhar, vai parecer defeito de fábrica do módulo.
+>
+> Quem faz essa adaptação para o **outro** ESP32 é a própria **DNLCB30** (está na serigrafia dela: *3.3V to 5V level*). O módulo de tela não tem — por isso o conversor entra na lista.
+>
+> ### 🔌 Alimentar o módulo de tela pelo cabo Type-C cortado
+>
+> É a saída prática, já que essas placas raramente têm borne. Três cuidados:
+>
+> 1. **Cabo curto, menos de 50 cm.** Cabo USB barato usa 28 AWG na alimentação; com os ~500 mA da placa (display + backlight + Wi-Fi), 1 m derruba ~340 mV e chegam 4,76 V. Prefira cabo de carga rápida (24 AWG ou melhor).
+> 2. ⚠️ **Nunca plugar o USB do PC com o painel energizado.** As duas entradas de alimentação da placa costumam ser paralelas por dentro: o painel empurra 5,10 V contra os 5,00 V do PC, com risco de retroalimentar a porta USB. **Desligue o BD-5V antes de gravar firmware.**
+> 3. **Procure primeiro um pino de 5 V.** Os conectores de 4 pinos 1,25 mm (`IO1`/`IO2 estendido`) normalmente trazem 5 V e GND — bem mais firme que conector USB, que não foi feito para vibração.
+>
+> Os **5,10 V do BD-5V** estão dentro da faixa USB (4,75–5,25 V), sem problema.
+
 > 🔌 **Vai precisar de um divisor resistivo.** O Arduino Mega transmite em **5 V** e o ESP32-S3 só aceita **3,3 V** no pino de entrada. Quem fazia essa adaptação para o outro ESP32 era a DNLCB30 — o módulo de tela não tem isso. São 2 resistores (10 kΩ + 20 kΩ) na linha `Mega TX → S3 RX`. O caminho contrário (`S3 TX → Mega RX`) funciona direto, porque o Mega já reconhece 3,3 V como nível alto.
 | ESP32-WROOM-32U | 1 | 30 pinos, conector de antena IPEX | |
 | **DNLCB30** — base DIN para ESP32 | 1 | Entrada **7–35 V** (alimentada direto do barramento 24 V), conversão 3,3 ↔ 5 V automática. **Não inclui o ESP32** | |
