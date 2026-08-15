@@ -441,68 +441,88 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 | Shield de expansão Mega (bornes parafuso) | 1 | Sensor Shield V2.0 | |
 | Suporte DIN para Arduino Mega | 1 | Ou SPCI4/adaptador | |
 | ~~Tela Nextion Basic 3.2"~~ | ~~1~~ | ~~NX4024T032~~ — **substituída pelo módulo ESP32-S3 com tela** (ver abaixo) | |
-| ⭐ **ESP32-2432S028R** — display 2,8" com microSD (*Cheap Yellow Display*) | 1 | **A IHM do projeto — modelo CONFIRMADO.** Substitui de uma vez a tela Nextion **e** o módulo de cartão SD. ILI9341 240×320, toque resistivo, 5 V / 115 mA, −20 a 70 °C. Buscar `ESP32-2432S028R` ou `ESP32 2.8 display TF card` | |
+| ⭐ **ES3C28P** — ESP32-**S3** 2,8" toque capacitivo, microSD, microfone (LCDWIKI) | 1 | **A IHM do projeto.** Substitui a tela Nextion **e** o módulo de cartão SD. **8 MB de PSRAM** → a Xiaozhi roda. ILI9341V 240×320, toque capacitivo FT6336G, 5 V / 140 mA, **−30 a 80 °C**. Vem com alto-falante. ⚠️ Comprar a versão **ES3C28P** (com toque) — a `ES3N28P` é sem toque | |
 
 > ### ✅ O módulo de tela — modelo confirmado e pinagem levantada
 >
-> A placa escolhida é a **ESP32-2432S028R**, apelidada de ***Cheap Yellow Display* (CYD)**. Isso é uma vantagem grande para um projeto escolar: é uma das placas mais documentadas que existem, com tutoriais e biblioteca de exemplos prontos.
+> A placa escolhida é a **ES3C28P**, da LCDWIKI. Tem wiki oficial e um pacote de suporte no GitHub, o que para um projeto escolar vale muito.
 >
-> **O que ficou confirmado pela ficha e pela comunidade:**
+> ### ⭐ Ela tem PSRAM — e o anúncio não diz
+>
+> A descrição do vendedor lista só `384 KB ROM + 512 KB SRAM + 16 KB RTC SRAM + 16 MB Flash`. **Faltou a informação mais importante:** a wiki oficial e o pacote de suporte no GitHub confirmam **8 MB de PSRAM OPI**.
+>
+> É isso que separa esta placa da ESP32-2432S028R (*Cheap Yellow Display*), que foi a primeira candidata: **sem PSRAM a Xiaozhi não roda de jeito nenhum**; com 8 MB, roda. O próprio anúncio já promete *"suporte ao chat de voz Xiaozhi AI"*, o que só faz sentido por causa dela.
 >
 > | Ponto | Resultado |
 > |---|---|
-> | Slot microSD | ✅ existe, e — melhor ainda — está num **barramento SPI separado** do display |
-> | Alimentação | ✅ **5 V, 115 mA** |
-> | Controlador do display | ✅ **ILI9341** — o mais bem suportado por LVGL e TFT_eSPI |
-> | Temperatura de operação | ✅ −20 a 70 °C (fica na porta, não dentro da câmara) |
-> | GPIOs livres para a serial | ⚠️ **exatamente 3** — e por sorte servem |
-> | PSRAM | ❌ **não tem** — 520 KB de SRAM apenas |
+> | Processador | ✅ **ESP32-S3** dual-core LX7 |
+> | **PSRAM** | ✅ **8 MB OPI** — confirmada na wiki e no BSP |
+> | Flash | ✅ 16 MB |
+> | Slot microSD | ✅ em interface **SDMMC dedicada** (CLK IO38, CMD IO40, DATA IO39/41/48/47) |
+> | Alimentação | ✅ **5 V** · 140 mA só com a tela |
+> | Toque | ✅ **capacitivo** (FT6336G, por I²C) — dedo, sem caneta |
+> | Microfone e alto-falante | ✅ mic embutido, alto-falante **vem na caixa** |
+> | Temperatura de operação | ✅ **−30 a 80 °C** |
+> | Documentação | ✅ wiki oficial + BSP no GitHub |
 >
 > #### 🔌 A ligação com o Arduino — os pinos que sobram
 >
 > A CYD usa quase tudo no display. Sobram só três, em dois conectores JST de 1,25 mm:
 >
-> | Pino | Conector | Observação | Uso no projeto |
-> |---|---|---|---|
-> | **GPIO27** | CN1 | entrada e saída, **com pull-up interno** | ⭐ **RX** — recebe do Arduino |
-> | **GPIO22** | CN1 e P3 | entrada e saída | ⭐ **TX** — envia ao Arduino |
-> | GPIO35 | P3 | **só entrada**, sem pull-up | reserva |
+> ### 🔌 Os conectores — e por que some o improviso do cabo USB cortado
 >
-> ### 🔌 Tudo num cabo só — use o CN1
+> | Conector | Pinos | Uso no projeto |
+> |---|---|---|
+> | ⭐ **UART** | **5 V · GND · TXD (IO44) · RXD (IO43)** | **alimentação E serial no mesmo cabo** |
+> | I²C | 3,3 V · GND · SDA (IO16) · SCL (IO15) | livre — compartilhado com o toque |
+> | Expansão | IO2 · IO3 · IO14 · IO21 | 4 GPIOs livres de verdade |
+> | Speaker | — | alto-falante que vem na caixa |
+> | BAT | — | ⚠️ **não usar** — ver abaixo |
 >
-> A placa vem com **um** cabo de 4 vias, e a tela precisa de 4 coisas: 3,3 V, GND, RX e TX. O conector **CN1 entrega exatamente isso**:
+> **O conector UART traz 5 V, GND, TXD e RXD.** Ou seja: alimentação e comunicação num cabo só. Aquele plano de cortar um cabo Type-C **deixa de ser necessário**.
 >
-> ```
->    CN1:   GND  ·  GPIO22 (TX)  ·  GPIO27 (RX)  ·  3,3 V
-> ```
+> ⚠️ **Mas os 5 V ali são ALIMENTAÇÃO, não nível lógico.** O TXD e o RXD continuam sendo pinos do ESP32-S3, em **3,3 V**. É a mesma distinção da caixa acima — **o conversor de nível continua obrigatório**.
 >
-> O `P3` **não serve sozinho**, porque não traz 3,3 V — ele tem GND, GPIO35, GPIO22 e o GPIO21 do backlight.
+> 🔎 **Confirme na chegada se o pino de 5 V do conector UART é ENTRADA** (alimenta a placa) ou apenas saída dos 5 V do USB. A wiki menciona um transistor de controle de energia nesse conector. Se for só saída, volta o plano do cabo Type-C.
 >
-> ⭐ **Por que RX no GPIO27 e não no GPIO35:** o GPIO27 **tem pull-up interno**. Uma linha de RX em repouso precisa ficar em nível alto, e sem pull-up ela flutua quando o Arduino está desligado — o ESP32 lê lixo no boot. Com o GPIO27 isso se resolve **por software** (`pinMode(27, INPUT_PULLUP)`), sem resistor externo. O GPIO35 exigiria um resistor de 10 kΩ e um segundo cabo.
+> ### ⚠️ O UART é o UART0 — o mesmo do log de boot
 >
-> ⚠️ **Confira o CN1 quando a placa chegar.** Em algumas revisões da CYD o segundo pino do CN1 vem como **NC** no lugar do GPIO22. Se for o caso, use o CN1 para 3,3 V + GND + GPIO27 e puxe o GPIO22 do P3 com um segundo cabo. **Compre um par de cabos JST 1,25 mm de 4 vias junto** — custam centavos e evitam esperar outro frete.
+> Os pinos IO43/IO44 são o **UART0** do ESP32-S3, por onde o bootloader imprime o log a cada reinício. **O Arduino vai receber ~500 bytes de texto toda vez que a tela reiniciar.** Não faz mal, mas o parser do Arduino precisa **ignorar linhas que não sigam o protocolo** — o que é boa prática de qualquer jeito.
 >
-> 📌 **Nem o P3 nem o CN1 trazem 5 V** (o CN1 traz 3,3 V). A alimentação vai mesmo pelo cabo Type-C, como planejado.
+> Duas saídas se incomodar:
+> 1. **No ESP-IDF**, apontar o console para o USB-Serial-JTAG em vez do UART0. O log some do conector e o UART0 fica limpo.
+> 2. **Usar o conector de expansão** (IO2/IO3) para uma UART1 dedicada, deixando o conector UART só para os 5 V. Custa um segundo cabo.
+>
+> ### 🔋 Não instale bateria
+>
+> A placa aceita Li-Po e traz circuito de carga. **Não use.** Dentro de um painel elétrico fechado, uma bateria de lítio é risco de incêndio sem contrapartida — o painel já tem 24 V permanente pelo BD-24V, que é o que mantém a supervisão viva. Deixe o conector BAT vazio.
 >
 > ### 🔌 O conversor de nível — ligação pino a pino
 >
 > O modelo de **6 pinos por lado** é o de **4 canais**: alimentação + terra + 4 vias. Usamos 2.
 >
-> | Cabo da tela (CN1) | Conversor | Arduino Mega |
+> | Tela | Conversor | Arduino Mega |
 > |---|---|---|
-> | 3,3 V | `LV` | — |
+> | 3,3 V (conector **I²C**) | `LV` | — |
 > | GND | `GND` (dos **dois** lados) | BD-0V |
-> | **GPIO27** (RX) | `LV1` ↔ `HV1` | **pino 16** (TX2) |
-> | **GPIO22** (TX) | `LV2` ↔ `HV2` | **pino 17** (RX2) |
-> | — | `HV` | **5 V** |
+> | **RXD · IO43** (conector UART) | `LV1` ↔ `HV1` | **pino 16** (TX2) |
+> | **TXD · IO44** (conector UART) | `LV2` ↔ `HV2` | **pino 17** (RX2) |
+> | 5 V (conector UART) | `HV` | **5 V** do BD-5V |
 >
 > Os canais 3 e 4 ficam livres para uma expansão futura.
 >
-> #### ❌ O que esta placa não faz
+> ### 🎁 O que ela habilita que o Nextion não habilitava
 >
-> **A IA da Xiaozhi não roda nela.** São 520 KB de SRAM e nenhuma PSRAM — não é questão de otimizar, os buffers de áudio não cabem. Se a Xiaozhi for requisito, a placa teria de ser uma **ESP32-S3 com 8 MB de PSRAM**, mais cara.
+> | Recurso | Uso no projeto |
+> |---|---|
+> | **Alto-falante** (vem na caixa) | ⭐ **alarme sonoro** quando um DUT morre — hoje o projeto só avisa pelo sinaleiro FALHA, que ninguém vê de costas |
+> | **Microfone + 8 MB PSRAM** | a **Xiaozhi** no futuro, como você planejou |
+> | **LED RGB** (IO42) | um segundo indicador de estado, sem gastar sinaleiro |
+> | **4 GPIOs de expansão** | espaço para crescer, coisa que a CYD não tinha |
 >
-> Também sobra pouco para crescer: com 3 GPIOs livres e 2 já comprometidos com a serial, resta **um**.
+> ### 🤔 O único ponto em que o toque capacitivo perde
+>
+> Toque **capacitivo não funciona com luva grossa**; o resistivo funciona. Numa fábrica de verdade isso pesa a favor do resistivo — e é um bom detalhe para citar na defesa, mostrando que a escolha foi consciente. Para esta bancada, o capacitivo ganha por ser muito mais agradável de usar e não exigir caneta.
 >
 > ### ⭐ O módulo de tela — exigências que motivaram a escolha
 >
@@ -540,8 +560,8 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 >
 > | Sentido | Precisa? | Por quê |
 > |---|---|---|
-> | Arduino TX (5 V) → CYD RX | ❌ **precisa** | 5 V num pino de 3,6 V no máximo |
-> | CYD TX (3,3 V) → Arduino RX | ✅ vai direto | o Mega lê acima de 3,0 V como nível alto |
+> | Arduino TX (5 V) → tela RXD | ❌ **precisa** | 5 V num pino de 3,6 V no máximo |
+> | Tela TXD (3,3 V) → Arduino RX | ✅ vai direto | o Mega lê acima de 3,0 V como nível alto |
 >
 > 🎁 **O módulo resolve dois problemas com um.** Os conversores baseados em BSS138 já trazem **pull-up de 10 kΩ nos dois lados de cada canal** — ou seja, ele também resolve o GPIO35 sem pull-up. Com resistores avulsos você resolveria só a conversão, e ainda ficaria com componente solto no meio do fio, contra a regra que motivou a placa PI-1.
 >
@@ -549,11 +569,11 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 >
 > | Conversor | Liga em |
 > |---|---|
-> | **LV** | CYD · 3,3 V (conector **CN1**) |
+> | **LV** | ES3C28P · 3,3 V (conector **I²C**) |
 > | **HV** | Arduino · 5 V |
 > | **GND** (os dois lados) | BD-0V |
-> | **LV1 ↔ HV1** | GPIO27 (RX) ↔ Mega **pino 16** (TX2) |
-> | **LV2 ↔ HV2** | GPIO22 (TX) ↔ Mega **pino 17** (RX2) |
+> | **LV1 ↔ HV1** | **RXD (IO43)** ↔ Mega **pino 16** (TX2) |
+> | **LV2 ↔ HV2** | **TXD (IO44)** ↔ Mega **pino 17** (RX2) |
 
 > **O perigo é que ligar direto *parece* funcionar.** O ESP32 tem diodos internos de proteção que grampeiam a tensão, então a comunicação estabelece e tudo aparenta estar certo. Mas passa corrente por esses diodos continuamente, e o pino degrada em semanas. Quando falhar, vai parecer defeito de fábrica do módulo.
 >
