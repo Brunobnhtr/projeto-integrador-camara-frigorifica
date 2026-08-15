@@ -1,71 +1,128 @@
-import { PLACA, BORNES, BARRAMENTO_0V, COMPONENTES_PI1, CI1, JUMPERS }
-  from '../src/data/pi1_fisico.js';
+/**
+ * Confere o layout da PI-1 antes de alguém soldar.
+ *
+ * A regra que mais importa: UM FURO, UMA PERNA. Furo de placa ilhada tem
+ * ~1 mm; duas pernas já ficam apertadas e três não entram. Quando várias
+ * pernas precisam se encontrar, isso é um NÓ — cada perna no seu furo, e
+ * uma ponte de fio nu unindo os furos por baixo.
+ */
+import {
+  PLACA, BORNES, BARRAMENTO_0V, COMPONENTES_PI1, CI1, NOS, JUMPERS,
+} from '../src/data/pi1_fisico.js';
 
-const ocupa = new Map();            // "col,lin" -> [donos]
-const por = (k, quem) => { if(!ocupa.has(k)) ocupa.set(k,[]); ocupa.get(k).push(quem); };
+/* Duas coisas MUITO diferentes disputam espaço num furo:
+   · perna PASSANTE  — atravessa o furo (componente, pino do CI, borne).
+                       Só cabe UMA.
+   · fio de jumper   — solda no ANEL DE COBRE, por baixo. Não ocupa o
+                       furo, então vários podem chegar na mesma ilha. */
+const passantes = new Map();       // "col,lin" -> [quem atravessa]
+const jumpers  = new Map();        // "col,lin" -> [quem solda no anel]
 const erros = [], avisos = [];
+const põe = (mapa, c, l, quem) => {
+  const k = `${c},${l}`;
+  if (!mapa.has(k)) mapa.set(k, []);
+  mapa.get(k).push(quem);
+};
 
-COMPONENTES_PI1.forEach(c => c.furos.forEach(([a,b]) => por(`${a},${b}`, c.ref)));
-CI1.pinos.forEach(p => por(`${p.col},${p.lin}`, `CI1.${p.nome}`));
-BORNES.forEach(b => b.vias.forEach(v => por(`${v.col},${b.linha}`, `${b.ref}-${v.n}`)));
-
-// 1. dois componentes no mesmo furo
-for (const [k, donos] of ocupa)
-  if (donos.length > 1) erros.push(`furo (${k}) disputado por: ${donos.join(', ')}`);
-
-// 2. limites da placa
-const fora = (c,l) => c<1 || c>PLACA.colunas || l<1 || l>PLACA.linhas;
-for (const [k] of ocupa) { const [c,l]=k.split(',').map(Number);
-  if (fora(c,l)) erros.push(`furo (${k}) fora da placa`); }
-
-// 3. jumpers precisam pousar em furo util
-const valido = new Set([...ocupa.keys()]);
-for (let c=BARRAMENTO_0V.de; c<=BARRAMENTO_0V.ate; c++) valido.add(`${c},${BARRAMENTO_0V.linha}`);
+COMPONENTES_PI1.forEach(c => c.furos.forEach(([a, b]) => põe(passantes, a, b, c.ref)));
+CI1.pinos.forEach(p => põe(passantes, p.col, p.lin, `CI1.${p.nome}`));
+BORNES.forEach(b => b.vias.forEach(v => põe(passantes, v.col, b.linha, `${b.ref}-${v.n}`)));
 JUMPERS.forEach(j => {
-  [j.de, j.para].forEach(([c,l]) => {
-    if (fora(c,l)) erros.push(`jumper ${j.n} pousa fora da placa em (${c},${l})`);
-    else if (!valido.has(`${c},${l}`))
-      erros.push(`jumper ${j.n} (${j.sinal}) pousa em furo VAZIO (${c},${l})`);
+  põe(jumpers, j.de[0], j.de[1], `jumper ${j.n}`);
+  põe(jumpers, j.para[0], j.para[1], `jumper ${j.n}`);
+});
+const pernas = passantes;
+
+const fora = (c, l) => c < 1 || c > PLACA.colunas || l < 1 || l > PLACA.linhas;
+const noBarramento = (c, l) =>
+  l === BARRAMENTO_0V.linha && c >= BARRAMENTO_0V.de && c <= BARRAMENTO_0V.ate;
+const noNo = (c, l) => NOS.some(n => n.linha === l && c >= n.de && c <= n.ate);
+
+// 1. UM FURO, UMA PERNA PASSANTE
+for (const [k, quem] of passantes)
+  if (quem.length > 1)
+    erros.push(`furo (${k}) com ${quem.length} pernas passantes: ${quem.join(' + ')}`
+             + ` — use um NÓ (um furo por perna + ponte de fio nu)`);
+
+// 1b. jumper tem de pousar numa ilha que exista de verdade
+for (const [k, quem] of jumpers) {
+  const [c, l] = k.split(',').map(Number);
+  if (!passantes.has(k) && !noNo(c, l) && !noBarramento(c, l))
+    erros.push(`${quem.join('/')} pousa em (${k}), que é ilha vazia`
+             + ` — não há perna, nó nem barramento ali`);
+}
+
+// 1c. mais de 2 jumpers na mesma ilha fica difícil de soldar
+for (const [k, quem] of jumpers)
+  if (quem.length > 2)
+    avisos.push(`ilha (${k}) recebe ${quem.length} jumpers — solda apertada, mas passa`);
+
+// 2. tudo dentro da placa
+for (const [k] of pernas) {
+  const [c, l] = k.split(',').map(Number);
+  if (fora(c, l)) erros.push(`furo (${k}) fora da placa`);
+}
+
+// 3. nada sob o corpo do CI
+for (let c = CI1.colEsq; c <= CI1.colDir; c++)
+  for (let l = CI1.linhaTopo + 1; l < CI1.linhaBase; l++)
+    if (pernas.has(`${c},${l}`)) erros.push(`algo sob o corpo do CI em (${c},${l})`);
+
+// 4. cada perna solta tem de estar num NÓ, no barramento ou num par direto
+const ligados = new Set();
+COMPONENTES_PI1.forEach(c => c.furos.forEach(([a, b]) => ligados.add(`${a},${b}`)));
+CI1.pinos.forEach(p => ligados.add(`${p.col},${p.lin}`));
+JUMPERS.forEach(j => { ligados.add(j.de.join(',')); ligados.add(j.para.join(',')); });
+
+const livres = new Set(CI1.pinos.filter(p => p.livre).map(p => `${p.col},${p.lin}`));
+for (const [k, quem] of passantes) {
+  const [c, l] = k.split(',').map(Number);
+  if (livres.has(k)) continue;                       // pino do CI sem uso: ok
+  const vias = BORNES.some(b => b.linha === l && b.vias.some(v => v.col === c));
+  if (!vias && !noNo(c, l) && !noBarramento(c, l) && !jumpers.has(k))
+    erros.push(`perna solta em (${k}): ${quem.join(', ')} — nenhum fio, nó ou barramento a alcança`);
+}
+
+// 5. cada NÓ declarado precisa mesmo unir 2+ pernas
+NOS.forEach(no => {
+  const dentro = [];
+  for (let c = no.de; c <= no.ate; c++)
+    if (passantes.has(`${c},${no.linha}`) || jumpers.has(`${c},${no.linha}`)) dentro.push(c);
+  if (dentro.length < 2)
+    erros.push(`${no.ref}: só ${dentro.length} perna(s) — um nó com uma perna não é nó`);
+  else avisos.push(`${no.ref}: une ${dentro.length} pernas nos furos ${dentro.join(', ')} da linha ${no.linha}`);
+  Object.keys(no.furos || {}).forEach(c => {
+    if (!passantes.has(`${c},${no.linha}`) && !jumpers.has(`${c},${no.linha}`))
+      erros.push(`${no.ref}: documenta o furo ${c} mas nada pousa lá`);
   });
 });
-
-// 4. o corpo do CI nao pode invadir outro componente
-CI1.pinos.forEach(p => { const k=`${p.col},${p.lin}`;
-  const d=ocupa.get(k)||[]; if(d.length>1) erros.push(`CI invade ${k}`); });
-for (let c=CI1.colEsq; c<=CI1.colDir; c++)
-  for (let l=CI1.linhaTopo+1; l<CI1.linhaBase; l++)
-    if (ocupa.has(`${c},${l}`)) erros.push(`algo sob o corpo do CI em (${c},${l})`);
-
-// 5. barramento de 0V nao pode cruzar furo de sinal
-for (let c=BARRAMENTO_0V.de; c<=BARRAMENTO_0V.ate; c++) {
-  const donos = ocupa.get(`${c},${BARRAMENTO_0V.linha}`) || [];
-  donos.forEach(d => {
-    const ok = COMPONENTES_PI1.some(x => x.ref===d &&
-      x.furos.some(([a,b]) => a===c && b===BARRAMENTO_0V.linha));
-    if (!ok) erros.push(`barramento 0V encosta em ${d} na coluna ${c}`);
-  });
-}
 
 // 6. bornes cabem na largura
 BORNES.forEach(b => {
-  const larg = (b.vias.length) * 5.08;
-  if (larg > PLACA.larguraMm)
-    erros.push(`${b.ref}: ${b.vias.length} vias = ${larg.toFixed(1)} mm > placa ${PLACA.larguraMm.toFixed(1)} mm`);
-  else avisos.push(`${b.ref}: ${b.vias.length} vias = ${larg.toFixed(1)} mm  (placa tem ${PLACA.larguraMm.toFixed(1)} mm) OK`);
+  const larg = b.vias.length * 5.08;
+  const msg = `${b.ref}: ${b.vias.length} vias = ${larg.toFixed(1)} mm`;
+  if (larg > PLACA.larguraMm) erros.push(`${msg} > placa ${PLACA.larguraMm.toFixed(1)} mm`);
+  else avisos.push(`${msg} (placa tem ${PLACA.larguraMm.toFixed(1)} mm) OK`);
 });
 
-// 7. toda via de borne tem de estar num jumper OU num componente
-const tocados = new Set();
-JUMPERS.forEach(j => { tocados.add(j.de.join(',')); tocados.add(j.para.join(',')); });
-COMPONENTES_PI1.forEach(c => c.furos.forEach(f => tocados.add(f.join(','))));
+// 7. toda via de borne tem de ir a algum lugar
 BORNES.forEach(b => b.vias.forEach(v => {
-  if (!tocados.has(`${v.col},${b.linha}`))
-    erros.push(`${b.ref}-${v.n} (${v.sinal}) nao tem nenhuma ligacao!`);
+  if (!ligados.has(`${v.col},${b.linha}`))
+    erros.push(`${b.ref}-${v.n} (${v.sinal}) não tem nenhuma ligação!`);
 }));
 
-console.log(`placa: ${PLACA.colunas}x${PLACA.linhas} furos = ${PLACA.larguraMm.toFixed(1)} x ${PLACA.alturaMm.toFixed(1)} mm`);
-console.log(`furos usados: ${ocupa.size} de ${PLACA.colunas*PLACA.linhas}`);
-console.log(`componentes: ${COMPONENTES_PI1.length} + CI  ·  jumpers: ${JUMPERS.length}`);
+const maxP = Math.max(...[...passantes.values()].map(v => v.length));
+const maxJ = Math.max(...[...jumpers.values()].map(v => v.length));
+console.log(`placa: ${PLACA.colunas}x${PLACA.linhas} furos = `
+          + `${PLACA.larguraMm.toFixed(1)} x ${PLACA.alturaMm.toFixed(1)} mm`);
+console.log(`furos com perna passante: ${passantes.size}  ·  pior caso: ${maxP} por furo`);
+console.log(`ilhas que recebem jumper: ${jumpers.size}  ·  pior caso: ${maxJ} fios na mesma ilha`);
+console.log(`componentes: ${COMPONENTES_PI1.length} + CI  ·  jumpers: ${JUMPERS.length}`
+          + `  ·  nós: ${NOS.length}`);
 avisos.forEach(a => console.log('  . ' + a));
-if (erros.length) { console.log('\nERROS:'); erros.forEach(e => console.log('  X ' + e)); process.exit(1); }
-console.log('\nOK - layout consistente');
+if (erros.length) {
+  console.log('\nERROS:');
+  erros.forEach(e => console.log('  X ' + e));
+  process.exit(1);
+}
+console.log('\nOK - layout consistente, um furo por perna');

@@ -78,19 +78,25 @@ export const BARRAMENTO_0V = { linha: 10, de: 2, ate: 20 };
 export const COMPONENTES_PI1 = [
   {
     ref: 'C1', tipo: 'capacitor', valor: '100 nF', circuito: 1,
-    furos: [[2, 8], [2, 10]],
+    furos: [[3, 8], [3, 10]],
+    polaridade: false,
+    ligacao: 'Uma perna no nó A0 (furo 3,8), a outra no barramento de 0 V (furo 3,10).',
     papel: 'Filtra o ruído que o cabo do BTS #1 pegou no caminho',
     porque: 'O sinal IS é analógico e viaja num painel cheio de PWM. Sem o filtro, '
           + 'o Arduino lê picos de ruído como se fossem corrente real.',
   },
   {
     ref: 'C2', tipo: 'capacitor', valor: '100 nF', circuito: 1,
-    furos: [[4, 8], [4, 10]],
+    furos: [[7, 8], [7, 10]],
+    polaridade: false,
+    ligacao: 'Uma perna no nó A1 (furo 7,8), a outra no barramento de 0 V (furo 7,10).',
     papel: 'O mesmo, para o BTS #2',
   },
   {
     ref: 'R3', tipo: 'resistor', valor: '4,7 kΩ', circuito: 2,
-    furos: [[5, 5], [9, 5]],
+    furos: [[6, 5], [10, 5]],
+    polaridade: false,
+    ligacao: 'Perna esquerda no nó 1-Wire (furo 6,5), perna direita no +5 V (furo 10,5).',
     papel: 'Pull-up do 1-Wire',
     porque: 'O DS18B20 só sabe PUXAR a linha para 0 V — ele não tem como levantá-la. '
           + 'Quem levanta é este resistor. SEM ele não existe barramento 1-Wire, '
@@ -99,18 +105,24 @@ export const COMPONENTES_PI1 = [
   {
     ref: 'R1', tipo: 'resistor', valor: '22 kΩ', circuito: 3,
     furos: [[18, 6], [22, 6]],
+    polaridade: false,
+    ligacao: 'Perna direita no 24V-POT (furo 22,6), perna esquerda no nó D25 (furo 18,6).',
     papel: 'Braço de cima do divisor de tensão',
   },
   {
     ref: 'R2', tipo: 'resistor', valor: '4,7 kΩ', circuito: 3,
-    furos: [[19, 6], [19, 10]],
+    furos: [[17, 6], [17, 10]],
+    polaridade: false,
+    ligacao: 'Perna de cima no nó D25 (furo 17,6), perna de baixo no 0 V (furo 17,10).',
     papel: 'Braço de baixo do divisor — 24 × 4,7/26,7 = 4,22 V',
     porque: 'O Arduino queima com 24 V num pino. O divisor entrega 4,22 V, '
           + 'que ele lê como "tem 24 V lá fora" sem morrer.',
   },
   {
     ref: 'C3', tipo: 'capacitor', valor: '100 nF', circuito: 3,
-    furos: [[20, 6], [20, 10]],
+    furos: [[16, 6], [16, 10]],
+    polaridade: false,
+    ligacao: 'Perna de cima no nó D25 (furo 16,6), perna de baixo no 0 V (furo 16,10).',
     papel: 'Segura o nó do divisor, que é de alta impedância e capta ruído',
   },
 ];
@@ -159,8 +171,20 @@ export const CI1 = {
  * use furos vizinhos e uma ponte curta de fio nu por baixo.
  */
 export const NOS = [
-  { ref: 'nó D25', linha: 6, de: 18, ate: 20,
-    nota: 'R1 + R2 + C3 se encontram aqui. Ponte curta de fio nu entre os 3 furos.' },
+  { ref: 'nó A0', linha: 8, de: 2, ate: 4, circuito: 1,
+    furos: { 2: 'chega o fio de J1-1 (IS#1)', 3: 'perna do C1', 4: 'sai o fio para J2-1 (A0)' },
+    nota: 'Três pernas se encontram — cada uma no SEU furo, unidas pela ponte de fio nu.' },
+  { ref: 'nó A1', linha: 8, de: 6, ate: 8, circuito: 1,
+    furos: { 6: 'chega o fio de J1-2 (IS#2)', 7: 'perna do C2', 8: 'sai o fio para J2-2 (A1)' },
+    nota: 'Idem ao nó A0.' },
+  { ref: 'nó 1-Wire', linha: 5, de: 3, ate: 6, circuito: 2,
+    furos: { 3: 'chega o fio de J1-3 (DATA)', 4: 'sai o fio para J2-3 (D2)',
+             6: 'perna esquerda do R3' },
+    nota: 'O sensor e o Arduino conversam por este nó; o R3 só o mantém levantado.' },
+  { ref: 'nó D25', linha: 6, de: 15, ate: 18, circuito: 3,
+    furos: { 15: 'sai o fio para J2-8 (D25)', 16: 'perna de cima do C3',
+             17: 'perna de cima do R2', 18: 'perna esquerda do R1' },
+    nota: 'Quatro pernas, quatro furos. É o ponto onde os 24 V já viraram 4,22 V.' },
 ];
 
 /* ── JUMPERS ───────────────────────────────────────────────────────────
@@ -169,12 +193,12 @@ export const NOS = [
  */
 export const JUMPERS = [
   { n: 1,  de: [2, 2],   para: [2, 8],   circuito: 1, sinal: 'IS#1 → nó A0' },
-  { n: 2,  de: [2, 8],   para: [2, 28],  circuito: 1, sinal: 'nó A0 → sai A0', cruzaBus: true },
-  { n: 3,  de: [4, 2],   para: [4, 8],   circuito: 1, sinal: 'IS#2 → nó A1' },
-  { n: 4,  de: [4, 8],   para: [4, 28],  circuito: 1, sinal: 'nó A1 → sai A1', cruzaBus: true },
-  { n: 5,  de: [6, 2],   para: [5, 5],   circuito: 2, sinal: 'DATA → nó 1-Wire' },
-  { n: 6,  de: [5, 5],   para: [6, 28],  circuito: 2, sinal: 'nó 1-Wire → sai D2', cruzaBus: true },
-  { n: 7,  de: [8, 2],   para: [9, 5],   circuito: 2, sinal: '+5 V → R3' },
+  { n: 2,  de: [4, 8],   para: [2, 28],  circuito: 1, sinal: 'nó A0 → sai A0', cruzaBus: true },
+  { n: 3,  de: [4, 2],   para: [6, 8],   circuito: 1, sinal: 'IS#2 → nó A1' },
+  { n: 4,  de: [8, 8],   para: [4, 28],  circuito: 1, sinal: 'nó A1 → sai A1', cruzaBus: true },
+  { n: 5,  de: [6, 2],   para: [3, 5],   circuito: 2, sinal: 'DATA → nó 1-Wire' },
+  { n: 6,  de: [4, 5],   para: [6, 28],  circuito: 2, sinal: 'nó 1-Wire → sai D2', cruzaBus: true },
+  { n: 7,  de: [8, 2],   para: [10, 5],  circuito: 2, sinal: '+5 V → R3' },
   { n: 8,  de: [10, 2],  para: [16, 13], circuito: 4, sinal: 'D9 → IN1' },
   { n: 9,  de: [12, 2],  para: [15, 13], circuito: 4, sinal: 'D10 → IN2' },
   { n: 10, de: [14, 2],  para: [14, 13], circuito: 4, sinal: 'D11 → IN3' },
@@ -187,8 +211,38 @@ export const JUMPERS = [
   { n: 17, de: [15, 16], para: [10, 28], circuito: 4, sinal: 'OUT2 → L2−' },
   { n: 18, de: [14, 16], para: [12, 28], circuito: 4, sinal: 'OUT3 → L3−' },
   { n: 19, de: [13, 16], para: [14, 28], circuito: 4, sinal: 'OUT4 → L4−' },
-  { n: 20, de: [18, 6],  para: [16, 28], circuito: 3, sinal: 'nó D25 → sai D25', cruzaBus: true },
+  { n: 20, de: [15, 6],  para: [16, 28], circuito: 3, sinal: 'nó D25 → sai D25', cruzaBus: true },
 ];
+
+/* ── AS 3 PERGUNTAS QUE TODO MUNDO FAZ ─────────────────────────────────
+ * Respostas curtas, mostradas junto do desenho de cada circuito.
+ */
+export const DUVIDAS = {
+  1: [
+    { p: 'Qual perna do capacitor é a positiva?',
+      r: 'NENHUMA. O 100 nF é cerâmico (aquele disquinho azul marcado "104") e '
+       + 'NÃO TEM POLARIDADE. Pode virar do avesso que funciona igual. Só '
+       + 'eletrolítico — o cilíndrico de alumínio — tem lado certo.' },
+    { p: 'O sinal entra por uma perna e sai pela outra?',
+      r: 'NÃO. O sinal NÃO passa por dentro do capacitor. Ele vai de J1-1 direto '
+       + 'para J2-1 por fio. O capacitor só ENCOSTA nesse caminho e desce para o '
+       + '0 V. Se você arrancasse o C1, o sinal continuaria chegando no Arduino — '
+       + 'só que sujo.' },
+    { p: 'Então qual ponta segue para a saída?',
+      r: 'Nenhuma ponta do capacitor "segue". Quem segue é o FIO. As três coisas '
+       + '(fio que chega, perna do capacitor, fio que sai) se encontram no mesmo '
+       + 'NÓ — e a partir de um nó tudo está ligado a tudo.' },
+  ],
+  3: [
+    { p: 'Aqui o sinal passa pelos resistores?',
+      r: 'SIM — este circuito é diferente do C1. Os 24 V entram pelo R1, e é a '
+       + 'passagem por ele que derruba a tensão. Repare que R1 está NO CAMINHO, '
+       + 'enquanto C1 estava DE LADO.' },
+    { p: 'O resistor tem lado certo?',
+      r: 'Não. Resistor não tem polaridade. As faixas coloridas são só o valor — '
+       + 'lê-se a partir da ponta com as faixas mais juntas.' },
+  ],
+};
 
 /* ── OS 4 CIRCUITOS ────────────────────────────────────────────────────
  * A chave para não se perder: eles NÃO se tocam. A única coisa que

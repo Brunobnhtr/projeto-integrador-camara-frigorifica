@@ -3,6 +3,7 @@ import {
   PASSO, PLACA, BORNES, BARRAMENTO_0V, COMPONENTES_PI1, CI1, NOS, JUMPERS,
   CIRCUITOS, ORDEM_MONTAGEM,
 } from '../data/pi1_fisico';
+import DetalheCircuito from './DetalheCircuito';
 
 /* Tudo aqui é desenhado em MILÍMETROS. O SVG faz a conversão para pixels,
    então o desenho é dimensionalmente verdadeiro em qualquer zoom. */
@@ -161,6 +162,7 @@ export default function PlacaPI1({ onFechar }) {
   const [sel, setSel] = useState(null);             // item clicado
   const [verJumpers, setVerJumpers] = useState(true);
   const [escala, setEscala] = useState(7);          // px por mm
+  const [detalhe, setDetalhe] = useState(null);     // circuito aberto em detalhe
 
   const ativo = id => circuito === null || circuito === id;
 
@@ -214,9 +216,12 @@ export default function PlacaPI1({ onFechar }) {
 
           {/* pontes de nó */}
           {NOS.map(n => (
-            <line key={n.ref} x1={X(n.de)} y1={Y(n.linha)} x2={X(n.ate)} y2={Y(n.linha)}
-                  stroke="#212529" strokeWidth={1.1} strokeLinecap="round"
-                  opacity={ativo(3) ? 0.9 : 0.12} />
+            <g key={n.ref} opacity={ativo(n.circuito) ? 1 : 0.12}>
+              <line x1={X(n.de)} y1={Y(n.linha)} x2={X(n.ate)} y2={Y(n.linha)}
+                    stroke="#212529" strokeWidth={1.1} strokeLinecap="round" />
+              <text x={X(n.de) - 1.5} y={Y(n.linha) + 0.7} textAnchor="end"
+                    fontSize={1.8} fontWeight="700" fill="#212529">{n.ref}</text>
+            </g>
           ))}
 
           {COMPONENTES_PI1.map(c => (
@@ -290,6 +295,13 @@ export default function PlacaPI1({ onFechar }) {
                             marginTop: 1 }}>{c.resumo}</div>
             </button>
           ))}
+          <button onClick={() => setDetalhe(circuito ?? 1)} style={{
+            display: 'block', width: '100%', marginTop: 6, background: '#f08c00',
+            color: '#fff', border: 'none', borderRadius: 6, padding: '9px 10px',
+            cursor: 'pointer', fontSize: 12.5, fontWeight: 700,
+          }}>
+            🔬 Como cada perna é ligada — vista ampliada
+          </button>
           <div style={{ fontSize: 11, color: '#f08c00', marginTop: 7, lineHeight: 1.45 }}>
             💡 Eles <b>não se tocam</b>. A única coisa que compartilham é o barramento de
             0 V. Isole um de cada vez e a placa deixa de ser confusa.
@@ -365,6 +377,10 @@ export default function PlacaPI1({ onFechar }) {
           </div>
         </div>
       </aside>
+
+      {detalhe != null && (
+        <DetalheCircuito circuito={detalhe} onFechar={() => setDetalhe(null)} />
+      )}
     </div>
   );
 }
