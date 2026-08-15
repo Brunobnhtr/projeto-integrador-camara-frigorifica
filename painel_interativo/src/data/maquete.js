@@ -23,7 +23,17 @@ export const DIMENSAO_REAL = '1500 × 600 mm';
 /* Em planta, os 4 condutores aparecem lado a lado. Na maquete real eles
    ficam na cruzeta, com o 0 V numa altura um pouco menor. */
 export const NIVEIS = { R1: 96, R2: 112, R3: 128, GND: 150 };
-const Y_BASE_POSTE = 215;
+const Y_BASE_POSTE = 228;
+
+/* A caixa do transformador, pendurada no poste.
+   Entram DOIS bornes no topo (24 V e 0 V) e sai UM embaixo (o positivo). */
+export const TRAFO = {
+  topo: 172, base: 198, meiaLargura: 23,
+  dxEntrada24: -11,   // borne dos 24 V, à esquerda do centro
+  dxEntrada0: 11,     // borne do 0 V, à direita
+  dxSaida: 0,         // saída no meio, embaixo
+};
+const T2X = 560, T3X = 730;
 const Y_SUBT = 400;     // faixa de baixo do tabuleiro
 const Y_PAINEL = 300;   // borda inferior do painel
 
@@ -180,7 +190,7 @@ export const FIOS = [
     caminho: [[210, 148], [228, 148], [300, 138], [360, NIVEIS.R2], [390, NIVEIS.R2],
               [560, NIVEIS.R2], [730, NIVEIS.R2], [900, NIVEIS.R2],
               [900, Y_BASE_POSTE], [900, Y_SUBT], [1060, Y_SUBT], [1060, Y_PAINEL]],
-    derivacoes: [[[560, NIVEIS.R2], [560, 168]]],
+    derivacoes: [[[T2X, NIVEIS.R2], [T2X - 11, NIVEIS.R2], [T2X - 11, TRAFO.topo]]],
     passos: [
       { onde: 'Fonte · saída V+ 2', diz: 'Sai com 24 V, igual ao R1.' },
       { onde: 'Fusível F2 · 2 A', diz: 'Menor, porque leva pouca corrente. Se der '
@@ -202,8 +212,8 @@ export const FIOS = [
     bitola: '0,50 mm²', corrente: '< 1 A',
     resumo: 'O único fio que sai do transformador de 5 V. Desce pelo poste e vai por '
           + 'baixo até o painel.',
-    caminho: [[560, 190], [572, 200], [572, Y_BASE_POSTE], [572, Y_SUBT],
-              [1160, Y_SUBT], [1160, Y_PAINEL]],
+    caminho: [[T2X, TRAFO.base], [T2X, TRAFO.base + 10], [T2X + 14, TRAFO.base + 18],
+              [T2X + 14, Y_SUBT], [1150, Y_SUBT], [1150, Y_PAINEL]],
     passos: [
       { onde: 'Saída do transformador T2', diz: '⭐ Sai UM fio só, com 5,10 V. O 0 V não '
             + 'precisa voltar por aqui — ele é o mesmo condutor dos dois lados do '
@@ -220,7 +230,8 @@ export const FIOS = [
     resumo: 'É o único ramal que TERMINA antes do fim: ele acaba no transformador de '
           + '12 V, no poste 3.',
     caminho: [[210, 178], [228, 178], [300, 165], [360, NIVEIS.R3], [390, NIVEIS.R3],
-              [560, NIVEIS.R3], [730, NIVEIS.R3], [730, 168]],
+              [T2X, NIVEIS.R3], [T3X, NIVEIS.R3], [T3X - 11, NIVEIS.R3],
+              [T3X - 11, TRAFO.topo]],
     passos: [
       { onde: 'Fonte · saída V+ 3', diz: 'A terceira e última saída positiva.' },
       { onde: 'Fusível F3 · 2 A', diz: 'Também de 2 A, como o F2.' },
@@ -236,8 +247,8 @@ export const FIOS = [
     id: 'T3OUT', nome: 'Saída do T3 — 12,0 V', cor: '#f59f00',
     bitola: '0,75 mm²', corrente: '< 1 A',
     resumo: 'O único fio que sai do transformador de 12 V.',
-    caminho: [[730, 190], [742, 200], [742, Y_BASE_POSTE], [742, Y_SUBT],
-              [1128, Y_SUBT], [1128, Y_PAINEL]],
+    caminho: [[T3X, TRAFO.base], [T3X, TRAFO.base + 10], [T3X + 14, TRAFO.base + 18],
+              [T3X + 14, Y_SUBT], [1110, Y_SUBT], [1110, Y_PAINEL]],
     passos: [
       { onde: 'Saída do transformador T3', diz: 'Um fio só, com 12 V. Mesmo motivo do '
             + 'T2: o 0 V não volta por aqui.' },
@@ -254,8 +265,8 @@ export const FIOS = [
               [560, NIVEIS.GND], [730, NIVEIS.GND], [900, NIVEIS.GND],
               [914, Y_BASE_POSTE], [914, Y_SUBT], [1200, Y_SUBT], [1200, Y_PAINEL]],
     derivacoes: [
-      [[560, NIVEIS.GND], [548, NIVEIS.GND], [548, 172]],
-      [[730, NIVEIS.GND], [718, NIVEIS.GND], [718, 172]],
+      [[T2X, NIVEIS.GND], [T2X + 11, NIVEIS.GND], [T2X + 11, TRAFO.topo]],
+      [[T3X, NIVEIS.GND], [T3X + 11, NIVEIS.GND], [T3X + 11, TRAFO.topo]],
     ],
     passos: [
       { onde: 'Fonte · saída V− 1', diz: 'Sai por uma das três saídas negativas. As '

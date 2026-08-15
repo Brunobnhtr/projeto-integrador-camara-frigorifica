@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   TELA, AREAS, FONTE, FUSIVEIS, POSTES, ENTRADAS_PAINEL, FIOS, SAIDAS_CAMARA, LEGENDA,
-  NIVEIS, DISJUNTOR, DIMENSAO_REAL,
+  NIVEIS, DISJUNTOR, DIMENSAO_REAL, TRAFO,
 } from '../data/maquete';
 
 /* A maquete vista de cima. Clique num fio e ele fica sozinho na tela,
@@ -219,12 +219,28 @@ export default function VistaMaquete({ onIrPara }) {
               )}
               {p.equipa && (
                 <>
-                  <rect x={p.x - 21} y={176} width={42} height={22} rx={3}
-                        fill="#1971c2" stroke="#0b4a86" strokeWidth={1.5} />
-                  <text x={p.x} y={185} textAnchor="middle" fontSize={9}
+                  <rect x={p.x - TRAFO.meiaLargura} y={TRAFO.topo}
+                        width={TRAFO.meiaLargura * 2} height={TRAFO.base - TRAFO.topo}
+                        rx={3} fill="#1971c2" stroke="#0b4a86" strokeWidth={1.5} />
+                  {/* dois bornes no topo: 24 V e 0 V */}
+                  <rect x={p.x + TRAFO.dxEntrada24 - 3} y={TRAFO.topo - 3} width={6}
+                        height={6} rx={1} fill="#e9c46a" stroke="#8a6d1a" strokeWidth={0.8} />
+                  <rect x={p.x + TRAFO.dxEntrada0 - 3} y={TRAFO.topo - 3} width={6}
+                        height={6} rx={1} fill="#e9c46a" stroke="#8a6d1a" strokeWidth={0.8} />
+                  {/* um borne embaixo: so o positivo sai */}
+                  <rect x={p.x - 3} y={TRAFO.base - 3} width={6} height={6} rx={1}
+                        fill="#e9c46a" stroke="#8a6d1a" strokeWidth={0.8} />
+                  <text x={p.x} y={TRAFO.topo + 12} textAnchor="middle" fontSize={9}
                         fontWeight="700" fill="#fff">{p.equipa.ref}</text>
-                  <text x={p.x} y={194} textAnchor="middle" fontSize={8}
+                  <text x={p.x} y={TRAFO.topo + 22} textAnchor="middle" fontSize={8}
                         fill="#a5d8ff">{p.equipa.para}</text>
+                  <text x={p.x + TRAFO.dxEntrada24} y={TRAFO.topo - 6} textAnchor="middle"
+                        fontSize={6.5} fill="#495057">24V</text>
+                  <text x={p.x + TRAFO.dxEntrada0} y={TRAFO.topo - 6} textAnchor="middle"
+                        fontSize={6.5} fill="#495057">0V</text>
+                  <text x={p.x + 9} y={TRAFO.base + 11} fontSize={6.5} fill="#495057">
+                    só o +
+                  </text>
                 </>
               )}
             </g>
