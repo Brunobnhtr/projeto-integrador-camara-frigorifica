@@ -394,10 +394,25 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 | Porta do painel | 1 | MDF 12 mm ou acrílico fumê 5 mm (fica bonito ver os LEDs) | |
 | **Trilho DIN 35 mm** | 1,5 m | Aço galvanizado — 3 trilhos de ~360 mm | |
 | **Canaleta perfurada 30 × 30 mm** | 2 m | Com tampa — organização profissional dos cabos | |
-| **Bloco de distribuição DIN** — 1 entrada 4 mm² + 4 saídas | 1 | **BD-POT** — **24 V de potência comutados pelo KA2** → BTS #1, BTS #2 e reservas. ⚠️ Cai com a emergência | |
-| **Bloco de distribuição DIN** — 1 entrada 2,5 mm² + 4 saídas | 2 | **BD-AUX** (12 V auxiliar, do T3) e **BD-24V** (**24 V permanentes**: DNLCB30/ESP32, cadeia de comando e **o positivo comum dos 4 sinaleiros**). ⚠️ **Não confundir com o BD-POT** — este **não** cai com a emergência, é o que mantém a supervisão viva para publicar o evento por MQTT | |
-| **Bloco de distribuição DIN** — 1 entrada 2,5 mm² + 6 saídas | 1 | **BD-5V** — Arduino, Nextion, SD/RTC, lógica dos 2 BTS, LEDs | |
-| **Bloco de distribuição DIN** — 1 entrada 10 mm² + 8 saídas | 1 | **BD-0V** — ⭐ o star ground do projeto. Todos os retornos convergem aqui | |
+| **Bloco de distribuição DIN** — 1 entrada 4 mm² + **4 saídas** | 1 | **BD-POT** — 24 V de potência comutados pelo KA2 → BTS #1, BTS #2, medição do D25 e 1 reserva. ⚠️ Cai com a emergência | |
+| **Bloco de distribuição DIN** — 1 entrada 2,5 mm² + **4 saídas** | 1 | **BD-AUX** — 12 V auxiliar (do T3): cooler dos BTS + 2 coolers das Peltier + 1 reserva | |
+| **Bloco de distribuição DIN** — 1 entrada 2,5 mm² + **6 saídas** ⬆ | 1 | **BD-24V** — 24 V permanentes. ⚠️ **Subiu de 4 para 6:** são **5 cargas** (DNLCB30/ESP32, cadeia de comando, positivo comum dos sinaleiros, COM do ULN2803 na PI-1, e a alimentação das 4 posições de ensaio) + 1 reserva. **Não confundir com o BD-POT** — este não cai com a emergência | |
+| **Bloco de distribuição DIN** — 1 entrada 2,5 mm² + **8 saídas** ⬆ | 1 | **BD-5V** — ⚠️ **Subiu de 6 para 8:** são **7 cargas** (Arduino, Nextion, SD/RTC, lógica do BTS #1, lógica do BTS #2, placa PI-1 e os LEDs da maquete) + 1 reserva | |
+| ⭐ **Barra de distribuição / régua com pente — mín. 20 pontos** ⬆⬆ | 1 | **BD-0V** — o **star ground** do projeto. ⚠️ **Um bloco de 8 saídas NÃO serve:** aqui convergem **4 entradas + ~16 retornos**. Use uma **barra de neutro/terra de 16–20 furos** em suporte DIN, ou **dois blocos de 1×8 interligados** por ponte de 4 mm². Entrada de **10 mm²** | |
+
+> ### ⚠️ Conferência de saídas — feita cabo a cabo no [Doc 30](../camada_3_eletrica/30_forca_e_distribuicao.md)
+>
+> | Bloco | Cargas reais | Comprar | Antes |
+> |---|---:|---:|---:|
+> | BD-POT | 3 | **4** | 4 ✅ |
+> | BD-AUX | 3 | **4** | 4 ✅ |
+> | BD-24V | **5** | **6** | 4 ❌ faltava |
+> | BD-5V | **7** | **8** | 6 ❌ faltava |
+> | BD-0V | **~20** | **20** | 8 ❌❌ faltava muito |
+>
+> **Por que o BD-0V é tão maior que os outros:** ele é o único bloco por onde passa **tudo**. Cada carga do projeto tem um positivo (que sai de um bloco diferente conforme a tensão) mas **todas dividem o mesmo retorno**. Somando as 4 entradas e os retornos de BTS, relés, Arduino, ESP32, Nextion, SD/RTC, PI-1, três coolers, LEDs e posições de ensaio, passa de 20 pontos.
+>
+> 💡 **Antes de comprar, decida a tela** (ver a seção do módulo ESP32 com display). Se ela substituir Nextion + SD/RTC + DNLCB30, o BD-5V cai de 7 para 5 cargas e o BD-24V de 5 para 4.
 | Bornes DIN parafuso 2,5 mm² | 6 | Passagem e reservas | |
 | Separadores/tampas de borne | 4 | Acabamento das réguas | |
 | **Alternativa mais barata:** bornes comuns + **ponte de interligação (pente)** | — | Funciona igual aos blocos, custa menos, menos prático para alterar depois | |

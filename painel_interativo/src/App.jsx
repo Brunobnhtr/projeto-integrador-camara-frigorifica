@@ -6,6 +6,7 @@ import '@xyflow/react/dist/style.css';
 
 import { COMPONENTES, CABOS, TENSOES, PI1_INTERNO, paraOndeVai } from './data/painel';
 import ZoomComponente from './components/ZoomComponente';
+import VistaTrilho1 from './components/VistaTrilho1';
 
 /* ── posição de cada trilho na tela ───────────────────────────────── */
 const LINHA_Y = { 1: 60, 2: 300, 3: 540, porta: 800 };
@@ -160,6 +161,7 @@ function Painel() {
   const [selId, setSelId] = useState(null);
   const [filtro, setFiltro] = useState(null);
   const [zoom, setZoom] = useState(null);
+  const [vista, setVista] = useState('mapa');
   const { setCenter } = useReactFlow();
 
   const nodes = useMemo(() => {
@@ -235,6 +237,13 @@ function Painel() {
                 padding: '3px 9px', fontSize: 11, cursor: 'pointer', fontWeight: 600,
               }}>{t.label}</button>
           ))}
+          <button onClick={() => setVista(vista === 'trilho1' ? 'mapa' : 'trilho1')}
+            style={{
+              background: vista === 'trilho1' ? '#ffd43b' : '#ffffff1f',
+              color: vista === 'trilho1' ? '#212529' : '#fff',
+              border: '1.5px solid #ffd43b', borderRadius: 5,
+              padding: '3px 10px', fontSize: 11, cursor: 'pointer', fontWeight: 700,
+            }}>🔧 Painel real — Trilho 1</button>
           <span style={{ width: 1, height: 20, background: '#ffffff33', margin: '0 2px' }} />
           {[['LM2596', 'LM2596'], ['PELTIER', 'Kit Peltier']].map(([k, txt]) => (
             <button key={k} title="Peça fora do painel — abre o desenho da peça real"
@@ -257,6 +266,11 @@ function Painel() {
         </div>
       </div>
 
+      {vista === 'trilho1' ? (
+        <div style={{ position: 'absolute', top: 46, left: 0, right: 0, bottom: 0 }}>
+          <VistaTrilho1 />
+        </div>
+      ) : (
       <ReactFlow
         nodes={nodes} edges={edges} nodeTypes={nodeTypes}
         onNodeClick={(_, n) => !n.id.startsWith('t-') && setSelId(n.id)}
@@ -273,6 +287,7 @@ function Painel() {
         <Controls />
         <MiniMap pannable zoomable nodeColor={n => (TENSOES[n.data?.tensao]?.cor ?? '#ccc')} />
       </ReactFlow>
+      )}
 
       <Detalhe comp={sel} onIrPara={irPara} onFechar={() => setSelId(null)}
                onAbrirZoom={setZoom} />

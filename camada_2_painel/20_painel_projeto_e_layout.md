@@ -236,11 +236,13 @@ A porta tem só o que a pessoa precisa **tocar ou ver**:
 | 5 | Separador | 5 mm | 184 |
 | 6 | **BD-0V** — bloco de distribuição do retorno (**star ground**) · 1 entrada 10 mm² + **8 saídas** | 46 mm | 189 |
 | 7 | Separador | 5 mm | 235 |
-| 8 | 🔄 **Módulo Micro SD + RTC DS3231** em suporte DIN | 60 mm | 240 |
-| 9 | Trava-fim de trilho | 10 mm | 300 |
-| | **Ocupação total** | **~270 mm** | **livre até 360 — sobram 60 mm** |
+| 8 | 🔄 **RTC DS3231** em suporte DIN (só o relógio) | 35 mm | 240 |
+| 9 | Trava-fim de trilho | 10 mm | 275 |
+| | **Ocupação total** | **~245 mm** | **livre até 360 — sobram 85 mm** |
 
-> 🔄 **O SD/RTC veio do trilho 3** para abrir espaço à PI-1, que cresceu para 4 módulos. Ele fica na **ponta oposta ao BD-0V**, longe da entrada de 10 mm² por onde passa a soma de todas as correntes de retorno.
+> 🔄 **Só o RTC ficou aqui; o cartão SD foi para o trilho 3, junto do ESP32.** O DS3231 é **I²C**, protocolo lento e tolerante — atravessar o painel não o incomoda. Já o SPI do cartão exigia proximidade.
+>
+> ⚠️ **Recalcule as larguras dos blocos antes de posicionar.** Com o BD-24V indo a 6 vias, o BD-5V a 8 e o BD-0V virando uma barra de 20 pontos, as larguras deste trilho mudam — ver a tabela de conferência no [Doc 03](../camada_0_fundamentos/03_lista_materiais.md).
 
 > 🔄 **O trilho 1 encolheu 91 mm** com a revisão "Potência em 24 V": saíram os porta-fusíveis **F4** e **F5** e a **placa de proteção Zener**, que existiam por causa do circuito crowbar. Os fusíveis de ramal **F1, F2 e F3 continuam na subestação**, não no painel. Ver [Doc 02 §2.6](../camada_0_fundamentos/02_arquitetura_de_energia.md).
 >
@@ -296,9 +298,23 @@ Você precisa puxar **vários fios da mesma tensão** dentro do painel: os 5 V v
 | 1 | **Arduino Mega 2560 + Sensor Shield** em suporte DIN | 110 mm | 40 |
 | 2 | ⭐ **Placa de Interface PI-1** em caixa modular DIN de **4M** | **70 mm** | **155** |
 | 3 | **DNLCB30 + ESP32** | 90 mm | 230 |
-| | **Ocupação total** | **~280 mm** | livre até 360 — sobram 80 mm |
+| 4 | 🔄 **Módulo Micro SD** em caixa DIN de 2M — **ligado ao ESP32** | **35 mm** | **322** |
+| | **Ocupação total** | **~317 mm** | livre até 360 — sobram 43 mm |
 
-> 🔄 **O módulo SD + RTC mudou para o trilho 1.** A PI-1 cresceu de 52,5 para 70 mm (o borne J1 tem 11 vias e não cabia em 3 módulos), e os três componentes juntos passariam de 360 mm. Entre mudar a PI-1 ou o SD, **a PI-1 tem de ficar colada no Arduino**: ela existe para *filtrar o sinal logo antes de ele chegar no pino*. Filtrar e depois percorrer meio painel desfaz o filtro.
+> ### 🔄 O cartão SD passou do Arduino para o ESP32
+>
+> A PI-1 cresceu de 52,5 para 70 mm e o conjunto não cabia mais. A primeira solução foi mandar o SD para o trilho 1 — mas isso criava um **cabo SPI de ~450 mm**, e SPI não gosta de distância. A solução certa é outra: **trocar quem manda no cartão**.
+>
+> | | Antes (SD no Arduino) | **Agora (SD no ESP32)** |
+> |---|---|---|
+> | Comprimento do SPI | 450 mm ⚠️ | **~40 mm** ✅ |
+> | Quem grava | Arduino | ESP32 |
+> | De onde vêm os dados | leitura direta | **já chegam pela Serial1** — são os mesmos que ele publica por MQTT |
+> | Sobrevive à emergência? | ❌ | ✅ o ESP32 está no **24 V permanente** |
+>
+> **O ganho que não é óbvio:** o ESP32 já recebe tudo do Arduino pela Serial1 para publicar no MQTT. Gravar no cartão passa a ser *escrever o que ele já ia mandar* — some um caminho de dados inteiro. E como ele fica no barramento permanente, **continua registrando durante a emergência**, que é justamente o instante mais importante do log.
+>
+> 📌 **O DS3231 pode ficar no trilho 1.** Ele é **I²C**, e I²C tolera distância muito melhor que SPI. Só o cartão precisava estar perto.
 
 > ⭐ **A PI-1 fica encostada no Arduino, e a posição não é arbitrária.** Ela concentra os 9 componentes discretos do projeto — filtros dos pinos IS, divisor de realimentação, pull-up do 1-Wire e limitadores dos LEDs — e **todos eles precisam estar eletricamente junto ao Arduino** para cumprirem a função. Montagem detalhada, borne por borne, no [Doc 33 §33.3](../camada_3_eletrica/33_placa_interface_componentes.md).
 >
