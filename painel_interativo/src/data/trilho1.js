@@ -154,6 +154,13 @@ export const PORTA = {
              + 'Ligado ao Arduino pela Serial2 (Mega 16/17), passando por conversor de '
              + 'nível — os 5 V do conector UART são alimentação, o TXD/RXD são 3,3 V. '
              + 'Alimentação e serial vêm no MESMO cabo de 4 vias.' },
+    { tipo: 'conversor', ref: 'CONV', nome: 'Conversor de nível', x: 205, y: 95,
+      pinagem: 'CONV',
+      detalhe: 'Traduz os 5 V do Arduino para os 3,3 V da tela. Monta atrás da tela, '
+             + 'em espaçadores de nylon — perto DELA, não do Arduino, porque o lado de '
+             + '5 V aguenta cabo longo e o de 3,3 V não. '
+             + 'O pino LV vai nos 3,3 V DA PRÓPRIA TELA: é isso que faz o conversor '
+             + 'desligar junto com ela, em vez de injetar sinal numa placa morta.' },
     { tipo: 'sinaleiro', ref: 'H1', nome: 'ENERGIZADO', x: 50, y: 190, cor: '#2f9e44',
       detalhe: 'Positivo comum no BD-24V (O3). Negativo vai à PI-1 · J2-4.' },
     { tipo: 'sinaleiro', ref: 'H2', nome: 'RESFRIANDO', x: 100, y: 190, cor: '#1971c2',
@@ -174,6 +181,51 @@ export const PORTA = {
              + 'o KA2 — o BD-POT cai, o BD-24V não.' },
   ],
 };
+
+/* ── CHICOTE DA TELA ─────────────────────────────────────────────────
+ * Os 9 fios que ligam a tela ao painel, em 3 trechos de naturezas
+ * diferentes. É por causa dessa diferença que o conversor fica no meio.
+ */
+export const CHICOTE_TELA = [
+  { grupo: 'Tela → conversor (curto, dentro da porta)', cor: '#1971c2', pares: [
+    { de: 'Tela · I2C · 3,3 V', para: 'Conversor · LV',
+      nota: 'O 3,3 V vem da PROPRIA tela. Se ela desliga, o lado baixo morre junto.' },
+    { de: 'Tela · I2C · GND', para: 'Conversor · GND (lado LV)' },
+    { de: 'Tela · UART · RXD (IO43)', para: 'Conversor · TXO',
+      nota: 'Aqui chega o que o Arduino falou, ja rebaixado para 3,3 V.' },
+    { de: 'Tela · UART · TXD (IO44)', para: 'Conversor · RXI',
+      nota: 'Daqui sai o que a tela responde, ainda em 3,3 V.' },
+  ]},
+  { grupo: 'Conversor → painel (trecho longo, pela dobradiça)', cor: '#c92a2a', pares: [
+    { de: 'Conversor · TXI', para: 'Arduino · pino 16 (TX2)',
+      nota: 'Sai do Arduino em 5 V. E a linha que queimaria o ESP32-S3 se fosse ligada direto.' },
+    { de: 'Conversor · RXO', para: 'Arduino · pino 17 (RX2)',
+      nota: 'A resposta da tela, ja elevada para 5 V.' },
+    { de: 'Conversor · HV', para: 'BD-5V (5,10 V)',
+      nota: 'Define o nivel do lado alto.' },
+    { de: 'Conversor · GND (lado HV)', para: 'BD-0V',
+      nota: 'O mesmo 0 V unico de sempre.' },
+  ]},
+  { grupo: 'Alimentação da tela (à parte)', cor: '#f08c00', pares: [
+    { de: 'Tela · Type-C', para: 'BD-5V (5,10 V)',
+      nota: 'NAO use o pino de 5 V do conector UART: a wiki lista so Type-C e bateria '
+          + 'como entradas, entao aquele pino e provavelmente saida.' },
+  ]},
+];
+
+export const NOTAS_CHICOTE = [
+  'Por que o conversor fica na PORTA e não no painel: o lado de 5 V tem margem de ruído '
+  + 'grande e aguenta o cabo longo que atravessa a dobradiça. O de 3,3 V, não. Então o '
+  + 'trecho comprido tem que ficar no lado HV.',
+  'Cada canal do conversor é UNIDIRECIONAL. TXI→TXO leva de cima para baixo, RXI→RXO de '
+  + 'baixo para cima. Trocar não queima nada, mas não comunica — e é a causa nº 1 de '
+  + '"não funciona" com este módulo.',
+  'Vale o clássico: TX de um lado vai no RX do outro. Se não comunicar e a fiação '
+  + 'parecer certa, inverta as duas pontas antes de suspeitar da placa.',
+  'Os fios que atravessam a dobradiça precisam de espiral ou conduíte flexível, com '
+  + 'folga para a porta abrir 180°. Fio que trabalha na dobra e fica esticado rompe por '
+  + 'fadiga — sempre por dentro do isolamento, onde não se enxerga.',
+];
 
 /* Todos os fios desenháveis, montados a partir dos blocos e das entradas */
 export function montarFios() {

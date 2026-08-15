@@ -147,6 +147,60 @@ export const PINAGENS = {
     ],
   },
 
+  /* ── Conversor de nível 2 canais (TXI/TXO · RXI/RXO) ───────────────
+     14,7 × 12,7 mm. Cada canal é UNIDIRECIONAL — e é isso que o torna
+     perfeito para UART, onde cada fio tem sentido fixo. */
+  CONV: {
+    nome: 'Conversor de nível · 2 canais', larguraMm: 14.7, alturaMm: 12.7,
+    pcb: '#1c4f8f',
+    nota: 'Faz a tradução entre os 5 V do Arduino e os 3,3 V da tela. '
+        + 'Dois canais, cada um num sentido — juntos formam um link serial completo.',
+    grupos: [
+      {
+        ref: 'HV', tipo: 'header', lado: 'cima', x: 2.2, y: 1.6, passo: 2.54,
+        cor: '#c92a2a', legenda: 'Lado ALTO — 5 V, vai para o Arduino',
+        pinos: [
+          { n: 1, nome: 'TXI', papel: '← Arduino pino 16 (TX2). Entra em 5 V', usa: true },
+          { n: 2, nome: 'HV',  papel: '← 5 V do BD-5V. Define o nível deste lado',
+            usa: true, alerta: true },
+          { n: 3, nome: 'GND', papel: '← BD-0V', usa: true },
+          { n: 4, nome: 'RXO', papel: '→ Arduino pino 17 (RX2). Sai em 5 V', usa: true },
+        ],
+      },
+      {
+        ref: 'LV', tipo: 'header', lado: 'baixo', x: 2.2, y: 11.1, passo: 2.54,
+        cor: '#1971c2', legenda: 'Lado BAIXO — 3,3 V, vai para a tela',
+        pinos: [
+          { n: 5, nome: 'TXO', papel: '→ tela RXD (IO43). Sai em 3,3 V', usa: true },
+          { n: 6, nome: 'LV',  papel: '← 3,3 V DA PRÓPRIA TELA (conector I²C). '
+                                    + 'É o que faz o conversor morrer junto com ela',
+            usa: true, alerta: true },
+          { n: 7, nome: 'GND', papel: '← BD-0V (o mesmo 0 V, sempre)', usa: true },
+          { n: 8, nome: 'RXI', papel: '← tela TXD (IO44). Entra em 3,3 V', usa: true },
+        ],
+      },
+    ],
+    marcos: [
+      { tipo: 'ci', x: 3.4, y: 4.6, w: 2.6, h: 2.2, texto: '' },
+      { tipo: 'ci', x: 8.7, y: 6.0, w: 2.6, h: 2.2, texto: '' },
+      { tipo: 'furo', x: 1.2, y: 1.2 }, { tipo: 'furo', x: 13.5, y: 11.5 },
+    ],
+    avisos: [
+      '⭐ REGRA QUE NÃO ERRA: o pino HV vai nos 5 V, o pino LV vai nos 3,3 V. '
+      + 'Isso ancora qual lado é qual. Depois é só seguir a serigrafia: TXI e TXO são '
+      + 'o mesmo canal, RXI e RXO são o outro.',
+      '⚠️ CADA CANAL TEM SENTIDO FIXO. Ao contrário dos módulos de 4 canais com BSS138, '
+      + 'este não é bidirecional por canal: o canal TXI→TXO só leva sinal de cima para '
+      + 'baixo, e o RXI→RXO só de baixo para cima. Trocar não queima nada, mas não '
+      + 'comunica — e é a causa nº 1 de "não funciona" com este módulo.',
+      '🔥 O LV TEM QUE VIR DA TELA, não de outro 3,3 V do painel. É isso que faz o lado '
+      + 'baixo desligar junto com ela: se a tela cai e o conversor continua alimentado, '
+      + 'ele injeta 3,3 V numa placa morta, pelos diodos de proteção dela.',
+      '📌 Monte perto da TELA, não do Arduino. O lado de 5 V aguenta cabo longo com '
+      + 'folga; o de 3,3 V, não. O trecho comprido do chicote deve ficar no lado HV.',
+    ],
+  },
+
   /* ── DNLCB30 (base do ESP32) ───────────────────────────────────────
      Fotos: imagens/DNLCB30_1.avif e _2.avif */
   ESP32: {

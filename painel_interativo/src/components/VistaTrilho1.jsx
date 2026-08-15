@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import {
   PLACA_MONTAGEM, TRILHO, PLACA_PRENSA, PRENSA_CABOS, BLOCOS, PORTA, montarFios,
+  CHICOTE_TELA, NOTAS_CHICOTE,
 } from '../data/trilho1';
 import PlacaReal from './PlacaReal';
 
@@ -136,6 +137,25 @@ function Porta({ onItem, sel }) {
                       fontSize={5} fill="#2f9e44">● log no SD</text>
                 <text x={cx + it.w / 2} y={cy + it.h + 11} textAnchor="middle"
                       fontSize={6} fontWeight="700" fill="#495057">{it.nome}</text>
+              </>
+            )}
+            {it.tipo === 'conversor' && (
+              <>
+                <rect x={cx} y={cy} width={30} height={26} rx={2}
+                      fill="#1c4f8f" stroke={ativo ? '#ffd43b' : '#0f3562'}
+                      strokeWidth={ativo ? 3 : 1.5} />
+                {[0, 1, 2, 3].map(i => (
+                  <g key={i}>
+                    <circle cx={cx + 5 + i * 6.6} cy={cy + 3.5} r={1.7} fill="#c9a227" />
+                    <circle cx={cx + 5 + i * 6.6} cy={cy + 22.5} r={1.7} fill="#c9a227" />
+                  </g>
+                ))}
+                <text x={cx + 15} y={cy - 4} textAnchor="middle" fontSize={5}
+                      fontWeight="700" fill="#c92a2a">5 V (Arduino)</text>
+                <text x={cx + 15} y={cy + 34} textAnchor="middle" fontSize={5}
+                      fontWeight="700" fill="#1971c2">3,3 V (tela)</text>
+                <text x={cx + 15} y={cy + 14.5} textAnchor="middle" fontSize={4.6}
+                      fill="#e9ecef" fontWeight="700">CONV</text>
               </>
             )}
             {it.tipo === 'sinaleiro' && (
@@ -374,6 +394,37 @@ export default function VistaTrilho1() {
                 cursor: 'pointer', fontSize: 12.5, fontWeight: 700,
               }}>🔍 Ver a placa e todos os conectores</button>
             )}
+          </div>
+        )}
+
+        {!fio && !bloco && !item && (
+          <div style={{ padding: '14px 15px 0' }}>
+            <h3 style={{ fontSize: 12, margin: '0 0 8px', color: '#868e96',
+                         letterSpacing: 0.4 }}>
+              CHICOTE DA TELA — 9 FIOS EM 3 TRECHOS
+            </h3>
+            {CHICOTE_TELA.map(g => (
+              <div key={g.grupo} style={{ marginBottom: 10 }}>
+                <div style={{ fontSize: 11.5, fontWeight: 700, color: g.cor,
+                              marginBottom: 4 }}>{g.grupo}</div>
+                {g.pares.map(par => (
+                  <div key={par.de} style={{
+                    fontSize: 11, padding: '5px 8px', marginBottom: 3, borderRadius: 4,
+                    background: '#f8f9fa', borderLeft: '3px solid ' + g.cor,
+                  }}>
+                    <b>{par.de}</b> → {par.para}
+                    {par.nota && (
+                      <div style={{ color: '#a06000', marginTop: 2 }}>{par.nota}</div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ))}
+            {NOTAS_CHICOTE.map((t, i) => (
+              <div key={i} style={{ fontSize: 11, lineHeight: 1.5, padding: '8px 10px',
+                                    background: '#fffbe6', borderRadius: 5,
+                                    marginBottom: 6, color: '#8a5a00' }}>{t}</div>
+            ))}
           </div>
         )}
 
