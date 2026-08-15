@@ -296,7 +296,7 @@ Para esse canal ser confiável, dois reforços de R$ 0,20:
 | **2. Operador aperta REARME** | KA1 sela. O contato de saída fecha |
 | **3. STOP solto** | KA2 energiza → **24 V disponíveis nos BTS** |
 | **4. Arduino boota** | `R_EN` dos dois em nível baixo. Nada aciona ainda |
-| **5. Configura o ciclo** | Pela IHM Nextion |
+| **5. Configura o ciclo** | Pela IHM (tela ES3C28P) |
 | **6. START** | Botão físico **ou** IHM → o firmware habilita o `R_EN` do modo escolhido |
 | **7. STOP** | Botão físico → **KA2 abre, corta em hardware**. IHM → o firmware baixa o `R_EN` |
 | **8. Novo START** | **Pela IHM ou pelo painel.** O KA1 nunca caiu, então nada precisa ser rearmado |
@@ -453,7 +453,7 @@ Se o 0 V for ligado ao PE em dois lugares, cria-se um **laço de terra**: uma es
    Fans 0V    ───┤
    Arduino GND ──┼──►  BLOCO BD-0V (entrada 10 mm²)  ──►  0 V da subestação
    ESP32 GND  ───┤            (ponto único)
-   Nextion GND ──┤
+     tela GND ──┤
    SD/RTC GND ───┤
    Sensores GND ─┘
 ```
@@ -479,7 +479,7 @@ Se o 0 V for ligado ao PE em dois lugares, cria-se um **laço de terra**: uma es
 
 ## 31.6 Tabela de estados do sistema
 
-| Evento | KA1 | KA2 | 24 V nos BTS | `R_EN` | Nextion | LED |
+| Evento | KA1 | KA2 | 24 V nos BTS | `R_EN` | Tela | LED |
 |---|---|---|---|---|---|---|
 | Painel energizado, antes do REARME | ❌ | ❌ | ❌ ausente | ❌ | "REARMAR" | — |
 | **REARME pressionado** | ✅ sela | ✅ | ✅ presente | ❌ | "AGUARD. START" | — |

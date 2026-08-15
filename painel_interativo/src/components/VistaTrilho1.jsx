@@ -2,6 +2,7 @@ import { useState } from 'react';
 import {
   PLACA_MONTAGEM, TRILHO, PLACA_PRENSA, PRENSA_CABOS, BLOCOS, PORTA, montarFios,
 } from '../data/trilho1';
+import PlacaReal from './PlacaReal';
 
 /* Painel visto de frente, com a porta aberta à direita.
    Tudo em milímetros — o SVG converte para pixels.        */
@@ -191,6 +192,7 @@ export default function VistaTrilho1() {
   const [fio, setFio] = useState(null);      // fio isolado
   const [bloco, setBloco] = useState(null);  // bloco selecionado
   const [item, setItem] = useState(null);    // item da porta
+  const [zoom, setZoom] = useState(null);    // pinagem aberta em tela cheia
 
   const isolando = !!fio;
   const largura = PORTA.x + PORTA.largura + 20;
@@ -365,6 +367,13 @@ export default function VistaTrilho1() {
             <div style={{ fontSize: 12, color: '#343a40', marginTop: 7, lineHeight: 1.55 }}>
               {item.detalhe}
             </div>
+            {item.pinagem && (
+              <button onClick={() => setZoom(item.pinagem)} style={{
+                display: 'block', width: '100%', marginTop: 10, background: '#f08c00',
+                color: '#fff', border: 'none', borderRadius: 6, padding: '9px 12px',
+                cursor: 'pointer', fontSize: 12.5, fontWeight: 700,
+              }}>🔍 Ver a placa e todos os conectores</button>
+            )}
           </div>
         )}
 
@@ -388,6 +397,29 @@ export default function VistaTrilho1() {
           </div>
         )}
       </aside>
+
+      {zoom && (
+        <div onClick={() => setZoom(null)} style={{
+          position: 'fixed', inset: 0, zIndex: 150, background: '#000000aa',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20,
+        }}>
+          <div onClick={e => e.stopPropagation()} style={{
+            background: '#fff', borderRadius: 10, width: '100%', maxWidth: 1180,
+            height: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden',
+          }}>
+            <div style={{ background: '#1d3557', color: '#fff', padding: '11px 16px',
+                          display: 'flex', justifyContent: 'space-between' }}>
+              <b style={{ fontSize: 15 }}>Pinagem da placa</b>
+              <button onClick={() => setZoom(null)} style={{
+                background: '#ffffff33', color: '#fff', border: 'none', borderRadius: 5,
+                width: 26, height: 26, cursor: 'pointer' }}>×</button>
+            </div>
+            <div style={{ flex: 1, overflow: 'hidden' }}>
+              <PlacaReal chave={zoom} />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

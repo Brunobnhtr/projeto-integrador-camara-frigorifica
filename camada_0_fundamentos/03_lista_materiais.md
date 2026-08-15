@@ -141,7 +141,7 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 | Comprar **IMPORTADO** (vale muito a pena) | Economia típica |
 |---|---|
 | Peltier, PTC de 24 V, INA219, ULN2803, LM2596, BTS7960 | 3× a 5× mais barato |
-| ESP32, Arduino, Nextion, sensores, módulos SD/RTC | 2× a 4× |
+| ESP32, Arduino, tela ES3C28P, sensores, módulo RTC | 2× a 4× |
 | Coolers, dissipadores, botoeiras 22 mm, sinaleiros | 2× a 3× |
 
 > ✅ **A planilha já faz essa separação sozinha:** o link do AliExpress só aparece nos itens que faz sentido importar. **Item sem link de AliExpress é recomendação de compra nacional, não falha do gerador.**
@@ -182,7 +182,7 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 | Item | Qtd | Especificação | Ajuste | Link |
 |---|---:|---|---|---|
 | ⭐ **Kit 2× Módulo LM2596 com display** | 1 kit | Step-down **3 A**, Vin até 40 V, saída ajustável, **display LED vermelho de 3 dígitos** integrado. Um módulo vira o **T2**, o outro vira o **T3** | ver abaixo | [Mercado Livre](https://www.mercadolivre.com.br/kit-2-modulo-regulador-de-tensao-lm2596-display-ajustavel/up/MLBU4063333801) |
-| → **T2** (poste P2, comando) | — | 1º módulo do kit — alimenta Arduino, Nextion, SD/RTC, lógica dos BTS, placa PI-1 e **os LEDs da iluminação da maquete** | **5,10 V** | |
+| → **T2** (poste P2, comando) | — | 1º módulo do kit — alimenta Arduino, tela ES3C28P, RTC, lógica dos BTS, placa PI-1 e **os LEDs da iluminação da maquete** | **5,10 V** | |
 | → **T3** (poste P3, auxiliares) | — | 2º módulo do kit — alimenta as fans internas e os coolers | **12,0 V** | |
 | Kit LM2596 reserva | 1 kit | **Opcional mas recomendado.** São os únicos conversores do projeto; queimar um na véspera sem reserva significa não apresentar | — | |
 | **Dissipador de alumínio ~20 × 15 × 10 mm** | 2 | ⚠️ **Obrigatório**, colado no CI LM2596S de cada módulo. Sem ele o T3 passa dos 100 °C dentro do tubo — ver [Doc 02 §2.8](02_arquitetura_de_energia.md) | — | |
@@ -397,7 +397,7 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 | **Bloco de distribuição DIN** — 1 entrada 4 mm² + **4 saídas** | 1 | **BD-POT** — 24 V de potência comutados pelo KA2 → BTS #1, BTS #2, medição do D25 e 1 reserva. ⚠️ Cai com a emergência | |
 | **Bloco de distribuição DIN** — 1 entrada 2,5 mm² + **4 saídas** | 1 | **BD-AUX** — 12 V auxiliar (do T3): cooler dos BTS + 2 coolers das Peltier + 1 reserva | |
 | **Bloco de distribuição DIN** — 1 entrada 2,5 mm² + **6 saídas** ⬆ | 1 | **BD-24V** — 24 V permanentes. ⚠️ **Subiu de 4 para 6:** são **5 cargas** (DNLCB30/ESP32, cadeia de comando, positivo comum dos sinaleiros, COM do ULN2803 na PI-1, e a alimentação das 4 posições de ensaio) + 1 reserva. **Não confundir com o BD-POT** — este não cai com a emergência | |
-| **Bloco de distribuição DIN** — 1 entrada 2,5 mm² + **8 saídas** ⬆ | 1 | **BD-5V** — ⚠️ **Subiu de 6 para 8:** são **7 cargas** (Arduino, Nextion, SD/RTC, lógica do BTS #1, lógica do BTS #2, placa PI-1 e os LEDs da maquete) + 1 reserva | |
+| **Bloco de distribuição DIN** — 1 entrada 2,5 mm² + **8 saídas** ⬆ | 1 | **BD-5V** — ⚠️ **Subiu de 6 para 8:** são **7 cargas** (Arduino, tela ES3C28P, RTC, lógica do BTS #1, lógica do BTS #2, placa PI-1 e os LEDs da maquete) + 1 reserva | |
 | ⭐ **Barra de distribuição / régua com pente — mín. 20 pontos** ⬆⬆ | 1 | **BD-0V** — o **star ground** do projeto. ⚠️ **Um bloco de 8 saídas NÃO serve:** aqui convergem **4 entradas + ~16 retornos**. Use uma **barra de neutro/terra de 16–20 furos** em suporte DIN, ou **dois blocos de 1×8 interligados** por ponte de 4 mm². Entrada de **10 mm²** | |
 
 > ### ⚠️ Conferência de saídas — feita cabo a cabo no [Doc 30](../camada_3_eletrica/30_forca_e_distribuicao.md)
@@ -410,9 +410,9 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 > | BD-5V | **7** | **8** | 6 ❌ faltava |
 > | BD-0V | **~20** | **20** | 8 ❌❌ faltava muito |
 >
-> **Por que o BD-0V é tão maior que os outros:** ele é o único bloco por onde passa **tudo**. Cada carga do projeto tem um positivo (que sai de um bloco diferente conforme a tensão) mas **todas dividem o mesmo retorno**. Somando as 4 entradas e os retornos de BTS, relés, Arduino, ESP32, Nextion, SD/RTC, PI-1, três coolers, LEDs e posições de ensaio, passa de 20 pontos.
+> **Por que o BD-0V é tão maior que os outros:** ele é o único bloco por onde passa **tudo**. Cada carga do projeto tem um positivo (que sai de um bloco diferente conforme a tensão) mas **todas dividem o mesmo retorno**. Somando as 4 entradas e os retornos de BTS, relés, Arduino, ESP32, tela ES3C28P, RTC, PI-1, três coolers, LEDs e posições de ensaio, passa de 20 pontos.
 >
-> 💡 **Antes de comprar, decida a tela** (ver a seção do módulo ESP32 com display). Se ela substituir Nextion + SD/RTC + DNLCB30, o BD-5V cai de 7 para 5 cargas e o BD-24V de 5 para 4.
+> ✅ **A troca da tela já está contabilizada.** A ES3C28P substituiu a Nextion **e** o módulo de cartão SD, mas ocupa a mesma saída de 5 V que a Nextion ocupava — e o RTC continua existindo. **O BD-5V segue com 7 cargas e o BD-24V com 5.** O DNLCB30 e o ESP32 de IoT permanecem.
 | Bornes DIN parafuso 2,5 mm² | 6 | Passagem e reservas | |
 | Separadores/tampas de borne | 4 | Acabamento das réguas | |
 | **Alternativa mais barata:** bornes comuns + **ponte de interligação (pente)** | — | Funciona igual aos blocos, custa menos, menos prático para alterar depois | |
@@ -526,7 +526,7 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 >
 > ### ⭐ O módulo de tela — exigências que motivaram a escolha
 >
-> A decisão de usar um ESP32-S3 com tela embutida no lugar do Nextion foi tomada, mas **nem todo módulo serve**. Antes de fechar a compra, confirme os cinco pontos:
+> Estas foram as cinco exigências levantadas para escolher a placa. Ficam registradas porque explicam **por que a ES3C28P foi escolhida** e servem de critério caso seja preciso trocar de modelo:
 >
 > | # | Exigência | Por quê |
 > |---|---|---|
@@ -819,7 +819,7 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 |---|---|
 | **Energia** | 1× fonte 24 V/10 A ⚠️ **240 W é o mínimo** · 1× disjuntor 2P 6 A · **1× kit 2 LM2596 com display** · 3× porta-fusível |
 | **Proteção** | fusíveis **10 A (F1)** e 2 A (F2/F3) · **KA1 (2 contatos) + KA2 (10 A em DC)** · botão de REARME · **sem Zener, sem crowbar** |
-| **Controle** | 1× Arduino Mega · 1× ESP32 · 1× DNLCB30 · 1× Nextion 3.2" · 1× SD · 1× RTC · **1× placa PI-1 com ULN2803** |
+| **Controle** | 1× Arduino Mega · 1× ESP32 · 1× DNLCB30 · 1× tela ES3C28P · 1× RTC · **1× placa PI-1 com ULN2803** |
 | **Potência** | 2× BTS7960 · **2× Peltier EM SÉRIE** (+1 reserva) · **1× PTC 24 V 80 W** · 4× fan interna · **2× cooler externo 3 fios** |
 | **Sensores** | 1× DS18B20 · 1× AM2315C |
 | **Maquete** | 3× poste Ø 8 mm · ~8 m de fio rígido ENCAPADO (4 cores, **R1 e 0 V mais grossos**) · 2× "transformador" + **1× caixa de derivação** · 3× janela de acrílico · 1× caixa de subestação |

@@ -63,6 +63,84 @@ export const PINAGENS = {
     ],
   },
 
+  /* ── ES3C28P — ESP32-S3 2,8" com toque capacitivo ──────────────────
+     Posições tiradas da foto anotada do fabricante. Placa 86 × 50 mm
+     (vista de trás, na orientação em que a foto mostra). */
+  HMI: {
+    nome: 'ES3C28P · ESP32-S3 2,8"', larguraMm: 86, alturaMm: 50, pcb: '#1a1a1a',
+    nota: 'A IHM do projeto. Substitui a tela Nextion E o módulo de cartão SD. '
+        + 'Tem 8 MB de PSRAM — é o que permite rodar a Xiaozhi depois.',
+    grupos: [
+      {
+        ref: 'UART', tipo: 'borne', lado: 'baixo', x: 24, y: 45, passo: 3.2,
+        cor: '#2f9e44', legenda: '⭐ Conector UART — alimentação E serial no mesmo cabo',
+        pinos: [
+          { n: 1, nome: '5V', papel: 'alimentação vinda do BD-5V', usa: true, alerta: true },
+          { n: 2, nome: 'GND', papel: '0 V — barramento único', usa: true },
+          { n: 3, nome: 'TXD', papel: 'IO44 → conversor LV2 → Mega pino 17 (RX2)', usa: true },
+          { n: 4, nome: 'RXD', papel: 'IO43 ← conversor LV1 ← Mega pino 16 (TX2)', usa: true },
+        ],
+      },
+      {
+        ref: 'I2C', tipo: 'borne', lado: 'cima', x: 41, y: 3, passo: 3.2,
+        cor: '#1971c2', legenda: 'Conector I²C — daqui sai o 3,3 V do conversor',
+        pinos: [
+          { n: 5, nome: '3V3', papel: '⭐ alimenta o lado LV do conversor de nível', usa: true },
+          { n: 6, nome: 'GND', papel: '0 V' },
+          { n: 7, nome: 'SDA', papel: 'IO16 — compartilhado com o toque capacitivo' },
+          { n: 8, nome: 'SCL', papel: 'IO15 — compartilhado com o toque capacitivo' },
+        ],
+      },
+      {
+        ref: 'EXP', tipo: 'borne', lado: 'cima', x: 60, y: 3, passo: 3.2,
+        cor: '#ae3ec9', legenda: 'Expansão — 4 GPIOs livres de verdade',
+        pinos: [
+          { n: 9,  nome: 'IO2',  papel: 'livre — alternativa de UART1 se o log de boot atrapalhar' },
+          { n: 10, nome: 'IO3',  papel: 'livre' },
+          { n: 11, nome: 'IO14', papel: 'livre' },
+          { n: 12, nome: 'IO21', papel: 'livre' },
+        ],
+      },
+      {
+        ref: 'BAT', tipo: 'borne', lado: 'baixo', x: 14, y: 45, passo: 3.2,
+        cor: '#c92a2a', legenda: '⚠️ Bateria — NÃO USAR neste projeto',
+        pinos: [
+          { n: 13, nome: 'BAT+', papel: '⚠️ deixar vazio — lítio em painel fechado é risco '
+                                      + 'de incêndio sem contrapartida', alerta: true },
+          { n: 14, nome: 'BAT−', papel: '⚠️ deixar vazio', alerta: true },
+        ],
+      },
+    ],
+    marcos: [
+      { tipo: 'ci', x: 58, y: 20, w: 17, h: 15, texto: 'ESP32-S3' },
+      { tipo: 'bloco', x: 42, y: 38, w: 13, h: 11, texto: 'microSD' },
+      { tipo: 'ci', x: 1, y: 18, w: 5, h: 9, texto: '' },
+      { tipo: 'furo', x: 4, y: 4 }, { tipo: 'furo', x: 82, y: 4 },
+      { tipo: 'furo', x: 4, y: 46 }, { tipo: 'furo', x: 82, y: 46 },
+      { tipo: 'trim', x: 42, y: 22, r: 2.6, texto: 'LED RGB' },
+      { tipo: 'trim', x: 79, y: 8, r: 2.2, texto: 'mic' },
+      { tipo: 'botao', x: 8, y: 10, r: 2.4, texto: 'RESET' },
+      { tipo: 'botao', x: 8, y: 32, r: 2.4, texto: 'BOOT' },
+      { tipo: 'bloco', x: 26, y: 2, w: 8, h: 5, texto: 'SPK' },
+    ],
+    avisos: [
+      '⭐ 8 MB de PSRAM OPI — o anúncio não diz, mas a wiki oficial e o BSP do GitHub '
+      + 'confirmam. É o que separa esta placa da Cheap Yellow Display: sem PSRAM a '
+      + 'Xiaozhi não roda; com 8 MB, roda.',
+      '⚠️ Os 5 V do conector UART são ALIMENTAÇÃO, não nível lógico. O TXD e o RXD '
+      + 'continuam em 3,3 V — o conversor de nível é obrigatório na linha que vem do '
+      + 'Arduino.',
+      '⚠️ O UART é o UART0 (IO43/IO44), o mesmo do log de boot. O Arduino vai receber '
+      + '~500 bytes de texto a cada reinício da tela. O parser precisa ignorar linha '
+      + 'que não siga o protocolo — boa prática de qualquer jeito.',
+      '🔎 Confirme na chegada se o pino de 5 V do conector UART é ENTRADA (alimenta a '
+      + 'placa) ou só saída dos 5 V do USB. Se for só saída, volta o plano de alimentar '
+      + 'pelo Type-C.',
+      '🎁 O alto-falante que vem na caixa habilita ALARME SONORO quando um DUT morre — '
+      + 'hoje o projeto só avisa pelo sinaleiro FALHA, que ninguém vê de costas.',
+    ],
+  },
+
   /* ── DNLCB30 (base do ESP32) ───────────────────────────────────────
      Fotos: imagens/DNLCB30_1.avif e _2.avif */
   ESP32: {

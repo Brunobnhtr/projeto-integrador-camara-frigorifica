@@ -214,7 +214,7 @@ Sketch uses 12024 bytes (4%) of program storage space. Maximum is 253952 bytes.
 Global variables use 572 bytes (6%) of dynamic memory, leaving 7620 bytes.
 ```
 
-> 📊 **4 % da flash e 6 % da RAM.** O firmware final terá SD, RTC, Nextion e JSON, então vai crescer bastante — mas essa folga confirma que o **Mega é folgado para este projeto**. Um Uno (32 KB / 2 KB) ficaria apertado, e é mais um argumento para a escolha do Mega no relatório.
+> 📊 **4 % da flash e 6 % da RAM.** O firmware final terá RTC, protocolo da tela e JSON, então vai crescer bastante — mas essa folga confirma que o **Mega é folgado para este projeto**. Um Uno (32 KB / 2 KB) ficaria apertado, e é mais um argumento para a escolha do Mega no relatório.
 
 ### Caminho B — navegador, sem instalar nada
 
@@ -235,7 +235,7 @@ Global variables use 572 bytes (6%) of dynamic memory, leaving 7620 bytes.
 | BTS7960 #1 e #2 | LEDs ciano e laranja | **Você vê o PWM lento de 1 Hz piscando** |
 | LEDs RUN / FRIO / QUENTE / FALHA | LEDs | Iguais aos do painel |
 | Fan do dissipador | Pino D30 ligado por fio ao D3 | O sketch gera os pulsos do tacômetro — **testa a interrupção de verdade** |
-| Nextion | Monitor Serial | Mostra estado, fase, ciclo, duty e RPM a cada segundo |
+| Tela ES3C28P | Monitor Serial | Mostra estado, fase, ciclo, duty e RPM a cada segundo |
 
 ### Os 6 testes que valem a pena fazer no Wokwi
 
@@ -255,7 +255,7 @@ Global variables use 572 bytes (6%) of dynamic memory, leaving 7620 bytes.
 | Não tem | O que fazer |
 |---|---|
 | **BTS7960** | Substituído por LEDs. O comportamento do driver é trivial (liga/desliga o que entra) |
-| **Nextion** | Substituída pelo Monitor Serial. Teste a IHM depois, com a tela na mão |
+| **Tela ES3C28P** | Substituída pelo Monitor Serial. Teste a IHM depois, com a placa na mão |
 | **AM2315C** | Não é crítico — é sensor de referência, não de controle |
 | **Comportamento térmico** | O DS18B20 é ajustado à mão. Para a dinâmica térmica, use o `simulador.py` |
 | **ESP32 + MQTT junto com o Mega** | O Wokwi simula ESP32, mas não dois microcontroladores conversando. Teste separado |

@@ -42,7 +42,7 @@
                   [KA2]                     │                       │        ◄── 3 ENTRADAS
                     ▼                       ▼                       ▼             SEPARADAS
                  BD-POT                  BD-5V                   BD-AUX      ◄── BLOCOS DE
-              BTS #1 → 2× Peltier    Arduino / Nextion        coolers / fans     DISTRIBUIÇÃO
+              BTS #1 → 2× Peltier    Arduino / tela           coolers / fans     DISTRIBUIÇÃO
               BTS #2 → PTC 24 V      SD / RTC / lógica        LEDs / ESP32
                                                                               ◄── PAINEL + CÂMARA
 ```
@@ -93,7 +93,7 @@
 | Doc | Arquivo | Conteúdo |
 |---|---|---|
 | 40 | [Firmware Arduino](camada_4_programacao/40_firmware_arduino.md) | Máquina de estados, PID bipolar com PWM lento, intertravamento, trip em hardware, diagnóstico de corrente, degelo, log em SD |
-| 41 | [ESP32, IHM e IoT](camada_4_programacao/41_esp32_ihm_iot.md) | Protocolo JSON, gateway MQTT, telas Nextion, dashboard, segurança de rede |
+| 41 | [ESP32, IHM e IoT](camada_4_programacao/41_esp32_ihm_iot.md) | Protocolo JSON, gateway MQTT, telas da IHM, dashboard, segurança de rede |
 | **42** 🧪 | [**Simulação e Testes sem Hardware**](camada_4_programacao/42_simulacao_e_testes.md) | **Simulador de bancada em Python, projeto Wokwi rodando o código real, Falstad para o circuito de comando** |
 
 ### CAMADA 5 — INTEGRAÇÃO
@@ -209,7 +209,7 @@ npx remotion render Camada1-Doc10-Base out/aula.mp4
 
 ### Camada 4 — Programação
 - [ ] Firmware do Arduino validado em bancada
-- [ ] ESP32, Nextion e dashboard funcionando
+- [ ] ESP32, tela ES3C28P e dashboard funcionando
 
 ### Camada 5 — Integração
 - [ ] Comissionamento completo (ensaios A–F)

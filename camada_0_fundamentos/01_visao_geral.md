@@ -161,7 +161,7 @@ A empresa **não pode parar os ensaios** enquanto o projeto acontece. Arrancar o
 
 | Unidade | Papel | Responsabilidades |
 |---|---|---|
-| **Arduino Mega 2560** | **Controle em tempo real e segurança** — nunca sai de cena | PID, leitura de sensores, PWM 1 Hz, monitoramento de RPM, intertravamento, trip, IHM Nextion, log em SD |
+| **Arduino Mega 2560** | **Controle em tempo real e segurança** — nunca sai de cena | PID, leitura de sensores, PWM 1 Hz, monitoramento de RPM, intertravamento, trip, alimenta a IHM e o log |
 | **ESP32-WROOM-32U** (na base DNLCB30) | **Supervisão sempre · comando quando em REMOTO** | Wi-Fi, MQTT bidirecional, dashboard, envio de setpoint e comandos, alarmes remotos |
 
 ### A regra de arbitragem
@@ -183,7 +183,7 @@ A empresa **não pode parar os ensaios** enquanto o projeto acontece. Arrancar o
         ┌──────────── CHAVE LOCAL / REMOTO ────────────┐
         │                                               │
    LOCAL ▼                                       REMOTO ▼
- Botoeiras + IHM Nextion                    Dashboard + MQTT
+ Botoeiras + IHM tátil                      Dashboard + MQTT
         │                                               │
         └──────────────┐                 ┌──────────────┘
                        ▼                 ▼
@@ -220,7 +220,7 @@ A empresa **não pode parar os ensaios** enquanto o projeto acontece. Arrancar o
               24 V PASSANTE            24 V → 5,10 V           24 V → 12,0 V
               (sem conversor)          (comando)               (auxiliares)
                     │                       │                       │
-              BTS #1 → 2× Peltier    Arduino / Nextion       fans internas
+              BTS #1 → 2× Peltier    Arduino / tela          fans internas
               BTS #2 → PTC 24 V      SD / RTC / lógica       coolers / LEDs
                                                              DNLCB30 → ESP32
 ```
@@ -313,7 +313,7 @@ CAMADA 5 — INTEGRAÇÃO
 | **3** | [31 — Comando e Proteções](../camada_3_eletrica/31_comando_e_protecoes.md) | Relé de interface, emergência em hardware, fusíveis, aterramento, seletividade |
 | **3** | [32 — Sinais e Sensores](../camada_3_eletrica/32_sinais_e_sensores.md) | Pinout, BTS7960, sensores, comunicação, star ground |
 | **4** | [40 — Firmware Arduino](../camada_4_programacao/40_firmware_arduino.md) | PID, PWM 1 Hz, intertravamento, segurança, log SD |
-| **4** | [41 — ESP32, IHM e IoT](../camada_4_programacao/41_esp32_ihm_iot.md) | MQTT, telas Nextion, dashboard |
+| **4** | [41 — ESP32, IHM e IoT](../camada_4_programacao/41_esp32_ihm_iot.md) | MQTT, telas da IHM, dashboard |
 | **4** | [42 — Simulação e Testes](../camada_4_programacao/42_simulacao_e_testes.md) | Simulador Python, Wokwi, Falstad — testar sem hardware |
 | **5** | [50 — Montagem e Comissionamento](../camada_5_integracao/50_montagem_e_comissionamento.md) | Integração final, ensaios, ajuste de PID, apresentação |
 

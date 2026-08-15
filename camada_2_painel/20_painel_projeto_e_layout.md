@@ -37,7 +37,7 @@ Sem canaleta, os fios ficam soltos: feio, frágil e impossível de dar manutenç
               BLOCO DE DISTRIBUIÇÃO
    entrada                    saídas
    5 V ──►┌──────────────────────┐──► Arduino
-          │ ●   ● ● ● ● ● ●      │──► Nextion
+          │ ●   ● ● ● ● ● ●      │──► tela
           │ └───┴─┴─┴─┴─┴─┘      │──► SD/RTC
           │  (ligados por dentro) │──► ...
           └──────────────────────┘
@@ -68,7 +68,7 @@ A porta tem só o que a pessoa precisa **tocar ou ver**:
 | **REARME (azul)** | Destrava depois de uma emergência |
 | **Seletora LOCAL/REMOTO** | Define quem manda: o painel ou o dashboard |
 | **4 sinaleiros** | Verde = rodando · Azul = esfriando · Amarelo = aquecendo · Vermelho = falha |
-| **Tela Nextion** | Mostra temperatura, setpoint e estado |
+| **Tela ES3C28P** | Mostra temperatura, setpoint e estado |
 
 > ⚠️ **Uma armadilha real desta etapa:** o botão de emergência com 2 blocos de contato ocupa **7 cm atrás da chapa**. Confira se ele não bate no trilho antes de furar — está detalhado na §20.6, e é o erro que obriga a refazer a porta.
 
@@ -250,7 +250,7 @@ A porta tem só o que a pessoa precisa **tocar ou ver**:
 
 ### 📌 Blocos de distribuição — por que não usar bornes soltos
 
-Você precisa puxar **vários fios da mesma tensão** dentro do painel: os 5 V vão para o Arduino, a Nextion, o SD/RTC, a lógica dos dois BTS e os LEDs. Se cada um desses for um borne separado, você acaba com um emaranhado de "rabichos" ligando borne em borne — feio, frágil e impossível de manter.
+Você precisa puxar **vários fios da mesma tensão** dentro do painel: os 5 V vão para o Arduino, a a tela ES3C28P, o RTC, a lógica dos dois BTS e os LEDs. Se cada um desses for um borne separado, você acaba com um emaranhado de "rabichos" ligando borne em borne — feio, frágil e impossível de manter.
 
 **O bloco de distribuição resolve:** é um componente DIN com **uma entrada grossa e várias saídas finas**, internamente todas ligadas entre si.
 
@@ -259,7 +259,7 @@ Você precisa puxar **vários fios da mesma tensão** dentro do painel: os 5 V v
       entrada          saídas
     ──────►┌────────────────────────┐
      5,10 V│ ●   ● ● ● ● ● ●        │──► Arduino
-           │ │   │ │ │ │ │ │        │──► Nextion
+           │ │   │ │ │ │ │ │        │──► tela
            │ └───┴─┴─┴─┴─┴─┘        │──► SD + RTC
            │   (barramento interno)  │──► lógica BTS #1
            └────────────────────────┘──► lógica BTS #2
@@ -270,7 +270,7 @@ Você precisa puxar **vários fios da mesma tensão** dentro do painel: os 5 V v
 |---|---|---|---:|---|
 | **BD-POT** | **24 V potência** (comutado pelo KA2) | 4 mm² | 4 | BTS #1 (B+), BTS #2 (B+), realimentação D25 (via PI-1), reserva |
 | **BD-AUX** | 12 V auxiliar | 2,5 mm² | 4 | cooler dos BTS, **2× cooler externo das Peltier**, fans internas, iluminação |
-| **BD-5V** | 5,10 V | 2,5 mm² | 6 | Arduino, Nextion, SD+RTC, lógica BTS ×2, **placa PI-1** |
+| **BD-5V** | 5,10 V | 2,5 mm² | 6 | Arduino, tela ES3C28P, RTC, lógica BTS ×2, **placa PI-1** |
 | **BD-24V** | **24 V permanente** (serviços) | 2,5 mm² | 4 | DNLCB30/ESP32 · cadeia de comando (S0 → KA1 → KA2) · **positivo comum dos 4 sinaleiros** · 1 reserva |
 | **BD-0V** | retorno 0 V | **10 mm²** | **8** | ⭐ **star ground** — todos os retornos convergem aqui |
 
@@ -340,7 +340,7 @@ Você precisa puxar **vários fios da mesma tensão** dentro do painel: os 5 V v
  │                                                          │  │
  │              ┌──────────────────────┐                    │  │
  │              │                      │                    │  │ 130
- │              │   NEXTION 3.2"       │                    │  │
+ │              │  TELA ES3C28P 2,8"  │                    │  │
  │              │   recorte 98 × 57    │                    │  │
  │              └──────────────────────┘                    │  │
  ├──────────────────────────────────────────────────────────┤  │ Y=310
@@ -366,7 +366,7 @@ Você precisa puxar **vários fios da mesma tensão** dentro do painel: os 5 V v
 | Elemento | Furo | X (mm) | Y (mm) |
 |---|---|---:|---:|
 | Seccionadora 0-1 | Ø 22 | 60 | 470 |
-| Recorte Nextion | 98 × 57 | 151 → 249 | 347 → 404 |
+| Recorte da tela **ES3C28P** ⬆ | **47 × 61** (retrato) | 176 → 223 | 345 → 406 |
 | LED RUN (verde) | Ø 22 | 90 | 275 |
 | LED COOL (azul) | Ø 22 | 165 | 275 |
 | LED HEAT (amarelo) | Ø 22 | 240 | 275 |
@@ -400,7 +400,13 @@ Painel industrial sem identificação é painel reprovado. Aplique etiquetas gra
 | Furo / recorte | Medida | Qtd | Face | Função |
 |---|---|---:|---|---|
 | Botões, LEDs e seccionadora | Ø 22 mm | **9** | Porta | Ver §20.4 — inclui o REARME azul |
-| Recorte da Nextion | 98 × 57 mm | 1 | Porta | IHM |
+| Recorte da tela **ES3C28P** | **47 × 61 mm** | 1 | Porta | IHM |
+
+> ⚠️ **O recorte MUDOU de tamanho e de orientação.** A Nextion 3.2" era **paisagem**, 98 × 57 mm. A ES3C28P é **retrato**: o módulo mede 50 × 86 × 10,6 mm e a janela visível do toque é 45,2 × 59,45 mm. O recorte fica **47 × 61 mm em pé**.
+>
+> 🚨 **Não fure a porta antes de a placa chegar.** Meça a janela real do módulo em mãos — 2 mm de erro num recorte retangular não têm conserto, e a placa é presa por trás.
+>
+> 📏 **A placa é mais funda:** 10,6 mm contra ~9 mm da Nextion, mais o conector JST e o cabo saindo por trás. Reserve **25 mm livres** atrás do recorte antes de posicionar qualquer coisa na contraporta.
 | Fixação do trilho DIN | Ø 5 mm | 12 | Backplate | 4 por trilho (M5) |
 | Fixação das canaletas | Ø 4 mm | 16 | Backplate | M4 |
 | **Prensa-cabo PG9** — entrada **24 V potência** | Ø 15,5 mm | 1 | Base, X = 50 | Vem da caixa de derivação do poste P1 |
@@ -454,7 +460,7 @@ O painel tem 4 níveis de tensão convivendo. A separação física não é est�
 | Carga térmica | Valor |
 |---|---:|
 | 2× BTS7960 (a 6,0 A em 24 V) | ~4 W |
-| Arduino + ESP32 + Nextion + módulos | ~3 W |
+| Arduino + ESP32 + tela + módulos | ~3 W |
 | **Total** | **~7 W** |
 
 ```
@@ -492,7 +498,7 @@ Elevação de temperatura: ΔT = 7 / (2,8 × 0,76) ≈ 3,3 K
       Trilho 2: BTS #1, BTS #2 (JÁ COM os 10 kΩ soldados), KA1, KA2
       Trilho 3: Arduino+Shield, PI-1, DNLCB30+ESP32, SD+RTC
 11. Instalar as travas-fim de trilho nas duas pontas de cada trilho
-12. Montar na porta: Nextion (M3), seccionadora, emergência, START, STOP,
+12. Montar na porta: tela ES3C28P, seccionadora, emergência, START, STOP,
       4 sinaleiros 22 mm de 24 V
 13. Instalar os 3 prensa-cabos na base e o **conector SMA de painel na lateral direita**
     (porca + arruela de pressão por dentro; não force — é latão e espana fácil)
@@ -513,7 +519,7 @@ Elevação de temperatura: ΔT = 7 / (2,8 × 0,76) ≈ 3,3 K
 - [ ] Todos os componentes encaixados nos trilhos, **sem um único cabo ligado**
 - [ ] **Conferido:** a emergência (2 blocos) não colide com o trilho 2
 - [ ] Porta furada conforme o gabarito, sem rebarbas
-- [ ] Nextion instalada e alinhada no recorte
+- [ ] Tela **ES3C28P** instalada e alinhada no recorte (retrato), com 25 mm livres atrás
 - [ ] Seccionadora, emergência, START, STOP e **4 sinaleiros de 24 V** montados
 - [ ] **5 prensa-cabos na base**: 3× PG9 e 2× PG7 — uma entrada separada por tensão
 - [ ] **5 blocos de distribuição** instalados (BD-POT, BD-AUX, BD-5V, BD-24V, BD-0V)

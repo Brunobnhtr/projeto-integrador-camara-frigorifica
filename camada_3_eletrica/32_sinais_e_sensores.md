@@ -111,7 +111,13 @@ Duas armadilhas do Arduino Mega estão documentadas aqui, e as duas eram silenci
 |---|---|---|---|---|
 | Serial0 | D1 / D0 | USB (debug no PC) | 115200 | Só para depuração |
 | **Serial1** | D18 / D19 | DNLCB30 → ESP32 | 115200 | JSON de telemetria; conversão 5 ↔ 3,3 V automática |
-| **Serial2** | D16 / D17 | Nextion NX4024T032 | 9600 | Nextion aceita 5 V direto |
+| **Serial2** | D16 / D17 | Tela **ES3C28P** (ESP32-S3) | 115200 | ⚠️ **exige conversor de nível** |
+
+> 🔥 **Esta linha mudou de sentido e é a mais perigosa do documento.** A Nextion **aceitava 5 V direto** — era um dos motivos de tê-la escolhido. A ES3C28P **não aceita**: os pinos `TXD (IO43)` e `RXD (IO44)` são do ESP32-S3 e o máximo absoluto é **3,6 V**.
+>
+> Os 5 V que aparecem no conector UART da placa são **alimentação**, não nível lógico. Ligar o `D16` do Mega direto no `RXD` degrada o pino — e o pior é que *parece funcionar* no começo, porque os diodos internos de proteção grampeiam a tensão.
+>
+> **Passe por um conversor de nível de 4 canais** — ligação pino a pino no [Doc 03](../camada_0_fundamentos/03_lista_materiais.md).
 | I²C | D20 (SDA) / D21 (SCL) | AM2315C (0x38) + DS3231 (0x68) | 100 kHz | Barramento compartilhado |
 | SPI | D50–D53 | Módulo Micro SD | — | D53 = CS |
 
@@ -165,7 +171,7 @@ ARDUINO MEGA 2560
 ├─ D6      ── BTS #2 RPWM  (quente)
 ├─ D7      ── BTS #2 R_EN
 ├─ D9..D12 ── ULN2803 ─► 4 SINALEIROS 22 mm de 24 V (RUN/COOL/HEAT/FAULT)
-├─ D16/D17 ── Serial2 ────────────────────► Nextion
+├─ D16/D17 ── Serial2 ──[conversor de nível]──► tela ES3C28P
 ├─ D18/D19 ── Serial1 ────────────────────► DNLCB30 → ESP32
 ├─ D20/D21 ── I²C ────────────────────────► AM2315C · DS3231
 │                                            └─► 4× INA219 (posições de ensaio)
@@ -363,7 +369,7 @@ Fans padrão geram 2 pulsos por rotação:
 | 7 | **Imunidade a ruído** | Ler a temperatura com os BTS em 100 % de duty | A leitura **não pode** oscilar mais de ±0,3 °C |
 | 8 | IS dos BTS | Ler A0/A1 com carga conhecida | Valor estável, proporcional à corrente |
 | 9 | Serial1 | Enviar texto do Arduino, ler no ESP32 | Texto íntegro |
-| 10 | Serial2 | Enviar comando para a Nextion | A tela responde |
+| 10 | Serial2 | Enviar comando para a tela | A tela responde |
 
 > ⚠️ **O ensaio 7 é o mais importante.** Se a leitura de temperatura oscilar quando os BTS estiverem chaveando, o problema é de aterramento ou de separação de cabos — **não adianta tentar resolver por software com médias móveis.** Volte e verifique: star ground, separação de canaletas, capacitores nos IS e blindagem aterrada em uma ponta só.
 
@@ -373,7 +379,7 @@ Fans padrão geram 2 pulsos por rotação:
 
 - [ ] **RPM do cooler #1 no D3 (INT1)**, não no D13
 - [ ] **RPM do cooler #2 no A8 (PCINT16)** — com 2 Peltier, são 2 tacômetros a monitorar
-- [ ] Serial1 (D18/D19) → DNLCB30 · Serial2 (D16/D17) → Nextion, cabos < 200 mm
+- [ ] Serial1 (D18/D19) → DNLCB30 · Serial2 (D16/D17) → tela ES3C28P, cabos < 200 mm
 - [ ] BTS #1: D5 / D4 / A0 · BTS #2: D6 / D7 / A1 · **`LPWM` em 0 V** nos dois
 - [ ] ⚠️ **`L_EN` ligado JUNTO com o `R_EN`** nos dois módulos — **não** ao 0 V. Teste: 5 min a 100 % de duty, os 2 chips do módulo em temperatura parecida
 - [ ] Capacitores de 100 nF em A0 e A1, **junto ao Arduino**

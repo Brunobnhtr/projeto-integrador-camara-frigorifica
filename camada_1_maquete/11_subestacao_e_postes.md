@@ -416,7 +416,7 @@ Em cada poste você tira **dois fios da linha**: o **positivo do seu ramal** e o
 | Poste | Equipamento | Módulo | Entrada | **Saída** | Carga |
 |---|---|---|---:|---:|---|
 | **P1** | ⭐ **DERIVAÇÃO** — sem conversor | Bornes de emenda + medidor V/A | 24 V | **24 V passante** | 2× Peltier em série, PTC 24 V (via BTS7960) |
-| **P2** | **T2** — transformador | **LM2596 com display** | 24 V | **5,10 V** | Arduino, Nextion, SD, RTC, lógica, placa PI-1 |
+| **P2** | **T2** — transformador | **LM2596 com display** | 24 V | **5,10 V** | Arduino, tela ES3C28P, RTC, lógica, placa PI-1 |
 | **P3** | **T3** — transformador | **LM2596 com display** | 24 V | **12,0 V** | Coolers, fans internas, iluminação da maquete |
 
 > ⭐ **Por que o P1 não tem transformador — e por que isso é MELHOR para a defesa.**

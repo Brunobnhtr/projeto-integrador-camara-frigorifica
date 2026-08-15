@@ -354,7 +354,7 @@ Comparar com o **valor calculado no Doc 02 §2.7: 0,17 V (0,71 %)**.
 | Wi-Fi bloqueado no local | Hotspot do celular + broker local no notebook |
 | Fusível queima | Reservas no bolso; identifique **por que** queimou antes de repor |
 | Peltier não esfria | Confira os **2** coolers girando, o duty, e **a ligação em série** (resistência = 2× a de uma pastilha); tenha a 3ª Peltier reserva já com pasta |
-| Nextion não inicializa | Verifique 5 V e os fios TX/RX (invertidos é o erro clássico) |
+| Tela não inicializa | Verifique os 5 V, os fios TX/RX (invertidos é o erro clássico) **e se o conversor de nível está alimentado nos dois lados** — sem o 3,3 V no `LV` ele não passa sinal nenhum |
 | Condensação na porta | Se a porta dupla foi feita, não vai acontecer. Se acontecer, aponte um ventilador pequeno para a face externa |
 | Temperatura não estabiliza | Deixe rodando desde o início da banca; o pull-down leva ~30 min |
 | Alguém encosta na linha dos postes | Tudo é 24 V SELV — sem risco. **Aproveite para explicar isso**, vira ponto positivo |

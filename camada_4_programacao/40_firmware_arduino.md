@@ -253,7 +253,7 @@ Com **1 Hz**, cada ciclo dura 1 s: a Peltier fica ligada por `duty%` de cada seg
 ### Código
 
 ```cpp
-double setpoint = 5.0;     // °C — vem da Nextion ou do MQTT
+double setpoint = 5.0;     // °C — vem da tela ou do MQTT
 double entrada  = 0.0;     // °C — DS18B20
 double saidaPID = 0.0;     // −100 (frio máximo) .. +100 (quente máximo)
 
@@ -420,7 +420,7 @@ void medirRPM() {
 }
 ```
 
-> 📌 **Identifique QUAL fan parou no alarme.** `FAN1_PARADA` e `FAN2_PARADA` como motivos distintos economizam muito tempo de diagnóstico — e aparecem na Nextion e no log do SD, o que é ótimo material para o relatório de ensaios.
+> 📌 **Identifique QUAL fan parou no alarme.** `FAN1_PARADA` e `FAN2_PARADA` como motivos distintos economizam muito tempo de diagnóstico — e aparecem na tela e no log do SD, o que é ótimo material para o relatório de ensaios.
 
 ### O trip: cortar a potência em HARDWARE
 
@@ -687,7 +687,7 @@ void setup() {
 
     Serial.begin(115200);      // debug
     Serial1.begin(115200);     // ESP32
-    Serial2.begin(9600);       // Nextion
+    Serial2.begin(115200);     // tela ES3C28P (via conversor de nível)
 
     pinMode(LED_RUN, OUTPUT);   pinMode(LED_COOL, OUTPUT);
     pinMode(LED_HEAT, OUTPUT);  pinMode(LED_FAULT, OUTPUT);
@@ -740,7 +740,7 @@ void loop() {
         t1Hz = millis();
         gravarLog(/* ... */);
         enviarJSON();          // Serial1 → ESP32
-        atualizarNextion();    // Serial2
+        atualizarTela();       // Serial2
     }
 }
 ```

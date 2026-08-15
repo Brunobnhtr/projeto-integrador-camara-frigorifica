@@ -146,12 +146,14 @@ export const BLOCOS = [
 export const PORTA = {
   largura: 250, altura: 470, x: 430,
   itens: [
-    { tipo: 'tela', ref: 'HMI', nome: 'ESP32-S3 com tela', x: 50, y: 38, w: 150, h: 100,
-      detalhe: '⭐ Substituiu o Nextion E o módulo de cartão SD. Este ESP32-S3 desenha a '
-             + 'própria tela (LVGL), grava o log no microSD dele e, no futuro, deve rodar '
-             + 'a IA da Xiaozhi. Ligado ao Arduino pela Serial2. '
-             + '⚠️ Precisa de divisor resistivo (10 kΩ + 20 kΩ) na linha Mega TX → S3 RX: '
-             + 'o Mega fala em 5 V e o S3 só aceita 3,3 V. Modelo ainda a definir.' },
+    { tipo: 'tela', ref: 'HMI', nome: 'ES3C28P · ESP32-S3 2,8"', x: 50, y: 38, w: 150, h: 100,
+      pinagem: 'HMI',
+      detalhe: '⭐ Substituiu o Nextion E o módulo de cartão SD. ESP32-S3 com 8 MB de '
+             + 'PSRAM: desenha a própria tela em LVGL, grava o log no microSD e comporta '
+             + 'a Xiaozhi depois. Toque capacitivo, microfone e alto-falante. '
+             + 'Ligado ao Arduino pela Serial2 (Mega 16/17), passando por conversor de '
+             + 'nível — os 5 V do conector UART são alimentação, o TXD/RXD são 3,3 V. '
+             + 'Alimentação e serial vêm no MESMO cabo de 4 vias.' },
     { tipo: 'sinaleiro', ref: 'H1', nome: 'ENERGIZADO', x: 50, y: 190, cor: '#2f9e44',
       detalhe: 'Positivo comum no BD-24V (O3). Negativo vai à PI-1 · J2-4.' },
     { tipo: 'sinaleiro', ref: 'H2', nome: 'RESFRIANDO', x: 100, y: 190, cor: '#1971c2',

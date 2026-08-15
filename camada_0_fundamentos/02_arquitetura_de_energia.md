@@ -181,7 +181,7 @@ Na maquete, 3 condutores de +24 V na cruzeta + 1 condutor de 0 V embaixo fica **
 │                   BTS #2 ─► PTC CERÂMICO 24 V     (3,3 A · 80 W)        │
 │                             ⤷ intertravados por software: nunca juntos  │
 │                                                                          │
-│  5 V ──► Arduino · Nextion · SD + RTC · lógica dos BTS · LEDs da rua    │
+│  5 V ──► Arduino · tela ES3C28P · RTC · lógica dos BTS · LEDs da rua    │
 │                                                                          │
 │ 12 V AUX ──► 2× cooler externo das Peltier · 4 fans internas            │
 │              cooler dos BTS7960                                          │
@@ -245,7 +245,7 @@ Esta é a tabela para colocar no relatório e usar na defesa. **É o que transfo
 | Carga | V | I | P |
 |---|---:|---:|---:|
 | Arduino Mega 2560 + shield | 5 | 0,20 A | 1,0 W |
-| Nextion 3.2" (backlight máx.) | 5 | 0,25 A | 1,25 W |
+| Tela **ES3C28P** (ESP32-S3 + backlight) | 5 | **0,14 A** típico · 0,25 A com alto-falante | 0,70 W · 1,25 W no pico |
 | Módulo SD + RTC DS3231 | 5 | 0,06 A | 0,3 W |
 | Lógica (VCC) dos 2 BTS7960 | 5 | 0,02 A | 0,1 W |
 | ~~4 LEDs sinalizadores 22 mm~~ | — | — | — |
@@ -529,7 +529,7 @@ As duas Peltier são o maior movimento de calor do projeto e **não entram na co
 2. Chave rotativa 0 → 1       → fonte 24 V liga
 3. Fonte estabiliza (~0,5 s)  → 24 V nos 3 ramais, até o CONTATO do KA2
                                  ⛔ BD-POT e BTS ainda em 0 V (KA2 é NA)
-4. T2 parte                   → 5,10 V → Arduino boota, Nextion inicializa
+4. T2 parte                   → 5,10 V → Arduino boota, tela inicializa
                                  os pull-downs seguram R_EN = 0 durante o boot
 5. T3 parte                   → 12,0 V aux → 2 coolers externos e fans giram
 6. Emergência solta + REARME  → KA1 sela → KA2 fecha → 24 V chegam ao BD-POT

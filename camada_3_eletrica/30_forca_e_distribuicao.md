@@ -142,7 +142,7 @@ Quando precisarem se cruzar, cruze a **90°**. Cabos paralelos "conversam" por i
  │ 4 saídas│  │         │  │         │ │          │
  └────┬────┘  └────┬────┘  └────┬────┘ └────┬─────┘
   BTS #1 →      Arduino      2 coolers       │
-  2× PELTIER    Nextion      externos        │
+  2× PELTIER    tela        externos        │
   BTS #2 →      SD/RTC       4 fans internas │
   PTC 24 V      lógica BTS   cooler BTS      │
                 placa PI-1                   │
@@ -333,7 +333,7 @@ Esta seção descrevia uma placa com três diodos Zener (5V6 / 13 V / 15 V) que 
 | 47 | 0 V BTS #1 | 1,5 mm² | **BD-0V** → BTS #1 `B−` |
 | 48 | 0 V BTS #2 | 1,5 mm² | **BD-0V** → BTS #2 `B−` |
 | 49 | 5 V Arduino | 0,5 mm² | **BD-5V** saída 1 → Arduino pino `5V` (⚠️ **não** no VIN) |
-| 50 | 5 V Nextion | 0,5 mm² | **BD-5V** saída 2 → Nextion (fio vermelho) |
+| 50 | 5 V da tela | 0,5 mm² | **BD-5V** saída 2 → conector **UART** da ES3C28P (pino 5 V) |
 | 51 | 5 V SD + RTC | 0,25 mm² | **BD-5V** saída 3 → VCC dos módulos |
 | 52 | 5 V lógica BTS #1 | 0,25 mm² | **BD-5V** saída 4 → BTS #1 `VCC` |
 | 53 | 5 V lógica BTS #2 | 0,25 mm² | **BD-5V** saída 5 → BTS #2 `VCC` |
@@ -355,7 +355,7 @@ Esta seção descrevia uma placa com três diodos Zener (5V6 / 13 V / 15 V) que 
 | 57e | Saída do KA1 → STOP | 0,5 mm² | **KA1 contato de saída (NA)** → **S2 bloco NF de 24 V** |
 | 57f | Bobina do KA2 | 0,5 mm² | **S2 saída** → **KA2 · A1**. O A2 vai ao **BD-0V** |
 | 57c | Realimentação D25 | 0,25 mm² | **BD-POT (24 V)** → borne `+24V` da **placa PI-1** (divisor **22 kΩ / 4,7 kΩ**) → borne `D25` → **Arduino D25**. ⚠️ Os resistores ficam **na PI-1**, não no meio do cabo — ver [Doc 33 §33.2](33_placa_interface_componentes.md) |
-| 58 | 0 V (todos os módulos) | 0,25–0,5 mm² | **BD-0V** → GND de Arduino, Nextion, SD/RTC, DNLCB30, cooler |
+| 58 | 0 V (todos os módulos) | 0,25–0,5 mm² | **BD-0V** → GND de Arduino, tela ES3C28P, RTC, DNLCB30, cooler |
 
 > ⚠️ **Item 49 — alimente o Arduino pelo pino `5V`, não pelo `VIN`.** O VIN passa pelo regulador linear de bordo, que precisa de 7–12 V. Injetando 5 V no VIN, o Arduino recebe ~3,5 V e não funciona direito.
 >
@@ -475,7 +475,7 @@ Não há mais crowbar no projeto. Em substituição, confirme as proteções que
 
 ### Teste 4 — Distribuição no painel (sem eletrônica)
 
-> Retire fisicamente Arduino, ESP32, Nextion, SD, RTC **e a placa PI-1** dos suportes antes deste teste.
+> Retire fisicamente Arduino, ESP32, tela ES3C28P, RTC **e a placa PI-1** dos suportes antes deste teste.
 
 - [ ] **BD-POT**: **24,0 V** (após apertar o REARME; os LEDs do KA1 e do KA2 acendem)
 - [ ] **BD-5V**: 5,10 V
@@ -497,7 +497,7 @@ Não há mais crowbar no projeto. Em substituição, confirme as proteções que
 Recoloque os módulos **um de cada vez**, medindo os 5 V antes de cada inserção.
 
 - [ ] Arduino: LED de power acende, boota
-- [ ] Nextion: tela acende
+- [ ] Tela ES3C28P acende
 - [ ] DNLCB30 + ESP32: LED de power aceso, **3,3 V medidos**
 - [ ] SD + RTC: reconhecidos no debug serial
 

@@ -32,7 +32,7 @@ Curso Técnico em Eletrotécnica · maquete funcional de uma **planta industrial
               P1 · DERIVAÇÃO       T2 · LM2596 📟      T3 · LM2596 📟
               24 V PASSANTE        24 V → 5,10 V       24 V → 12,0 V
                     │                   │                   │
-        BTS #1 → 2× Peltier série  Arduino/Nextion     fans · coolers
+        BTS #1 → 2× Peltier série  Arduino/tela        fans · coolers
         BTS #2 → PTC 24 V          SD/RTC/PI-1         LEDs · ESP32
 ```
 
