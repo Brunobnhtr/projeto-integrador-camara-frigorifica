@@ -152,7 +152,20 @@ Duas armadilhas do Arduino Mega estão documentadas aqui, e as duas eram silenci
 | **D23** | Botão STOP — bloco NA de 5 V | `INPUT_PULLUP` | `LOW` = pressionado |
 | **D24** | Emergência — bloco **NF** de 5 V | `INPUT_PULLUP` | `HIGH` = **acionada** |
 | **D25** | Presença dos **24 V** no BD-POT (divisor **22 k / 4,7 k** + 100 nF) | `INPUT` (**sem** pull-up) | `HIGH` = **potência disponível** |
-| ~~D26~~ | **Livre** (era o comando do antigo relé K0) | — | — |
+| **D26** | ⭐ **Seletora LOCAL / REMOTO (SA1)** — bloco NA de 5 V na porta | `INPUT_PULLUP` | `LOW` = **REMOTO** · `HIGH` = LOCAL |
+
+> ### ⭐ Por que `LOW` = REMOTO, e não o contrário
+>
+> Com `INPUT_PULLUP`, um pino **sem nada ligado lê `HIGH`**. Então a pergunta é: se o fio da seletora romper, em que modo o sistema deve cair?
+>
+> | Se o fio romper | Com `HIGH` = REMOTO | **Com `LOW` = REMOTO** |
+> |---|---|---|
+> | O sistema entende | REMOTO ⚠️ | **LOCAL** ✅ |
+> | Quem pode ligar a máquina | qualquer um, pela internet | **só quem está na frente dela** |
+>
+> **Um fio rompido não pode abrir a máquina para o mundo.** Por isso o contato fecha para o 0 V na posição REMOTO: a falha cai sempre para o lado de quem está presente e enxerga a câmara.
+>
+> 📌 **Basta UM bloco NA e UM pino.** Aberto = LOCAL, fechado = REMOTO. Não precisa de dois blocos.
 | **D9** | Sinaleiro verde — RUN | `OUTPUT` | → **IN1 do ULN2803** (placa PI-1) |
 | **D10** | Sinaleiro azul — COOL | `OUTPUT` | → **IN2 do ULN2803** |
 | **D11** | Sinaleiro amarelo — HEAT | `OUTPUT` | → **IN3 do ULN2803** |

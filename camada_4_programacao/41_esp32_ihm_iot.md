@@ -264,8 +264,13 @@ A tabela acima diz **o que** pode ser comandado à distância. A chave seletora 
 Isso significa que, mesmo com a chave em LOCAL — quando teoricamente "o remoto não manda" —, quem estiver acompanhando pelo dashboard **ainda consegue parar a máquina**. Nunca há uma situação em que alguém veja um problema e não possa agir.
 
 ```cpp
-// No Arduino — a chave é lida como uma entrada digital comum
-bool modoRemoto() { return digitalRead(CHAVE_LOCAL_REMOTO) == HIGH; }
+// No Arduino — a chave é uma entrada digital comum, no pino D26
+#define SEL_REMOTO 26        // no setup(): pinMode(SEL_REMOTO, INPUT_PULLUP);
+
+// ⚠️ LOW = REMOTO, e a inversão é proposital: com INPUT_PULLUP, um fio
+// rompido lê HIGH e o sistema cai em LOCAL. Uma falha de fiação nunca
+// abre a máquina para comando pela internet.
+bool modoRemoto() { return digitalRead(SEL_REMOTO) == LOW; }
 
 void processarComandoRemoto() {
     // ...

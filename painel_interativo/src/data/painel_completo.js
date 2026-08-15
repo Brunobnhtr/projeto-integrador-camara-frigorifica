@@ -103,9 +103,10 @@ export const COMPONENTES = [
         via('J2-7', 1, 'Sinaleiro H4 −'), via('J2-8', 1, 'Mega D25'),
       ]},
     ],
-    avisos: ['✅ 19 vias, 19 usadas. Não sobra nenhuma — se precisar de mais um sinal '
-           + 'depois, a placa terá de ser refeita. Vale considerar 1 via de reserva em '
-           + 'cada borne agora.'],
+    avisos: ['✅ 19 vias, 19 usadas, ZERO reserva — e é assim de propósito. A PI-1 é '
+           + 'uma placa feita à mão para este projeto: se um dia precisar de outro '
+           + 'sinal, ela é refeita de qualquer jeito. Borne sobrando só ocuparia '
+           + 'espaço no trilho.'],
   },
   {
     id: 'ESP32', nome: 'DNLCB30 + ESP32 30 pinos', trilho: 3,
@@ -273,7 +274,8 @@ export const COMPONENTES = [
         via('R13', 1, 'cooler dos BTS −'), via('R14', 1, 'cooler Peltier #1 −'),
         via('R15', 1, 'cooler Peltier #2 −'), via('R16', 1, 'LEDs da maquete −'),
         via('R17', 1, 'retorno das 4 posições de ensaio'),
-        via('R18'), via('R19'), via('R20'),
+        via('R18', 1, 'seletora LOCAL/REMOTO — contato para o 0 V'),
+        via('R19'), via('R20'),
       ]},
     ],
     avisos: ['🔥 É o componente mais fácil de subdimensionar. Chegam 17 retornos + a '
@@ -371,12 +373,13 @@ export const COMPONENTES = [
   {
     id: 'SA1', nome: 'Seletora LOCAL / REMOTO', porta: true,
     x: 170, y: 250, largura: 30, altura: 30, cor: '#212529',
-    grupos: [{ ref: 'SEL', legenda: '2 posições · 2 blocos NA (4)', pinos: [
-      via('1', 1, 'BD-5V'), via('2', 1, 'Mega D26 — posição LOCAL'),
-      via('3', 1, 'BD-5V'), via('4', 1, 'Mega D27 — posição REMOTO'),
+    grupos: [{ ref: 'SEL', legenda: '2 posições · 1 bloco NA (2)', pinos: [
+      via('1', 1, 'BD-0V'), via('2', 1, 'Mega D26'),
     ]}],
-    avisos: ['📌 Ainda não estava no mapa de pinos. Reservei D26 e D27, que estavam '
-           + 'livres — confirmar no firmware.'],
+    avisos: ['✅ Confirmado no firmware: 1 pino só, o D26, com INPUT_PULLUP. '
+           + 'Aberto = LOCAL, fechado para o 0 V = REMOTO.',
+             '⭐ A inversão é proposital: fio rompido lê HIGH e cai em LOCAL. Uma falha '
+           + 'de fiação nunca abre a máquina para comando pela internet.'],
   },
   {
     id: 'S0', nome: 'Cogumelo de EMERGÊNCIA', porta: true,

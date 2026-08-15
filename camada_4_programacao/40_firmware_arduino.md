@@ -145,7 +145,8 @@ E existe uma regra que atravessa tudo:
 #define PINO_DS18B20  2    // 1-Wire (pull-up 4,7k -> +5V, na placa PI-1)
 #define PINO_RPM1     3    // cooler da Peltier #1. D3 = INT1. NAO usar D13 no Mega!
 #define PINO_RPM2    A8    // cooler da Peltier #2 -> PCINT16 (PCINT2 / porta K)
-#define SD_CS        53    // SPI chip select
+// #define SD_CS     53    // O cartao SD saiu do Arduino: agora e da tela ES3C28P.
+//                            D50-D53 ficaram LIVRES.
 // I2C: SDA=20, SCL=21 -> AM2315C (0x38) + DS3231 (0x68)
 
 // ---------- COMANDO ----------
@@ -153,6 +154,7 @@ E existe uma regra que atravessa tudo:
 #define BTN_STOP     23    // bloco NA  -> LOW = pressionado
 #define BTN_EMERG    24    // bloco NF  -> HIGH = EMERGÊNCIA ACIONADA
 #define POTENCIA_OK  25    // divisor 22k/4k7 do BD-POT -> HIGH = 24 V presente
+#define SEL_REMOTO   26    // seletora LOCAL/REMOTO -> LOW = REMOTO (ver nota)
 // D26 ficou LIVRE (era o comando do antigo relé K0)
 
 // ⚠ R_EN e L_EN de cada modulo vao JUNTOS no mesmo pino do Arduino.
@@ -194,6 +196,20 @@ const unsigned long DEGELO_INTERVALO_MS = 2UL*60*60*1000;  // a cada 2 h de frio
 const unsigned long DEGELO_DURACAO_MS   =    3UL*60*1000;  // por 3 min
 const double        DEGELO_DUTY         = 20.0;            // PTC em 20 %
 ```
+
+> ### ⭐ Por que `LOW` = REMOTO na seletora
+>
+> Com `INPUT_PULLUP`, um pino **sem nada ligado lê `HIGH`**. Então a pergunta a fazer é: se o fio da seletora romper, em que modo o sistema deve cair?
+>
+> | Se o fio romper | Se fosse `HIGH` = REMOTO | **Como está: `LOW` = REMOTO** |
+> |---|---|---|
+> | O sistema entende | REMOTO ⚠️ | **LOCAL** ✅ |
+> | Quem pode ligar a máquina | qualquer um, pela internet | **só quem está na frente dela** |
+>
+> **Um fio rompido não pode abrir a máquina para o mundo.** Por isso o contato da seletora fecha para o 0 V na posição REMOTO — a falha cai sempre para o lado de quem está presente e enxerga a câmara.
+>
+> Basta **um bloco NA e um pino**: aberto = LOCAL, fechado = REMOTO.
+
 
 ---
 
