@@ -8,9 +8,10 @@
  *
  * ⭐ AS DUAS REGRAS QUE EXPLICAM O DESENHO INTEIRO:
  *
- * 1. Os TRÊS ramais de 24 V atravessam TODOS os postes e só descem no
- *    P4, lado a lado, cada um na sua entrada. Os transformadores T2 e T3
- *    são DERIVAÇÕES no meio do caminho — eles não interrompem o ramal.
+ * 1. Os três ramais atravessam os postes; os transformadores T2 e T3 são
+ *    DERIVAÇÕES no caminho, não interrupções. No P4 descem TRÊS coisas,
+ *    lado a lado: os dois 24 V que o painel usa e o 0 V.
+ *    O R3 é o único que termina antes — ele acaba no T3.
  *
  * 2. Do transformador sai SÓ O POSITIVO. O 0 V não precisa voltar porque
  *    é o mesmo condutor dos dois lados: os conversores não isolam.
@@ -99,32 +100,37 @@ export const POSTES = [
   { ref: 'P3', x: 730, base: Y_BASE_POSTE, nome: 'Poste 3 — transformador T3',
     equipa: { ref: 'T3', de: '24 V', para: '12,0 V', modelo: 'LM2596 com display' },
     desce: '12,0 V (a saída do T3)',
-    faz: 'Igual ao P2: o ramal 3 segue em frente e uma derivação desce até o T3, com '
-       + 'o 0 V junto. Sai um fio de 12 V, que desce e vai por baixo.',
+    faz: 'Diferente do P2: aqui o ramal 3 TERMINA. Ele desce inteiro no transformador, '
+       + 'com o 0 V junto, e sai como 12 V. Nada dele segue para o P4 — por isso só '
+       + 'dois 24 V chegam ao padrão de entrada.',
     porqueUmSo: 'Também aqui o 0 V só entra — não sai. Mesmo motivo do P2.',
-    analogia: 'Dois transformadores na mesma rua, cada um atendendo uma tensão '
-            + 'diferente.' },
+    analogia: 'É o último cliente da rua: depois dele o ramal acaba, e só continuam os '
+            + 'fios que servem a outra gente.' },
   { ref: 'P4', x: 900, base: Y_BASE_POSTE, nome: 'Poste 4 — PADRÃO DE ENTRADA',
     vazado: true, entradas: 3,
-    desce: 'os 3 × 24 V, lado a lado  +  o 0 V',
-    faz: 'Aqui termina a rede aérea. Os três ramais de 24 V, que atravessaram todos os '
-       + 'postes sem parar, descem aqui em TRÊS entradas individuais, uma ao lado da '
-       + 'outra. O 0 V desce junto, no mesmo poste.',
-    porqueUmSo: '📌 Dos três 24 V, dois têm função definida — a potência e os serviços. '
-              + 'O terceiro fica de RESERVA, e é bom que fique: acrescentar uma carga '
-              + 'depois não vai exigir puxar fio novo pela rede toda.',
+    desce: '2 × 24 V  +  o 0 V — três entradas lado a lado',
+    faz: 'Aqui termina a rede aérea. Descem TRÊS condutores, cada um na sua entrada: '
+       + 'o 24 V de potência (R1), o 24 V de serviços (R2) e o 0 V. O R3 não chega '
+       + 'aqui — ele termina no transformador T3, lá no poste 3.',
+    porqueUmSo: '⭐ POR QUE O SERVIÇO SAI DO R2 E NÃO DO R3. O R2 é o ramal mais leve da '
+              + 'rede: ele alimenta o transformador de 5 V, e a eletrônica toda consome '
+              + 'só ~75 mA vistos do lado de 24 V. Já o R3 alimenta as ventoinhas e puxa '
+              + '~265 mA. Sobra muito mais folga no R2. E há um motivo de segurança: '
+              + 'ventoinha é a peça que mais trava mecanicamente, e uma travada puxa '
+              + 'corrente de rotor bloqueado. Se o serviço dividisse fusível com elas, '
+              + 'uma ventoinha travada poderia queimar o F3 e levar junto o ESP32 e a '
+              + 'lâmpada de FALHA — justo quem deveria avisar do problema.',
     analogia: '🏭 É o **padrão de entrada**: o poste com eletroduto onde a concessionária '
             + 'entrega a energia na porta da empresa. O miolo é vazado justamente para '
             + 'os cabos passarem por dentro.' },
 ];
 
 export const ENTRADAS_PAINEL = [
-  { ref: 'E1', x: 1020, nome: '24 V potência' },
-  { ref: 'E2', x: 1052, nome: '24 V serviços' },
-  { ref: 'E3', x: 1084, nome: '24 V reserva' },
-  { ref: 'E4', x: 1128, nome: '12 V' },
-  { ref: 'E5', x: 1160, nome: '5 V' },
-  { ref: 'E6', x: 1200, nome: '0 V' },
+  { ref: 'E1', x: 1022, nome: '24 V potência' },
+  { ref: 'E2', x: 1060, nome: '24 V serviços' },
+  { ref: 'E3', x: 1110, nome: '12 V' },
+  { ref: 'E4', x: 1150, nome: '5 V' },
+  { ref: 'E5', x: 1200, nome: '0 V' },
 ];
 
 /* ── OS FIOS ─────────────────────────────────────────────────────── */
@@ -150,7 +156,7 @@ export const FIOS = [
     resumo: 'Atravessa os quatro postes sem parar e desce no padrão de entrada.',
     caminho: [[210, 118], [228, 118], [300, 110], [360, NIVEIS.R1], [390, NIVEIS.R1],
               [560, NIVEIS.R1], [730, NIVEIS.R1], [900, NIVEIS.R1],
-              [893, Y_BASE_POSTE], [893, Y_SUBT], [1020, Y_SUBT], [1020, Y_PAINEL]],
+              [886, Y_BASE_POSTE], [886, Y_SUBT], [1022, Y_SUBT], [1022, Y_PAINEL]],
     passos: [
       { onde: 'Fonte · saída V+ 1', diz: 'Começa na primeira saída positiva.' },
       { onde: 'Fusível F1 · 10 A', diz: 'O maior do projeto, porque este ramal leva mais '
@@ -159,7 +165,7 @@ export const FIOS = [
             + 'transformadores sem parar — não tem nada para converter, a carga já usa '
             + '24 V.' },
       { onde: 'Desce no P4 · 1ª entrada', diz: 'Desce pelo padrão de entrada, na '
-            + 'primeira das três entradas de 24 V.' },
+            + 'primeira das três entradas.' },
       { onde: 'Entra no painel', diz: 'Vai direto ao relé KA2, que liga e desliga a '
             + 'potência.' },
     ],
@@ -167,13 +173,13 @@ export const FIOS = [
            + 'levam bem menos corrente.',
   },
   {
-    id: 'R2', nome: 'Ramal 2 — alimenta o T2 e segue', cor: '#f08c00',
-    bitola: '0,50 mm²', corrente: '< 1 A',
+    id: 'R2', nome: 'Ramal 2 — alimenta o T2 e vira o 24 V de serviços', cor: '#f08c00',
+    bitola: '0,50 mm²', corrente: '< 0,5 A',
     resumo: 'Deriva no P2 para alimentar o transformador de 5 V, mas NÃO para ali — '
-          + 'continua até o P4 como 24 V de reserva.',
+          + 'continua até o P4 e vira o segundo 24 V do painel.',
     caminho: [[210, 148], [228, 148], [300, 138], [360, NIVEIS.R2], [390, NIVEIS.R2],
               [560, NIVEIS.R2], [730, NIVEIS.R2], [900, NIVEIS.R2],
-              [906, Y_BASE_POSTE], [906, Y_SUBT], [1084, Y_SUBT], [1084, Y_PAINEL]],
+              [900, Y_BASE_POSTE], [900, Y_SUBT], [1060, Y_SUBT], [1060, Y_PAINEL]],
     derivacoes: [[[560, NIVEIS.R2], [560, 168]]],
     passos: [
       { onde: 'Fonte · saída V+ 2', diz: 'Sai com 24 V, igual ao R1.' },
@@ -182,8 +188,14 @@ export const FIOS = [
       { onde: '⭐ Poste P2 · derivação para o T2', diz: 'Uma derivação desce até o '
             + 'transformador, junto com o 0 V. O ramal em si NÃO para: segue por cima.' },
       { onde: 'Continua até o P4', diz: 'Chega ao padrão de entrada ainda com 24 V.' },
-      { onde: 'Desce no P4 · 2ª entrada', diz: 'Entra no painel como o 24 V de reserva.' },
+      { onde: 'Desce no P4 · 2ª entrada', diz: 'Vira o **24 V de serviços** do painel.' },
+      { onde: 'Alimenta o que não pode desligar', diz: 'O ESP32, a lâmpada de FALHA e as '
+            + 'posições de ensaio. Este barramento NÃO cai quando alguém aperta a '
+            + 'emergência — é o que mantém o sistema avisando o que aconteceu.' },
     ],
+    atencao: '⚠️ São DOIS fios de 24 V descendo no P4, e não são a mesma coisa. O do R1 '
+           + 'cai na emergência; este não cai. Anilhas de cores diferentes — trocar os '
+           + 'dois faz a emergência deixar de funcionar.',
   },
   {
     id: 'T2OUT', nome: 'Saída do T2 — 5,10 V', cor: '#e8590c',
@@ -203,28 +215,22 @@ export const FIOS = [
            + '24 V; depois dele, 5 V.',
   },
   {
-    id: 'R3', nome: 'Ramal 3 — alimenta o T3 e segue', cor: '#fab005',
+    id: 'R3', nome: 'Ramal 3 — termina no transformador T3', cor: '#fab005',
     bitola: '0,75 mm²', corrente: '< 1 A',
-    resumo: 'Mesma ideia do R2: deriva no P3 para o transformador de 12 V e continua '
-          + 'até o P4, virando o 24 V de serviços.',
+    resumo: 'É o único ramal que TERMINA antes do fim: ele acaba no transformador de '
+          + '12 V, no poste 3.',
     caminho: [[210, 178], [228, 178], [300, 165], [360, NIVEIS.R3], [390, NIVEIS.R3],
-              [560, NIVEIS.R3], [730, NIVEIS.R3], [900, NIVEIS.R3],
-              [919, Y_BASE_POSTE], [919, Y_SUBT], [1052, Y_SUBT], [1052, Y_PAINEL]],
-    derivacoes: [[[730, NIVEIS.R3], [730, 168]]],
+              [560, NIVEIS.R3], [730, NIVEIS.R3], [730, 168]],
     passos: [
       { onde: 'Fonte · saída V+ 3', diz: 'A terceira e última saída positiva.' },
       { onde: 'Fusível F3 · 2 A', diz: 'Também de 2 A, como o F2.' },
       { onde: 'Atravessa P1 e P2', diz: 'Passa por cima sem parar.' },
-      { onde: '⭐ Poste P3 · derivação para o T3', diz: 'Desce uma derivação até o '
-            + 'transformador, com o 0 V junto. O ramal segue por cima.' },
-      { onde: 'Desce no P4 · 3ª entrada', diz: 'Vira o **24 V de serviços** do painel.' },
-      { onde: 'Alimenta o que não pode desligar', diz: 'O ESP32, a lâmpada de FALHA e as '
-            + 'posições de ensaio. Este barramento NÃO cai quando alguém aperta a '
-            + 'emergência — é o que mantém o sistema avisando o que aconteceu.' },
+      { onde: '⭐ Poste P3 · e aqui ele acaba', diz: 'Desce inteiro até o transformador '
+            + 'T3, com o 0 V junto. Não sobra nada dele para seguir adiante — por isso '
+            + 'só dois 24 V chegam ao P4.' },
     ],
-    atencao: '⚠️ São TRÊS fios de 24 V descendo no P4, e eles não são a mesma coisa. O '
-           + 'do R1 cai na emergência; este não cai. Anilhas de cores diferentes — '
-           + 'trocar os dois faz a emergência deixar de funcionar.',
+    atencao: 'É o único ramal que não chega ao padrão de entrada. Toda a energia dele '
+           + 'vira 12 V ali mesmo, no poste.',
   },
   {
     id: 'T3OUT', nome: 'Saída do T3 — 12,0 V', cor: '#f59f00',
@@ -246,7 +252,7 @@ export const FIOS = [
           + 'desce no P4 junto com os 24 V.',
     caminho: [[210, 208], [232, 208], [300, 190], [360, NIVEIS.GND], [390, NIVEIS.GND],
               [560, NIVEIS.GND], [730, NIVEIS.GND], [900, NIVEIS.GND],
-              [932, Y_BASE_POSTE], [932, Y_SUBT], [1200, Y_SUBT], [1200, Y_PAINEL]],
+              [914, Y_BASE_POSTE], [914, Y_SUBT], [1200, Y_SUBT], [1200, Y_PAINEL]],
     derivacoes: [
       [[560, NIVEIS.GND], [548, NIVEIS.GND], [548, 172]],
       [[730, NIVEIS.GND], [718, NIVEIS.GND], [718, 172]],
@@ -278,8 +284,8 @@ export const SAIDAS_CAMARA = [
 export const LEGENDA = [
   { cor: '#8a1a1a', txt: '127 V da rede — o único trecho perigoso' },
   { cor: '#c92a2a', txt: 'R1 · 24 V potência — cai na emergência' },
-  { cor: '#fab005', txt: 'R3 · 24 V serviços — NÃO cai na emergência' },
-  { cor: '#f08c00', txt: 'R2 · 24 V reserva' },
+  { cor: '#f08c00', txt: 'R2 · 24 V serviços — NÃO cai na emergência' },
+  { cor: '#fab005', txt: 'R3 · 24 V que termina no T3' },
   { cor: '#e8590c', txt: '5 V — saída do T2' },
   { cor: '#f59f00', txt: '12 V — saída do T3' },
   { cor: '#212529', txt: '0 V — o retorno, abaixo dos outros' },
