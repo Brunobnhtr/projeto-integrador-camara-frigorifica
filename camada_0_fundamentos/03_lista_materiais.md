@@ -440,7 +440,24 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 | Arduino Mega 2560 R3 | **2** | ATmega2560, 54 GPIO, 4 UARTs. **1 uso + 1 reserva** — ele roda o PID e as proteções; se morrer, o projeto para. ⚙️ **Versão: CH340 + USB Type-C.** O chip USB não é o processador (o ATmega2560 é o mesmo nas três versões) — muda só a ponte USB↔serial, que só serve para gravar e depurar. ⚠️ **CH340 pode exigir driver no Windows** (site `wch.cn`): se for gravar em PC de escola sem permissão de instalar, prefira a versão com **ATmega16U2** (anunciada como "sem CH340"), que é nativa. ⚠️ **Type-C: use cabo A-para-C** — algumas placas baratas omitem os resistores de 5,1 kΩ nos pinos CC e não são reconhecidas por cabo C-para-C | |
 | Shield de expansão Mega (bornes parafuso) | 1 | Sensor Shield V2.0 | |
 | Suporte DIN para Arduino Mega | 1 | Ou SPCI4/adaptador | |
-| Tela Nextion Basic 3.2" | 1 | NX4024T032, 400×240, TTL 5 V | |
+| ~~Tela Nextion Basic 3.2"~~ | ~~1~~ | ~~NX4024T032~~ — **substituída pelo módulo ESP32-S3 com tela** (ver abaixo) | |
+| ⭐ **Módulo ESP32-S3 com display embutido e slot microSD** | 1 | **A IHM do projeto.** Substitui de uma vez a tela Nextion **e** o módulo de cartão SD. ⚠️ **Modelo ainda a definir** — exigências abaixo | |
+
+> ### ⭐ O módulo de tela — o que conferir ANTES de comprar
+>
+> A decisão de usar um ESP32-S3 com tela embutida no lugar do Nextion foi tomada, mas **nem todo módulo serve**. Antes de fechar a compra, confirme os cinco pontos:
+>
+> | # | Exigência | Por quê |
+> |---|---|---|
+> | 1 | **PSRAM** (8 MB de preferência) | Sem PSRAM não roda LVGL com folga, e **a IA da Xiaozhi não roda de jeito nenhum** |
+> | 2 | **Slot microSD ligado ao ESP32** | É o que substitui o módulo de cartão. Confirmar que o SD é do ESP32 e não só do display |
+> | 3 | **2 GPIOs livres** para UART | É por eles que o Arduino conversa com a tela. Nessas placas quase tudo vai para o display |
+> | 4 | **Entrada de 5 V** que não seja só o USB | O painel alimenta pelo BD-5V; depender de conector USB dentro de um painel é frágil |
+> | 5 | **I²S livre + mic e alto-falante** | Só se a Xiaozhi entrar no plano. Decidir agora evita furar a porta duas vezes |
+>
+> ⚠️ **Não é o slot SD do Nextion.** No Nextion o cartão só grava o firmware da tela; aqui ele é **armazenamento de verdade**, no barramento SPI do próprio ESP32. É essa diferença que permite o módulo acumular as duas funções.
+>
+> 🔌 **Vai precisar de um divisor resistivo.** O Arduino Mega transmite em **5 V** e o ESP32-S3 só aceita **3,3 V** no pino de entrada. Quem fazia essa adaptação para o outro ESP32 era a DNLCB30 — o módulo de tela não tem isso. São 2 resistores (10 kΩ + 20 kΩ) na linha `Mega TX → S3 RX`. O caminho contrário (`S3 TX → Mega RX`) funciona direto, porque o Mega já reconhece 3,3 V como nível alto.
 | ESP32-WROOM-32U | 1 | 30 pinos, conector de antena IPEX | |
 | **DNLCB30** — base DIN para ESP32 | 1 | Entrada **7–35 V** (alimentada direto do barramento 24 V), conversão 3,3 ↔ 5 V automática. **Não inclui o ESP32** | |
 | Pigtail **IPEX (u.FL) → SMA macho**, 20–30 cm | 1 | Liga o ESP32 ao conector de painel | |

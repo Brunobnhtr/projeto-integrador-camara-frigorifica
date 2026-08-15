@@ -101,8 +101,10 @@ export const BLOCOS = [
     saidas: [
       { ref: 'O1', vai: 'Arduino Mega · pino 5V', bitola: '0,5 mm²', cabo: 49,
         aviso: 'No pino 5V, NÃO no VIN — o VIN passaria pelo regulador da placa.' },
-      { ref: 'O2', vai: 'Tela Nextion', bitola: '0,5 mm²', cabo: 50 },
-      { ref: 'O3', vai: 'Módulo SD + RTC', bitola: '0,25 mm²', cabo: 51 },
+      { ref: 'O2', vai: 'ESP32-S3 com tela (IHM)', bitola: '0,5 mm²', cabo: 50,
+        aviso: 'Confira se o módulo aceita 5 V num pino — depender do conector USB '
+             + 'dentro de um painel é frágil.' },
+      { ref: 'O3', vai: 'RTC DS3231 (o SD saiu — agora é do S3)', bitola: '0,25 mm²', cabo: 51 },
       { ref: 'O4', vai: 'BTS #1 · VCC (lógica)', bitola: '0,25 mm²', cabo: 52 },
       { ref: 'O5', vai: 'BTS #2 · VCC (lógica)', bitola: '0,25 mm²', cabo: 53 },
       { ref: 'O6', vai: 'PI-1 · J1-4 (pull-up do 1-Wire)', bitola: '0,25 mm²', cabo: 54 },
@@ -123,8 +125,8 @@ export const BLOCOS = [
       { ref: 'R3', vai: 'Arduino · GND', bitola: '0,5 mm²', cabo: 58.1 },
       { ref: 'R4', vai: 'PI-1 · J1-9', bitola: '0,25 mm²', cabo: 58.2 },
       { ref: 'R5', vai: 'DNLCB30 / ESP32 · GND', bitola: '0,5 mm²', cabo: 58.3 },
-      { ref: 'R6', vai: 'SD + RTC · GND', bitola: '0,25 mm²', cabo: 58.4 },
-      { ref: 'R7', vai: 'Nextion · GND', bitola: '0,5 mm²', cabo: 58.5 },
+      { ref: 'R6', vai: 'RTC DS3231 · GND', bitola: '0,25 mm²', cabo: 58.4 },
+      { ref: 'R7', vai: 'ESP32-S3 da tela · GND', bitola: '0,5 mm²', cabo: 58.5 },
       { ref: 'R8', vai: 'BTS #1 · GND lógica', bitola: '0,25 mm²', cabo: 58.6 },
       { ref: 'R9', vai: 'BTS #2 · GND lógica', bitola: '0,25 mm²', cabo: 58.7 },
       { ref: 'R10', vai: 'KA1 · A2 (bobina)', bitola: '0,5 mm²', cabo: 57.4 },
@@ -144,8 +146,12 @@ export const BLOCOS = [
 export const PORTA = {
   largura: 250, altura: 470, x: 430,
   itens: [
-    { tipo: 'tela', ref: 'HMI', nome: 'Nextion 3.2"', x: 55, y: 40, w: 140, h: 95,
-      detalhe: 'NX4024T032 · 400×240 · TTL 5 V. 4 fios: +5 V, 0 V, RX, TX.' },
+    { tipo: 'tela', ref: 'HMI', nome: 'ESP32-S3 com tela', x: 50, y: 38, w: 150, h: 100,
+      detalhe: '⭐ Substituiu o Nextion E o módulo de cartão SD. Este ESP32-S3 desenha a '
+             + 'própria tela (LVGL), grava o log no microSD dele e, no futuro, deve rodar '
+             + 'a IA da Xiaozhi. Ligado ao Arduino pela Serial2. '
+             + '⚠️ Precisa de divisor resistivo (10 kΩ + 20 kΩ) na linha Mega TX → S3 RX: '
+             + 'o Mega fala em 5 V e o S3 só aceita 3,3 V. Modelo ainda a definir.' },
     { tipo: 'sinaleiro', ref: 'H1', nome: 'ENERGIZADO', x: 50, y: 190, cor: '#2f9e44',
       detalhe: 'Positivo comum no BD-24V (O3). Negativo vai à PI-1 · J2-4.' },
     { tipo: 'sinaleiro', ref: 'H2', nome: 'RESFRIANDO', x: 100, y: 190, cor: '#1971c2',

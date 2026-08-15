@@ -127,10 +127,12 @@ function Porta({ onItem, sel }) {
                       fill="#212529" stroke={ativo ? '#ffd43b' : '#495057'} strokeWidth={ativo ? 3 : 1.5} />
                 <rect x={cx + 7} y={cy + 7} width={it.w - 14} height={it.h - 14} rx={1}
                       fill="#0b2e4a" />
-                <text x={cx + it.w / 2} y={cy + it.h / 2 - 6} textAnchor="middle"
-                      fontSize={9} fill="#4dabf7" fontFamily="monospace">-- °C</text>
-                <text x={cx + it.w / 2} y={cy + it.h / 2 + 8} textAnchor="middle"
+                <text x={cx + it.w / 2} y={cy + it.h / 2 - 10} textAnchor="middle"
+                      fontSize={11} fill="#4dabf7" fontFamily="monospace">-- °C</text>
+                <text x={cx + it.w / 2} y={cy + it.h / 2 + 3} textAnchor="middle"
                       fontSize={6} fill="#74c0fc">CÂMARA</text>
+                <text x={cx + it.w / 2} y={cy + it.h / 2 + 16} textAnchor="middle"
+                      fontSize={5} fill="#2f9e44">● log no SD</text>
                 <text x={cx + it.w / 2} y={cy + it.h + 11} textAnchor="middle"
                       fontSize={6} fontWeight="700" fill="#495057">{it.nome}</text>
               </>

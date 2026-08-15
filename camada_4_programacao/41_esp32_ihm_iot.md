@@ -1,8 +1,57 @@
-# CAMADA 4 · Doc 41 — ESP32, IHM Nextion e IoT
+# CAMADA 4 · Doc 41 — ESP32, IHM e IoT
 
-> ⭐ **É o documento que responde ao título do edital.** "Implementação de Sistema de Controle Inteligente com ESP32" é literalmente o que se constrói aqui: a IHM local (Nextion), o **ESP32 como supervisor e comando remoto**, e o dashboard.
+> ⭐ **É o documento que responde ao título do edital.** "Implementação de Sistema de Controle Inteligente com ESP32" é literalmente o que se constrói aqui: a IHM local, o **ESP32 como supervisor e comando remoto**, e o dashboard.
 >
 > ✅ **Pré-requisito:** [Doc 40](40_firmware_arduino.md) — firmware do Arduino funcionando em malha fechada.
+
+---
+
+## 🔄 DECISÃO DE ARQUITETURA — o projeto passou a ter TRÊS processadores
+
+> ⚠️ **Este documento ainda descreve a IHM em Nextion na maior parte do texto.** A decisão abaixo foi tomada e vale; a reescrita das seções de firmware da tela acontece quando o modelo do módulo estiver definido. **Onde houver conflito, vale esta seção.**
+
+A tela **Nextion saiu** e no lugar entrou um **módulo ESP32-S3 com display embutido**, que acumula IHM, cartão SD e — no futuro — assistente de voz.
+
+| | Processador | Função | Fica em |
+|---|---|---|---|
+| 1 | **Arduino Mega** | Controle em tempo real: PWM, sensores, intertravamento | trilho 3 |
+| 2 | **ESP32 + DNLCB30** | IoT: Wi-Fi, MQTT, comando remoto | trilho 3 |
+| 3 | ⭐ **ESP32-S3 com tela** | **IHM: mostrar, configurar, iniciar** + gravar o log no SD | **porta** |
+
+### Por que três, e não dois
+
+Poderia parecer desperdício — o ESP32 de IoT já existe, por que não pôr a tela nele? Três motivos:
+
+1. **Uma tela gráfica consome muito tempo de processador.** Redesenhar em LVGL trava a tarefa por dezenas de milissegundos. Se o mesmo chip cuidasse do MQTT, uma troca de tela poderia atrasar a publicação de um evento — inclusive o de emergência.
+2. **Separar por responsabilidade é o padrão industrial.** IHM e supervisão são funções distintas, e um defeito numa não deve derrubar a outra. Se a tela travar, o ensaio continua e o MQTT segue publicando.
+3. **Sobra caminho para a IA da Xiaozhi.** O plano é rodar o assistente de voz no S3, aproveitando que ele tem PSRAM e não carrega o MQTT nem o controle.
+
+### O que some da lista
+
+| Sai | Por quê |
+|---|---|
+| Tela Nextion 3.2" | O S3 desenha a própria tela |
+| Módulo Micro SD avulso | O S3 já tem slot, ligado ao SPI dele |
+
+**O DNLCB30 e o ESP32 de IoT continuam** exatamente onde estão. Esta mudança não os toca.
+
+### As duas seriais do Arduino
+
+O Mega tem 4 UARTs de hardware, então cada conversa fica na sua:
+
+```
+   Arduino Mega ──Serial1──► ESP32 (DNLCB30)  ·  Wi-Fi, MQTT
+                └─Serial2──► ESP32-S3 + tela  ·  IHM e log no SD
+```
+
+⚠️ **A Serial2 precisa de um divisor resistivo** no sentido `Mega TX → S3 RX`: o Mega fala em 5 V e o S3 só aceita 3,3 V. Dois resistores (10 kΩ + 20 kΩ). O sentido contrário vai direto, porque 3,3 V já é nível alto para o Mega.
+
+### O que ainda falta definir
+
+- [ ] **Modelo exato do módulo** — os 5 requisitos estão no [Doc 03](../camada_0_fundamentos/03_lista_materiais.md)
+- [ ] Numeração dos GPIOs livres para a Serial2
+- [ ] Reescrever as seções de firmware da tela deste documento (hoje em linguagem Nextion, passarão a LVGL)
+- [ ] Decidir se a Xiaozhi entra — muda a furação da porta (microfone e alto-falante)
 
 ---
 
