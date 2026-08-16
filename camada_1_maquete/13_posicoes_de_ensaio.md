@@ -34,7 +34,7 @@ Uma analogia: é a diferença entre um disjuntor e um monitor cardíaco. **O dis
 
 ---
 
-## 13.2 Por que 4 posições, e não 50
+## 13.2 Por que poucas posições, e não 50
 
 | | Sistema real da empresa | **Maquete (bancada de validação)** |
 |---|---:|---:|
@@ -45,12 +45,26 @@ Uma analogia: é a diferença entre um disjuntor e um monitor cardíaco. **O dis
 **4 é o número certo por três motivos:**
 
 1. **Demonstra o problema.** Com 1 posição, "qual delas falhou?" não faz sentido — a pergunta só existe quando há várias.
-2. **O INA219 tem exatamente 4 endereços I²C selecionáveis** (0x40, 0x41, 0x44, 0x45). Quatro sensores no mesmo barramento de dois fios, sem nenhum multiplexador. É a solução mais limpa possível.
+2. **O INA219 tem exatamente 4 endereços I²C selecionáveis** (0x40 e 0x41). Quatro sensores no mesmo barramento de dois fios, sem nenhum multiplexador. É a solução mais limpa possível.
 3. **Cabe no espaço e no orçamento** — ~R$ 120 no total.
 
-> 📌 **Como defender o número na banca:** *"a bancada reproduz o princípio com 4 posições porque a arquitetura é idêntica para 50 — muda a quantidade de canais, não o método. Com 50 posições usaríamos multiplexadores I²C ou módulos de aquisição em rede, que é o passo natural de escala."*
+> 📌 **Como defender o número na banca:** *"a bancada reproduz o princípio com 2 posições porque a arquitetura é idêntica para 50 — muda a quantidade de canais, não o método. Com 50 posições usaríamos multiplexadores I²C ou módulos de aquisição em rede, que é o passo natural de escala."*
 
 ---
+
+> ### 🔄 De quatro posições para duas
+>
+> O ensaio passou a ter **2 posições**, não 4. A pergunta óbvia é se isso não enfraquece a demonstração — e não enfraquece, porque **o que precisa ser provado é a capacidade de distinguir**, não a quantidade.
+>
+> | | 1 posição | **2 posições** | 4 posições |
+> |---|---|---|---|
+> | Detecta que algo parou | ✅ | ✅ | ✅ |
+> | Diz **qual** parou | ❌ não faz sentido | ✅ | ✅ |
+> | Mostra que o outro **continua** normal | ❌ | ✅ | ✅ |
+>
+> Com duas, você desliga a chave de uma e mostra as duas curvas na tela: uma cai a zero, a outra segue. É exatamente a demonstração que interessa, com metade das peças.
+>
+> **O que muda no projeto:** 2 INA219 em vez de 4, 1 porta-fusível de 2 vias em vez de 2, e a carga térmica dentro da câmara cai de ~12 W para ~6 W. Os endereços 0x44 e 0x45 ficam livres, então voltar a 4 posições depois é só acrescentar módulos.
 
 ## 13.3 O que é uma "placa simuladora de DUT"
 
@@ -76,7 +90,7 @@ O edital diz que os dispositivos ficam *"energizados e operando em modo de simul
 | **Resistor de potência** | Dissipa ~3 W, simulando o calor que uma placa real gera. **Isso é importante:** a carga térmica dos dispositivos afeta o comportamento da câmara, e um ensaio com a cabine vazia não representa a realidade |
 | **Corrente definida** | Dá ao sistema um valor de referência: se cair fora da faixa, algo mudou |
 
-> 💡 **Um detalhe que vale ponto:** as 4 placas somam **~12 W dentro da câmara**. Isso mais que dobra a carga térmica calculada no [Doc 12](12_camara_termica.md) (9,5 W → ~21,5 W). **A margem de refrigeração das 2 Peltier (≈ 60 W) absorve isso com folga** — mas o cálculo precisa mostrar que você considerou, porque é exatamente o tipo de coisa que uma banca pergunta.
+> 💡 **Um detalhe que vale ponto:** as 2 placas somam **~6 W dentro da câmara**. Isso soma à carga térmica calculada no [Doc 12](12_camara_termica.md) (9,5 W → ~15,5 W). **A margem de refrigeração das 2 Peltier (≈ 60 W) absorve isso com folga** — mas o cálculo precisa mostrar que você considerou, porque é exatamente o tipo de coisa que uma banca pergunta.
 
 > ⚠️ **Simular a falha é parte do ensaio.** Coloque em cada placa um **jumper ou micro-chave** que abre o circuito. Assim você demonstra a detecção ao vivo na apresentação: tira o jumper da posição 3, e em menos de 2 segundos o alarme aparece na IHM e no dashboard. **É a melhor demonstração do projeto inteiro** — vale ensaiar antes.
 
@@ -89,12 +103,12 @@ O edital diz que os dispositivos ficam *"energizados e operando em modo de simul
 | **O que é** | Sensor de corrente e tensão com interface I²C |
 | **Como mede** | Um resistor *shunt* de 0,1 Ω em série com a carga; ele lê a queda de tensão sobre esse resistor e converte em corrente |
 | **Faixa** | ±3,2 A com resolução de 0,8 mA — muito mais do que precisamos |
-| **Endereços** | **4 selecionáveis** por jumpers: 0x40, 0x41, 0x44, 0x45 |
+| **Endereços** | **4 selecionáveis** por jumpers: 0x40 e 0x41 |
 | **Ligação** | 2 fios de dados (SDA/SCL) compartilhados + alimentação |
 
 **Por que o INA219 e não um ACS712:** o ACS712 é analógico — cada sensor ocuparia **um pino de entrada analógica** do Arduino e traria ruído pelo cabo. O INA219 é digital: **4 sensores no mesmo par de fios**, sem consumir pino nenhum além do I²C que o projeto já usa para o AM2315C e o RTC.
 
-> 📌 **O barramento I²C já existe no projeto** (D20/D21). Acrescentar os 4 INA219 não exige nenhum pino novo — só derivar o mesmo par de fios. É por isso que essa escolha "custa barato" em termos de projeto.
+> 📌 **O barramento I²C já existe no projeto** (D20/D21). Acrescentar os 2 INA219 não exige nenhum pino novo — só derivar o mesmo par de fios. É por isso que essa escolha "custa barato" em termos de projeto.
 
 ---
 
@@ -121,12 +135,12 @@ O edital diz que os dispositivos ficam *"energizados e operando em modo de simul
 |---|---|---|---|---|
 | **P-1** | F-P1 · 500 mA | **0x40** | — | — |
 | **P-2** | F-P2 · 500 mA | **0x41** | ponte | — |
-| **P-3** | F-P3 · 500 mA | **0x44** | — | ponte |
-| **P-4** | F-P4 · 500 mA | **0x45** | ponte | ponte |
+| ~~P-3~~ | ~~F-P3~~ | ~~0x44~~ | — | **reserva** — endereço livre para crescer |
+| ~~P-4~~ | ~~F-P4~~ | ~~0x45~~ | — | **reserva** |
 
 > ⚠️ **Configure os endereços ANTES de montar.** Dois sensores com o mesmo endereço no barramento fazem os dois responderem juntos e a leitura vira lixo — e o sintoma (valores que pulam sem sentido) leva horas para ser diagnosticado se você não desconfiar do endereço.
 >
-> **Teste de aceitação:** rode um *scanner* I²C. Devem aparecer **6 endereços**: 0x38 (AM2315C), 0x68 (DS3231) e os quatro dos INA219. Se aparecerem menos, há endereço repetido ou ligação errada.
+> **Teste de aceitação:** rode um *scanner* I²C. Devem aparecer **4 endereços**: 0x38 (AM2315C), 0x68 (DS3231) e os dois dos INA219. Se aparecerem menos, há endereço repetido ou ligação errada.
 
 > 🔌 **Por que as posições vêm do BD-24V permanente, e não do BD-POT:** os dispositivos sob ensaio devem continuar energizados mesmo quando a climatização é interrompida. Se a emergência derrubasse também os DUTs, você perderia o estado do ensaio — e o registro de qual deles já havia falhado.
 
@@ -162,8 +176,8 @@ Cada linha traz **o instante, a temperatura da câmara e a corrente de cada posi
 
 | Item | Qtd | Especificação | Custo aprox. |
 |---|---:|---|---:|
-| **Sensor INA219** (módulo I²C) | 4 | Corrente/tensão, ±3,2 A, endereço selecionável | R$ 60 |
-| Porta-fusível mini automotivo DIN | 4 | Trilho DIN 35 mm — **F-P1 a F-P4** | R$ 40 |
+| **Sensor INA219** (módulo I²C) | **2** ⬇ | Corrente/tensão, ±3,2 A, endereço selecionável | R$ 60 |
+| **Porta-fusível DIN 2 vias com interruptor** | 1 | Trilho DIN 35 mm — **F-P1 e F-P2** | R$ 25 |
 | Fusível mini automotivo 500 mA | 8 | 4 usos + 4 reservas | R$ 10 |
 | Placa ilhada pequena | 4 | ~30 × 40 mm — placas simuladoras de DUT | R$ 8 |
 | Resistor 220 Ω / 5 W | 4 | Carga térmica de cada simulador (~3 W) | R$ 8 |
@@ -177,8 +191,8 @@ Cada linha traz **o instante, a temperatura da câmara e a corrente de cada posi
 
 ## 13.8 ✅ Checklist de aceitação
 
-- [ ] 4 posições montadas, cada uma com **fusível próprio** de 500 mA
-- [ ] Os 4 INA219 com **endereços diferentes** (0x40 / 0x41 / 0x44 / 0x45), configurados antes da montagem
+- [ ] 2 posições montadas, cada uma com **fusível próprio** de 500 mA
+- [ ] Os 2 INA219 com **endereços diferentes** (0x40 e 0x41 — o 0x44 e o 0x45 ficam de reserva), configurados antes da montagem
 - [ ] Scanner I²C encontra **6 dispositivos** no barramento
 - [ ] Cada placa simuladora consome **130 mA ± 20 mA** medidos com multímetro
 - [ ] LED de cada posição aceso com a alimentação ligada

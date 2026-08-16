@@ -83,7 +83,7 @@ export const COMPONENTES = [
       { ref: 'TOPO', lado: 'cima', legenda: 'Borda de cima — 35 bornes', pinos: [
         via('D30'), via('D29', 1, '⭐ MV-1 canal 3 → ventoinhas de CIRCULAÇÃO'), via('D28', 1, '⭐ MV-1 canal 2 → ventoinha do PTC'), via('D27', 1, '⭐ MV-1 canal 1 → ventoinhas do RADIADOR'),
         via('D26', 1, 'Seletora LOCAL / REMOTO'), via('D25', 1, 'PI-1 J2-8 — vigia se os 24 V caíram'), via('D24', 1, 'Emergência — bloco NF de 5 V'), via('D23', 1, 'Botão STOP (NA, 5 V)'),
-        via('D22', 1, 'Botão START (NA, 5 V)'), via('+5V', 1, 'BD-5V saída 1'), via('D21', 1, 'I²C SCL — o mesmo barramento'), via('D20', 1, 'I²C SDA — AM2315C (câmara), DS3231 e 4× INA219'),
+        via('D22', 1, 'Botão START (NA, 5 V)'), via('+5V', 1, 'BD-5V saída 1'), via('D21', 1, 'I²C SCL — o mesmo barramento'), via('D20', 1, 'I²C SDA — AM2315C (câmara), DS3231 e 2× INA219'),
         via('D19', 1, 'Serial1 RX ← DNLCB30/ESP32'), via('D18', 1, 'Serial1 TX → DNLCB30/ESP32'), via('D17', 1, 'Serial2 RX ← conversor ← tela'), via('D16', 1, 'Serial2 TX → conversor → tela'),
         via('D15'), via('D14'), via('D0'), via('D1'),
         via('D2', 1, 'PI-1 J2-3 — 1-Wire do DS18B20 do RADIADOR'), via('D3', 1, 'RPM da ventoinha do radiador #1'), via('D4', 1, 'BTS #1 · R_EN e L_EN juntos'), via('D5', 1, 'BTS #1 · RPWM (frio)'),
@@ -271,25 +271,21 @@ export const COMPONENTES = [
 
 
   {
-    id: 'PI-2', nome: 'PI-2 — placa dos 4 sensores INA219', trilho: 3,
-    x: 347, largura: 70, altura: 62, cor: '#ae3ec9',
-    nota: 'Caixa DIN de 4 módulos com os 4 INA219 empilhados 2 × 2. Eles medem a '
-        + 'corrente de cada posição de ensaio — é como o sistema descobre que uma '
-        + 'placa morreu.',
+    id: 'PI-2', nome: 'PI-2 — placa dos 2 sensores INA219', trilho: 3,
+    x: 347, largura: 35, altura: 62, cor: '#ae3ec9',
+    nota: 'Caixa DIN de 2 módulos com os 2 INA219 empilhados. Cada um mede a corrente '
+        + 'de UMA posição de ensaio — é assim que o sistema sabe QUAL dispositivo '
+        + 'morreu, e não apenas que algo morreu.',
     grupos: [
-      { ref: 'J1', lado: 'cima', legenda: 'Entrada — 24 V fusíveis (5)', pinos: [
+      { ref: 'J1', lado: 'cima', legenda: 'Entrada — vem dos fusíveis (3)', pinos: [
         { nome: 'IN1', usa: true, para: 'F-P1 — posição 1' },
         { nome: 'IN2', usa: true, para: 'F-P2 — posição 2' },
-        { nome: 'IN3', usa: true, para: 'F-P3 — posição 3' },
-        { nome: 'IN4', usa: true, para: 'F-P4 — posição 4' },
         { nome: '0V', usa: true, para: 'BD-0V' },
       ]},
-      { ref: 'J2', lado: 'baixo', legenda: 'Saída — vai para a câmara (5)', pinos: [
+      { ref: 'J2', lado: 'baixo', legenda: 'Saída — vai para a câmara (3)', pinos: [
         { nome: 'P1', usa: true, para: 'DUT da posição 1' },
         { nome: 'P2', usa: true, para: 'DUT da posição 2' },
-        { nome: 'P3', usa: true, para: 'DUT da posição 3' },
-        { nome: 'P4', usa: true, para: 'DUT da posição 4' },
-        { nome: '0V', usa: true, para: 'retorno comum dos 4 DUTs' },
+        { nome: '0V', usa: true, para: 'retorno comum dos 2 DUTs' },
       ]},
       { ref: 'I2C', lado: 'direita', legenda: 'Barramento I²C (4)', pinos: [
         { nome: 'VCC', usa: true, para: 'BD-5V saída 8' },
@@ -299,12 +295,14 @@ export const COMPONENTES = [
       ]},
     ],
     avisos: [
-      '⭐ Os 4 INA219 usam endereços I²C diferentes (0x40, 0x41, 0x44, 0x45), '
-      + 'escolhidos por jumper em cada módulo. É o que permite os quatro conviverem '
-      + 'no mesmo par de fios.',
-      '⚠️ Configure o endereço de cada um ANTES de fechar a caixa — depois de montado '
-      + 'não dá para alcançar os jumpers.',
-      '🔌 Só 5 fios entram na câmara: os 4 positivos das posições e um retorno comum.',
+      '⚠️ SÃO DOIS MÓDULOS, NÃO UM. Cada INA219 mede UMA linha. Com um só você saberia '
+      + 'que a corrente total caiu, mas não QUAL dos dois dispositivos parou — e é '
+      + 'justamente essa a pergunta que o projeto existe para responder.',
+      '⭐ Endereços I²C 0x40 e 0x41, escolhidos por jumper em cada módulo. Sobram o '
+      + '0x44 e o 0x45 caso o ensaio volte a ter 4 posições.',
+      '⚠️ Configure o endereço ANTES de fechar a caixa — depois não dá para alcançar '
+      + 'os jumpers.',
+      '🔌 Só 3 fios entram na câmara: os 2 positivos e um retorno comum.',
     ],
   },
   {
@@ -358,29 +356,26 @@ export const COMPONENTES = [
     ],
   },
   {
-    id: 'F-P', nome: 'F-P1..F-P4 — fusíveis das posições de ensaio', trilho: 2,
-    x: 303, largura: 72, altura: 46, cor: '#fab005',
-    nota: '2 porta-fusíveis de 2 vias COM INTERRUPTOR. O interruptor é proposital: é '
+    id: 'F-P', nome: 'F-P1 e F-P2 — fusíveis das posições de ensaio', trilho: 2,
+    x: 303, largura: 36, altura: 46, cor: '#fab005',
+    nota: '1 porta-fusível de 2 vias COM INTERRUPTOR. O interruptor é proposital: é '
         + 'com ele que você desliga um dispositivo na frente da banca e mostra o '
         + 'sistema detectando a falha.',
     grupos: [
-      { ref: 'IN', lado: 'cima', legenda: 'Entrada comum (2)', pinos: [
+      { ref: 'IN', lado: 'cima', legenda: 'Entrada comum (1)', pinos: [
         { nome: 'V+', usa: true, para: 'BD-24V saída 4' },
-        { nome: 'V+', usa: true, para: 'ponte para o 2º porta-fusível' },
       ]},
-      { ref: 'OUT', lado: 'baixo', legenda: 'Saídas fusíveis 500 mA (4)', pinos: [
+      { ref: 'OUT', lado: 'baixo', legenda: 'Saídas com fusível de 500 mA (2)', pinos: [
         { nome: 'F-P1', usa: true, para: 'PI-2 · IN1' },
         { nome: 'F-P2', usa: true, para: 'PI-2 · IN2' },
-        { nome: 'F-P3', usa: true, para: 'PI-2 · IN3' },
-        { nome: 'F-P4', usa: true, para: 'PI-2 · IN4' },
       ]},
     ],
     avisos: [
       '⭐ O INTERRUPTOR É A DEMONSTRAÇÃO. Sem ele você teria que arrancar um fio para '
-      + 'simular a falha de um dispositivo. Com ele, basta desligar a chave: o INA219 '
-      + 'vê a corrente cair a zero e o sistema acusa em segundos.',
-      '📌 Fusível de 500 mA. O DUT consome ~127 mA, então o fusível é quase 4× a carga '
-      + '— ele existe para curto, não para sobrecarga leve.',
+      + 'simular a falha. Com ele, basta desligar a chave: o INA219 vê a corrente cair '
+      + 'a zero, o outro dispositivo continua normal, e o sistema aponta QUAL parou.',
+      '📌 Fusível de 500 mA para uma carga de ~130 mA. Ele existe para curto, não para '
+      + 'sobrecarga leve.',
     ],
   },
 
@@ -417,7 +412,7 @@ export const COMPONENTES = [
       { ref: 'OUT', lado: 'baixo', legenda: 'Saídas (6)', pinos: [
         via('O1', 1, 'DNLCB30 · VIN'), via('O2', 1, 'cadeia de comando · S0'),
         via('O3', 1, 'positivo comum dos 4 sinaleiros'),
-        via('O4', 1, 'F-P1..F-P4 — entrada dos porta-fusíveis'),
+        via('O4', 1, 'F-P1/F-P2 — entrada do porta-fusível'),
         via('O5', 1, 'PI-1 J1-10 — COM do ULN2803'), via('O6'),
       ]},
     ],
@@ -432,7 +427,7 @@ export const COMPONENTES = [
         via('O3', 1, 'RTC DS3231'), via('O4', 1, 'BTS #1 · VCC'),
         via('O5', 1, 'BTS #2 · VCC'), via('O6', 1, 'PI-1 J1-4'),
         via('O7', 1, '4 LEDs da maquete'),
-        via('O8', 1, 'PI-2 — VCC dos 4 INA219'),
+        via('O8', 1, 'PI-2 — VCC dos 2 INA219'),
         via('O9', 1, 'MV-1 · VCC do lado do comando'), via('O10'),
       ]},
     ],
@@ -454,7 +449,7 @@ export const COMPONENTES = [
         via('R13', 1, 'MV-1 · GND da carga (lado VIN)'),
         via('R14', 1, 'MV-1 · GND do comando (lado isolado)'),
         via('R15'), via('R16', 1, 'LEDs da maquete −'),
-        via('R17', 1, 'retorno das 4 posições de ensaio'),
+        via('R17', 1, 'retorno das 2 posições de ensaio'),
         via('R18', 1, 'seletora LOCAL/REMOTO — contato para o 0 V'),
         via('R19'), via('R20'),
       ]},

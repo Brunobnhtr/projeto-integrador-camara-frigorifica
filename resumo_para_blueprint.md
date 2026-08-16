@@ -39,7 +39,7 @@ Uma empresa faz **ensaios térmicos** em placas eletrônicas. As placas ficam de
 ### O que o sistema precisa fazer
 
 1. Controlar a temperatura de uma câmara entre **5 °C e 60 °C**, com ciclos alternados de frio e calor
-2. Manter até **4 dispositivos energizados** dentro da câmara durante o ensaio — cada um alimentado com **24 V contínuos, ~130 mA**, com fusível individual de 500 mA. ⚠️ **Não há 127 V dentro da câmara nem nos dispositivos**
+2. Manter **2 dispositivos energizados** dentro da câmara durante o ensaio — cada um alimentado com **24 V contínuos, ~130 mA**, com fusível individual de 500 mA. ⚠️ **Não há 127 V dentro da câmara nem nos dispositivos**
 3. **Detectar, na hora, se um deles parar de funcionar** — e saber qual
 4. Registrar temperatura, umidade e o estado de cada dispositivo, com data e hora
 5. Permitir acompanhamento remoto e comando à distância
@@ -105,7 +105,7 @@ Esta é a parte central do projeto, e vale explicar o raciocínio:
 
 > **Proteção detecta excesso, nunca ausência.** Nenhum fusível ou disjuntor percebe um dispositivo que simplesmente parou — do ponto de vista elétrico, não consumir não é defeito.
 
-A solução: **um sensor de corrente INA219 por posição de ensaio**, medindo o tempo todo. Se a corrente cai a zero sem que ninguém tenha mandado desligar, aquele dispositivo morreu. Os 4 INA219 têm endereços I²C diferentes (0x40, 0x41, 0x44, 0x45) e convivem no mesmo par de fios.
+A solução: **um sensor de corrente INA219 por posição de ensaio** (são 2), medindo o tempo todo. Se a corrente cai a zero sem que ninguém tenha mandado desligar, aquele dispositivo morreu. Os 2 INA219 têm endereços I²C diferentes (0x40 e 0x41) e convivem no mesmo par de fios.
 
 Cada posição tem também um **porta-fusível com interruptor**, para simular a falha ao vivo durante a apresentação.
 
@@ -162,7 +162,7 @@ temperature it failed.
 
 REQUIREMENTS
 1. Control chamber temperature from 5 C to 60 C, alternating cool/heat cycles
-2. Keep up to 4 devices powered inside the chamber during the test
+2. Keep 2 devices powered inside the chamber during the test
 3. Detect immediately when one of them stops working, and identify WHICH one
 4. Log temperature, humidity and each device's state with timestamp
 5. Remote monitoring and remote commands
@@ -173,7 +173,7 @@ CONSTRAINTS
   New hardware must work alongside it.
 - Mains input is 127 V AC
 - Everything after the power supply must be touch-safe (24 V or less)
-- The 4 devices under test are powered with 24 V DC, ~130 mA each, with
+- The 2 devices under test are powered with 24 V DC, ~130 mA each, with
   an individual 500 mA fuse. There is NO mains voltage inside the chamber.
 - Must be built on DIN rail like a real industrial panel, assembled by students
 - Low budget; parts sourced from AliExpress

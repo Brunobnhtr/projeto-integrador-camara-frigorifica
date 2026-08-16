@@ -124,7 +124,7 @@ Se cada posição tem a sua corrente medida o tempo todo, o sistema sabe na hora
                                       └──────────┘
 ```
 
-**Na maquete são 4 posições**, não 50 — número pequeno o bastante para caber e caber no orçamento, grande o bastante para demonstrar o problema real de *"qual delas falhou?"*.
+**Na maquete são 2 posições**, não 50 — número pequeno o bastante para caber e caber no orçamento, grande o bastante para demonstrar o problema real de *"qual delas falhou?"*.
 
 | O que cada posição tem | Para quê |
 |---|---|

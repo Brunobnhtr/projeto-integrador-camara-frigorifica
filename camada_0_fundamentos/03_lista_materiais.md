@@ -396,7 +396,7 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 | **Canaleta perfurada 30 × 30 mm** | 2 m | Com tampa — organização profissional dos cabos | |
 | **Bloco de distribuição DIN** — 1 entrada 4 mm² + **4 saídas** | 1 | **BD-POT** — 24 V de potência comutados pelo KA2 → BTS #1, BTS #2, medição do D25 e 1 reserva. ⚠️ Cai com a emergência | |
 | **Bloco de distribuição DIN** — 1 entrada 2,5 mm² + **4 saídas** | 1 | **BD-AUX** — 12 V auxiliar (do T3): cooler dos BTS + 2 coolers das Peltier + 1 reserva | |
-| **Bloco de distribuição DIN** — 1 entrada 2,5 mm² + **6 saídas** ⬆ | 1 | **BD-24V** — 24 V permanentes. ⚠️ **Subiu de 4 para 6:** são **5 cargas** (DNLCB30/ESP32, cadeia de comando, positivo comum dos sinaleiros, COM do ULN2803 na PI-1, e a alimentação das 4 posições de ensaio) + 1 reserva. **Não confundir com o BD-POT** — este não cai com a emergência | |
+| **Bloco de distribuição DIN** — 1 entrada 2,5 mm² + **6 saídas** ⬆ | 1 | **BD-24V** — 24 V permanentes. ⚠️ **Subiu de 4 para 6:** são **5 cargas** (DNLCB30/ESP32, cadeia de comando, positivo comum dos sinaleiros, COM do ULN2803 na PI-1, e a alimentação das 2 posições de ensaio) + 1 reserva. **Não confundir com o BD-POT** — este não cai com a emergência | |
 | **Bloco de distribuição DIN** — 1 entrada 2,5 mm² + **8 saídas** ⬆ | 1 | **BD-5V** — ⚠️ **Subiu de 6 para 8:** são **7 cargas** (Arduino, tela ES3C28P, RTC, lógica do BTS #1, lógica do BTS #2, placa PI-1 e os LEDs da maquete) + 1 reserva | |
 | ⭐ **Barra de distribuição / régua com pente — mín. 20 pontos** ⬆⬆ | 1 | **BD-0V** — o **star ground** do projeto. ⚠️ **Um bloco de 8 saídas NÃO serve:** aqui convergem **4 entradas + ~16 retornos**. Use uma **barra de neutro/terra de 16–20 furos** em suporte DIN, ou **dois blocos de 1×8 interligados** por ponte de 4 mm². Entrada de **10 mm²** | |
 
@@ -757,8 +757,8 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 > ⚠️ **Confira a serigrafia do borne azul de 3 vias** antes de ligar: a ordem `V+ / L− / GND` varia entre fabricantes.
 | 🔄 **DS18B20 à prova d'água** | 1 | **Mudou de lugar:** saiu de dentro da câmara e foi para o **dissipador do lado quente**. É ele que diz quando a pós-ventilação pode parar | |
 | 🔄 **AM2315C** | 1 | **Passou a ser o único sensor de dentro da câmara.** Mede temperatura **e umidade** no mesmo encapsulamento, e já estava no barramento I²C | |
-| ⭐ **PI-2 — caixa DIN 4 módulos** para os 4 INA219 | 1 | Os 4 sensores empilhados 2 × 2 numa caixa modular. Sem ela, ficariam pendurados no chicote | |
-| ⭐ **Porta-fusível DIN 2 vias COM INTERRUPTOR** | 2 | Para as 4 posições de ensaio, com fusível tubular de 500 mA. ⭐ **O interruptor é a demonstração:** desligando a chave na frente da banca, o INA219 vê a corrente cair a zero e o sistema acusa a falha em segundos | |
+| ⭐ **PI-2 — caixa DIN 4 módulos** para os 2 INA219 | 1 | Os 4 sensores empilhados 2 × 2 numa caixa modular. Sem ela, ficariam pendurados no chicote | |
+| ⭐ **Porta-fusível DIN 2 vias COM INTERRUPTOR** | 2 | Para as 2 posições de ensaio, com fusível tubular de 500 mA. ⭐ **O interruptor é a demonstração:** desligando a chave na frente da banca, o INA219 vê a corrente cair a zero e o sistema acusa a falha em segundos | |
 | **Aquecedor PTC cerâmico 24 V / 80 W** | 1 | Com aletas e ventilador, **versão de 24 V** (~3,3 A) para ligar direto no barramento. ⚠️ **60 W não existe no mercado brasileiro** — as versões reais são **80 W, 100 W e 150 W**. Use a de **80 W**: fica bem equilibrada contra os ~60 W de capacidade de refrigeração das 2 Peltier, e mantém a corrente em 3,3 A (metade da Peltier). A de 150 W passaria a ser o pior caso do ramal (6,25 A) e desequilibra o controle. Buscar `aquecedor ptc 24v ventilador` | |
 | ⚠️ **Ventoinha de reposição do RADIADOR — 3 fios** | 2 | ⭐ **A troca mais importante do kit.** As originais são de **2 fios** e não informam rotação. Têm que ser **as do radiador (lado quente)** — se elas param, a Peltier queima em < 1 min. As dos **blocos frios** podem continuar de 2 fios. Medir o tamanho no kit antes de comprar | |
 | Pasta térmica | 1 | Seringa 5 g. **O kit já vem com a junta térmica montada** — a pasta é só para retrabalho, se você abrir para trocar uma pastilha | |
@@ -833,8 +833,8 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 
 | Item | Qtd | Especificação | Link |
 |---|---:|---|---|
-| **Sensor INA219** (módulo I²C) | 4 | Mede tensão e corrente, ±3,2 A. ⚠️ **4 endereços selecionáveis** (0x40/0x41/0x44/0x45) — um por posição, todos no mesmo par de fios | |
-| Porta-fusível mini automotivo DIN | 4 | **F-P1 a F-P4** — proteção individual de cada posição de ensaio | |
+| **Sensor INA219** (módulo I²C) | **2** ⬇ | Mede tensão e corrente, ±3,2 A. ⚠️ **4 endereços selecionáveis** (0x40/0x41/0x44/0x45) — um por posição, todos no mesmo par de fios | |
+| **Porta-fusível DIN 2 vias COM INTERRUPTOR** | 1 | **F-P1 e F-P2** — proteção individual de cada posição, com fusível tubular de 500 mA. ⭐ O interruptor é o que permite simular a falha ao vivo | |
 | Fusível mini automotivo 500 mA | 8 | 4 usos + 4 reservas | |
 | Placa ilhada pequena | 4 | ~30 × 40 mm — corpo de cada placa simuladora de dispositivo | |
 | Resistor 220 Ω / **5 W** | 4 | Carga térmica de cada simulador (~3 W). ⚠️ **5 W**, não 1/4 W | |
