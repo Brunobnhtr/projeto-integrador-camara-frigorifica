@@ -347,6 +347,13 @@ export default function VistaPainelInterno() {
                 <div style={{ fontSize: 12, color: '#495057', lineHeight: 1.55,
                               marginBottom: 12 }}>{sel.nota}</div>
               )}
+              {sel.interno && (
+                <div style={{ fontSize: 11.5, color: '#5f3dc4', background: '#f3f0ff',
+                              border: '1px solid #d0bfff', borderRadius: 6,
+                              padding: '9px 11px', marginBottom: 12, lineHeight: 1.5 }}>
+                  🔧 <b>Soldado dentro da placa</b> — não tem borne:<br />{sel.interno}
+                </div>
+              )}
               {sel.grupos.map(g => (
                 <div key={g.ref} style={{ marginBottom: 13 }}>
                   <div style={{ fontSize: 11, color: '#868e96', marginBottom: 5 }}>

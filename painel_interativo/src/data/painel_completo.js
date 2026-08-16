@@ -274,51 +274,51 @@ export const COMPONENTES = [
 
 
   {
-    id: 'PI-2', nome: 'PI-2 — multiplexador de corrente (16 canais)', trilho: 3,
+    id: 'PI-2', nome: 'PI-2 — medição de corrente das posições', trilho: 3,
     x: 347, largura: 70, altura: 62, cor: '#ae3ec9',
-    nota: '⭐ É a MESMA arquitetura que a empresa vai usar com 50 posições, montada '
-        + 'com 2. Um CD74HC4067 varre até 16 canais, cada um com seu resistor shunt, '
-        + 'e o Arduino lê tudo por UMA entrada analógica.',
+    nota: 'Caixa DIN de 4 módulos. Dentro dela ficam soldados o módulo multiplexador, '
+        + 'os resistores shunt e o INA219 de referência. Os bornes abaixo são os FIOS '
+        + 'que chegam e saem da placa — não os pinos dos componentes.',
+    interno: 'CD74HC4067 (módulo) · 2 × shunt 4,7 Ω 1% · 1 × INA219 (referência) · '
+           + 'o pino EN do mux vai soldado ao 0 V dentro da placa',
     grupos: [
-      { ref: 'J1', lado: 'cima', legenda: 'Entrada — vem dos fusíveis (4)', pinos: [
-        { nome: 'IN1', usa: true, para: 'F-P1 — posição 1' },
-        { nome: 'IN2', usa: true, para: 'F-P2 — posição 2' },
-        { nome: 'IN3' }, { nome: 'IN4' },
+      { ref: 'J1', lado: 'cima', legenda: 'RETORNOS que voltam da câmara (4 vias)', pinos: [
+        { nome: 'RET-1', usa: true, para: 'volta do DUT da posição 1 — passa pelo shunt aqui dentro' },
+        { nome: 'RET-2', usa: true, para: 'volta do DUT da posição 2' },
+        { nome: 'RET-3' }, { nome: 'RET-4' },
       ]},
-      { ref: 'J2', lado: 'baixo', legenda: 'Saída — vai para a câmara (3)', pinos: [
-        { nome: 'P1', usa: true, para: 'DUT da posição 1' },
-        { nome: 'P2', usa: true, para: 'DUT da posição 2' },
-        { nome: '0V', usa: true, para: 'BD-0V — retorno depois dos shunts' },
+      { ref: 'J2', lado: 'baixo', legenda: 'Painel — alimentação e retorno (2 vias)', pinos: [
+        { nome: '0V', usa: true, para: 'BD-0V — o comum, DEPOIS dos shunts' },
+        { nome: '+5V', usa: true, para: 'BD-5V saída 8 — alimenta o mux e o INA219' },
       ]},
-      { ref: 'CTRL', lado: 'direita', legenda: 'Comando e leitura (10)', pinos: [
-        { nome: '+5V', usa: true, para: 'BD-5V saída 8' },
-        { nome: 'GND', usa: true, para: 'BD-0V' },
+      { ref: 'J3', lado: 'direita', legenda: 'Sinais para o Arduino (7 vias)', pinos: [
         { nome: 'S0', usa: true, para: 'Mega D31 — seleção de canal, bit 0' },
         { nome: 'S1', usa: true, para: 'Mega D32 — bit 1' },
         { nome: 'S2', usa: true, para: 'Mega D33 — bit 2' },
         { nome: 'S3', usa: true, para: 'Mega D34 — bit 3' },
-        { nome: 'SIG', usa: true, para: 'Mega A2 — ⭐ a ÚNICA entrada analógica dos 16 canais' },
-        { nome: 'EN', usa: true, para: 'BD-0V — o mux só conduz com o EN em nível baixo' },
+        { nome: 'SIG', usa: true, para: 'Mega A2 — a leitura dos 16 canais sai por aqui' },
         { nome: 'SDA', usa: true, para: 'Mega D20 — só do INA219 de referência' },
         { nome: 'SCL', usa: true, para: 'Mega D21' },
       ]},
     ],
     avisos: [
-      '⭐ POR QUE O PROTÓTIPO USA MUX E NÃO 2 INA219. O desafio é apresentar a solução '
-      + 'para a EMPRESA, e ela não vai comprar 50 INA219. Testar uma arquitetura na '
-      + 'bancada e entregar outra na fábrica não valida nada — o protótipo tem que '
-      + 'provar o que vai ser implantado.',
-      '🔬 UM INA219 FICA COMO REFERÊNCIA, medindo a mesma posição 1 que o mux mede. É '
-      + 'assim que se prova que o mux funciona: as duas leituras têm que bater. Sem um '
-      + 'instrumento de referência, "funcionou" é opinião.',
-      '📐 Shunt de 4,7 Ω · 1% · 1/4 W por canal. Com 127 mA dá 0,60 V, que o ADC do '
-      + 'Arduino lê direto — 123 contagens, ~1 mA de resolução. Não precisa de '
-      + 'amplificador, e a impedância baixa ainda faz o mux estabilizar rápido.',
-      '🎁 14 dos 16 canais ficam livres. Acrescentar posição é acrescentar shunt e fio '
-      + '— nenhuma placa nova, nenhum pino novo no Arduino.',
-      '⚠️ O shunt fica no RETORNO (lado baixo). Isso levanta o negativo de cada DUT em '
-      + '0,6 V. Para as placas simuladoras é irrelevante; se um dia entrar um DUT com '
-      + 'comunicação, confira se ele tolera essa referência deslocada.',
+      '🔥 O QUE CHEGA AQUI É O RETORNO, NÃO O POSITIVO. O shunt fica no lado de baixo '
+      + '(entre o retorno do DUT e o 0 V), porque só assim a tensão sobre ele fica '
+      + 'referenciada ao 0 V e o mux consegue lê-la. O positivo vai do fusível direto '
+      + 'para a câmara e NUNCA passa por esta placa.',
+      '🔌 SÃO 4 FIOS PARA A CÂMARA, não 3: 2 positivos (dos fusíveis) e 2 retornos '
+      + 'INDIVIDUAIS (para cá). Os retornos não podem ser comuns — se fossem, as duas '
+      + 'correntes se somariam antes do shunt e não daria para separar quem é quem.',
+      '📌 O pino EN do multiplexador NÃO tem borne. Ele vai soldado ao 0 V dentro da '
+      + 'placa, porque é ligação interna e permanente — o datasheet confirma que o '
+      + 'enable é ativo em nível BAIXO ("when high, disables all switches").',
+      '📐 O mux tem 70 Ω de resistência quando ligado. Isso não atrapalha: a entrada '
+      + 'analógica do Arduino praticamente não puxa corrente, então não há queda sobre '
+      + 'esses 70 Ω. O manual do ATmega pede fonte abaixo de 10 kΩ — estamos 140 vezes '
+      + 'abaixo disso.',
+      '🔬 O INA219 de referência fica em série com o retorno da posição 1, ANTES do '
+      + 'shunt dela. Os dois medem a mesma corrente, e é assim que se prova que o mux '
+      + 'está certo.',
     ],
   },
   {
@@ -382,8 +382,8 @@ export const COMPONENTES = [
         { nome: 'V+', usa: true, para: 'BD-24V saída 4' },
       ]},
       { ref: 'OUT', lado: 'baixo', legenda: 'Saídas com fusível de 500 mA (2)', pinos: [
-        { nome: 'F-P1', usa: true, para: 'PI-2 · IN1' },
-        { nome: 'F-P2', usa: true, para: 'PI-2 · IN2' },
+        { nome: 'F-P1', usa: true, para: 'DUT da posição 1, na câmara — direto, sem passar pela PI-2' },
+        { nome: 'F-P2', usa: true, para: 'DUT da posição 2, na câmara' },
       ]},
     ],
     avisos: [
@@ -465,7 +465,7 @@ export const COMPONENTES = [
         via('R13', 1, 'MV-1 · GND da carga (lado VIN)'),
         via('R14', 1, 'MV-1 · GND do comando (lado isolado)'),
         via('R15'), via('R16', 1, 'LEDs da maquete −'),
-        via('R17', 1, 'retorno das 2 posições de ensaio'),
+        via('R17', 1, 'PI-2 · 0V — retorno das posições, depois dos shunts'),
         via('R18', 1, 'seletora LOCAL/REMOTO — contato para o 0 V'),
         via('R19'), via('R20'),
       ]},

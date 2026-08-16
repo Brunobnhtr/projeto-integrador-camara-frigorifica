@@ -69,6 +69,30 @@ Um multiplexador é uma **chave rotativa eletrônica**: ele conecta **um** de 16
                    escolhem o canal (0000 a 1111)
 ```
 
+### ⚠️ O shunt fica no RETORNO — e isso muda a fiação
+
+Antes de tudo, é preciso saber **onde** o resistor de medição entra no circuito, porque isso decide quantos fios vão para a câmara.
+
+```
+   BD-24V ──[fusível]──────────────────────────────► DUT 1 ──┐
+                        (o positivo NÃO passa                │
+                         pela placa de medição)              │
+                                                             │
+   BD-0V ◄──[shunt 4,7 Ω]◄─────────────────────────── retorno┘
+              ▲
+         é aqui que se mede
+```
+
+**Por que embaixo e não em cima:** a tensão sobre o shunt precisa estar referenciada ao 0 V para o multiplexador e o ADC conseguirem lê-la. Se o shunt ficasse no positivo, os 0,6 V estariam empoleirados sobre 24 V — e aí seria preciso um amplificador diferencial por canal, que é justamente o custo que se quer evitar.
+
+**Consequência prática, e ela importa:**
+
+> 🔌 **São 4 fios para a câmara, não 3.** Dois positivos, que vão do fusível direto para os dispositivos, e **dois retornos individuais**, que voltam para a placa de medição.
+
+Os retornos **não podem ser comuns**. Se as duas voltas se juntassem antes do shunt, as correntes se somariam e não haveria como separar quem é quem — que é exatamente o que o projeto precisa saber.
+
+📌 **Isso escala junto:** com 50 posições são 100 fios até as câmaras. É mais um motivo para o suporte instrumentado ficar **junto dos dispositivos** e não no painel: o par de cada posição fica curto, e o que atravessa a fábrica é só o barramento digital.
+
 ### ⭐ Como o sistema sabe QUAL parou
 
 Esta é a dúvida natural: se os 16 canais entram numa entrada só, como distinguir um do outro?
