@@ -109,6 +109,29 @@ if (zeros.length !== 1)
 else console.log(`  . um único condutor de 0 V (${zeros[0].mm2} mm²), como manda a `
   + 'arquitetura de terra em estrela');
 
+/* ── ⭐ NINGUÉM PENDURA NO 0 V DE OUTRO ──────────────────────────────
+   Cada retorno tem que ter o SEU ponto na barra. Dois fios no mesmo
+   parafuso viram impedância comum: a corrente de um cria queda que o
+   outro enxerga como deslocamento do seu 0 V. Com 6 A dos BTS num
+   rabicho de 20 cm em 0,5 mm² dá 42 mV — e 42 mV sobre o shunt de 0,83 V
+   da posição 1 são 5% de erro que aparecem e somem no ritmo do PWM. */
+console.log('\n=== um ponto do 0 V por fio ===');
+const noPonto = new Map();
+for (const f of FIOS) {
+  if (f.para.comp !== 'BD-0V') continue;
+  const k = f.para.via;
+  if (noPonto.has(k))
+    erros.push(`${f.n} e ${noPonto.get(k)} vão os dois para o BD-0V.${k} — `
+      + 'cada retorno precisa do SEU parafuso, senão um enxerga a queda do outro');
+  else noPonto.set(k, f.n);
+}
+const bd0 = COMPONENTES.find(c => c.id === 'BD-0V');
+const totPontos = bd0.grupos.flatMap(g => g.pinos).filter(p => /^R\d+$/.test(p.nome)).length;
+console.log(`  . ${noPonto.size} retornos declarados em pontos distintos, `
+  + `de ${totPontos} pontos na barra`);
+if (noPonto.size > totPontos)
+  erros.push(`a barra tem ${totPontos} pontos e já chegam ${noPonto.size} retornos`);
+
 /* ── as rotas, em texto, para conferir na bancada ───────────────────── */
 console.log('\n=== as rotas ===');
 const nomeDe = a => a.prensa ?? `${a.comp}.${a.via}`;

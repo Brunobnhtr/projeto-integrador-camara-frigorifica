@@ -33,7 +33,27 @@ import {
    de verdade no componente. Tudo em milímetros.                        */
 
 const PASSO_MIN = 4.6;   // mm entre centros de terminais
-const LADO_T = 4.0;      // mm do quadradinho — grande o bastante para o ID caber
+const LADO_T = 4.0;      // mm do lado estreito do terminal
+const COMP_T = 11.0;     // mm do lado comprido — é nele que a legenda cabe
+
+/* ⭐ A geometria do terminal em UM lugar só. O desenho do retângulo e o
+   fim do fio precisam dar exatamente o mesmo ponto — quando cada um
+   calculava o seu, o fio parava a milímetros do borne. */
+function geoTerminal(c, g, p) {
+  const vert = g.lado === 'esquerda' || g.lado === 'direita';
+  const curto = Math.min(LADO_T, p.passo - 0.6);
+  const teto = (vert ? c.largura : c.altura) / 2 - 2;
+  const comp = Math.max(curto, Math.min(COMP_T, teto));
+  const dentro = g.lado === 'cima' ? 1 : g.lado === 'baixo' ? -1 : 0;
+  const dx = vert ? (g.lado === 'esquerda' ? comp / 2 - curto / 2 : curto / 2 - comp / 2) : 0;
+  return {
+    vert, curto, comp, dentro,
+    cx: p.x + dx,
+    cy: p.y + dentro * (comp - curto) / 2,
+    rw: vert ? comp : curto,
+    rh: vert ? curto : comp,
+  };
+}
 
 /* Distribui os terminais de um grupo ao longo da borda que ele ocupa. */
 function posicoes(c, g) {
@@ -123,7 +143,14 @@ export default function VistaPainelInterno() {
       const g = c.grupos.find(gg => gg.pinos.some(pp => pp.nome === alvo.via));
       const pino = g && posicoes(c, g).find(pp => pp.nome === alvo.via);
       void i;
-      return { p: pino ? [pino.x, pino.y] : null };
+      if (!pino) return { p: null };
+      const t = geoTerminal(c, g, pino);
+      /* encosta na PONTA do terminal virada para fora do componente,
+         que é onde o parafuso fica */
+      const fora = t.dentro
+        ? [t.cx, t.cy - t.dentro * t.comp / 2]
+        : [t.cx + (g.lado === 'esquerda' ? -t.comp / 2 : t.comp / 2), t.cy];
+      return { p: fora };
     };
 
     return FIOS.map((f, idx) => {
@@ -252,12 +279,12 @@ export default function VistaPainelInterno() {
               <g key={t.n} onClick={() => setFio(fio === t.n ? null : t.n)}
                  style={{ cursor: 'pointer' }} opacity={on ? 1 : 0.12}>
                 <polyline points={t.pts.map(p => p.join(',')).join(' ')} fill="none"
-                          stroke="transparent" strokeWidth={9} />
+                          stroke="transparent" strokeWidth={6} />
                 <polyline points={t.pts.map(p => p.join(',')).join(' ')} fill="none"
-                          stroke="#fff" strokeWidth={fio === t.n ? 6.5 : 4.6}
+                          stroke="#fff" strokeWidth={fio === t.n ? 3.4 : 2.2}
                           strokeLinejoin="round" strokeLinecap="round" opacity={0.85} />
                 <polyline points={t.pts.map(p => p.join(',')).join(' ')} fill="none"
-                          stroke={t.cor} strokeWidth={fio === t.n ? 4.2 : 2.6}
+                          stroke={t.cor} strokeWidth={fio === t.n ? 2.0 : 1.1}
                           strokeLinejoin="round" strokeLinecap="round" />
                 {t.prensa && (<>
                   <circle cx={t.prensa.x} cy={CAIXA.altura + 2} r={6.5} fill="#495057" />
@@ -268,9 +295,9 @@ export default function VistaPainelInterno() {
                   const m = t.pts[Math.floor(t.pts.length / 2)];
                   return (
                     <g>
-                      <rect x={m[0] - 8} y={m[1] - 5} width={16} height={10} rx={2}
+                      <rect x={m[0] - 6.5} y={m[1] - 4} width={13} height={8} rx={1.5}
                             fill="#fff" stroke={t.cor} strokeWidth={1} />
-                      <text x={m[0]} y={m[1] + 3.4} textAnchor="middle" fontSize={6.5}
+                      <text x={m[0]} y={m[1] + 2.7} textAnchor="middle" fontSize={5.4}
                             fontWeight="700" fill={t.cor}>{t.n}</text>
                     </g>
                   );
@@ -414,30 +441,27 @@ export default function VistaPainelInterno() {
                   /* O terminal é um RETÂNGULO com o lado comprido entrando na
                      placa — igual à faixa de identificação de um borne real.
                      Assim o ID cabe em pé mesmo com passo apertado. */
-                  const vert = g.lado === 'esquerda' || g.lado === 'direita';
-                  const estreito = p.passo < 4.4;
-                  const curto = Math.min(LADO_T, p.passo - 0.5);
-                  const comp = estreito ? 9.5 : curto;    // o lado que entra na placa
-                  const rw = vert ? comp : curto;
-                  const rh = vert ? curto : comp;
-                  const dentro = g.lado === 'cima' ? 1 : g.lado === 'baixo' ? -1 : 0;
-                  const dx = vert ? (g.lado === 'esquerda' ? comp / 2 - curto / 2 : curto / 2 - comp / 2) : 0;
-                  const rot = estreito && !vert ? (dentro > 0 ? 90 : -90) : 0;
+                  const t = geoTerminal(c, g, p);
+                  const { vert, curto, comp, dentro, rw, rh } = t;
+                  /* a legenda corre ao longo do lado COMPRIDO, sempre —
+                     é o único jeito de "J1-11" ou "24V-SRV" caberem dentro */
+                  const rot = vert ? 0 : (dentro > 0 ? 90 : -90);
                   return (
                     <g key={k} onClick={e => { e.stopPropagation(); setSel(c); setPino(k); }}
                        style={{ cursor: 'pointer' }}>
-                      <rect x={p.x + dx - rw / 2} y={p.y + dentro * (comp - curto) / 2 - rh / 2}
+                      <rect x={t.cx - rw / 2} y={t.cy - rh / 2}
                             width={rw} height={rh} rx={0.4}
                             fill={on ? '#ffd43b' : (p.usa ? '#e9c46a' : '#5c6268')}
                             stroke={on ? '#e8590c' : '#1a1d20'} strokeWidth={on ? 0.7 : 0.25} />
                       {(() => {
-                        const cx = p.x + dx;
-                        const cy = p.y + dentro * (comp - curto) / 2;
+                        const cx = t.cx, cy = t.cy;
                         const txt = p.nome.replace(/^(GPIO|GPI)\s*/, '').replace(/ ·.*$/, '');
                         return (
-                          <text x={cx} y={cy + (rot ? 0 : curto * 0.32)}
-                                textAnchor="middle" dominantBaseline={rot ? 'central' : undefined}
-                                fontSize={estreito ? 2.6 : curto * 0.58} fontWeight="700"
+                          <text x={cx} y={cy} textAnchor="middle"
+                                dominantBaseline="central"
+                                fontSize={Math.min(2.7, curto * 0.72,
+                                                   comp / (txt.length * 0.62))}
+                                fontWeight="700"
                                 fill={p.usa || on ? '#1a1d20' : '#9aa0a6'}
                                 transform={rot ? `rotate(${rot} ${cx} ${cy})` : undefined}
                                 style={{ pointerEvents: 'none' }}>

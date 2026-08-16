@@ -437,7 +437,59 @@ Com isso o firmware **sabe** quando a energia foi cortada por hardware — e reg
 
 ---
 
-## 31.6 Aterramento
+## 31.6 ⚡ Pode pendurar um 0 V no outro? — a conta que decide
+
+**Depende de duas coisas: quanta corrente passa e se aquele fio é referência de alguma medição.** E nas duas o projeto tem casos dos dois tipos.
+
+### A conta
+
+Fio de cobre de **0,5 mm²** tem **0,035 Ω por metro**. Um rabicho de 20 cm pendurando um retorno no outro:
+
+```
+   R = 0,035 × 0,20 = 0,007 Ω
+   Se por esse trecho passarem os 6 A do BTS:
+   V = 6 × 0,007 = 42 mV
+```
+
+**42 mV não somem — eles reaparecem como erro em quem dividir aquele fio.**
+
+| Onde esses 42 mV caem | Leitura correta | Erro |
+|---|---:|---:|
+| Shunt da posição 1 (PI-2) | 0,83 V | **5,1 %** |
+| Shunt da posição 2 | 0,46 V | **9,1 %** |
+| ADC de 10 bits do Arduino | 4,88 mV/passo | **8,6 contagens** |
+
+> 🔥 **E o pior nem é o tamanho do erro: é que ele PISCA.** Os 42 mV só existem quando a Peltier está conduzindo. Como o BTS chaveia, a leitura da posição sobe e desce no ritmo do PWM. O sistema aprende uma referência errada e passa a ver "variação" onde não há.
+>
+> Isso se chama **acoplamento por impedância comum**, e é a causa nº 1 de medição ruim em painel.
+
+### A regra
+
+> **Estrela para quem carrega corrente ou serve de referência. Pendurar só entre contatos de lógica, onde alguns milivolts não mudam nada.**
+
+| Retorno | Corrente | Pode pendurar? |
+|---|---|---|
+| BTS `B−` (×2) | **6 A e 2 A chaveados** | 🔥 **nunca** — é o poluidor |
+| BTS `GND` lógica | mA | ❌ é a referência do sinal IS |
+| `PI-2 · 0V` | 27 mA **medidos** | 🔥 **nunca** — é a referência da medição |
+| Mega `GND3` | ~100 mA | ❌ é a referência do ADC |
+| `PI-1 · J1-9` | mA | ❌ referência do divisor e do 1-Wire |
+| RTC, DNLCB30, MV-1 | mA | ⚠️ daria, mas há ponto sobrando — não economize |
+| **Botões da porta** | µA | ✅ **sim** — e é assim que está feito |
+
+### Por que os botões podem
+
+O limiar lógico do Arduino fica em torno de **2,5 V**. Um deslocamento de 42 mV representa **1,7 %** desse limiar — o pino continua lendo LOW quando tem que ler LOW. Além disso os botões não conduzem corrente contínua: fecham um contato que o pull-up interno de 20 kΩ alimenta com **0,25 mA**.
+
+Por isso os quatro comandos da porta (S0-21, S1-13, S2-13 e SA1-13) dividem **um** fio de 0 V que cruza a dobradiça e é pontelhado entre os blocos. **Quatro travessias de dobradiça economizadas, sem custo nenhum de precisão.**
+
+### 📐 E não há motivo para economizar
+
+A barra **BD-0V tem 20 pontos** e hoje chegam **13 retornos** declarados. O script `npm run valida:fiacao` reprova se dois fios pedirem o mesmo parafuso — justamente para que a economia não aconteça por descuido.
+
+---
+
+## 31.7 Aterramento
 
 ### Os três "terras" do projeto (não confundir)
 
@@ -518,7 +570,7 @@ Se o 0 V for ligado ao PE em dois lugares, cria-se um **laço de terra**: uma es
 
 ---
 
-## 31.7 Tabela de estados do sistema
+## 31.8 Tabela de estados do sistema
 
 | Evento | KA1 | KA2 | 24 V nos BTS | `R_EN` | Tela | LED |
 |---|---|---|---|---|---|---|
@@ -542,7 +594,7 @@ Se o 0 V for ligado ao PE em dois lugares, cria-se um **laço de terra**: uma es
 
 ---
 
-## 31.8 Ensaios de segurança (obrigatórios antes da apresentação)
+## 31.9 Ensaios de segurança (obrigatórios antes da apresentação)
 
 | # | Ensaio | Procedimento | Resultado esperado |
 |---:|---|---|---|
@@ -566,7 +618,7 @@ Se o 0 V for ligado ao PE em dois lugares, cria-se um **laço de terra**: uma es
 
 ---
 
-## 31.9 ✅ Checklist de aceitação
+## 31.10 ✅ Checklist de aceitação
 
 - [ ] **KA1 · relé de interface 24 Vcc, 2 contatos** instalado (selo + saída)
 - [ ] **KA2 · relé de interface 24 Vcc, contato de ≥ 10 A** instalado
