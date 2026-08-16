@@ -68,13 +68,20 @@ export const REGRA_SEGREGACAO = {
  * ela que TODOS os fios cruzam para dentro do painel.
  */
 export const CANALETAS_PORTA = [
-  { id: 'CP-topo', tipo: 'sinal',    x: 28, y: 10,  w: 212, h: 24, nome: 'superior' },
-  { id: 'CP-1x2',  tipo: 'sinal',    x: 28, y: 136, w: 212, h: 26, nome: 'entre a tela e os sinaleiros' },
-  { id: 'CP-2x3',  tipo: 'sinal',    x: 28, y: 214, w: 212, h: 26, nome: 'entre os sinaleiros e os comandos' },
-  { id: 'CP-3x4',  tipo: 'potencia', x: 28, y: 292, w: 212, h: 26, nome: 'entre os comandos e a emergência' },
-  { id: 'CP-base', tipo: 'potencia', x: 28, y: 384, w: 212, h: 26, nome: 'inferior' },
-  { id: 'CP-vert', tipo: 'sinal',    x: 5,  y: 10,  w: 21,  h: 400,
-    nome: 'vertical da DOBRADIÇA', vertical: true, dobradica: true },
+  { id: 'CP-topo', tipo: 'sinal',    x: 38, y: 10,  w: 200, h: 24, nome: 'superior' },
+  { id: 'CP-1x2',  tipo: 'sinal',    x: 38, y: 136, w: 200, h: 26, nome: 'entre a tela e os sinaleiros' },
+  { id: 'CP-2x3',  tipo: 'sinal',    x: 38, y: 214, w: 200, h: 26, nome: 'entre os sinaleiros e os comandos' },
+  { id: 'CP-3x4',  tipo: 'potencia', x: 38, y: 292, w: 200, h: 26, nome: 'entre os comandos e a emergência' },
+  { id: 'CP-base', tipo: 'potencia', x: 38, y: 384, w: 200, h: 26, nome: 'inferior' },
+  /* ⭐ DUAS verticais na dobradiça, não uma. A porta carrega os dois
+     mundos: o cogumelo, o STOP e os sinaleiros são 24 V de comando —
+     e bobina de relé é POLUIDORA, dá pico ao desligar. A tela, os
+     botões de 5 V e a seletora são sinal. Cada um na sua, e duas
+     passagens flexíveis separadas. */
+  { id: 'CP-vsin', tipo: 'sinal',    x: 2,  y: 10, w: 18, h: 400,
+    nome: 'vertical da DOBRADIÇA — sinal', vertical: true, dobradica: true },
+  { id: 'CP-vpot', tipo: 'potencia', x: 22, y: 10, w: 18, h: 400,
+    nome: 'vertical da DOBRADIÇA — potência', vertical: true, dobradica: true },
 ];
 
 /* ── O QUE FICA NAS LATERAIS DA CAIXA ─────────────────────────────────
@@ -371,9 +378,12 @@ export const COMPONENTES = [
     nota: 'Relé de 8 pinos com 2 contatos reversíveis, em base PTF08A.',
     grupos: [
       { ref: 'REL', lado: 'baixo', legenda: 'Base PTF08A (8 terminais)', pinos: [
-        via('A1', 1, 'cadeia de comando — S1/S0'), via('A2', 1, 'BD-0V'),
-        via('11', 1, 'comum do contato 1'), via('12'), via('14', 1, 'selo da própria bobina'),
-        via('21', 1, 'comum do contato 2'), via('22'), via('24', 1, 'habilita o KA2'),
+        via('A1', 1, '⭐ do REARME (S3-2) OU do próprio selo (14) — os dois em paralelo'),
+        via('A2', 1, 'BD-0V · R11'),
+        via('11', 1, 'nó CMD — comum do contato de SELO'), via('12'),
+        via('14', 1, '⭐ volta para A1: é ISTO que faz o relé se segurar'),
+        via('21', 1, 'nó CMD — comum do contato de SAÍDA'), via('22'),
+        via('24', 1, 'S2-11 (bloco NF do STOP) → daí para o KA2 · A1'),
       ]},
     ],
   },
@@ -383,7 +393,8 @@ export const COMPONENTES = [
     nota: '⚠️ Contato declarado em CORRENTE CONTÍNUA, mínimo 10 A.',
     grupos: [
       { ref: 'REL', lado: 'baixo', legenda: 'Base PTF08A (8 terminais)', pinos: [
-        via('A1', 1, 'botão REARME (S2)'), via('A2', 1, 'BD-0V'),
+        via('A1', 1, 'S2-12 — vem pelo bloco NF do STOP, que vem do KA1 · 24'),
+        via('A2', 1, 'BD-0V · R12'),
         via('11', 1, 'entrada dos 24 V do prensa-cabo'), via('12'),
         via('14', 1, 'BD-POT entrada'),
         via('21'), via('22'), via('24'),
@@ -545,7 +556,7 @@ export const COMPONENTES = [
   /* ════════════ PORTA ════════════ */
   {
     id: 'HMI', nome: 'Tela ES3C28P (ESP32-S3)', porta: true,
-    x: 48, y: 40, largura: 50, altura: 86, cor: '#1971c2',
+    x: 64, y: 40, largura: 50, altura: 86, cor: '#1971c2',
     nota: '⚠️ Recorte da porta 47 × 61 mm, EM RETRATO. Reserve 25 mm livres atrás.',
     grupos: [
       { ref: 'UART', lado: 'baixo', legenda: 'Conector UART (4)', pinos: [
@@ -570,7 +581,7 @@ export const COMPONENTES = [
   },
   {
     id: 'CONV', nome: 'Conversor de nível 2 canais', porta: true,
-    x: 112, y: 44, largura: 34, altura: 22, cor: '#7048e8',
+    x: 128, y: 44, largura: 34, altura: 22, cor: '#7048e8',
     escala: 'ampliado — a placa real tem 14,7 × 12,7 mm',
     nota: 'Monta atrás da tela, em espaçadores de nylon. ⚠️ No desenho ele está '
         + 'ampliado: a placa real tem 14,7 × 12,7 mm e os pinos ficariam menores '
@@ -591,7 +602,7 @@ export const COMPONENTES = [
   },
   ...['ENERGIZADO', 'RESFRIANDO', 'AQUECENDO', 'FALHA'].map((nome, i) => ({
     id: `H${i + 1}`, nome: `Sinaleiro H${i + 1} — ${nome}`, porta: true,
-    x: 30 + i * 42, y: 175, largura: 30, altura: 30,
+    x: 46 + i * 42, y: 175, largura: 30, altura: 30,
     cor: ['#2f9e44', '#1971c2', '#e8590c', '#c92a2a'][i],
     grupos: [{ ref: 'LMP', lado: 'baixo', legenda: 'Sinaleiro 22 mm · 24 V (2)', pinos: [
       via('+', 1, 'BD-24V saída 3 — positivo comum'),
@@ -600,31 +611,35 @@ export const COMPONENTES = [
   })),
   {
     id: 'S1', nome: 'Botão START (verde)', porta: true,
-    x: 35, y: 250, largura: 30, altura: 30, cor: '#2f9e44',
-    grupos: [{ ref: 'NA', lado: 'baixo', legenda: 'Bloco NA de 5 V (2)', pinos: [
-      via('1', 1, 'BD-5V'), via('2', 1, 'Mega D22'),
+    x: 51, y: 250, largura: 30, altura: 30, cor: '#2f9e44',
+    grupos: [{ ref: 'NA', lado: 'baixo', legenda: 'Bloco NA de 5 V — contatos 13-14', pinos: [
+      via('13', 1, 'BD-5V saída 4'), via('14', 1, 'Mega D22'),
     ]}],
   },
   {
-    id: 'S2', nome: 'Botão REARME (azul)', porta: true,
-    x: 80, y: 250, largura: 30, altura: 30, cor: '#1971c2',
+    id: 'S2', nome: 'Botão STOP (preto)', porta: true,
+    x: 96, y: 250, largura: 30, altura: 30, cor: '#212529',
     nota: 'Este é de 24 V: ele energiza a bobina do KA2 diretamente.',
-    grupos: [{ ref: 'NA', lado: 'baixo', legenda: 'Bloco NA de 24 V (2)', pinos: [
-      via('1', 1, 'cadeia de comando'), via('2', 1, 'KA2 · A1'),
+    grupos: [{ ref: 'BLK', lado: 'baixo', legenda: '1 bloco NF (24 V) + 1 bloco NA (5 V) — 4 vias', pinos: [
+      via('11', 1, '⚡ HARDWARE: KA1 · 24 (contato de saída)'),
+      via('12', 1, '⚡ HARDWARE: KA2 · A1 — corta a bobina enquanto apertado'),
+      via('13', 1, 'BD-5V saída 3 — bloco de leitura'),
+      via('14', 1, 'Mega D23 — o software também sabe que apertaram'),
     ]}],
   },
   {
-    id: 'S3', nome: 'Botão STOP (preto)', porta: true,
-    x: 125, y: 250, largura: 30, altura: 30, cor: '#495057',
-    grupos: [{ ref: 'NA', lado: 'baixo', legenda: 'Bloco NA de 5 V (2)', pinos: [
-      via('1', 1, 'BD-5V'), via('2', 1, 'Mega D23'),
+    id: 'S3', nome: 'Botão REARME (azul)', porta: true,
+    x: 141, y: 250, largura: 30, altura: 30, cor: '#1971c2',
+    grupos: [{ ref: 'NA', lado: 'baixo', legenda: 'Bloco NA de 24 V — contatos 13-14', pinos: [
+      via('13', 1, 'nó CMD — a cadeia, depois do cogumelo'),
+      via('14', 1, 'KA1 · A1 — refaz o selo'),
     ]}],
   },
   {
     id: 'SA1', nome: 'Seletora LOCAL / REMOTO', porta: true,
-    x: 170, y: 250, largura: 30, altura: 30, cor: '#212529',
-    grupos: [{ ref: 'SEL', lado: 'baixo', legenda: '2 posições · 1 bloco NA (2)', pinos: [
-      via('1', 1, 'BD-0V'), via('2', 1, 'Mega D26'),
+    x: 186, y: 250, largura: 30, altura: 30, cor: '#212529',
+    grupos: [{ ref: 'SEL', lado: 'baixo', legenda: '2 posições · bloco NA — contatos 13-14', pinos: [
+      via('13', 1, 'BD-0V · R18'), via('14', 1, 'Mega D26'),
     ]}],
     avisos: ['✅ Confirmado no firmware: 1 pino só, o D26, com INPUT_PULLUP. '
            + 'Aberto = LOCAL, fechado para o 0 V = REMOTO.',
@@ -633,7 +648,7 @@ export const COMPONENTES = [
   },
   {
     id: 'S0', nome: 'Cogumelo de EMERGÊNCIA', porta: true,
-    x: 120, y: 330, largura: 44, altura: 44, cor: '#c92a2a',
+    x: 136, y: 330, largura: 44, altura: 44, cor: '#c92a2a',
     nota: 'Cogumelo com trava. Dois blocos NF: um corta a potência, o outro avisa o '
         + 'Arduino.',
     grupos: [{ ref: 'NF', lado: 'baixo', legenda: '2 blocos NF (4)', pinos: [

@@ -15,9 +15,21 @@ const erros = [], avisos = [];
 const TODAS = [...CANALETAS, ...CANALETAS_PORTA];
 const canal = id => TODAS.find(k => k.id === id);
 
-/* duas canaletas se tocam se os retângulos delas se sobrepõem */
-const tocam = (a, b) =>
+/* ⭐ PORTA E PLACA SÃO PLANOS DIFERENTES. Comparar os retângulos das duas
+   como se fossem o mesmo desenho daria sobreposição por acidente — os
+   números coincidem sem que os caminhos se encontrem. A única ligação
+   real entre os dois planos é a PASSAGEM FLEXÍVEL da dobradiça. */
+const naPortaK = k => k.id.startsWith('CP-');
+const sobrepoe = (a, b) =>
   a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+
+const tocam = (a, b) => {
+  if (naPortaK(a) === naPortaK(b)) return sobrepoe(a, b);
+  const kPorta = naPortaK(a) ? a : b, kPlaca = naPortaK(a) ? b : a;
+  if (!kPorta.dobradica) return false;               // só se cruza pela dobradiça
+  if (kPorta.tipo !== kPlaca.tipo) return false;     // e sem trocar de classe
+  return kPlaca.x + kPlaca.w >= CAIXA.largura - 30;  // a canaleta tem que chegar na borda
+};
 
 console.log(`\n=== ${FIOS.length} fios · etapa(s) `
   + `${[...new Set(FIOS.map(f => f.etapa))].join(', ')} ===`);
@@ -39,13 +51,24 @@ for (const f of FIOS) {
       if (k.tipo !== f.classe)
         erros.push(`${f.n} é ${f.classe} e passa pela ${id}, que é ${k.tipo}`);
 
-  /* ── 3. o destino existe e está declarado como usado? ─────────────── */
+  /* ── 3. AS DUAS PONTAS existem e estão declaradas como usadas? ─────
+     Conferir só o destino deixaria passar o erro mais comum: partir de
+     um borne que já está ocupado por outra coisa, ou que nem existe. */
+  for (const [lado, alvo] of [['sai de', f.de], ['chega em', f.para]]) {
+    if (!alvo.comp) continue;
+    const c = COMPONENTES.find(x => x.id === alvo.comp);
+    if (!c) { erros.push(`${f.n}: o componente ${alvo.comp} não existe`); continue; }
+    const via = c.grupos.flatMap(g => g.pinos).find(p => p.nome === alvo.via);
+    if (!via) {
+      const tem = c.grupos.flatMap(g => g.pinos).map(p => p.nome).join(', ');
+      erros.push(`${f.n} ${lado} ${alvo.comp}.${alvo.via}, que NÃO EXISTE. `
+        + `O ${alvo.comp} tem: ${tem}`);
+    } else if (!via.usa) {
+      erros.push(`${f.n} ${lado} ${alvo.comp}.${alvo.via}, que o inventário diz estar LIVRE`);
+    }
+  }
   const c = COMPONENTES.find(x => x.id === f.para.comp);
-  if (!c) { erros.push(`${f.n}: o componente ${f.para.comp} não existe`); continue; }
-  const via = c.grupos.flatMap(g => g.pinos).find(p => p.nome === f.para.via);
-  if (!via) erros.push(`${f.n}: ${f.para.comp} não tem o borne ${f.para.via}`);
-  else if (!via.usa)
-    erros.push(`${f.n} chega em ${f.para.comp}.${f.para.via}, que o inventário diz estar LIVRE`);
+  if (!c) continue;
 
   /* ── 4. o prensa-cabo existe? ─────────────────────────────────────── */
   if (f.de.prensa && !PRENSAS_PAINEL.some(p => p.id === f.de.prensa))
@@ -84,9 +107,41 @@ else console.log(`  . um único condutor de 0 V (${zeros[0].mm2} mm²), como man
 
 /* ── as rotas, em texto, para conferir na bancada ───────────────────── */
 console.log('\n=== as rotas ===');
+const nomeDe = a => a.prensa ?? `${a.comp}.${a.via}`;
+let etapaAtual = null;
+for (const f of FIOS) {
+  if (f.etapa !== etapaAtual) {
+    etapaAtual = f.etapa;
+    const e = ETAPAS.find(x => x.n === f.etapa);
+    console.log(`
+  ── ETAPA ${f.etapa}: ${e?.nome ?? ''}`);
+  }
+  const via = f.rota.length ? f.rota.join(' → ') : '(ponte curta, sem canaleta)';
+  console.log(`  ${f.n.padEnd(4)} ${nomeDe(f.de).padEnd(12)} → ${via}`);
+  console.log(`       └─► ${nomeDe(f.para).padEnd(12)}  ${f.mm2} mm² ${f.corNome}`);
+}
+
+/* ── ⭐ COBERTURA: quais bornes já têm fio e quais ainda faltam ────── */
+console.log('\n=== cobertura dos bornes ===');
+const comFio = new Set();
 for (const f of FIOS)
-  console.log(`  ${f.n}  ${f.de.prensa} → ${f.rota.join(' → ')} → `
-    + `${f.para.comp}.${f.para.via}`.padEnd(26) + `  ${f.mm2} mm² ${f.corNome}`);
+  for (const a of [f.de, f.para])
+    if (a.comp) comFio.add(`${a.comp}.${a.via}`);
+
+let usados = 0, cobertos = 0;
+const faltando = new Map();
+for (const c of COMPONENTES)
+  for (const g of c.grupos)
+    for (const p of g.pinos) {
+      if (!p.usa) continue;
+      usados++;
+      if (comFio.has(`${c.id}.${p.nome}`)) cobertos++;
+      else faltando.set(c.id, (faltando.get(c.id) ?? 0) + 1);
+    }
+const pct = (cobertos / usados * 100).toFixed(0);
+console.log(`  ${cobertos} de ${usados} bornes usados já têm fio declarado (${pct}%)`);
+const top = [...faltando].sort((a, b) => b[1] - a[1]).slice(0, 8);
+console.log('  ainda sem fio: ' + top.map(([id, q]) => `${id}(${q})`).join(' · '));
 
 const feitas = ETAPAS.filter(e => e.feito).length;
 console.log(`\netapas concluídas: ${feitas} de ${ETAPAS.length}`);

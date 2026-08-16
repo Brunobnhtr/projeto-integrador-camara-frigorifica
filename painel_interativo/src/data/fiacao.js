@@ -9,6 +9,7 @@
  *
  * ⭐ ETAPA 1 — AS ENTRADAS. O que vem dos postes e entra pela base.
  */
+import { FIOS_ETAPA2 } from './fiacao_etapa2.js';
 
 /* ── prensa-cabos na FACE INFERIOR da caixa ───────────────────────────
  * X medido da esquerda da caixa. Todos na base, porque é lá que chega o
@@ -37,7 +38,7 @@ export const PRENSAS_PAINEL = [
  * `rota` = a sequência de canaletas, na ordem em que o fio anda.
  * `classe`: potencia · sinal · comum (o 0 V, que não se segrega)
  */
-export const FIOS = [
+const FIOS_ETAPA1 = [
   {
     n: 'E1', etapa: 1, nome: '24 V de POTÊNCIA', classe: 'potencia',
     de: { prensa: 'PG9-1' }, para: { comp: 'KA2', via: '11' },
@@ -100,10 +101,13 @@ export const ETAPAS = [
   { n: 1, nome: 'Entradas — o que vem dos postes', feito: true,
     resumo: '5 condutores entram pela base: 24 V de potência, 0 V, 5 V, 12 V e '
           + '24 V de serviços. Todos pela canaleta de potência.' },
-  { n: 2, nome: 'Comando e emergência', feito: false,
+  { n: 2, nome: 'Comando e emergência', feito: true,
     resumo: 'KA1, KA2, o cogumelo e a seletora LOCAL/REMOTO.' },
   { n: 3, nome: 'Distribuição — dos barramentos aos consumidores', feito: false },
   { n: 4, nome: 'Sinais — Arduino, PI-1, PI-2 e sensores', feito: false },
   { n: 5, nome: 'Porta — tela, botões e sinaleiros', feito: false },
   { n: 6, nome: 'Saídas — o que vai para a câmara', feito: false },
 ];
+
+/* a lista única que o resto do app consome */
+export const FIOS = [...FIOS_ETAPA1, ...FIOS_ETAPA2];

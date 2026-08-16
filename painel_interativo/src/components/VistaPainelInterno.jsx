@@ -6,6 +6,9 @@ import * as PI2 from '../data/pi2_fisico';
 import { PINAGENS } from '../data/pinagens';
 import { PRENSAS_PAINEL, FIOS, ETAPAS } from '../data/fiacao';
 
+/* onde a passagem flexível cruza da placa para a porta, por classe */
+const PASSAGEM = { potencia: 311, sinal: 194 };
+
 /* Quais componentes do painel têm desenho de placa, e qual.
    'ilhada' = placa que VOCÊ monta furo por furo.
    'real'   = módulo comprado, desenhado a partir da foto.        */
@@ -66,6 +69,7 @@ export default function VistaPainelInterno() {
   const [placa, setPlaca] = useState(null);   // desenho da placa em tela cheia
   const [verFiacao, setVerFiacao] = useState(true);
   const [fio, setFio] = useState(null);
+  const [etapa, setEtapa] = useState(0);   // 0 = todas
   const rolagem = useRef(null);
 
   /* scroll do mouse dá zoom, mantendo sob o cursor o que estava sob ele */
@@ -96,34 +100,59 @@ export default function VistaPainelInterno() {
     });
   }, []);
 
-  /* ⭐ O caminho de cada fio, andando pela LINHA DE CENTRO de cada
-     canaleta da rota. Canaleta horizontal manda no Y, vertical manda no
-     X — é assim que o fio anda de verdade lá dentro. */
+  /* ⭐ O caminho de cada fio, andando pela LINHA DE CENTRO das canaletas
+     da rota. Horizontal manda no Y, vertical manda no X.
+
+     A porta é outro plano: as canaletas dela têm coordenadas próprias,
+     e o pulo de um plano para o outro é a PASSAGEM FLEXÍVEL — desenhada
+     como um laço, que é como o chicote fica de verdade. */
+  const PORTA_X0 = CAIXA.largura + 40;
   const tracados = useMemo(() => {
-    const kdeId = id => CANALETAS.find(k => k.id === id);
+    const rect = id => {
+      const k = [...CANALETAS, ...CANALETAS_PORTA].find(x => x.id === id);
+      if (!k) return null;
+      return k.id.startsWith('CP-') ? { ...k, x: k.x + PORTA_X0 } : k;
+    };
+    const ponta = (alvo, i) => {
+      if (alvo.prensa) {
+        const pr = PRENSAS_PAINEL.find(x => x.id === alvo.prensa);
+        return { p: [pr.x, CAIXA.altura + 2], pr };
+      }
+      const c = comps.find(x => x.id === alvo.comp);
+      if (!c) return { p: null };
+      const g = c.grupos.find(gg => gg.pinos.some(pp => pp.nome === alvo.via));
+      const pino = g && posicoes(c, g).find(pp => pp.nome === alvo.via);
+      void i;
+      return { p: pino ? [pino.x, pino.y] : null };
+    };
+
     return FIOS.map((f, idx) => {
-      const pr = PRENSAS_PAINEL.find(x => x.id === f.de.prensa);
-      const desvio = (idx - (FIOS.length - 1) / 2) * 3.2;   // para não se sobreporem
-      const pts = [[pr.x, CAIXA.altura + 12], [pr.x, CAIXA.altura + 2]];
-      let cur = [pr.x, CAIXA.altura + 2];
+      const desvio = ((idx % 7) - 3) * 3.0;
+      const a = ponta(f.de, 0), b = ponta(f.para, 1);
+      if (!a.p || !b.p) return { ...f, pts: [], prensa: a.pr };
+
+      const pts = [a.p.slice()];
+      let cur = a.p.slice();
+      let planoAnt = null;
       for (const id of f.rota) {
-        const k = kdeId(id);
+        const k = rect(id);
         if (!k) continue;
+        const plano = id.startsWith('CP-') ? 'porta' : 'placa';
+        if (planoAnt && plano !== planoAnt) {
+          /* o laço da passagem flexível, na altura da classe do fio */
+          const yP = PASSAGEM[f.classe === 'comum' ? 'potencia' : f.classe];
+          pts.push([cur[0], yP]);
+          pts.push([plano === 'porta' ? PORTA_X0 + 30 : PLACA.x + PLACA.largura - 8, yP]);
+          cur = [pts[pts.length - 1][0], yP];
+        }
         if (k.vertical) cur = [k.x + k.w / 2 + desvio, cur[1]];
         else cur = [cur[0], k.y + k.h / 2 + desvio];
         pts.push([...cur]);
+        planoAnt = plano;
       }
-      /* a ponta: acerta o X do borne dentro da última canaleta, e só
-         então sobe ou desce até ele */
-      const c = comps.find(x => x.id === f.para.comp);
-      let alvo = null;
-      if (c) {
-        const g = c.grupos.find(gg => gg.pinos.some(pp => pp.nome === f.para.via));
-        const pino = g && posicoes(c, g).find(pp => pp.nome === f.para.via);
-        if (pino) alvo = [pino.x, pino.y];
-      }
-      if (alvo) { pts.push([alvo[0], cur[1]]); pts.push(alvo); }
-      return { ...f, pts, prensa: pr };
+      pts.push([b.p[0], cur[1]]);
+      pts.push(b.p.slice());
+      return { ...f, pts, prensa: a.pr };
     });
   }, [comps]);
 
@@ -144,12 +173,19 @@ export default function VistaPainelInterno() {
                    onChange={e => setSoUsados(e.target.checked)} />
             só os terminais usados
           </label>
+          {verFiacao && ETAPAS.filter(e => e.feito).map(e => (
+            <button key={e.n} onClick={() => setEtapa(etapa === e.n ? 0 : e.n)} style={{
+              background: etapa === e.n ? '#f59f00' : '#fff',
+              color: etapa === e.n ? '#fff' : '#8a5a00', border: '2px solid #f59f00',
+              borderRadius: 6, padding: '5px 9px', cursor: 'pointer',
+              fontSize: 11, fontWeight: 700 }}>etapa {e.n}</button>
+          ))}
           <button onClick={() => { setVerFiacao(!verFiacao); setFio(null); }} style={{
             background: verFiacao ? '#1971c2' : '#fff',
             color: verFiacao ? '#fff' : '#1971c2', border: '2px solid #1971c2',
             borderRadius: 6, padding: '5px 11px', cursor: 'pointer',
             fontSize: 11.5, fontWeight: 700 }}>
-            🔌 Fiação · etapa 1
+            🔌 Fiação
           </button>
           <input type="range" min={1.2} max={10} step={0.1} value={zoom}
                  onChange={e => setZoom(+e.target.value)}
@@ -209,7 +245,8 @@ export default function VistaPainelInterno() {
           })}
 
           {/* ⭐ ETAPA 1 DA FIAÇÃO — o que entra pela base */}
-          {verFiacao && tracados.map(t => {
+          {verFiacao && tracados.filter(t => t.pts.length &&
+                                       (!etapa || t.etapa === etapa)).map(t => {
             const on = !fio || fio === t.n;
             return (
               <g key={t.n} onClick={() => setFio(fio === t.n ? null : t.n)}
@@ -222,9 +259,10 @@ export default function VistaPainelInterno() {
                 <polyline points={t.pts.map(p => p.join(',')).join(' ')} fill="none"
                           stroke={t.cor} strokeWidth={fio === t.n ? 4.2 : 2.6}
                           strokeLinejoin="round" strokeLinecap="round" />
-                {/* o prensa-cabo na base */}
-                <circle cx={t.prensa.x} cy={CAIXA.altura + 2} r={6.5} fill="#495057" />
-                <circle cx={t.prensa.x} cy={CAIXA.altura + 2} r={3} fill={t.cor} />
+                {t.prensa && (<>
+                  <circle cx={t.prensa.x} cy={CAIXA.altura + 2} r={6.5} fill="#495057" />
+                  <circle cx={t.prensa.x} cy={CAIXA.altura + 2} r={3} fill={t.cor} />
+                </>)}
                 {/* a anilha, no meio do percurso */}
                 {(() => {
                   const m = t.pts[Math.floor(t.pts.length / 2)];
@@ -488,14 +526,14 @@ export default function VistaPainelInterno() {
 
             <div style={{ fontSize: 12, fontWeight: 700, color: '#1d3557',
                           marginBottom: 5 }}>
-              🔌 FIAÇÃO — ETAPA 1: AS ENTRADAS
+              🔌 FIAÇÃO — {FIOS.length} FIOS
             </div>
             <div style={{ fontSize: 11, color: '#495057', lineHeight: 1.5,
                           marginBottom: 7 }}>
               Cinco condutores entram pela <b>base</b>, todos pela canaleta de
               potência: <code>CH-base → CV-esq → CH-2x1</code>.
             </div>
-            {FIOS.map(f => {
+            {FIOS.filter(f => !etapa || f.etapa === etapa).map(f => {
               const on = fio === f.n;
               return (
                 <div key={f.n} onClick={() => setFio(on ? null : f.n)} style={{
@@ -509,7 +547,8 @@ export default function VistaPainelInterno() {
                     <div style={{ fontSize: 11.5, fontWeight: 600 }}>{f.nome}</div>
                     <div style={{ fontSize: 10, color: '#868e96',
                                   fontFamily: 'monospace' }}>
-                      {f.de.prensa} → {f.para.comp}.{f.para.via} · {f.mm2} mm²
+                      {f.de.prensa ?? `${f.de.comp}.${f.de.via}`} →{' '}
+                      {f.para.comp}.{f.para.via} · {f.mm2} mm²
                     </div>
                   </div>
                 </div>

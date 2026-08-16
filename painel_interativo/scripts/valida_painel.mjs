@@ -114,9 +114,16 @@ for (const c of naPorta) {
 }
 avisos.push(`porta: ${naPorta.length} componentes e ${CANALETAS_PORTA.length} canaletas`);
 
+/* ⭐ a dobradiça precisa de UMA canaleta de cada classe: a porta carrega
+   comando de 24 V (bobina de relé é poluidora) e sinal de 5 V juntos */
 const dob = CANALETAS_PORTA.filter(k => k.dobradica);
-if (dob.length !== 1)
-  erros.push(`a porta tem ${dob.length} canaletas marcadas como dobradiça — deve ser 1`);
+const classes = new Set(dob.map(k => k.tipo));
+if (!classes.has('potencia') || !classes.has('sinal'))
+  erros.push('a dobradiça precisa de uma canaleta de POTÊNCIA e uma de SINAL — '
+    + `hoje só há ${[...classes].join(' e ')}. O 24 V do cogumelo e o 5 V da tela `
+    + 'não podem dividir a mesma passagem flexível');
+else if (dob.length !== 2)
+  erros.push(`a dobradiça tem ${dob.length} canaletas — deve ter 2, uma por classe`);
 
 /* ── a antena TEM que estar fora, e fora da porta ────────────────────── */
 console.log('=== a antena ===');

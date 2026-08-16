@@ -308,14 +308,55 @@ Para esse canal ser confiável, dois reforços de R$ 0,20:
 
 ---
 
-## 31.3 As botoeiras
+## 31.3 🔩 A numeração dos contatos — e três erros que ela evita
+
+Todo bloco de contato de botoeira industrial vem com o número **gravado no próprio corpo**. A convenção é a mesma no mundo inteiro:
+
+| Bloco | Terminais | Como identificar |
+|---|---|---|
+| **NF** (normalmente fechado) | **11 – 12** | termina em **1 e 2** |
+| **NA** (normalmente aberto) | **13 – 14** | termina em **3 e 4** |
+| 2º bloco NF | 21 – 22 | o primeiro dígito é o número do bloco |
+| 2º bloco NA | 23 – 24 | idem |
+
+> ⭐ **Use esses números no desenho e na anilha.** Escrever "S2 pino 1" não ajuda ninguém: **não existe pino 1** no bloco. Escrever "S2-11" faz a pessoa achar o terminal em dois segundos, porque o número está impresso ali.
+
+### 🔥 Os três erros que a montagem deste circuito permite
+
+**1. Trocar os dois blocos do STOP.** O S2 tem dois blocos: o **NF de 24 V (11-12)**, que corta a bobina do KA2 de verdade, e o **NA de 5 V (13-14)**, que só avisa o Arduino.
+
+| Se você… | O que acontece |
+|---|---|
+| ligar o Arduino no bloco de 24 V | **queima o pino D23** na hora |
+| ligar a cadeia no bloco de 5 V | o STOP **não corta nada em hardware** — vira um botão de software, e o painel deixa de ter parada segura |
+
+**2. Trocar os dois 24 V vermelhos.** O `E1` (potência, vai ao KA2) e o `E5` (serviços, vai ao BD-24V) são os dois vermelhos e entram por prensa-cabos diferentes. Trocados: a **potência fica permanente** e a **supervisão morre na emergência** — exatamente o inverso do projeto. Anile os dois na entrada, antes de puxar.
+
+**3. Esquecer o fio do selo (C6).** É a ponte curta `KA1-14 → KA1-A1`, e é o único fio do painel cuja falta **não causa erro nenhum aparente**: tudo liga normalmente enquanto o dedo está no rearme, e desliga sozinho quando você solta. Quem não conhece o circuito procura defeito no relé.
+
+### ✅ Teste do circuito de comando, antes de energizar a potência
+
+Faça **com o barramento BD-POT desligado**. Só a cadeia de comando alimentada.
+
+- [ ] Aperte o **REARME** → o KA1 deve fechar e **continuar fechado** ao soltar (é o selo)
+- [ ] Aperte o **STOP** → o KA2 solta; solte o STOP → o KA2 volta, mas o **KA1 continua selado**
+- [ ] Soque o **cogumelo** → **os dois** soltam
+- [ ] **Destrave o cogumelo** → nada pode voltar sozinho. Se o KA1 religar sozinho, o cogumelo está ligado como NA — refaça
+- [ ] Só o **REARME** religa
+- [ ] Com um multímetro, confirme **24 V entre KA2-14 e o 0 V** só depois do rearme
+
+> 🎯 **Se todos os seis passarem, o circuito de segurança está correto** — e ele não depende de uma linha de firmware para funcionar.
+
+---
+
+## 31.4 As botoeiras
 
 | Botão | Cor | Blocos | Ligação |
 |---|---|---|---|
-| **S0 — EMERGÊNCIA** (cogumelo com trava) | Vermelho | **2 NF** | Bloco 1 em **24 V**: série com a bobina do KA1 · Bloco 2 em **5 V**: pino **D24** |
-| **S1 — START** | Verde | **1 NA** | Pino **D22**, `INPUT_PULLUP` |
-| **S2 — STOP** | Vermelho | **1 NF + 1 NA** | Bloco NF em **24 V**: série com a bobina do KA2 · Bloco NA em **5 V**: pino **D23** |
-| **S3 — REARME** | **Azul** | **1 NA** | Só em **24 V**: refaz o selo do KA1. O Arduino nem precisa saber |
+| **S0 — EMERGÊNCIA** (cogumelo com trava) | Vermelho, fundo amarelo | **2 NF** | Bloco 1 (**11-12**) em **24 V**: série com a bobina do KA1 · Bloco 2 (**21-22**) em **5 V**: pino **D24** |
+| **S1 — START** | Verde | **1 NA** (13-14) | Pino **D22**, `INPUT_PULLUP` |
+| **S2 — STOP** | **Preto** | **1 NF + 1 NA** | Bloco NF (**11-12**) em **24 V**: série com a bobina do KA2 · Bloco NA (**13-14**) em **5 V**: pino **D23** |
+| **S3 — REARME** | **Azul** | **1 NA** (13-14) | Só em **24 V**: refaz o selo do KA1. O Arduino nem precisa saber |
 
 ### Lógica de leitura no Arduino (todos com `INPUT_PULLUP`)
 
@@ -354,7 +395,7 @@ Com isso o firmware **sabe** quando a energia foi cortada por hardware — e reg
 ---
 
 
-## 31.4 Tabela de proteções e seletividade
+## 31.5 Tabela de proteções e seletividade
 
 | Nível | Dispositivo | Ajuste | Protege contra | Tempo de atuação |
 |---:|---|---|---|---|
@@ -396,7 +437,7 @@ Com isso o firmware **sabe** quando a energia foi cortada por hardware — e reg
 
 ---
 
-## 31.5 Aterramento
+## 31.6 Aterramento
 
 ### Os três "terras" do projeto (não confundir)
 
@@ -477,7 +518,7 @@ Se o 0 V for ligado ao PE em dois lugares, cria-se um **laço de terra**: uma es
 
 ---
 
-## 31.6 Tabela de estados do sistema
+## 31.7 Tabela de estados do sistema
 
 | Evento | KA1 | KA2 | 24 V nos BTS | `R_EN` | Tela | LED |
 |---|---|---|---|---|---|---|
@@ -501,7 +542,7 @@ Se o 0 V for ligado ao PE em dois lugares, cria-se um **laço de terra**: uma es
 
 ---
 
-## 31.7 Ensaios de segurança (obrigatórios antes da apresentação)
+## 31.8 Ensaios de segurança (obrigatórios antes da apresentação)
 
 | # | Ensaio | Procedimento | Resultado esperado |
 |---:|---|---|---|
@@ -525,7 +566,7 @@ Se o 0 V for ligado ao PE em dois lugares, cria-se um **laço de terra**: uma es
 
 ---
 
-## 31.8 ✅ Checklist de aceitação
+## 31.9 ✅ Checklist de aceitação
 
 - [ ] **KA1 · relé de interface 24 Vcc, 2 contatos** instalado (selo + saída)
 - [ ] **KA2 · relé de interface 24 Vcc, contato de ≥ 10 A** instalado
