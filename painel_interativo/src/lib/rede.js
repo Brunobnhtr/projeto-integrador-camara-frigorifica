@@ -55,7 +55,10 @@ export function construirRede(dados) {
   })));
   NOS.forEach(nn => {
     for (let c = nn.de; c <= nn.ate; c++)
-      põe(c, nn.linha, { tipo: 'no', rotulo: nn.ref, sinal: nn.furos?.[c], oculto: c !== nn.de });
+      /* cada furo do nó guarda a SUA descrição — era isso que faltava
+         para saber o que está em cada ponta da ponte */
+      põe(c, nn.linha, { tipo: 'no', rotulo: nn.ref, sinal: nn.furos?.[c],
+                         oculto: !nn.furos?.[c] && c !== nn.de });
   });
   for (let c = BARRAMENTO_0V.de; c <= BARRAMENTO_0V.ate; c++)
     põe(c, BARRAMENTO_0V.linha, {
@@ -98,8 +101,11 @@ export function construirRede(dados) {
     const r = acha(k(nn.de, nn.linha));
     if (nos.has(r)) nos.get(r).pontes.push(nn);
   });
-  for (const nn of nos.values())
+  const peso = { via: 0, pino: 1, no: 2, bus: 3, perna: 4 };
+  for (const nn of nos.values()) {
     nn.ehBus = nn.membros.some(m => m.tipo === 'bus');
+    nn.membros.sort((a, b) => peso[a.tipo] - peso[b.tipo]);
+  }
 
   return { acha, nos, elementos, k };
 }

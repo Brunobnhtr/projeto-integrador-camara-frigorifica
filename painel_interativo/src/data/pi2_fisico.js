@@ -76,8 +76,8 @@ export const COMPONENTES_PI2 = [
     ref: 'R1', tipo: 'resistor', valor: '47 Ω 1%', circuito: 1,
     furos: [[2, 6], [2, 11]],
     polaridade: false,
-    ligacao: 'Perna de cima no nó RET-1 (furo 2,6), perna de baixo no barramento de 0 V '
-           + '(furo 2,11). Montado EM PÉ, porque é o que cabe entre o nó e o barramento.',
+    ligacao: 'Perna de cima no nó RET-1 (furo B6), perna de baixo no barramento de 0 V '
+           + '(furo B11). Montado EM PÉ, porque é o que cabe entre o nó e o barramento.',
     papel: 'O shunt da posição 1 — transforma corrente em tensão',
     porque: 'A corrente do DUT tem que atravessar este resistor para chegar ao 0 V. '
           + 'Atravessando, cria sobre ele uma tensão de 17,6 mA × 47 Ω = 0,83 V — que o '
@@ -87,7 +87,7 @@ export const COMPONENTES_PI2 = [
     ref: 'R2', tipo: 'resistor', valor: '47 Ω 1%', circuito: 2,
     furos: [[7, 6], [7, 11]],
     polaridade: false,
-    ligacao: 'Perna de cima no nó RET-2 (furo 7,6), perna de baixo no barramento (furo 7,11).',
+    ligacao: 'Perna de cima no nó RET-2 (furo G6), perna de baixo no barramento (furo G11).',
     papel: 'O shunt da posição 2',
     porque: 'Mesmo valor do R1, de propósito. A posição 2 consome menos (9,8 mA) e entrega '
           + '0,46 V — a diferença entre as duas leituras é justamente o que prova que cada '

@@ -445,63 +445,59 @@ Os fios não são desenhados em linha reta de um furo ao outro. Cada um **acompa
 
 ---
 
-### 🔎 "Siga o sinal" — o desenho que o layout não dá
+### 🔤 A placa é endereçada como uma planilha
 
-O desenho da placa responde **onde fica cada coisa**. Ele não responde **de onde vem e para onde vai este sinal** — e é essa a pergunta que importa na hora de entender o circuito.
-
-Por isso existe o botão **"Siga o sinal"**: escolha um borne e o aplicativo mostra o caminho elétrico dele até o fim, **sem geometria nenhuma no meio**.
-
-### ⭐ A distinção que muda tudo: fio não é componente
-
-> **Um FIO funde dois pontos num só. Um COMPONENTE separa dois pontos.**
-
-Parece detalhe, mas é o que faz o circuito fazer sentido. Veja o que sai ao clicar em `J1-2 · IS#2`:
+Coluna em **letra**, fileira em **número**. O furo da coluna 11, fileira 6, é a célula **K6**. Passando de Z, continua **AA, AB, AC** — igual ao Excel.
 
 ```
-   ┌─────────────────────────────────────┐
-   │  ⬤ nó A1                            │   ⭐ os 3 pontos abaixo são
-   │     J1-2 · IS#2   ⬅ vem do BTS #2   │      O MESMO PONTO ELÉTRICO
-   │     J2-2 · A1     ➡ vai ao Mega A1  │
-   │     perna do C2                     │
-   │     unidos por: fio 3, fio 4,       │
-   │                 ponte do nó A1      │
-   └──────────────┬──────────────────────┘
-                  │ ⊣⊢ C2 · 100 nF
-   ┌──────────────▼──────────────────────┐
-   │  ⏚ barramento de 0 V  — fim         │
-   └─────────────────────────────────────┘
+      A  B  C  D  E  F  G  H  I  J  K  L  M  N ...
+   1  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·
+   2  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·
+   ...
+   6  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ●━━●━━●━━●     ← nó 1-Wire, K6 a N6
 ```
 
-**Repare no que isso diz.** `J1-2` e `J2-2` caem **na mesma caixa** — eles são o mesmo ponto. O sinal do BTS chega e vai para o Arduino **direto**, e o capacitor **sai de lado**, para o 0 V. Ele nunca esteve no caminho.
+> ⭐ **Por que isto importa mais do que parece.** "Furo 11,6" e "furo 6,11" se trocam sozinhos na cabeça de quem está com o ferro de solda na mão — qual dos dois era a coluna? **"K6" não tem como inverter.**
 
-Era exatamente essa a dúvida do início do projeto: *"o fio entra por uma perna do capacitor e sai pela outra?"*. **Não.** E este desenho torna impossível confundir.
+⚠️ **O endereço é do FURO, não da vista.** `K6` é o mesmo furo olhando a placa por cima ou por baixo. No lado da solda, o que muda é que **as letras correm ao contrário** — porque a placa virou, não porque o endereço mudou.
 
-### E quando o componente ESTÁ no caminho
+### Clique em qualquer furo e ele se explica
 
-Clicando em `J1-5 · D9`, o caminho é outro:
+Escolhendo `L6` no desenho, o painel responde:
 
 ```
-   ┌──────────────────────────────────┐
-   │  J1-5 · D9  =  CI1 · IN1         │   unidos por: fio 8
-   └──────────────┬───────────────────┘
-                  │ ▷ CI1 · IN1 → OUT1   (transistor Darlington 1)
-   ┌──────────────▼───────────────────┐
-   │  J2-4 · L1−  =  CI1 · OUT1       │   unidos por: fio 16
-   └──────────────────────────────────┘
+   CÉLULA L6                     coluna L (12) · fileira 6
+
+   O QUE TEM NESTE FURO
+     nó 1-Wire · sai o fio para J2-3 (D2)
+
+   FIOS QUE CHEGAM AQUI
+     fio 6  vai até  F28  — nó 1-Wire → sai D2
+
+   🔗 ponte de fio nu do nó 1-Wire, unindo K6 a N6
+
+   É O MESMO PONTO ELÉTRICO QUE
+     F2   J1-3 · DATA
+     F28  J2-3 · D2
+     K6   nó 1-Wire · chega o fio de J1-3 (DATA)
+     N6   R3 · 4,7 kΩ · perna 1        ⭐ É O RESISTOR
+
+   ATRAVESSANDO UM COMPONENTE, CHEGA EM
+     R3 · 4,7 kΩ  →  R6  ·  H2 J1-4 (+5 V)
 ```
 
-Aqui há **duas caixas**, porque o transistor de dentro do chip **separa** a entrada da saída. Compare com o capacitor: uma caixa só, componente pendurado.
+**É essa lista que responde a pergunta difícil.** Olhando só o desenho, dá para ver que existe um nó na fileira 6 — mas não dá para saber *o que* está pendurado nele. A lista diz: o borne de entrada `J1-3`, o de saída `J2-3` e **a perna esquerda do R3**, na célula `N6`. E atravessando o R3 chega-se no `+5 V`.
 
-📐 Na PI-2 o mesmo desenho mostra a corrente da posição 1 entrando pelo `RET-1`, **atravessando o INA219** (`VIN+ → VIN−`), chegando ao nó, e descendo pelo shunt R1 até o 0 V — com o canal C0 do multiplexador **pendurado nesse nó**, lendo sem consumir.
+### Também dá para clicar na letra ou no número
 
-### O que o script confere
+- Clicar numa **letra** acende a coluna inteira e lista tudo o que existe nela
+- Clicar num **número** faz o mesmo com a fileira
 
-`npm run valida:pi1` e `valida:pi2` montam essa mesma rede e reprovam se:
+📌 É como selecionar a linha 6 de uma planilha para ver todas as células preenchidas dela.
 
-- **algum borne ficar ilhado** — via usada cujo fio não leva a ponto nenhum;
-- **o 0 V virar mais de um nó** — se o barramento se partir, metade da placa fica sem retorno e o defeito é dos que não se acha no multímetro sem saber onde procurar.
+### O que saiu
 
-📊 Hoje: **PI-1 com 24 nós elétricos e 10 elementos · PI-2 com 28 nós e 5 elementos.**
+Duas telas foram removidas por não estarem ajudando: o "Siga o sinal" e o "Como cada perna é ligada". Ambas mostravam a informação certa **longe da placa** — e a pergunta de quem está soldando é sempre *"o que tem NESTE furo aqui"*. O inspetor de célula responde isso no lugar onde a dúvida aparece.
 
 ### 🔩 Qual borne comprar — e a armadilha dos 5,00 mm
 

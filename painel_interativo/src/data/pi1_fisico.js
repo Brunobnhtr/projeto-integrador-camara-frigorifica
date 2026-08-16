@@ -95,7 +95,7 @@ export const COMPONENTES_PI1 = [
     ref: 'C1', tipo: 'capacitor', valor: '100 nF', circuito: 1,
     furos: [[3, 8], [3, 10]],
     polaridade: false,
-    ligacao: 'Uma perna no nó A0 (furo 3,8), a outra no barramento de 0 V (furo 3,10).',
+    ligacao: 'Uma perna no nó A0 (furo C8), a outra no barramento de 0 V (furo C10).',
     papel: 'Filtra o ruído que o cabo do BTS #1 pegou no caminho',
     porque: 'O sinal IS é analógico e viaja num painel cheio de PWM. Sem o filtro, '
           + 'o Arduino lê picos de ruído como se fossem corrente real.',
@@ -104,14 +104,14 @@ export const COMPONENTES_PI1 = [
     ref: 'C2', tipo: 'capacitor', valor: '100 nF', circuito: 1,
     furos: [[8, 8], [8, 10]],
     polaridade: false,
-    ligacao: 'Uma perna no nó A1 (furo 8,8), a outra no barramento de 0 V (furo 8,10).',
+    ligacao: 'Uma perna no nó A1 (furo H8), a outra no barramento de 0 V (furo H10).',
     papel: 'O mesmo, para o BTS #2',
   },
   {
     ref: 'R3', tipo: 'resistor', valor: '4,7 kΩ', circuito: 2,
     furos: [[14, 6], [18, 6]],
     polaridade: false,
-    ligacao: 'Perna esquerda no nó 1-Wire (furo 14,6), perna direita no +5 V (furo 18,6).',
+    ligacao: 'Perna esquerda no nó 1-Wire (furo N6), perna direita no +5 V (furo R6).',
     papel: 'Pull-up do 1-Wire',
     porque: 'O DS18B20 só sabe PUXAR a linha para 0 V — ele não tem como levantá-la. '
           + 'Quem levanta é este resistor. SEM ele não existe barramento 1-Wire, '
@@ -121,14 +121,14 @@ export const COMPONENTES_PI1 = [
     ref: 'R1', tipo: 'resistor', valor: '22 kΩ', circuito: 3,
     furos: [[29, 6], [33, 6]],
     polaridade: false,
-    ligacao: 'Perna direita no 24V-POT (furo 33,6), perna esquerda no nó D25 (furo 29,6).',
+    ligacao: 'Perna direita no 24V-POT (furo AG6), perna esquerda no nó D25 (furo AC6).',
     papel: 'Braço de cima do divisor de tensão',
   },
   {
     ref: 'R2', tipo: 'resistor', valor: '4,7 kΩ', circuito: 3,
     furos: [[28, 6], [28, 10]],
     polaridade: false,
-    ligacao: 'Perna de cima no nó D25 (furo 28,6), perna de baixo no 0 V (furo 28,10).',
+    ligacao: 'Perna de cima no nó D25 (furo AB6), perna de baixo no 0 V (furo AB10).',
     papel: 'Braço de baixo do divisor — 24 × 4,7/26,7 = 4,22 V',
     porque: 'O Arduino queima com 24 V num pino. O divisor entrega 4,22 V, '
           + 'que ele lê como "tem 24 V lá fora" sem morrer.',
@@ -137,7 +137,7 @@ export const COMPONENTES_PI1 = [
     ref: 'C3', tipo: 'capacitor', valor: '100 nF', circuito: 3,
     furos: [[27, 6], [27, 10]],
     polaridade: false,
-    ligacao: 'Perna de cima no nó D25 (furo 27,6), perna de baixo no 0 V (furo 27,10).',
+    ligacao: 'Perna de cima no nó D25 (furo AA6), perna de baixo no 0 V (furo AA10).',
     papel: 'Segura o nó do divisor, que é de alta impedância e capta ruído',
   },
 ];
