@@ -69,7 +69,7 @@
 | 11 | [Subestação e Postes](camada_1_maquete/11_subestacao_e_postes.md) | Caixa da subestação, pátio com brita e cerca, 3 postes com cruzeta e isoladores, 3 transformadores (um por poste) com leitor digital, rede compacta protegida |
 | 12 | [Câmara Térmica](camada_1_maquete/12_camara_termica.md) | Cálculo de carga térmica, escolha do isolante, barreira de vapor, **porta dupla anticondensação**, dreno com sifão, 28 peças de acrílico |
 | **13** ⭐ | [**Posições de Ensaio e Detecção de Falha**](camada_1_maquete/13_posicoes_de_ensaio.md) | **Os dispositivos energizados dentro da cabine, proteção individual por posição e detecção de dispositivo morto por medição de corrente (INA219)** |
-| **14** ⭐ | [**Arquitetura distribuída — RS-485**](camada_1_maquete/14_arquitetura_distribuida.md) | **A solução das 50 posições:** módulos de ensaio junto da câmara, Modbus RTU, e quatro fios saindo do painel |
+| **14** ⭐ | [**Escala e cabeamento**](camada_1_maquete/14_escala_e_cabeamento.md) | **Quantos cabos entram no painel com 50 posições** — a resposta é 9, não 100. Quantos multiplexadores, onde a placa fica, e quando o RS-485 passa a ser necessário |
 
 ### CAMADA 2 — PAINEL
 *Montagem mecânica. Nenhum fio ligado.*
