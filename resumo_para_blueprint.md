@@ -39,7 +39,7 @@ Uma empresa faz **ensaios térmicos** em placas eletrônicas. As placas ficam de
 ### O que o sistema precisa fazer
 
 1. Controlar a temperatura de uma câmara entre **5 °C e 60 °C**, com ciclos alternados de frio e calor
-2. Manter até **4 dispositivos energizados** dentro da câmara durante o ensaio
+2. Manter até **4 dispositivos energizados** dentro da câmara durante o ensaio — cada um alimentado com **24 V contínuos, ~130 mA**, com fusível individual de 500 mA. ⚠️ **Não há 127 V dentro da câmara nem nos dispositivos**
 3. **Detectar, na hora, se um deles parar de funcionar** — e saber qual
 4. Registrar temperatura, umidade e o estado de cada dispositivo, com data e hora
 5. Permitir acompanhamento remoto e comando à distância
@@ -173,6 +173,8 @@ CONSTRAINTS
   New hardware must work alongside it.
 - Mains input is 127 V AC
 - Everything after the power supply must be touch-safe (24 V or less)
+- The 4 devices under test are powered with 24 V DC, ~130 mA each, with
+  an individual 500 mA fuse. There is NO mains voltage inside the chamber.
 - Must be built on DIN rail like a real industrial panel, assembled by students
 - Low budget; parts sourced from AliExpress
 
@@ -193,7 +195,9 @@ Não aceite de primeira. Três coisas para conferir:
 
 **2. As contas fecham?** Confira a corrente das Peltier, a potência da fonte e a bitola dos fios. Ferramenta de IA erra conta com frequência.
 
-**3. Ele considerou o que acontece quando algo falha?** Ventoinha travada, sensor mentindo, fio rompido. Um projeto que só descreve o funcionamento normal está pela metade.
+**3. Ele leu a tensão certa?** Na primeira rodada ele perguntou como comutar *"127 V AC para os 4 dispositivos"* — premissa errada, os dispositivos são de **24 V CC**. Vale ler as perguntas dele com o mesmo cuidado com que se lê a resposta.
+
+**4. Ele considerou o que acontece quando algo falha?** Ventoinha travada, sensor mentindo, fio rompido. Um projeto que só descreve o funcionamento normal está pela metade.
 
 ---
 
