@@ -168,6 +168,62 @@ Uma leitura analógica no Arduino leva cerca de 110 µs, e o multiplexador preci
 
 ---
 
+## 14.4 ⭐ "Então com 50 seriam 50 fios de retorno?"
+
+**Sim — e é aqui que a arquitetura mostra por que ela funciona.**
+
+Cada dispositivo precisa do seu próprio caminho de volta, senão as correntes se somam e a medição perde o sentido. Isso é inescapável: **medição individual exige retorno individual**.
+
+A pergunta certa não é *"como evitar os 50 retornos"*, é **"onde eles ficam"**.
+
+### O erro seria trazer os 50 até o painel
+
+```
+   ❌  50 câmaras/posições ─── 100 fios de 20 m ───► painel
+```
+
+Cem fios atravessando a fábrica, cem pontos de mau contato, e sinal de milivolts viajando ao lado de motores. Inviável.
+
+### O certo: a medição vai até os dispositivos
+
+```
+   ✅  ┌─── SUPORTE (dentro do rack, junto dos DUTs) ───┐
+       │                                                 │
+       │   soquete 1 ──┐                                 │
+       │   soquete 2 ──┤ retornos de 3 cm,               │
+       │      ...      ├ em TRILHA DE PLACA,             │
+       │   soquete 16 ─┘ não em fio                      │
+       │        │                                        │
+       │     16 shunts → mux → Arduino Nano              │
+       └──────────────────────┬──────────────────────────┘
+                              │  2 fios · RS-485
+                              ▼  para o painel
+```
+
+### 🔑 O detalhe que resolve tudo: **os retornos viram trilha, não fio**
+
+Numa placa de suporte, os dispositivos **encaixam em soquetes**. O caminho de volta de cada um é uma **trilha de cobre de poucos centímetros** até o shunt que já está ali na mesma placa.
+
+> **Não existem 50 fios. Existem 50 trilhas** — e trilha não tem mau contato, não capta ruído e não custa nada além do cobre que já está na placa.
+
+| | Retornos até o painel | Retornos no suporte |
+|---|---|---|
+| O que são | 50 fios de 20 m | **50 trilhas de 3 cm** |
+| Custo | cabo + prensa-cabo + tempo | **zero** — já vem na placa |
+| Ruído captado | muito | **quase nenhum** |
+| Pontos de falha | 100 conexões | **os soquetes, que já existiriam** |
+| O que chega no painel | 100 fios | **2** |
+
+### E no nosso protótipo, com 2?
+
+Aqui os retornos **são fios mesmo** — dois, saindo da câmara até a PI-2 no painel. Com dois, isso não é problema nenhum.
+
+📌 **A regra que fica:** *o número de retornos acompanha o número de dispositivos, sempre. O que a arquitetura escolhe é o comprimento deles.*
+
+> 🎓 **Para a defesa:** *"medir cada dispositivo exige um retorno por dispositivo — não tem como fugir disso. O que a solução industrial faz é encurtar esses retornos de vinte metros para três centímetros, colocando a medição junto dos soquetes. Com isso, o que atravessa a fábrica deixa de ser cem fios analógicos e passa a ser um par digital."*
+
+---
+
 ## 14.4 Como isso se organiza fisicamente
 
 Não se coloca 50 shunts dentro do painel de comando. A montagem industrial agrupa:
