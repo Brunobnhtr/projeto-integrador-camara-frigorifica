@@ -276,6 +276,87 @@ Um bastidor de CLP com quatro cartões de entrada analógica é **absolutamente 
 
 📌 **I/O remoto merece nota.** Em vez de puxar 50 pares de fios analógicos até o painel, colocam-se módulos **junto das câmaras**, e eles conversam com o CLP por **Modbus RTU sobre RS-485** — dois fios para todos. Sinal analógico longo é sinal ruim; digitalizar perto da fonte é a regra.
 
+### 🔌 E no nosso protótipo, o que entra nas duas posições?
+
+Duas **placas simuladoras de DUT** — as mesmas descritas em §13.3: um LED que mostra "estou viva" e um resistor de potência que consome e aquece.
+
+💡 **Vale montar as duas DIFERENTES**, e isso não é capricho:
+
+| | Posição 1 | Posição 2 |
+|---|---|---|
+| Resistor | 220 Ω / 5 W | 330 Ω / 5 W |
+| Corrente | ~127 mA | ~92 mA |
+| Calor | ~2,6 W | ~1,7 W |
+
+**Por quê:** com correntes diferentes, você prova que o sistema **não usa um limiar único**. Cada posição aprende a corrente normal dela e compara consigo mesma. Isso é o que acontece na empresa, onde as 50 placas nunca são idênticas — e com duas placas iguais essa qualidade do projeto fica invisível.
+
+📌 **Qualquer coisa que consuma uma corrente estável serve como DUT.** Não precisa ser uma placa de verdade: o que o sistema mede é corrente, não função. Se um dia quiser ensaiar uma placa real, é só ligá-la no lugar do simulador.
+
+---
+
+### 🏭 E o CLP? Seriam 50 entradas?
+
+**Não. E é aqui que a resposta muda de forma.**
+
+Ligar 50 entradas analógicas no CLP funcionaria, mas é a solução cara e trabalhosa:
+
+- 4 cartões de entrada analógica, e cartão analógico é caro
+- **100 fios** (par por canal) atravessando a fábrica até o painel
+- 100 pontos de mau contato para procurar quando algo falhar
+- sinal analógico percorrendo dezenas de metros ao lado de motores
+
+### A unidade de escala não é o sensor. É o suporte instrumentado.
+
+Em ensaio térmico de verdade, os dispositivos não ficam soltos — eles são encaixados numa **placa de suporte** (*burn-in board*). E é ela que carrega a medição:
+
+```
+   ┌─────────── SUPORTE INSTRUMENTADO — 16 posições ───────────┐
+   │                                                            │
+   │  [DUT][DUT][DUT]...[DUT]     ← 16 soquetes                │
+   │    │    │    │       │                                     │
+   │   shunt shunt shunt shunt    ← 16 resistores de medição   │
+   │    └────┴────┴───────┘                                     │
+   │              ▼                                             │
+   │      [ mux ]─►[ ADC ]─►[ microcontrolador ]                │
+   │                              │                             │
+   └──────────────────────────────┼─────────────────────────────┘
+                                  ▼
+                        RS-485 · dois fios
+                                  │
+                        outros suportes ─┤
+                                  ▼
+                              [ CLP ]
+```
+
+**50 dispositivos = 4 suportes de 16.** No CLP entram **dois fios**, não cem.
+
+### ⭐ E o CLP não precisa ver 50 valores
+
+Este é o ponto que mais economiza. Pergunte-se o que o CLP realmente precisa saber:
+
+> Não é *"qual a corrente da posição 23"*. É **"alguma posição caiu?"** — e, se caiu, qual.
+
+Então o microcontrolador de cada suporte faz a comparação **localmente**, onde o sinal está limpo e curto, e manda ao CLP uma **palavra de alarme**: 16 bits, um por posição. Quatro suportes cabem em **4 palavras de 16 bits** — 8 bytes para o sistema inteiro.
+
+O valor bruto da corrente continua sendo lido e gravado, mas por quem está perto dele. **Manda-se a conclusão, não o dado cru.**
+
+| | 50 entradas no CLP | 4 suportes instrumentados |
+|---|---|---|
+| Fios até o painel | ~100 | **2** |
+| Cartões no CLP | 4 analógicos | **1 porta serial** |
+| Onde o sinal viaja longe | analógico ⚠️ | **digital** ✅ |
+| Acrescentar 16 posições | mais um cartão + 32 fios | **mais um suporte no mesmo par** |
+| Trocar um suporte defeituoso | desconectar 32 fios | **um conector** |
+
+### 🎓 A regra por trás disso
+
+> **Digitalize perto da fonte.** Sinal analógico é frágil: ele degrada com distância, capta ruído e não avisa quando erra. Bit não degrada — ou chega certo, ou não chega.
+
+É o mesmo princípio que já aplicamos no painel, na separação de canaletas de potência e sinal. Aqui ele aparece em escala maior: em vez de proteger o sinal analógico ao longo de 30 metros, **elimina-se o percurso analógico**.
+
+📌 **Repare que a nossa PI-2 já é um suporte instrumentado em miniatura** — 2 posições, medição junto da carga, e só o resultado saindo por um barramento digital (o I²C). A arquitetura da bancada e a da fábrica são a mesma; muda a contagem.
+
+
 ### 🤔 E a alternativa mais barata de todas: perguntar à placa
 
 Existe um caminho que dispensa medir corrente: **a própria placa avisar que está viva.**
