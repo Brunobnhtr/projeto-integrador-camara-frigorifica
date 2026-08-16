@@ -513,6 +513,22 @@ empurra o ar sobre o aquecedor e para dentro do plenum, de onde ele sobe pelos d
 volta pelo topo. O ar aquecido **atravessa todo o volume** — só entra pelas laterais em vez
 de pelo centro.
 
+### 🧊 Por que TUDO entra pelo fundo
+
+Não é preferência — é a única parede que sobra:
+
+| Parede | Por que não serve |
+|---|---|
+| **Frente** | é a porta, e ela abre |
+| **Laterais** | são os dutos de circulação de 30 mm |
+| **Topo** | tem as Peltier e os dissipadores |
+| **Base** | tem o dreno de condensado e a bandeja |
+| ✅ **Fundo** | **livre — é por aqui** |
+
+📐 **Veja girando:** na aba "❄️ Dentro da câmara", botão **"🧊 3D girável"**. Arraste para girar, e use o preset **"🔌 De trás"** para ver os dois prensa-cabos em cantos opostos. Clicando num deles, só os cabos que passam por ele ficam acesos.
+
+---
+
 ### 🔌 Dois prensa-cabos na parede, e não um
 
 São **16 condutores** entrando na câmara, divididos em dois grupos que **não podem dividir o mesmo furo**:

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { CAIXA, UTIL, BASE_INT, COMPONENTES, EXTERNOS, TRAVESSIA, PRENSAS }
   from '../data/camara';
+import Camara3D from './Camara3D';
 
 /* Corte frontal da câmara. Mostra ONDE cada componente fica, POR QUE
    fica ali, e de qual borne do painel vem cada fio dele.
@@ -30,6 +31,7 @@ const MODOS = {
 };
 
 export default function VistaCamara() {
+  const [vista, setVista] = useState('3d');   // 3d | corte
   const [sel, setSel] = useState(null);
   const [modo, setModo] = useState('frio');
   const [verFios, setVerFios] = useState(true);
@@ -37,11 +39,34 @@ export default function VistaCamara() {
   const M = MODOS[modo];
   const porPrensa = id => TRAVESSIA.filter(t => t.pc === id).reduce((a, t) => a + t.n, 0);
 
+  const seletor = (
+    <div style={{ display: 'flex', gap: 7, padding: '10px 16px 0',
+                  background: '#eef1f5' }}>
+      {[['3d', '🧊 3D girável'], ['corte', '📐 Corte com medidas']].map(([id, txt]) => (
+        <button key={id} onClick={() => setVista(id)} style={{
+          background: vista === id ? '#1971c2' : '#fff',
+          color: vista === id ? '#fff' : '#1971c2',
+          border: '2px solid #1971c2', borderRadius: 7, padding: '7px 14px',
+          cursor: 'pointer', fontSize: 12.5, fontWeight: 700 }}>{txt}</button>
+      ))}
+    </div>
+  );
+
+  if (vista === '3d')
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%',
+                    overflow: 'hidden' }}>
+        {seletor}
+        <div style={{ flex: 1, minHeight: 0 }}><Camara3D /></div>
+      </div>
+    );
+
   return (
     <div style={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
       <div style={{ flex: 1, overflow: 'auto', padding: 16, background: '#eef1f5' }}>
-
-        <div style={{ display: 'flex', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
+        {seletor}
+        <div style={{ display: 'flex', gap: 8, marginBottom: 10, marginTop: 10,
+                      flexWrap: 'wrap' }}>
           {Object.entries(MODOS).map(([id, m]) => (
             <button key={id} onClick={() => setModo(id)} style={{
               background: modo === id ? m.cor : '#fff', color: modo === id ? '#fff' : m.cor,

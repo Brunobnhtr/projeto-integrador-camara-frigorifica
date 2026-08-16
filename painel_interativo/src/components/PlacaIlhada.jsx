@@ -98,9 +98,17 @@ function Face({
               <rect x={X(c) - PASSO / 2} y={-7.2} width={PASSO} height={6.0}
                     fill={on ? '#f59f00' : (c % 5 === 0 ? '#dbe4ff' : '#eef1f5')}
                     stroke="#adb5bd" strokeWidth={0.15} />
-              <text x={X(c)} y={-3.0} textAnchor="middle" fontSize={2.3}
+              {/* ⭐ AA, AB… empilhadas: lado a lado elas estouram os 2,54 mm
+                  da coluna e invadem a vizinha */}
+              <text x={X(c)} textAnchor="middle" fontSize={2.15}
+                    y={letra(c).length > 1 ? -4.9 : -3.0}
                     fontWeight={on || c % 5 === 0 ? 700 : 400}
-                    fill={on ? '#fff' : '#495057'}>{letra(c)}</text>
+                    fill={on ? '#fff' : '#495057'}>
+                {letra(c).length > 1
+                  ? letra(c).split('').map((ch, i) => (
+                      <tspan key={i} x={X(c)} dy={i ? 2.3 : 0}>{ch}</tspan>))
+                  : letra(c)}
+              </text>
             </g>
           );
         })}

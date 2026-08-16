@@ -221,3 +221,61 @@ export const TRAVESSIA = [
   { pc: 'PC-2', g: 'Ensaio',     n: 2, o: 'retornos individuais', de: 'PI-2 · RET-1/2', mm: '0,5 mm²' },
   { pc: 'PC-2', g: 'Sinal',      n: 4, o: 'AM2315C (VCC GND SDA SCL)', de: 'Mega + BD-5V', mm: '0,25 mm²' },
 ];
+
+/* ══════════════════════════════════════════════════════════════════════
+   MODELO 3D — para a vista girável
+   ══════════════════════════════════════════════════════════════════════
+   Coordenadas em mm dentro do VOLUME ÚTIL, que é 200 × 100 × 250:
+     x  0 → 200   esquerda → direita
+     y  0 → 100   FRENTE (a porta) → FUNDO
+     z  0 → 250   base → tampa
+
+   ⭐ Todos os cabos entram pelo FUNDO, nunca pela porta nem pelas
+   laterais: a porta abre e as laterais têm os dutos de circulação.
+   São dois prensa-cabos, em cantos opostos da parede traseira.       */
+
+export const UTIL3D = { w: 200, d: 100, h: 250 };
+
+export const PRENSAS3D = [
+  {
+    id: 'PC-1', nome: 'POTÊNCIA', cor: '#c92a2a', x: 45, z: 22,
+    diz: 'Peltier, PTC e as ventoinhas. Os BTS chaveiam 6 A por aqui — '
+       + 'é a fonte de ruído do projeto.',
+  },
+  {
+    id: 'PC-2', nome: 'SINAL E MEDIÇÃO', cor: '#1971c2', x: 155, z: 228,
+    diz: 'As duas posições de ensaio e o AM2315C. Carrega os 17,6 mA que '
+       + 'estão sendo medidos e os pulsos do I²C.',
+  },
+];
+
+/* caixa = [x0, y0, z0, x1, y1, z1] */
+export const PECAS3D = [
+  { id: 'PELT', nome: '2× Peltier', cor: '#1971c2', pc: 'PC-1',
+    caixa: [60, 30, 236, 140, 70, 250],
+    diz: 'Encaixadas na tampa. Face fria para dentro, quente para fora.' },
+  { id: 'VF', nome: '2× ventoinha fria', cor: '#4dabf7', pc: 'PC-1',
+    caixa: [70, 32, 210, 130, 68, 234],
+    diz: 'Sopram para BAIXO — o ar desce pelo centro.' },
+  { id: 'SENS', nome: 'AM2315C', cor: '#f76707', pc: 'PC-2',
+    caixa: [88, 42, 116, 112, 58, 136],
+    diz: '⭐ No centro geométrico, suspenso. Longe da Peltier e do PTC.' },
+  { id: 'VP', nome: 'ventoinha do PTC', cor: '#4dabf7', pc: 'PC-1',
+    caixa: [76, 32, 50, 124, 68, 72],
+    diz: 'Sopra para BAIXO também — o circuito de ar é único.' },
+  { id: 'PTC', nome: 'PTC 24 V', cor: '#e03131', pc: 'PC-1',
+    caixa: [64, 30, 26, 136, 70, 44],
+    diz: 'Na base, sobre o plenum de 30 mm.' },
+  { id: 'DUT1', nome: 'Posição 1', cor: '#c92a2a', pc: 'PC-2',
+    caixa: [14, 25, 24, 58, 75, 58],
+    diz: 'LED vermelho + 1,2 kΩ — 17,6 mA.' },
+  { id: 'DUT2', nome: 'Posição 2', cor: '#2f9e44', pc: 'PC-2',
+    caixa: [142, 25, 24, 186, 75, 58],
+    diz: 'LED verde + 2,2 kΩ — 9,8 mA.' },
+  { id: 'VD1', nome: 'vent. duto esq.', cor: '#74c0fc', pc: 'PC-1', fora: true,
+    caixa: [-32, 35, 108, -6, 65, 138],
+    diz: 'Dentro do duto lateral, FORA do volume útil. Sopra para CIMA.' },
+  { id: 'VD2', nome: 'vent. duto dir.', cor: '#74c0fc', pc: 'PC-1', fora: true,
+    caixa: [206, 35, 108, 232, 65, 138],
+    diz: 'Idem à esquerda — o retorno tem que ser simétrico.' },
+];
