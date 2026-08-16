@@ -99,3 +99,22 @@ if (erros.length) {
   process.exit(1);
 }
 console.log('\nOK - todo componente tem borne para o que liga nele');
+
+/* ── os rótulos precisam caber ─────────────────────────────────────── */
+{
+  const ruins = [];
+  for (const c of COMPONENTES) {
+    for (const g of c.grupos) {
+      const porLinha = Math.ceil(g.pinos.length / (g.linhas ?? 1));
+      const vert = g.lado === 'esquerda' || g.lado === 'direita';
+      const passo = Math.max(2.6, Math.min(4.6, ((vert ? c.altura : c.largura) - 3) / porLinha));
+      if (passo < 2.7)
+        ruins.push(`${c.id}.${g.ref}: ${passo.toFixed(2)} mm por borne — ilegível`);
+      // etiqueta em pé desce ~9 mm para dentro; dois grupos opostos não podem se encontrar
+      if (passo < 4.2 && !vert && c.altura < 22)
+        ruins.push(`${c.id}.${g.ref}: etiqueta em pé pede ~9 mm e a placa tem ${c.altura} mm`);
+    }
+  }
+  if (ruins.length) { console.log('\nRÓTULOS:'); ruins.forEach(r => console.log('  X ' + r)); process.exit(1); }
+  console.log('todos os rótulos cabem');
+}

@@ -485,7 +485,7 @@ export const COMPONENTES = [
   },
   {
     id: 'CONV', nome: 'Conversor de nível 2 canais', porta: true,
-    x: 112, y: 46, largura: 26, altura: 16, cor: '#7048e8',
+    x: 112, y: 44, largura: 34, altura: 22, cor: '#7048e8',
     escala: 'ampliado — a placa real tem 14,7 × 12,7 mm',
     nota: 'Monta atrás da tela, em espaçadores de nylon. ⚠️ No desenho ele está '
         + 'ampliado: a placa real tem 14,7 × 12,7 mm e os pinos ficariam menores '
