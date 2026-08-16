@@ -490,10 +490,22 @@ Escolhendo `L6` no desenho, o painel responde:
 
 ### Também dá para clicar na letra ou no número
 
-- Clicar numa **letra** acende a coluna inteira e lista tudo o que existe nela
-- Clicar num **número** faz o mesmo com a fileira
+Clicar numa **letra** de cima acende a coluna inteira; clicar num **número** da lateral faz o mesmo com a fileira. É como selecionar a linha 6 de uma planilha para ver todas as células preenchidas dela.
 
-📌 É como selecionar a linha 6 de uma planilha para ver todas as células preenchidas dela.
+Selecionando a **fileira 6** da PI-1, saem os 13 pontos que existem nela:
+
+| Célula | O que é |
+|---|---|
+| `K6` `L6` `N6` | nó 1-Wire — entrada, saída e a perna do R3 |
+| `N6` `R6` | as duas pernas do **R3 · 4,7 kΩ** |
+| `Z6` `AA6` `AB6` `AC6` | nó D25 |
+| `AA6` | perna do **C3 · 100 nF** |
+| `AB6` | perna do **R2 · 4,7 kΩ** |
+| `AC6` `AG6` | as duas pernas do **R1 · 22 kΩ** |
+
+📌 Repare que a mesma célula aparece duas vezes quando ela é ao mesmo tempo ponta de nó e perna de componente — `N6` é o furo do nó 1-Wire **e** a perna 1 do R3. É exatamente essa coincidência que responde "a que o fio se liga".
+
+⌨️ Há também um campo **"ir para célula"**: digite `N6` e dê Enter.
 
 ### O que saiu
 

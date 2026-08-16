@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { rotear } from '../lib/roteador';
 import { construirRede } from '../lib/rede';
-import { letra, cel } from '../lib/celula';
+import { letra, cel, daCelula } from '../lib/celula';
 
 /* Placa ilhada endereçada como uma planilha: coluna em LETRA, fileira
    em NÚMERO. O furo da coluna 11, fileira 6, é a célula K6.
@@ -45,7 +45,7 @@ function Face({
   }, [DISCRETOS, CI, MODULOS, BORNES]);
 
   const larg = PLACA.colunas * PASSO, alt = PLACA.linhas * PASSO;
-  const vb = { x: -8 * PASSO, y: -34, w: larg + 15 * PASSO, h: alt + 34 + 42 };
+  const vb = { x: -8 * PASSO, y: -36, w: larg + 15 * PASSO, h: alt + 36 + 46 };
 
   const marcado = (c, l) =>
     (alvo?.tipo === 'cel' && alvo.col === c && alvo.lin === l) ||
@@ -72,19 +72,22 @@ function Face({
            viewBox={`${vb.x} ${vb.y} ${vb.w} ${vb.h}`}
            style={{ display: 'block', minWidth: '100%' }}>
 
-        {/* faixa da linha / coluna escolhida, por baixo de tudo */}
+        <rect x={PASSO * 0.5} y={PASSO * 0.5} width={larg} height={alt} rx={1.2}
+              fill={verso ? '#c9b98c' : '#d8c9a3'} stroke="#a8946a" strokeWidth={0.5} />
+
+        {/* ⭐ a faixa da fileira/coluna escolhida vai POR CIMA da placa —
+            desenhada por baixo, o realce sumia e o clique parecia não ter
+            funcionado */}
         {alvo?.tipo === 'lin' && (
           <rect x={PASSO * 0.5} y={Y(alvo.lin) - PASSO / 2} width={larg} height={PASSO}
-                fill="#ffd43b" opacity={0.45} />
+                fill="#ffd43b" opacity={0.55} stroke="#f59f00" strokeWidth={0.35}
+                pointerEvents="none" />
         )}
         {alvo?.tipo === 'col' && (
           <rect x={X(alvo.col) - PASSO / 2} y={PASSO * 0.5} width={PASSO} height={alt}
-                fill="#ffd43b" opacity={0.45} />
+                fill="#ffd43b" opacity={0.55} stroke="#f59f00" strokeWidth={0.35}
+                pointerEvents="none" />
         )}
-
-        <rect x={PASSO * 0.5} y={PASSO * 0.5} width={larg} height={alt} rx={1.2}
-              fill={verso ? '#c9b98c' : '#d8c9a3'} stroke="#a8946a" strokeWidth={0.5}
-              opacity={0.92} />
 
         {/* ── cabeçalho de LETRAS, em cima ── */}
         {Array.from({ length: PLACA.colunas }, (_, i) => i + 1).map(c => {
@@ -92,10 +95,10 @@ function Face({
           return (
             <g key={`h${c}`} onClick={() => setAlvo(on ? null : { tipo: 'col', col: c })}
                style={{ cursor: 'pointer' }}>
-              <rect x={X(c) - PASSO / 2} y={-5.6} width={PASSO} height={4.4}
-                    fill={on ? '#f59f00' : (c % 5 === 0 ? '#dee2e6' : '#f1f3f5')}
-                    stroke="#ced4da" strokeWidth={0.12} />
-              <text x={X(c)} y={-2.4} textAnchor="middle" fontSize={2.0}
+              <rect x={X(c) - PASSO / 2} y={-7.2} width={PASSO} height={6.0}
+                    fill={on ? '#f59f00' : (c % 5 === 0 ? '#dbe4ff' : '#eef1f5')}
+                    stroke="#adb5bd" strokeWidth={0.15} />
+              <text x={X(c)} y={-3.0} textAnchor="middle" fontSize={2.3}
                     fontWeight={on || c % 5 === 0 ? 700 : 400}
                     fill={on ? '#fff' : '#495057'}>{letra(c)}</text>
             </g>
@@ -108,12 +111,12 @@ function Face({
           return [-1, 1].map(lado => (
             <g key={`v${l}${lado}`} onClick={() => setAlvo(on ? null : { tipo: 'lin', lin: l })}
                style={{ cursor: 'pointer' }}>
-              <rect x={lado < 0 ? -5.4 : larg + 1.4} y={Y(l) - PASSO / 2}
-                    width={4.4} height={PASSO}
-                    fill={on ? '#f59f00' : (l % 5 === 0 ? '#dee2e6' : '#f1f3f5')}
-                    stroke="#ced4da" strokeWidth={0.12} />
-              <text x={lado < 0 ? -3.2 : larg + 3.6} y={Y(l) + 0.75} textAnchor="middle"
-                    fontSize={1.9} fontWeight={on || l % 5 === 0 ? 700 : 400}
+              <rect x={lado < 0 ? -7.0 : larg + 1.6} y={Y(l) - PASSO / 2}
+                    width={5.8} height={PASSO}
+                    fill={on ? '#f59f00' : (l % 5 === 0 ? '#dbe4ff' : '#eef1f5')}
+                    stroke="#adb5bd" strokeWidth={0.15} />
+              <text x={lado < 0 ? -4.1 : larg + 4.5} y={Y(l) + 0.8} textAnchor="middle"
+                    fontSize={2.2} fontWeight={on || l % 5 === 0 ? 700 : 400}
                     fill={on ? '#fff' : '#495057'}>{l}</text>
             </g>
           ));
@@ -328,8 +331,9 @@ function Face({
           const x1 = Math.min(...cols) - PASSO, x2 = Math.max(...cols) + PASSO;
           const y1 = Y(b.corpo[0]), y2 = Y(b.corpo[1]);
           const emCima = b.linha < PLACA.linhas / 2;
-          const yRot = emCima ? y1 - 7.5 : y2 + 7.5;
-          const yTit = emCima ? y1 - 27 : y2 + 27;
+          /* acima do cabeçalho de letras, que ocupa de −7,2 a −1,2 */
+          const yRot = emCima ? y1 - 9.5 : y2 + 9.5;
+          const yTit = emCima ? y1 - 29 : y2 + 29;
           return (
             <g key={b.ref} opacity={verso ? 0.4 : 1}>
               <rect x={x1} y={y1} width={x2 - x1} height={y2 - y1} rx={1}
@@ -466,6 +470,17 @@ export default function PlacaIlhada({ dados, titulo, onFechar }) {
               border: 'none', background: 'none', cursor: 'pointer', fontSize: 16,
               fontWeight: 700, color: '#495057', lineHeight: 1 }}>+</button>
           </div>
+          <input placeholder="ir para célula — ex: N6"
+            onKeyDown={e => {
+              if (e.key !== 'Enter') return;
+              const d = daCelula(e.currentTarget.value);
+              if (d && d.col >= 1 && d.col <= PLACA.colunas
+                    && d.lin >= 1 && d.lin <= PLACA.linhas)
+                setAlvo({ tipo: 'cel', ...d });
+              e.currentTarget.select();
+            }}
+            style={{ border: '2px solid #adb5bd', borderRadius: 7, padding: '7px 11px',
+                     fontSize: 12.5, fontFamily: 'monospace', width: 168 }} />
           {(fio != null || alvo) && (
             <button onClick={() => { setFio(null); setAlvo(null); }} style={{
               background: '#fff3bf', border: '2px solid #f59f00', borderRadius: 7,
@@ -479,7 +494,8 @@ export default function PlacaIlhada({ dados, titulo, onFechar }) {
                       fontSize: 12, marginBottom: 12, lineHeight: 1.55 }}>
           🔤 <b>Cada furo tem endereço, como numa planilha:</b> coluna em letra, fileira em
           número. O furo da coluna 11, fileira 6, é a célula <b>K6</b>. Clique num
-          <b> furo</b>, numa <b>letra</b> ou num <b>número</b> para ver o que existe ali.
+          <b> furo</b>, na <b>letra</b> de cima ou no <b>número</b> da lateral — a fileira
+          ou a coluna inteira acende e o painel lista tudo o que há nela.
           <br />
           ⚠️ O endereço é do <b>furo</b>, não da vista: <b>K6 é o mesmo furo</b> nos dois
           desenhos. No lado da solda as letras é que correm ao contrário.
@@ -516,9 +532,18 @@ export default function PlacaIlhada({ dados, titulo, onFechar }) {
               <b style={{ fontSize: 20, color: '#8a5a00', fontFamily: 'monospace' }}>
                 {cel(info.col, info.lin)}
               </b>
-              <span style={{ fontSize: 10.5, color: '#868e96' }}>
-                coluna {letra(info.col)} ({info.col}) · fileira {info.lin}
-              </span>
+              <div style={{ display: 'flex', gap: 4 }}>
+                <button onClick={() => setAlvo({ tipo: 'col', col: info.col })} style={{
+                  fontSize: 10.5, border: '1px solid #adb5bd', borderRadius: 4,
+                  background: '#fff', cursor: 'pointer', padding: '2px 7px' }}>
+                  coluna {letra(info.col)} ▸
+                </button>
+                <button onClick={() => setAlvo({ tipo: 'lin', lin: info.lin })} style={{
+                  fontSize: 10.5, border: '1px solid #adb5bd', borderRadius: 4,
+                  background: '#fff', cursor: 'pointer', padding: '2px 7px' }}>
+                  fileira {info.lin} ▸
+                </button>
+              </div>
             </div>
 
             {info.vazia ? (
