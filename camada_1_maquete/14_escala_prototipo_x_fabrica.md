@@ -1,0 +1,185 @@
+# CAMADA 1 · Doc 14 — Do protótipo às 50 posições
+
+> ⭐ **Este documento responde à pergunta mais difícil que a banca pode fazer:** *"tudo bem na bancada com 2 posições, mas e na empresa, com 50?"*
+>
+> ✅ **Pré-requisito:** [Doc 13](13_posicoes_de_ensaio.md) — as posições de ensaio da bancada.
+
+---
+
+## 🟢 Em palavras simples
+
+A bancada mede a corrente de **2 dispositivos** com **2 sensores INA219**. Um sensor por dispositivo.
+
+Se a empresa tem **50 dispositivos**, a conta parece dar 50 sensores — e aí o projeto não escala. Este documento mostra que **a arquitetura muda de forma**, e não de tamanho.
+
+E há uma boa notícia que muda tudo:
+
+> 🏭 **A empresa já usa Arduino como padrão de fábrica.**
+
+Isso significa que **não é preciso propor um CLP**. A solução para 50 posições cabe no mesmo ecossistema que os técnicos de lá já sabem manter — o que costuma valer mais que qualquer ganho técnico de trocar de plataforma.
+
+---
+
+## 14.1 O que muda, lado a lado
+
+| | **Bancada — 2 posições** | **Fábrica — 50 posições** |
+|---|---|---|
+| Sensor | 2 × INA219 | 50 × resistor *shunt* |
+| Medição | um circuito por canal | **um circuito para 16 canais** |
+| Como escolhe o canal | endereço I²C | **multiplexador** |
+| Conversor A/D | dentro do INA219 | o do próprio Arduino |
+| Pinos usados | 2 (o I²C que já existia) | **8** para 64 canais |
+| Custo por canal | ~R$ 15 | **~R$ 2** |
+| Fios até o controlador | 2 (I²C) | 2 (RS-485), com suportes |
+
+**Repare que o que não muda:** o princípio. Nos dois casos você mede a corrente de cada posição e compara com o normal dela. Muda só **como o mesmo circuito de medição atende muitos canais**.
+
+---
+
+## 14.2 Por que 50 INA219 não é o caminho
+
+Não é o preço — R$ 750 numa fábrica não é obstáculo. São três problemas técnicos:
+
+**1. O barramento I²C não aguenta.** Cada módulo acrescenta capacitância nos fios. O I²C tolera cerca de 400 pF no total; com 50 módulos e a fiação, passa disso e o barramento simplesmente para de responder.
+
+**2. Endereços acabam.** O INA219 tem **16 endereços** (0x40 a 0x4F). Cinquenta não cabem, e resolver com multiplexador de I²C só empilha complexidade.
+
+**3. Manutenção.** Cinquenta plaquinhas, cada uma com um jumper de endereço diferente. Trocar uma exige saber qual endereço ela tinha. É o tipo de sistema que ninguém quer herdar.
+
+---
+
+## 14.3 ⭐ A solução para 50 canais com Arduino
+
+### A peça central: multiplexador analógico
+
+> **Modelo para pesquisar: `CD74HC4067`**
+> Busque por **"modulo multiplexador analogico 16 canais CD74HC4067"**. Custa cerca de **R$ 6** e vem em plaquinha pronta.
+
+Um multiplexador é uma **chave rotativa eletrônica**: ele conecta **um** de 16 pontos à mesma saída, e o Arduino escolhe qual através de 4 pinos digitais.
+
+```
+   posição 1  ──┐
+   posição 2  ──┤
+   posição 3  ──┤     ┌──────────────┐
+      ...       ├────►│ CD74HC4067   │───► uma entrada
+   posição 16 ──┘     │  16 → 1      │     analógica
+                      └──────┬───────┘
+                             ▲
+                   S0 S1 S2 S3 — 4 pinos digitais
+                   escolhem o canal (0000 a 1111)
+```
+
+### Como medir a corrente sem amplificador
+
+Aqui há um truque que simplifica muito: **use um shunt grande**.
+
+Num medidor de precisão o shunt é pequeno (0,1 Ω) para não atrapalhar a carga, e aí a tensão sai em milivolts e precisa de amplificador. Mas o nosso DUT consome pouco e não se importa em perder meio volt:
+
+| | Conta | Resultado |
+|---|---|---|
+| Shunt | **4,7 Ω · 1% · 1/4 W** | — |
+| Tensão com 127 mA | 0,127 × 4,7 | **0,60 V** |
+| Leitura no Arduino (10 bits, 5 V) | 0,60 ÷ 0,00488 | **123 contagens** |
+| Resolução | — | **~1 mA** |
+| Calor no resistor | 0,127² × 4,7 | **0,076 W** — nem esquenta |
+| Perda para o DUT | 0,60 de 24 V | **2,5%** — irrelevante |
+
+**Sem amplificador, sem INA219, sem I²C.** Um resistor de centavos e a entrada analógica que o Arduino já tem.
+
+### O conjunto completo
+
+```
+  50 posições
+      │
+      ├── 50 shunts de 4,7 Ω (lado do retorno)
+      │
+      ├──►[ CD74HC4067 #1 ]──► A2  ┐
+      ├──►[ CD74HC4067 #2 ]──► A3  │  S0–S3 compartilhados
+      ├──►[ CD74HC4067 #3 ]──► A4  │  entre os quatro
+      └──►[ CD74HC4067 #4 ]──► A5  ┘
+                                      = 8 pinos para 64 canais
+```
+
+| Item | Qtd | Preço aprox. |
+|---|---:|---:|
+| Módulo CD74HC4067 | 4 | R$ 24 |
+| Resistor 4,7 Ω 1% | 50 | R$ 15 |
+| Bornes e placa | — | R$ 60 |
+| | **Total** | **~R$ 100** |
+
+Contra **~R$ 750** em 50 INA219 — e usando **8 pinos** em vez de estourar o barramento.
+
+### Quanto tempo leva para varrer tudo
+
+Uma leitura analógica no Arduino leva cerca de 110 µs, e o multiplexador precisa de alguns microssegundos para estabilizar. Arredondando para **200 µs por canal**:
+
+`64 canais × 200 µs = 12,8 ms`
+
+**A varredura completa leva 13 milissegundos.** Rodando uma vez por segundo, sobra 98,7% do tempo do processador para o resto. E como um dispositivo morto continua morto, uma varredura por segundo é generosa.
+
+---
+
+## 14.4 Como isso se organiza fisicamente
+
+Não se coloca 50 shunts dentro do painel de comando. A montagem industrial agrupa:
+
+```
+   ┌──── SUPORTE INSTRUMENTADO — 16 posições ────┐
+   │  16 soquetes + 16 shunts + 1 CD74HC4067     │
+   │  + 1 Arduino Nano                            │
+   └──────────────────┬───────────────────────────┘
+                      │  RS-485 · 2 fios
+   ┌────────┬─────────┼─────────┬────────┐
+   sup. 1   sup. 2   sup. 3   sup. 4    │
+                                         ▼
+                              Arduino Mega do painel
+```
+
+**Cada suporte tem seu próprio Arduino Nano** (R$ 25) que varre os 16 canais, compara cada um com o valor normal dele e manda ao painel apenas o que interessa: **uma palavra de 16 bits** dizendo quais posições caíram.
+
+📌 **Por que um Nano por suporte, e não fios longos até o Mega:** sinal analógico degrada com distância e capta ruído. Digitalizando junto da carga, o que viaja pela fábrica é um bit — e bit ou chega certo, ou não chega.
+
+Vale notar que isso mantém o padrão de fábrica: **é tudo Arduino**, do suporte ao painel.
+
+---
+
+## 14.5 Por que a bancada continua com INA219
+
+Se o mux é mais barato, por que o protótipo não usa mux?
+
+**Porque para 2 canais ele é pior:**
+
+| | 2 × INA219 | 1 mux + 2 shunts |
+|---|---|---|
+| Canais desperdiçados | 0 | **14 de 16** |
+| Resolução | 16 bits | 10 bits |
+| Mede também a tensão | ✅ | ❌ |
+| Distingue *fusível queimado* de *placa morta* | ✅ | ❌ |
+| Pinos do Arduino | 0 (I²C já existia) | 5 |
+
+Aquela distinção da terceira linha é o que se perde: o INA219 mede corrente **e** tensão, então ele sabe dizer se a corrente zerou porque o dispositivo morreu (24 V presentes) ou porque o fusível abriu (0 V). Com shunt puro, os dois casos são idênticos.
+
+🎓 **E é exatamente isso que se diz na defesa:** *"cada escala tem a sua ferramenta certa. Com 2 posições, o INA219 mede melhor e usa menos pinos. Com 50, ele não cabe no barramento — e aí o multiplexador é que passa a ser a escolha certa."*
+
+---
+
+## 14.6 Resumo para a banca
+
+| Pergunta | Resposta curta |
+|---|---|
+| Escala para 50? | Sim, trocando **um sensor por canal** por **um circuito para 16 canais** |
+| Precisa de CLP? | **Não.** A empresa já usa Arduino, e a solução cabe nele |
+| Quanto custa? | ~R$ 100 em multiplexadores e shunts, contra ~R$ 750 em sensores |
+| Quantos pinos? | **8** para 64 canais |
+| Fica lento? | A varredura completa leva **13 ms** |
+| O que muda no conceito? | **Nada.** Continua sendo medir a corrente e comparar com o normal |
+
+---
+
+## ✅ Checklist se um dia for implantar
+
+- [ ] Medir a corrente normal de **cada** posição e gravar como referência — as placas não são idênticas
+- [ ] Definir o limiar em **percentual** do normal de cada uma, não um valor fixo para todas
+- [ ] Prever o caso do **suporte inteiro mudo** (Nano travado) — o painel precisa distinguir "nenhuma falha" de "não recebi resposta"
+- [ ] Deixar **canais sobrando** em cada suporte: crescer é acrescentar shunt, não trocar placa
+- [ ] Considerar o **heartbeat** das placas em paralelo, para pegar a que trava consumindo normal ([Doc 13 §13.9](13_posicoes_de_ensaio.md))

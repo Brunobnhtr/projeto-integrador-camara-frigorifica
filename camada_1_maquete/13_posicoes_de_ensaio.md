@@ -263,7 +263,11 @@ O ensaio dura **4 horas**. Detectar a falha em 5 segundos ou em 5 milissegundos 
 
 ### E na prática, numa fábrica?
 
-Aí nem se monta isso: **compra-se pronto**. O equivalente industrial de um "INA219 multiplexado" é o **cartão de entrada analógica de CLP** — tipicamente 8 ou 16 canais por cartão, encaixado num bastidor.
+Existe o caminho do **CLP**, com cartões de entrada analógica de 8 ou 16 canais num bastidor. É o padrão da indústria pesada, e funciona.
+
+> 🏭 **Mas neste caso específico ele não é a melhor resposta:** a empresa **já usa Arduino como padrão de fábrica**. Propor CLP significaria trocar de plataforma, de ferramenta de programação e de peça de reposição — e treinar de novo quem faz manutenção. O ganho técnico não paga esse custo.
+>
+> **A solução para 50 posições cabe no Arduino**, e está detalhada no [Doc 14](14_escala_prototipo_x_fabrica.md): multiplexadores CD74HC4067 e shunts, ~R$ 100 no total.
 
 | Escala | Solução | Observação |
 |---|---:|---|
