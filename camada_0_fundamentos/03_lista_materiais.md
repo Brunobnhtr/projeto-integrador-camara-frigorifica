@@ -721,23 +721,32 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 |---|---:|---|---|
 | ⭐ **Kit duplo de refrigeração Peltier** (2× TEC1-12706) | 1 | **Adotado — kit já conferido por foto** ([`imagens/peltir.avif`](../imagens/peltir.avif)): 2 conjuntos lado a lado, **cada pastilha com seu par de fios** e **cada ventoinha com cabo próprio**, o que viabiliza as modificações 1 e 2 sem cortar nada. Traz **2 pastilhas + radiador + 2 blocos frios + ventoinhas + montagem térmica pronta**. Anunciado como **12 V / 15 A**, ou seja, **vem ligado em PARALELO** — ⚠️ **religar em SÉRIE** para 24 V / 6,0 A (ver as 3 modificações abaixo). ~200 × 115 × 85 mm. Buscar `kit peltier duplo TEC1-12706 refrigeração` | |
 | Pastilha Peltier TEC1-12706 avulsa | 1 | **Reserva.** ⚠️ Trocar uma pastilha do kit exige desmontar a junta térmica — tenha a peça, mas conte com o trabalho | |
-| ⭐ **Módulo MOSFET isolado 1 canal — AOD4184** | **3** | Um para cada grupo de ventoinha (MV-1 radiador, MV-2 PTC, MV-3 circulação). O módulo é de **1 canal**, então são três. Buscar `modulo mosfet optoacoplador AOD4184` | |
+| ⭐ **Módulo MOSFET 4 canais isolado — LR7843** (MV-1) | 1 | 66 × 50,5 mm, optoacoplador por canal, jumper H/L por canal, 60 W por canal. Comanda os 3 grupos de ventoinha e sobra 1 canal. Buscar `modulo mosfet 4 canais optoacoplador LR7843` | |
 
-> ### ⭐ Qual dos três MOSFET escolher
+> ### ⭐ O módulo de 4 canais resolve melhor que três de 1 canal
 >
-> A mesma placa é vendida com três transistores diferentes. Para este projeto:
->
-> | Modelo | Limite | Veredito |
+> | | 3 × 1 canal | **1 × 4 canais** |
 > |---|---|---|
-> | **AOD4184** | 40 V · 50 A | ✅ **este** |
-> | FR120N | 100 V · 9,4 A | 🟡 serve, mas esquenta mais |
-> | LR7843 | 30 V · 161 A | ❌ **evite** |
+> | Espaço no trilho | 114 mm | **66 mm** |
+> | Fios de alimentação | 3 × VIN + 3 × GND | **1 de cada** |
+> | Retornos no BD-0V | 6 | **2** |
+> | Canal de reserva | nenhum | **1** |
 >
-> **Por que não o LR7843, apesar de ser o mais "forte".** Os 161 A não interessam — a maior carga aqui é meio ampère. O que interessa é a **tensão**: 30 V é perto demais dos 24 V que o painel tem. Quando uma ventoinha desliga, o enrolamento dela devolve um pico que passa da tensão de alimentação, e esse pico come a margem que sobra. Escolher componente pela corrente e esquecer a tensão é um erro clássico.
+> ### ⚠️ Mas o transistor dele é o LR7843, de 30 V — e isso impõe uma condição
 >
-> **O AOD4184 dá 40 V** — margem confortável para 12 V e para 24 V — e com 5,5 mΩ de resistência ele praticamente não esquenta.
+> **Em 12 V ele é perfeito**, com margem de sobra. O problema só apareceria em 24 V: quando a ventoinha desliga, o enrolamento devolve um pico acima da tensão de alimentação, e a margem de 30 V ficaria apertada.
 >
-> **Por que o FR120N fica em segundo.** Ele tem a melhor margem de tensão (100 V), mas 0,36 Ω de resistência contra 0,0055 Ω do AOD4184. Com meio ampère isso é irrelevante na prática; só não há motivo para escolher o pior dos dois.
+> Como **todas as ventoinhas do projeto são de 12 V**, o módulo serve. Mas guarde a condição:
+>
+> 🚨 **Os 4 canais dividem o MESMO VIN.** Se um dia as ventoinhas do radiador virarem 24 V — como já se cogitou —, elas **não podem** compartilhar este módulo. Precisariam de um segundo, com transistor de tensão maior.
+>
+> 📌 **O anúncio diz "5 V a 36 V", mas o LR7843 é de 30 V.** Confie no componente, não no anúncio. É comum o vendedor descrever a placa e esquecer o limite do transistor que ele mesmo montou nela.
+>
+> ### 🔧 Os 4 jumpers H/L — deixe todos em **H**
+>
+> Cada canal tem um jumper que escolhe se ele liga com nível **alto** ou **baixo**. Em **H**, `digitalWrite(pino, HIGH)` acende a ventoinha — a mesma convenção dos sinaleiros e do resto do firmware.
+>
+> Em **L** o comando fica invertido, e aí o código passa a ter dois significados para `HIGH` dependendo do periférico. É o tipo de inconsistência que ninguém lembra seis meses depois.
 >
 > ### 🎁 O optoacoplador vale mais do que parece
 >
