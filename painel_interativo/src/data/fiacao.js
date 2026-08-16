@@ -12,6 +12,27 @@
 import { FIOS_ETAPA2 } from './fiacao_etapa2.js';
 import { FIOS_ETAPA3 } from './fiacao_etapa3.js';
 
+/* ⭐ AS CORES SÃO POR FUNÇÃO, NÃO POR FIO.
+   Num painel de verdade não existem 24 cores de fio: a cor diz QUE
+   CIRCUITO é, e a ANILHA diz qual fio daquele circuito. Ter dois
+   vermelhos parecidos para "24 V que cai" e "24 V que não cai" é pior
+   do que não ter cor nenhuma.
+
+   O laranja para o barramento permanente não é escolha estética: a
+   IEC 60204-1 reserva o laranja para os circuitos que continuam
+   energizados com o seccionamento aberto — que é exatamente o BD-24V. */
+export const CORES = {
+  pot24:   { hex: '#c92a2a', nome: 'vermelho',
+             diz: '+24 V de POTÊNCIA — cai na emergência' },
+  srv24:   { hex: '#e8590c', nome: 'laranja',
+             diz: '+24 V de SERVIÇOS — permanece energizado (IEC 60204-1)' },
+  aux12:   { hex: '#f59f00', nome: 'amarelo',     diz: '+12 V auxiliar' },
+  log5:    { hex: '#7048e8', nome: 'violeta',     diz: '+5 V de lógica' },
+  zero:    { hex: '#1864ab', nome: 'azul escuro', diz: '0 V comum' },
+  medida:  { hex: '#2f9e44', nome: 'verde',       diz: 'analógico e medição' },
+  digital: { hex: '#495057', nome: 'cinza',       diz: 'sinal digital' },
+};
+
 /* ── prensa-cabos na FACE INFERIOR da caixa ───────────────────────────
  * X medido da esquerda da caixa. Todos na base, porque é lá que chega o
  * eletroduto que vem do padrão de entrada.
@@ -41,9 +62,9 @@ export const PRENSAS_PAINEL = [
  */
 const FIOS_ETAPA1 = [
   {
-    n: 'E1', etapa: 1, nome: '24 V de POTÊNCIA', classe: 'potencia',
+    n: 'E1', etapa: 1, func: 'pot24', nome: '24 V de POTÊNCIA', classe: 'potencia',
     de: { prensa: 'PG9-1' }, para: { comp: 'KA2', via: '11' },
-    mm2: 1.5, cor: '#c92a2a', corNome: 'vermelho',
+    mm2: 1.5,
     rota: ['CH-base', 'CV-esq', 'CH-2x1'],
     diz: 'Vem do ramal R1, que desce no poste 4. Conduz os 6 A das Peltier — é o fio '
        + 'mais carregado do painel.',
@@ -52,9 +73,9 @@ const FIOS_ETAPA1 = [
           + 'emergência cortar a potência: sem o KA2, o BD-POT fica morto.',
   },
   {
-    n: 'E2', etapa: 1, nome: '0 V comum', classe: 'comum',
+    n: 'E2', etapa: 1, func: 'zero', nome: '0 V comum', classe: 'comum',
     de: { prensa: 'PG9-1' }, para: { comp: 'BD-0V', via: 'IN' },
-    mm2: 1.5, cor: '#4dabf7', corNome: 'azul claro',
+    mm2: 1.5,
     rota: ['CH-base', 'CV-esq', 'CH-2x1'],
     diz: 'Um condutor só para o painel inteiro. Conduz a soma de tudo: 6,9 A no pior caso.',
     porque: '🔥 É UM SÓ, e não um por tensão. Os LM2596 dos postes não são isolados — o '
@@ -63,9 +84,9 @@ const FIOS_ETAPA1 = [
           + 'malhas de terra que captam ruído.',
   },
   {
-    n: 'E3', etapa: 1, nome: '5 V', classe: 'potencia',
+    n: 'E3', etapa: 1, func: 'log5', nome: '5 V', classe: 'potencia',
     de: { prensa: 'PG7-1' }, para: { comp: 'BD-5V', via: 'IN' },
-    mm2: 0.5, cor: '#f76707', corNome: 'laranja',
+    mm2: 0.5,
     rota: ['CH-base', 'CV-esq', 'CH-2x1'],
     diz: 'Só o positivo. Desce do transformador T2, no poste 2, e vai direto ao '
        + 'barramento — sem fusível.',
@@ -73,9 +94,9 @@ const FIOS_ETAPA1 = [
           + 'a mais aqui só criaria um ponto de falha que derrubaria o Arduino inteiro.',
   },
   {
-    n: 'E4', etapa: 1, nome: '12 V auxiliar', classe: 'potencia',
+    n: 'E4', etapa: 1, func: 'aux12', nome: '12 V auxiliar', classe: 'potencia',
     de: { prensa: 'PG7-2' }, para: { comp: 'BD-AUX', via: 'IN' },
-    mm2: 0.75, cor: '#f59f00', corNome: 'amarelo',
+    mm2: 0.75,
     rota: ['CH-base', 'CV-esq', 'CH-2x1'],
     diz: 'Só o positivo, vindo do T3 no poste 3. Alimenta as ventoinhas pelo MV-1.',
     porque: '📐 0,75 mm² e não 0,5: as ventoinhas somam ~265 mA em regime, mas uma '
@@ -83,9 +104,9 @@ const FIOS_ETAPA1 = [
           + 'isso.',
   },
   {
-    n: 'E5', etapa: 1, nome: '24 V de SERVIÇOS', classe: 'potencia',
+    n: 'E5', etapa: 1, func: 'srv24', nome: '24 V de SERVIÇOS', classe: 'potencia',
     de: { prensa: 'PG7-2' }, para: { comp: 'BD-24V', via: 'IN' },
-    mm2: 0.5, cor: '#e03131', corNome: 'vermelho (anilha SRV)',
+    mm2: 0.5,
     rota: ['CH-base', 'CV-esq', 'CH-2x1'],
     diz: 'Vem do ramal R2, que também desce no poste 4. É o barramento PERMANENTE.',
     porque: '⭐ Este é o que NÃO cai na emergência. Ele alimenta o ESP32, os sinaleiros e '
@@ -113,4 +134,6 @@ export const ETAPAS = [
 ];
 
 /* a lista única que o resto do app consome */
-export const FIOS = [...FIOS_ETAPA1, ...FIOS_ETAPA2, ...FIOS_ETAPA3];
+/* nenhum fio escolhe a própria cor — ela vem da função */
+export const FIOS = [...FIOS_ETAPA1, ...FIOS_ETAPA2, ...FIOS_ETAPA3]
+  .map(f => ({ ...f, cor: CORES[f.func].hex, corNome: CORES[f.func].nome }));

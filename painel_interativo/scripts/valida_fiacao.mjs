@@ -9,8 +9,8 @@
  *   3. o destino de cada fio é um borne que existe e está marcado como
  *      usado no inventário.
  */
-import { COMPONENTES, CANALETAS, CANALETAS_PORTA, CAIXA, PLACA, TRILHOS }
-  from '../src/data/painel_completo.js';
+import { COMPONENTES, CANALETAS, CANALETAS_PORTA, CAIXA, PLACA, TRILHOS,
+         canaletaDoGrupo } from '../src/data/painel_completo.js';
 import { PRENSAS_PAINEL, FIOS, ETAPAS } from '../src/data/fiacao.js';
 
 const erros = [], avisos = [];
@@ -73,6 +73,27 @@ for (const f of FIOS) {
   }
   const c = COMPONENTES.find(x => x.id === f.para.comp);
   if (!c) continue;
+
+
+  /* ── 6. ⭐ A ROTA COMEÇA E TERMINA NA CANALETA QUE O BORNE ENXERGA ──
+     Um borne da borda de cima não alcança a canaleta de baixo: o fio
+     teria que atravessar o corpo do componente e passar por debaixo do
+     trilho DIN. É o erro que mais aparece no desenho. */
+  if (f.rota.length) {
+    const pontas = [['sai de', f.de, f.rota[0]],
+                    ['chega em', f.para, f.rota[f.rota.length - 1]]];
+    for (const [lado, alvo, kid] of pontas) {
+      if (!alvo.comp) continue;
+      const cc = COMPONENTES.find(x => x.id === alvo.comp);
+      const gg = cc?.grupos.find(g => g.pinos.some(pp => pp.nome === alvo.via));
+      if (!cc || !gg) continue;
+      const esperada = canaletaDoGrupo(cc, gg);
+      if (esperada && esperada !== kid)
+        erros.push(`${f.n} ${lado} ${alvo.comp}.${alvo.via} (borda ${gg.lado}) usando a `
+          + `${kid} — esse borne enxerga a ${esperada}. Como está, o fio passaria `
+          + 'por dentro do componente');
+    }
+  }
 
   /* ── 4. o prensa-cabo existe? ─────────────────────────────────────── */
   if (f.de.prensa && !PRENSAS_PAINEL.some(p => p.id === f.de.prensa))

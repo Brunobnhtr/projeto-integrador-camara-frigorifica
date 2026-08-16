@@ -289,6 +289,28 @@ Em cada poste, tira-se **dois fios** da linha: o positivo daquele ramal e o reto
 
 ## 30.5 TRECHO 4 — Entrada no painel e distribuição
 
+## 30.0 🎨 As cores dos fios — por FUNÇÃO, não por fio
+
+Num painel de verdade **não existem 24 cores de fio**. A cor diz **que circuito é**; a **anilha** diz qual fio daquele circuito. Ter dois vermelhos parecidos para "24 V que cai" e "24 V que não cai" é pior do que não ter cor nenhuma.
+
+| Cor | Função | Onde aparece |
+|---|---|---|
+| 🔴 **vermelho** | +24 V de **POTÊNCIA** | entra pelo PG9-1, passa pelo KA2, alimenta o BD-POT e os dois BTS. **Cai na emergência** |
+| 🟠 **laranja** | +24 V de **SERVIÇOS** | cadeia de comando, DNLCB30, sinaleiros, posições de ensaio. **Permanece energizado** |
+| 🟡 amarelo | +12 V auxiliar | do T3 até o MV-1 |
+| 🟣 violeta | +5 V de lógica | Arduino, tela, RTC, PI-1, PI-2, lado de comando do MV-1 |
+| 🔵 azul escuro | 0 V comum | todos os retornos |
+| 🟢 verde | analógico e medição | IS dos BTS, SIG do mux, retornos das posições |
+| ⚫ cinza | sinal digital | Arduino ↔ módulos |
+
+> ⭐ **Por que laranja para o permanente, e não outro vermelho.** A **IEC 60204-1** reserva o laranja exatamente para os circuitos que **continuam energizados com o seccionamento aberto**. É o caso do BD-24V: ele não cai quando alguém soca o cogumelo. Usar a cor normativa avisa quem abrir o painel amanhã que aquele fio pode estar vivo mesmo com tudo "desligado".
+>
+> 🔥 **É a troca mais perigosa da montagem.** O vermelho e o laranja são os dois 24 V, entram por prensa-cabos diferentes e vão parar em barramentos de comportamento oposto. Trocados: a potência fica permanente e a supervisão morre na emergência.
+
+📐 No aplicativo a cor de cada fio é **derivada da função** — nenhum fio escolhe a sua. Foi assim que se descobriu que havia dois vermelhos quase iguais no desenho.
+
+---
+
 ### Entradas — 5 condutores em 3 prensa-cabos
 
 📐 **Confira desenhado:** aba "🔧 Dentro do painel", botão **"🔌 Fiação · etapa 1"**. Cada fio aparece traçado pelas canaletas de verdade, com a anilha no meio do percurso. Clique num deles para isolá-lo.

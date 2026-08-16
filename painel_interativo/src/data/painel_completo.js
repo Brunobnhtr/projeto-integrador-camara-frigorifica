@@ -435,7 +435,7 @@ export const COMPONENTES = [
     grupos: [
       { ref: 'CTRL', lado: 'cima', legenda: 'Comando — vem do Arduino (6)', pinos: [
         { nome: 'VCC', usa: true, para: 'BD-5V saída 9 — alimenta o lado do comando' },
-        { nome: 'GND', usa: true, para: 'BD-0V — junto com o do sinal' },
+        { nome: 'GND-C', usa: true, para: 'BD-0V · R14 — retorno do COMANDO' },
         { nome: 'IN1', usa: true, para: 'Mega D27 — grupo RADIADOR' },
         { nome: 'IN2', usa: true, para: 'Mega D28 — grupo PTC' },
         { nome: 'IN3', usa: true, para: 'Mega D29 — grupo CIRCULAÇÃO' },
@@ -443,7 +443,7 @@ export const COMPONENTES = [
       ]},
       { ref: 'VIN', lado: 'direita', legenda: 'Alimentação das cargas (2)', pinos: [
         { nome: 'VIN', usa: true, para: 'BD-AUX saída 1 — 12 V' },
-        { nome: 'GND', usa: true, para: 'BD-0V' },
+        { nome: 'GND-P', usa: true, para: 'BD-0V · R13 — retorno das CARGAS' },
       ]},
       { ref: 'OUT', lado: 'baixo', legenda: 'Saídas — 4 pares independentes (8)', pinos: [
         { nome: 'O1+', usa: true, para: '2 ventoinhas do radiador +' },
@@ -462,6 +462,7 @@ export const COMPONENTES = [
       ]},
     ],
     avisos: [
+      '🔥 OS DOIS GND NÃO SE TOCAM. O GND-C é o retorno do COMANDO (5 V, lado do Arduino) e o GND-P é o das CARGAS (12 V, das ventoinhas). O optoacoplador existe para mantê-los separados — uni-los anula o isolamento e traz o ruído das ventoinhas para dentro do Arduino. Cada um no SEU ponto do BD-0V.',
       '⭐ OS 4 JUMPERS H/L DEFINEM O NÍVEL QUE LIGA. Deixe todos em **H**: assim '
       + '`digitalWrite(pino, HIGH)` acende a ventoinha, que é a convenção intuitiva e a '
       + 'mesma dos sinaleiros. Em L o comando fica invertido e o firmware vira uma '
@@ -682,3 +683,32 @@ export const COMPONENTES = [
     ]}],
   },
 ];
+
+/* ⭐ QUAL CANALETA CADA GRUPO DE BORNES ENXERGA
+   ─────────────────────────────────────────────────────────────────────
+   Um borne da borda de CIMA só alcança a canaleta que está acima dele;
+   um da borda de BAIXO, a de baixo. Ignorar isso é o que faz o fio
+   aparecer passando por debaixo do trilho DIN — ele "atravessa" o
+   componente para chegar do outro lado, o que não existe na montagem. */
+export function canaletaDoGrupo(comp, grupo) {
+  const naPorta = !!comp.porta;
+  const ks = (naPorta ? CANALETAS_PORTA : CANALETAS).filter(k => !k.vertical);
+  const t = TRILHOS.find(x => x.n === comp.trilho);
+  const cy = naPorta ? comp.y + comp.altura / 2 : t.y;
+  const topo = naPorta ? comp.y : t.y - comp.altura / 2;
+  const base = naPorta ? comp.y + comp.altura : t.y + comp.altura / 2;
+
+  if (grupo.lado === 'cima' || grupo.lado === 'baixo') {
+    const acima = grupo.lado === 'cima';
+    const cand = ks.filter(k => acima ? k.y + k.h <= topo + 1 : k.y >= base - 1);
+    if (!cand.length) return null;
+    return cand.reduce((a, k) => {
+      const da = acima ? topo - (a.y + a.h) : a.y - base;
+      const dk = acima ? topo - (k.y + k.h) : k.y - base;
+      return dk < da ? k : a;
+    }).id;
+  }
+  /* bornes de lateral alcançam a canaleta horizontal mais próxima */
+  return ks.reduce((a, k) =>
+    Math.abs(k.y + k.h / 2 - cy) < Math.abs(a.y + a.h / 2 - cy) ? k : a).id;
+}

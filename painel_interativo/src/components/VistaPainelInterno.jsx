@@ -4,7 +4,7 @@ import PlacaReal from './PlacaReal';
 import * as PI1 from '../data/pi1_fisico';
 import * as PI2 from '../data/pi2_fisico';
 import { PINAGENS } from '../data/pinagens';
-import { PRENSAS_PAINEL, FIOS, ETAPAS } from '../data/fiacao';
+import { PRENSAS_PAINEL, FIOS, ETAPAS, CORES } from '../data/fiacao';
 
 /* onde a passagem flexível cruza da placa para a porta, por classe */
 const PASSAGEM = { potencia: 311, sinal: 194 };
@@ -553,10 +553,21 @@ export default function VistaPainelInterno() {
               🔌 FIAÇÃO — {FIOS.length} FIOS
             </div>
             <div style={{ fontSize: 11, color: '#495057', lineHeight: 1.55,
-                          marginBottom: 7 }}>
-              <b>Três classes, não duas:</b> 🔴 o que <b>polui</b> (BTS e bobinas) só na
-              canaleta vermelha · 🔵 o que <b>sofre</b> (IS, 1-Wire, I²C) só na azul ·
-              🟠 <b>alimentação limpa</b> e o <b>0 V</b> passam por qualquer uma.
+                          marginBottom: 6 }}>
+              <b>Cor = função, anilha = fio.</b> Num painel não existem 24 cores de fio:
+              a cor diz que circuito é, o número diz qual fio daquele circuito.
+            </div>
+            <div style={{ marginBottom: 9 }}>
+              {Object.entries(CORES).filter(([k]) =>
+                FIOS.some(f => f.func === k)).map(([k, c]) => (
+                <div key={k} style={{ display: 'flex', gap: 6, alignItems: 'center',
+                                      fontSize: 10.5, marginBottom: 2 }}>
+                  <span style={{ width: 16, height: 4, background: c.hex,
+                                 borderRadius: 2, flexShrink: 0 }} />
+                  <b style={{ minWidth: 62 }}>{c.nome}</b>
+                  <span style={{ color: '#868e96' }}>{c.diz}</span>
+                </div>
+              ))}
             </div>
             {FIOS.filter(f => !etapa || f.etapa === etapa).map(f => {
               const on = fio === f.n;
@@ -565,7 +576,8 @@ export default function VistaPainelInterno() {
                   display: 'flex', gap: 7, alignItems: 'center', cursor: 'pointer',
                   padding: '5px 8px', marginBottom: 3, borderRadius: 4,
                   background: on ? '#fff3bf' : '#f8f9fa',
-                  borderLeft: `4px solid ${f.cor}` }}>
+                  borderLeft: `4px solid ${f.cor}` }}
+                  title={CORES[f.func].diz}>
                   <b style={{ fontSize: 11, fontFamily: 'monospace',
                               minWidth: 18 }}>{f.n}</b>
                   <div style={{ flex: 1, minWidth: 0 }}>
