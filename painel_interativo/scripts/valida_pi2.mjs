@@ -115,12 +115,30 @@ const usados = new Set([
 for (const c of CIRCUITOS)
   if (!usados.has(c.id)) avi(`o circuito "${c.nome}" está declarado mas ninguém o usa`);
 
+/* ── 10. a placa cortada sai da placa comprada? ────────────────────── */
+let notaCorte = null;
+if (PLACA.bruta) {
+  const b = PLACA.bruta;
+  if (b.colunas < PLACA.colunas)
+    err(`a placa comprada tem ${b.colunas} colunas e o layout precisa de ${PLACA.colunas}`);
+  if (b.linhas < PLACA.linhas)
+    err(`a placa comprada tem ${b.linhas} fileiras e o layout precisa de ${PLACA.linhas}`);
+  const ultima = Math.max(...[...passantes.keys()].map(k => +k.split(',')[1]));
+  if (ultima > PLACA.linhas)
+    err(`há perna na fileira ${ultima}, depois do corte na ${PLACA.linhas + 1}`);
+  else
+    notaCorte = `  . corte na fileira ${PLACA.linhas + 1}: sobram `
+      + `${b.colunas - PLACA.colunas} coluna(s) e ${b.linhas - PLACA.linhas} fileira(s) `
+      + `da placa de 7 × 9 cm`;
+}
+
 /* ── relatório ─────────────────────────────────────────────────────── */
 console.log(`\nPI-2 · ${PLACA.colunas}×${PLACA.linhas} furos · `
   + `${PLACA.larguraMm.toFixed(0)}×${PLACA.alturaMm.toFixed(0)} mm`);
 console.log(`  ${BORNES.reduce((a, b) => a + b.vias.length, 0)} vias de borne · `
   + `${MODULOS.length} módulos · ${COMPONENTES_PI2.length} discretos · `
   + `${JUMPERS.length} jumpers`);
+if (notaCorte) console.log(notaCorte);
 
 avisos.forEach(a => console.log('  ! ' + a));
 if (erros.length) {

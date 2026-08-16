@@ -1,317 +1,389 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import DetalheCircuito from './DetalheCircuito';
 
 /* Desenha uma placa ilhada montada à mão, a partir do arquivo de layout
-   físico dela (pi1_fisico.js ou pi2_fisico.js). Tudo em MILÍMETROS — o
-   SVG converte para pixels, então o desenho é dimensionalmente
-   verdadeiro em qualquer zoom.
+   físico dela (pi1_fisico.js ou pi2_fisico.js).
 
-   A PI-1 tem um CI nu num soquete; a PI-2 tem dois módulos comprados
-   que encaixam em barra de pinos. Os dois casos são desenhados aqui. */
+   ⭐ A DECISÃO DE PROJETO DESTA TELA: os dois lados são desenhos
+   SEPARADOS. Numa placa ilhada os componentes ficam em cima e TODA a
+   fiação fica embaixo — misturar as duas coisas num desenho só é o que
+   fazia esta vista virar espaguete.
+
+   E o lado de baixo é desenhado ESPELHADO, porque é assim que você o
+   enxerga quando vira a placa na mão. Não espelhar é a causa número um
+   de fio soldado no furo errado.                                      */
 
 const PASSO = 2.54;
-const X = c => c * PASSO;
-const Y = l => l * PASSO;
 
-/* ── furos ─────────────────────────────────────────────────────────── */
-function Furos({ placa, ocupados }) {
-  const furos = [];
-  for (let c = 1; c <= placa.colunas; c++) {
-    for (let l = 1; l <= placa.linhas; l++) {
-      const k = `${c},${l}`;
-      const usado = ocupados.has(k);
-      furos.push(
-        <g key={k}>
-          {/* ilha de cobre — na placa ILHADA cada furo é isolado dos outros */}
-          <circle cx={X(c)} cy={Y(l)} r={0.95}
-                  fill={usado ? '#e8b04b' : '#c9a227'} opacity={usado ? 1 : 0.33} />
-          <circle cx={X(c)} cy={Y(l)} r={0.45} fill="#4a3c10" opacity={0.85} />
-        </g>,
-      );
-    }
-  }
-  return <g>{furos}</g>;
-}
+/* ── um lado da placa ──────────────────────────────────────────────── */
+function Face({
+  face, PLACA, BORNES, BARRAMENTO_0V, NOS, JUMPERS, DISCRETOS, CI, MODULOS,
+  corDe, ativo, escala, sel, setSel, fio, setFio, feitos,
+}) {
+  const verso = face === 'verso';
+  /* virando a placa, a coluna 1 vai para a direita */
+  const M = c => (verso ? PLACA.colunas + 1 - c : c);
+  const X = c => M(c) * PASSO;
+  const Y = l => l * PASSO;
 
-/* ── componentes discretos ─────────────────────────────────────────── */
-function Resistor({ c, cor, ativo, onClick }) {
-  const [[c1, l1], [c2, l2]] = c.furos;
-  const x1 = X(c1), y1 = Y(l1), x2 = X(c2), y2 = Y(l2);
-  const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
-  const ang = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
-  const comp = Math.hypot(x2 - x1, y2 - y1);
-  const corpo = Math.min(6.5, comp - 3);
-  return (
-    <g onClick={onClick} style={{ cursor: 'pointer' }} opacity={ativo ? 1 : 0.35}>
-      <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#adb5bd" strokeWidth={0.55} />
-      <g transform={`translate(${mx} ${my}) rotate(${ang})`}>
-        <rect x={-corpo / 2} y={-1.35} width={corpo} height={2.7} rx={1.1}
-              fill="#c9b28a" stroke={ativo ? cor : '#8d7c5e'}
-              strokeWidth={ativo ? 0.5 : 0.3} />
-        {/* faixas de código de cores — decorativas; o valor real está no rótulo */}
-        {[-1.5, -0.4, 0.7].map((d, i) => (
-          <rect key={i} x={d} y={-1.35} width={0.55} height={2.7}
-                fill={['#7a4b28', '#2b2b2b', '#b34a2f'][i]} opacity={0.8} />
-        ))}
-      </g>
-      <text x={mx + 4.2} y={my - 1.2} fontSize={2.1} fontWeight="700" fill={cor}>
-        {c.ref}
-      </text>
-      <text x={mx + 4.2} y={my + 1.6} fontSize={1.85} fill="#495057">{c.valor}</text>
-    </g>
-  );
-}
-
-function Capacitor({ c, cor, ativo, onClick }) {
-  const [[c1, l1], [c2, l2]] = c.furos;
-  const x1 = X(c1), y1 = Y(l1), x2 = X(c2), y2 = Y(l2);
-  const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
-  return (
-    <g onClick={onClick} style={{ cursor: 'pointer' }} opacity={ativo ? 1 : 0.35}>
-      <line x1={x1} y1={y1} x2={mx} y2={my} stroke="#adb5bd" strokeWidth={0.55} />
-      <line x1={x2} y1={y2} x2={mx} y2={my} stroke="#adb5bd" strokeWidth={0.55} />
-      {/* cerâmico de disco visto de lado */}
-      <ellipse cx={mx} cy={my} rx={2.5} ry={1.9} fill="#2d6cb5"
-               stroke={ativo ? cor : '#1e4a7d'} strokeWidth={ativo ? 0.5 : 0.3} />
-      <text x={mx} y={my + 0.65} textAnchor="middle" fontSize={1.5}
-            fill="#fff" fontWeight="700">104</text>
-      <text x={mx + 3.4} y={my - 1.2} fontSize={2.1} fontWeight="700" fill={cor}>{c.ref}</text>
-      <text x={mx + 3.4} y={my + 1.4} fontSize={1.8} fill="#495057">{c.valor}</text>
-    </g>
-  );
-}
-
-/* ── CI nu, no soquete (PI-1) ──────────────────────────────────────── */
-function Chip({ ci, cor, ativo, onClick }) {
-  const x1 = X(ci.colEsq) - PASSO / 2, x2 = X(ci.colDir) + PASSO / 2;
-  const y1 = Y(ci.linhaTopo) - PASSO / 2, y2 = Y(ci.linhaBase) + PASSO / 2;
-  return (
-    <g onClick={onClick} style={{ cursor: 'pointer' }} opacity={ativo ? 1 : 0.35}>
-      <rect x={x1 - 0.8} y={y1 - 0.8} width={x2 - x1 + 1.6} height={y2 - y1 + 1.6}
-            rx={0.6} fill="#2b2b2b" stroke="#000" strokeWidth={0.3} />
-      <rect x={x1} y={y1} width={x2 - x1} height={y2 - y1} rx={0.5}
-            fill="#3a3a3a" stroke={ativo ? cor : '#111'} strokeWidth={ativo ? 0.6 : 0.3} />
-      {/* CHANFRO — à direita nesta montagem */}
-      <path d={`M ${x2} ${(y1 + y2) / 2 - 2.2} A 2.2 2.2 0 0 0 ${x2} ${(y1 + y2) / 2 + 2.2}`}
-            fill="#1a1a1a" stroke="#666" strokeWidth={0.25} />
-      <text x={(x1 + x2) / 2} y={(y1 + y2) / 2 + 0.8} textAnchor="middle"
-            fontSize={2.4} fill="#f1f3f5" fontWeight="700">{ci.valor}</text>
-      {ci.pinos.map(p => (
-        <g key={p.n}>
-          <rect x={X(p.col) - 0.62} y={Y(p.lin) - 0.62} width={1.24} height={1.24}
-                fill={p.livre ? '#868e96' : '#e9c46a'} rx={0.15} />
-          <text x={X(p.col)} y={p.lin === ci.linhaTopo ? Y(p.lin) - 2.0 : Y(p.lin) + 3.3}
-                textAnchor="middle" fontSize={1.5}
-                fill={p.livre ? '#adb5bd' : '#f8f9fa'} fontWeight={p.livre ? 400 : 700}>
-            {p.nome}
-          </text>
-        </g>
-      ))}
-      <text x={x1 - 1.5} y={y1 - 3.2} fontSize={2.1} fontWeight="700" fill={cor}>
-        {ci.ref} · chanfro →
-      </text>
-    </g>
-  );
-}
-
-/* ── módulo comprado, em barra de pinos fêmea (PI-2) ───────────────── */
-function Modulo({ m, ativo, onClick }) {
-  const { colEsq, colDir, linTopo, linBase } = m.corpo;
-  const x1 = X(colEsq) - PASSO / 2, x2 = X(colDir) + PASSO / 2;
-  const y1 = Y(linTopo) - PASSO / 2, y2 = Y(linBase) + PASSO / 2;
-  /* as barras fêmea: uma por linha de pinos */
-  const linhas = [...new Set(m.pinos.map(p => p.lin))];
-  return (
-    <g onClick={onClick} style={{ cursor: 'pointer' }} opacity={ativo ? 1 : 0.3}>
-      {/* a placa do módulo, verde como PCB de fábrica */}
-      <rect x={x1} y={y1} width={x2 - x1} height={y2 - y1} rx={0.8}
-            fill="#1e5631" stroke={ativo ? m.cor : '#123a20'}
-            strokeWidth={ativo ? 0.7 : 0.35} opacity={0.92} />
-      <text x={(x1 + x2) / 2} y={(y1 + y2) / 2 - 0.6} textAnchor="middle"
-            fontSize={2.9} fill="#e6f4ea" fontWeight="700">{m.valor}</text>
-      <text x={(x1 + x2) / 2} y={(y1 + y2) / 2 + 2.6} textAnchor="middle"
-            fontSize={1.9} fill="#a8d5b8">{m.descricao}</text>
-
-      {/* barras de pinos fêmea soldadas na PI-2 */}
-      {linhas.map(l => {
-        const desta = m.pinos.filter(p => p.lin === l);
-        const a = Math.min(...desta.map(p => p.col));
-        const b = Math.max(...desta.map(p => p.col));
-        return (
-          <rect key={l} x={X(a) - 1.1} y={Y(l) - 1.25} width={X(b) - X(a) + 2.2}
-                height={2.5} rx={0.3} fill="#111" stroke="#000" strokeWidth={0.2} />
-        );
-      })}
-
-      {m.pinos.map(p => (
-        <g key={p.n}>
-          <rect x={X(p.col) - 0.55} y={Y(p.lin) - 0.55} width={1.1} height={1.1}
-                rx={0.12}
-                fill={p.alerta ? '#ff6b6b' : (p.livre ? '#5c6b62' : '#e9c46a')} />
-          {!p.livre && (
-            <text x={X(p.col)} y={Y(p.lin) < (y1 + y2) / 2 ? Y(p.lin) - 1.9 : Y(p.lin) + 3.2}
-                  textAnchor="middle" fontSize={1.35} fontWeight="700"
-                  fill={p.alerta ? '#c92a2a' : '#343a40'}>{p.nome}</text>
-          )}
-        </g>
-      ))}
-      <text x={x1} y={y1 - 1.6} fontSize={2.1} fontWeight="700" fill={m.cor}>
-        {m.ref} · encaixa na barra
-      </text>
-    </g>
-  );
-}
-
-/* ── bornes ────────────────────────────────────────────────────────── */
-function Borne({ b, placa, ativo, onVia }) {
-  const primeira = b.vias[0].col, ultima = b.vias[b.vias.length - 1].col;
-  const x1 = X(primeira) - PASSO, x2 = X(ultima) + PASSO;
-  const y1 = Y(b.corpo[0]), y2 = Y(b.corpo[1]);
-  const emCima = b.linha < placa.linhas / 2;
-  return (
-    <g opacity={ativo ? 1 : 0.4}>
-      <rect x={x1} y={y1} width={x2 - x1} height={y2 - y1} rx={1}
-            fill="#2f6f3e" stroke="#1c4526" strokeWidth={0.4}
-            style={{ filter: 'saturate(0.85)' }} />
-      <text x={(x1 + x2) / 2} y={emCima ? y1 - 5.5 : y2 + 8.2}
-            textAnchor="middle" fontSize={3.0} fontWeight="700" fill={b.cor}>
-        {b.ref} — {b.papel}
-      </text>
-      {b.vias.map(v => (
-        <g key={v.n} onClick={() => onVia(b, v)} style={{ cursor: 'pointer' }}>
-          <circle cx={X(v.col)} cy={emCima ? y1 + 2.6 : y2 - 2.6} r={1.8}
-                  fill="#c0c4c8" stroke="#7a7f84" strokeWidth={0.3} />
-          <line x1={X(v.col) - 1.1} y1={emCima ? y1 + 2.6 : y2 - 2.6}
-                x2={X(v.col) + 1.1} y2={emCima ? y1 + 2.6 : y2 - 2.6}
-                stroke="#5a5f64" strokeWidth={0.45} />
-          <rect x={X(v.col) - 0.5} y={Y(b.linha) - 0.5} width={1} height={1} fill="#d9a441" />
-          {/* rótulo girado, senão não cabe entre vias de 5,08 mm */}
-          <text x={X(v.col)} y={emCima ? y1 - 1.6 : y2 + 2.2}
-                textAnchor={emCima ? 'start' : 'end'} fontSize={1.95} fontWeight="700"
-                fill={v.alerta ? '#c92a2a' : (v.livre ? '#adb5bd' : '#212529')}
-                transform={`rotate(-62 ${X(v.col)} ${emCima ? y1 - 1.6 : y2 + 2.2})`}>
-            {b.ref}-{v.n} {v.sinal}
-          </text>
-        </g>
-      ))}
-    </g>
-  );
-}
-
-/* ── placa ─────────────────────────────────────────────────────────── */
-export default function PlacaIlhada({ dados, titulo, onFechar }) {
-  const {
-    PLACA, BORNES, BARRAMENTO_0V, NOS, JUMPERS, CIRCUITOS, ORDEM_MONTAGEM,
-  } = dados;
-  const DISCRETOS = dados.COMPONENTES_PI1 ?? dados.COMPONENTES_PI2 ?? [];
-  const CI = dados.CI1 ?? null;
-  const MODULOS = dados.MODULOS ?? [];
-
-  const [circuito, setCircuito] = useState(null);
-  const [sel, setSel] = useState(null);
-  const [verJumpers, setVerJumpers] = useState(true);
-  const [escala, setEscala] = useState(7);
-  const [detalhe, setDetalhe] = useState(null);
-
-  const ativo = id => circuito === null || circuito === id;
-  const corDe = id => CIRCUITOS.find(c => c.id === id)?.cor ?? '#868e96';
-
-  const ocupados = useMemo(() => {
+  const passantes = useMemo(() => {
     const s = new Set();
     DISCRETOS.forEach(c => c.furos.forEach(([a, b]) => s.add(`${a},${b}`)));
     if (CI) CI.pinos.forEach(p => s.add(`${p.col},${p.lin}`));
     MODULOS.forEach(m => m.pinos.forEach(p => s.add(`${p.col},${p.lin}`)));
     BORNES.forEach(b => b.vias.forEach(v => s.add(`${v.col},${b.linha}`)));
-    for (let c = BARRAMENTO_0V.de; c <= BARRAMENTO_0V.ate; c++)
-      s.add(`${c},${BARRAMENTO_0V.linha}`);
     return s;
-  }, [dados]);
+  }, [PLACA, DISCRETOS, CI, MODULOS, BORNES]);
 
-  const larg = X(PLACA.colunas + 0.5), alt = Y(PLACA.linhas + 0.5);
+  const larg = PLACA.colunas * PASSO, alt = PLACA.linhas * PASSO;
+
+  /* ── furos ── */
+  const furos = [];
+  for (let c = 1; c <= PLACA.colunas; c++)
+    for (let l = 1; l <= PLACA.linhas; l++) {
+      const usado = passantes.has(`${c},${l}`);
+      furos.push(
+        <g key={`${c},${l}`}>
+          <circle cx={X(c)} cy={Y(l)} r={usado ? 1.05 : 0.85}
+                  fill={usado ? '#e8b04b' : '#cbb98e'} opacity={usado ? 1 : 0.35} />
+          <circle cx={X(c)} cy={Y(l)} r={0.42} fill="#4a3c10"
+                  opacity={usado ? 0.9 : 0.35} />
+        </g>,
+      );
+    }
+
+  return (
+    <div style={{ flex: 1, minWidth: 0 }}>
+      <div style={{
+        background: verso ? '#5f3dc4' : '#1d3557', color: '#fff',
+        padding: '7px 12px', borderRadius: '7px 7px 0 0', fontSize: 12.5,
+        fontWeight: 700, display: 'flex', justifyContent: 'space-between',
+      }}>
+        <span>{verso ? '🔻 LADO DA SOLDA — por baixo' : '🔺 LADO DOS COMPONENTES — por cima'}</span>
+        <span style={{ fontWeight: 400, opacity: 0.85 }}>
+          {verso ? 'ESPELHADO · como você vê ao virar a placa' : 'como você vê na bancada'}
+        </span>
+      </div>
+
+      <svg width="100%" viewBox={`${-PASSO * 4} ${-PASSO * 5} ${larg + PASSO * 8} ${alt + PASSO * 11}`}
+           style={{ background: '#fff', borderRadius: '0 0 7px 7px',
+                    boxShadow: '0 1px 6px #0002', display: 'block' }}>
+        {/* corpo da placa */}
+        <rect x={0} y={0} width={larg} height={alt} rx={1.2}
+              fill={verso ? '#c9b98c' : '#d8c9a3'} stroke="#a8946a" strokeWidth={0.5} />
+
+        {/* ⭐ o marco do furo (1,1) — é ele que impede soldar espelhado errado */}
+        <g>
+          <path d={`M ${X(1) - 2.6} ${Y(1) - 2.6} l 3.4 0 l -3.4 3.4 z`} fill="#c92a2a" />
+          <text x={X(1) + (verso ? 3.2 : -3.2)} y={Y(1) - 3.0}
+                textAnchor={verso ? 'start' : 'end'} fontSize={2.1}
+                fontWeight="700" fill="#c92a2a">furo 1,1</text>
+        </g>
+
+        {furos}
+
+        {/* ── LADO DE BAIXO: barramento, pontes e todos os jumpers ── */}
+        {verso && (
+          <>
+            <line x1={X(BARRAMENTO_0V.de)} y1={Y(BARRAMENTO_0V.linha)}
+                  x2={X(BARRAMENTO_0V.ate)} y2={Y(BARRAMENTO_0V.linha)}
+                  stroke="#212529" strokeWidth={1.7} strokeLinecap="round"
+                  opacity={ativo(0) ? 1 : 0.12} />
+            <text x={X(BARRAMENTO_0V.ate) + (verso ? -2 : 2)} y={Y(BARRAMENTO_0V.linha) - 1.6}
+                  textAnchor={verso ? 'end' : 'start'} fontSize={2.2} fontWeight="700"
+                  fill="#212529" opacity={ativo(0) ? 1 : 0.2}>barramento 0 V (fio NU)</text>
+
+            {NOS.map(n => (
+              <g key={n.ref} opacity={ativo(n.circuito) ? 1 : 0.1}>
+                <line x1={X(n.de)} y1={Y(n.linha)} x2={X(n.ate)} y2={Y(n.linha)}
+                      stroke="#212529" strokeWidth={1.3} strokeLinecap="round" />
+                <text x={(X(n.de) + X(n.ate)) / 2} y={Y(n.linha) - 1.7} textAnchor="middle"
+                      fontSize={1.7} fontWeight="700" fill="#212529">{n.ref}</text>
+              </g>
+            ))}
+
+            {JUMPERS.map(j => {
+              const so = fio != null;
+              const este = fio === j.n;
+              if (so && !este) return null;
+              const feito = feitos.includes(j.n);
+              const [x1, y1] = [X(j.de[0]), Y(j.de[1])];
+              const [x2, y2] = [X(j.para[0]), Y(j.para[1])];
+              const op = ativo(j.circuito) ? (feito && !este ? 0.22 : 1) : 0.08;
+              return (
+                <g key={j.n} onClick={() => setFio(este ? null : j.n)}
+                   style={{ cursor: 'pointer' }} opacity={op}>
+                  <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="transparent" strokeWidth={4} />
+                  <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={corDe(j.circuito)}
+                        strokeWidth={este ? 1.5 : 0.8} strokeLinecap="round"
+                        strokeDasharray={feito && !este ? '1.4 1.2' : undefined} />
+                  {[[x1, y1], [x2, y2]].map(([x, y], i) => (
+                    <circle key={i} cx={x} cy={y} r={este ? 1.5 : 1.0}
+                            fill={corDe(j.circuito)} />
+                  ))}
+                  <circle cx={(x1 + x2) / 2} cy={(y1 + y2) / 2} r={este ? 2.4 : 1.7}
+                          fill="#fff" stroke={corDe(j.circuito)} strokeWidth={0.45} />
+                  <text x={(x1 + x2) / 2} y={(y1 + y2) / 2 + (este ? 0.85 : 0.6)}
+                        textAnchor="middle" fontSize={este ? 2.4 : 1.7} fontWeight="700"
+                        fill={corDe(j.circuito)}>{j.n}</text>
+                </g>
+              );
+            })}
+          </>
+        )}
+
+        {/* ── LADO DE CIMA: bornes, componentes, CI e módulos ── */}
+        {!verso && (
+          <>
+            {/* fantasma das fileiras reservadas, para não pôr componente em cima */}
+            <line x1={X(BARRAMENTO_0V.de)} y1={Y(BARRAMENTO_0V.linha)}
+                  x2={X(BARRAMENTO_0V.ate)} y2={Y(BARRAMENTO_0V.linha)}
+                  stroke="#868e96" strokeWidth={0.9} strokeDasharray="1.2 1.2" opacity={0.5} />
+            <text x={X(BARRAMENTO_0V.ate) + 2} y={Y(BARRAMENTO_0V.linha) + 0.8}
+                  fontSize={1.8} fill="#868e96">0 V (por baixo)</text>
+
+            {DISCRETOS.map(c => {
+              const [[c1, l1], [c2, l2]] = c.furos;
+              const x1 = X(c1), y1 = Y(l1), x2 = X(c2), y2 = Y(l2);
+              const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
+              const cor = corDe(c.circuito);
+              const on = ativo(c.circuito);
+              const ang = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+              const cap = c.tipo === 'capacitor';
+              return (
+                <g key={c.ref} onClick={() => setSel(c)} style={{ cursor: 'pointer' }}
+                   opacity={on ? 1 : 0.2}>
+                  <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#8a8f94" strokeWidth={0.55} />
+                  {cap ? (
+                    <ellipse cx={mx} cy={my} rx={2.5} ry={1.9} fill="#2d6cb5"
+                             stroke={cor} strokeWidth={0.45} />
+                  ) : (
+                    <g transform={`translate(${mx} ${my}) rotate(${ang})`}>
+                      <rect x={-3.2} y={-1.4} width={6.4} height={2.8} rx={1.1}
+                            fill="#c9b28a" stroke={cor} strokeWidth={0.45} />
+                      {[-1.6, -0.5, 0.6].map((d, i) => (
+                        <rect key={i} x={d} y={-1.4} width={0.55} height={2.8}
+                              fill={['#7a4b28', '#2b2b2b', '#b34a2f'][i]} opacity={0.8} />
+                      ))}
+                    </g>
+                  )}
+                  <text x={mx + 4} y={my - 0.9} fontSize={2.1} fontWeight="700" fill={cor}>
+                    {c.ref}
+                  </text>
+                  <text x={mx + 4} y={my + 1.9} fontSize={1.8} fill="#495057">{c.valor}</text>
+                </g>
+              );
+            })}
+
+            {CI && (() => {
+              const x1 = X(CI.colEsq) - PASSO / 2, x2 = X(CI.colDir) + PASSO / 2;
+              const y1 = Y(CI.linhaTopo) - PASSO / 2, y2 = Y(CI.linhaBase) + PASSO / 2;
+              const cor = corDe(4), on = ativo(4);
+              return (
+                <g onClick={() => setSel(CI)} style={{ cursor: 'pointer' }}
+                   opacity={on ? 1 : 0.2}>
+                  <rect x={x1 - 0.8} y={y1 - 0.8} width={x2 - x1 + 1.6} height={y2 - y1 + 1.6}
+                        rx={0.6} fill="#2b2b2b" stroke="#000" strokeWidth={0.3} />
+                  <rect x={x1} y={y1} width={x2 - x1} height={y2 - y1} rx={0.5}
+                        fill="#3a3a3a" stroke={cor} strokeWidth={0.5} />
+                  <path d={`M ${x2} ${(y1 + y2) / 2 - 2.2} A 2.2 2.2 0 0 0 ${x2} ${(y1 + y2) / 2 + 2.2}`}
+                        fill="#1a1a1a" stroke="#888" strokeWidth={0.3} />
+                  <text x={(x1 + x2) / 2} y={(y1 + y2) / 2 + 0.9} textAnchor="middle"
+                        fontSize={2.4} fill="#f1f3f5" fontWeight="700">{CI.valor}</text>
+                  {CI.pinos.map(p => (
+                    <g key={p.n}>
+                      <rect x={X(p.col) - 0.6} y={Y(p.lin) - 0.6} width={1.2} height={1.2}
+                            rx={0.15} fill={p.livre ? '#868e96' : '#e9c46a'} />
+                      <text x={X(p.col)}
+                            y={p.lin === CI.linhaTopo ? Y(p.lin) - 2.0 : Y(p.lin) + 3.3}
+                            textAnchor="middle" fontSize={1.45}
+                            fill={p.livre ? '#adb5bd' : '#f8f9fa'}
+                            fontWeight={p.livre ? 400 : 700}>{p.nome}</text>
+                    </g>
+                  ))}
+                  <text x={x1} y={y1 - 3.4} fontSize={2.1} fontWeight="700" fill={cor}>
+                    {CI.ref} · chanfro à direita
+                  </text>
+                </g>
+              );
+            })()}
+
+            {MODULOS.map(m => {
+              const { colEsq, colDir, linTopo, linBase } = m.corpo;
+              const xa = Math.min(X(colEsq), X(colDir)) - PASSO / 2;
+              const xb = Math.max(X(colEsq), X(colDir)) + PASSO / 2;
+              const y1 = Y(linTopo) - PASSO / 2, y2 = Y(linBase) + PASSO / 2;
+              const on = ativo(m.circuito);
+              const linhas = [...new Set(m.pinos.map(p => p.lin))];
+              return (
+                <g key={m.ref} onClick={() => setSel(m)} style={{ cursor: 'pointer' }}
+                   opacity={on ? 1 : 0.2}>
+                  <rect x={xa} y={y1} width={xb - xa} height={y2 - y1} rx={0.8}
+                        fill="#1e5631" stroke={m.cor} strokeWidth={0.6} opacity={0.93} />
+                  <text x={(xa + xb) / 2} y={(y1 + y2) / 2 - 0.4} textAnchor="middle"
+                        fontSize={2.9} fill="#e6f4ea" fontWeight="700">{m.valor}</text>
+                  <text x={(xa + xb) / 2} y={(y1 + y2) / 2 + 2.8} textAnchor="middle"
+                        fontSize={1.9} fill="#a8d5b8">{m.descricao}</text>
+                  {linhas.map(l => {
+                    const desta = m.pinos.filter(p => p.lin === l);
+                    const xs = desta.map(p => X(p.col));
+                    return (
+                      <rect key={l} x={Math.min(...xs) - 1.1} y={Y(l) - 1.25}
+                            width={Math.max(...xs) - Math.min(...xs) + 2.2} height={2.5}
+                            rx={0.3} fill="#111" />
+                    );
+                  })}
+                  {m.pinos.map(p => (
+                    <g key={p.n}>
+                      <rect x={X(p.col) - 0.55} y={Y(p.lin) - 0.55} width={1.1} height={1.1}
+                            rx={0.12}
+                            fill={p.alerta ? '#ff6b6b' : (p.livre ? '#5c6b62' : '#e9c46a')} />
+                      {!p.livre && (
+                        <text x={X(p.col)}
+                              y={Y(p.lin) < (y1 + y2) / 2 ? Y(p.lin) - 1.9 : Y(p.lin) + 3.2}
+                              textAnchor="middle" fontSize={1.35} fontWeight="700"
+                              fill={p.alerta ? '#c92a2a' : '#343a40'}>{p.nome}</text>
+                      )}
+                    </g>
+                  ))}
+                  <text x={xa} y={y1 - 1.8} fontSize={2.0} fontWeight="700" fill={m.cor}>
+                    {m.ref} · encaixa na barra fêmea
+                  </text>
+                </g>
+              );
+            })}
+          </>
+        )}
+
+        {/* bornes — aparecem nos dois lados, porque atravessam a placa */}
+        {BORNES.map(b => {
+          const cols = b.vias.map(v => X(v.col));
+          const x1 = Math.min(...cols) - PASSO, x2 = Math.max(...cols) + PASSO;
+          const y1 = Y(b.corpo[0]), y2 = Y(b.corpo[1]);
+          const emCima = b.linha < PLACA.linhas / 2;
+          return (
+            <g key={b.ref} opacity={verso ? 0.42 : 1}>
+              <rect x={x1} y={y1} width={x2 - x1} height={y2 - y1} rx={1}
+                    fill={verso ? '#8aa891' : '#2f6f3e'} stroke="#1c4526" strokeWidth={0.4} />
+              <text x={(x1 + x2) / 2} y={emCima ? y1 - 5.8 : y2 + 8.4} textAnchor="middle"
+                    fontSize={2.9} fontWeight="700" fill={b.cor}>
+                {b.ref} — {b.papel}
+              </text>
+              {b.vias.map(v => (
+                <g key={v.n} onClick={() => setSel({ ...v, ref: `${b.ref}-${v.n}`,
+                                                     ehVia: true, borne: b })}
+                   style={{ cursor: 'pointer' }}>
+                  {!verso && (
+                    <>
+                      <circle cx={X(v.col)} cy={emCima ? y1 + 2.6 : y2 - 2.6} r={1.8}
+                              fill="#c0c4c8" stroke="#7a7f84" strokeWidth={0.3} />
+                      <line x1={X(v.col) - 1.1} y1={emCima ? y1 + 2.6 : y2 - 2.6}
+                            x2={X(v.col) + 1.1} y2={emCima ? y1 + 2.6 : y2 - 2.6}
+                            stroke="#5a5f64" strokeWidth={0.45} />
+                    </>
+                  )}
+                  <rect x={X(v.col) - 0.55} y={Y(b.linha) - 0.55} width={1.1} height={1.1}
+                        fill="#d9a441" />
+                  <text x={X(v.col)} y={emCima ? y1 - 1.6 : y2 + 2.2}
+                        textAnchor={emCima ? 'start' : 'end'} fontSize={1.9} fontWeight="700"
+                        fill={v.alerta ? '#c92a2a' : (v.livre ? '#adb5bd' : '#212529')}
+                        transform={`rotate(-62 ${X(v.col)} ${emCima ? y1 - 1.6 : y2 + 2.2})`}>
+                    {b.ref}-{v.n} {v.sinal}
+                  </text>
+                </g>
+              ))}
+            </g>
+          );
+        })}
+
+        {/* régua de 50 mm, para conferir a impressão com uma régua de verdade */}
+        <g transform={`translate(0 ${alt + PASSO * 4})`}>
+          <line x1={0} y1={0} x2={50} y2={0} stroke="#495057" strokeWidth={0.4} />
+          <line x1={0} y1={-1.5} x2={0} y2={1.5} stroke="#495057" strokeWidth={0.4} />
+          <line x1={50} y1={-1.5} x2={50} y2={1.5} stroke="#495057" strokeWidth={0.4} />
+          <text x={25} y={-2.2} textAnchor="middle" fontSize={2.2} fill="#495057">
+            50 mm reais
+          </text>
+        </g>
+      </svg>
+    </div>
+  );
+}
+
+/* ── a tela ────────────────────────────────────────────────────────── */
+export default function PlacaIlhada({ dados, titulo, onFechar }) {
+  const { PLACA, BORNES, BARRAMENTO_0V, NOS, JUMPERS, CIRCUITOS, ORDEM_MONTAGEM } = dados;
+  const DISCRETOS = dados.COMPONENTES_PI1 ?? dados.COMPONENTES_PI2 ?? [];
+  const CI = dados.CI1 ?? null;
+  const MODULOS = dados.MODULOS ?? [];
+
+  const [modo, setModo] = useState('ambos');   // topo | verso | ambos
+  const [circuito, setCircuito] = useState(null);
+  const [sel, setSel] = useState(null);
+  const [fio, setFio] = useState(null);        // jumper isolado
+  const [detalhe, setDetalhe] = useState(null);
+  const chaveLS = `soldado:${titulo}`;
+  const [feitos, setFeitos] = useState(() => {
+    try { return JSON.parse(localStorage.getItem(chaveLS)) ?? []; } catch { return []; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem(chaveLS, JSON.stringify(feitos)); } catch { /* sem espaço */ }
+  }, [feitos, chaveLS]);
+
+  const ativo = id => circuito === null || circuito === id;
+  const corDe = id => CIRCUITOS.find(c => c.id === id)?.cor ?? '#868e96';
+  const marca = n => setFeitos(f => f.includes(n) ? f.filter(x => x !== n) : [...f, n]);
+
+  /* comprimento real de cada fio, para cortar antes de soldar */
+  const compr = j => Math.hypot(j.para[0] - j.de[0], j.para[1] - j.de[1]) * PASSO;
+
+  const props = {
+    PLACA, BORNES, BARRAMENTO_0V, NOS, JUMPERS, DISCRETOS, CI, MODULOS,
+    corDe, ativo, sel, setSel, fio, setFio, feitos,
+  };
+  const faltam = JUMPERS.filter(j => !feitos.includes(j.n)).length;
 
   return (
     <div style={{ display: 'flex', height: '100%', background: '#eef1f5', overflow: 'hidden' }}>
-      {/* ── desenho ── */}
-      <div style={{ flex: 1, overflow: 'auto', padding: 20 }}>
-        <svg width={(larg + 34) * escala / 3.2} viewBox={`-15 -13 ${larg + 32} ${alt + 26}`}
-             style={{ background: '#fff', borderRadius: 8, boxShadow: '0 1px 6px #0002' }}>
-          <rect x={X(0.5)} y={Y(0.5)} width={X(PLACA.colunas)} height={Y(PLACA.linhas)}
-                rx={1.2} fill="#d8c9a3" stroke="#a8946a" strokeWidth={0.5} />
-
-          {/* jumpers — ficam por BAIXO da placa, por isso tracejados */}
-          {verJumpers && JUMPERS.map((j, i) => {
-            const [x1, y1] = [X(j.de[0]), Y(j.de[1])];
-            const [x2, y2] = [X(j.para[0]), Y(j.para[1])];
-            const dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy) || 1;
-            const lado = i % 2 ? 1 : -1;
-            const cx = (x1 + x2) / 2 + (-dy / len) * len * 0.13 * lado;
-            const cy = (y1 + y2) / 2 + (dx / len) * len * 0.13 * lado;
-            return (
-              <path key={j.n} d={`M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}`}
-                    fill="none" stroke={corDe(j.circuito)} strokeWidth={0.72}
-                    strokeDasharray="1.6 1.1" opacity={ativo(j.circuito) ? 0.9 : 0.1}
-                    strokeLinecap="round" />
-            );
-          })}
-
-          <Furos placa={PLACA} ocupados={ocupados} />
-
-          {/* barramento de 0 V — fio NU, o único da placa */}
-          <line x1={X(BARRAMENTO_0V.de)} y1={Y(BARRAMENTO_0V.linha)}
-                x2={X(BARRAMENTO_0V.ate)} y2={Y(BARRAMENTO_0V.linha)}
-                stroke="#212529" strokeWidth={1.5} strokeLinecap="round"
-                opacity={ativo(0) ? 1 : 0.15} />
-          <text x={X(BARRAMENTO_0V.ate) + 2} y={Y(BARRAMENTO_0V.linha) + 0.8}
-                fontSize={2.3} fontWeight="700" fill="#212529"
-                opacity={ativo(0) ? 1 : 0.2}>0 V</text>
-
-          {/* pontes de nó */}
-          {NOS.map(n => (
-            <g key={n.ref} opacity={ativo(n.circuito) ? 1 : 0.12}>
-              <line x1={X(n.de)} y1={Y(n.linha)} x2={X(n.ate)} y2={Y(n.linha)}
-                    stroke="#212529" strokeWidth={1.1} strokeLinecap="round" />
-              <text x={X(n.de) - 1.5} y={Y(n.linha) + 0.7} textAnchor="end"
-                    fontSize={1.8} fontWeight="700" fill="#212529">{n.ref}</text>
-            </g>
+      <div style={{ flex: 1, overflow: 'auto', padding: 16 }}>
+        <div style={{ display: 'flex', gap: 7, marginBottom: 12, flexWrap: 'wrap' }}>
+          {[['ambos', '⇄ Os dois lados'], ['topo', '🔺 Só os componentes'],
+            ['verso', '🔻 Só a fiação']].map(([id, txt]) => (
+            <button key={id} onClick={() => setModo(id)} style={{
+              background: modo === id ? '#1d3557' : '#fff',
+              color: modo === id ? '#fff' : '#1d3557',
+              border: '2px solid #1d3557', borderRadius: 7, padding: '7px 13px',
+              cursor: 'pointer', fontSize: 12.5, fontWeight: 700 }}>{txt}</button>
           ))}
+          {fio != null && (
+            <button onClick={() => setFio(null)} style={{
+              background: '#fff3bf', border: '2px solid #f59f00', borderRadius: 7,
+              padding: '7px 13px', cursor: 'pointer', fontSize: 12.5, fontWeight: 700 }}>
+              mostrando só o fio {fio} — ver todos
+            </button>
+          )}
+        </div>
 
-          {DISCRETOS.map(c => (
-            c.tipo === 'resistor'
-              ? <Resistor key={c.ref} c={c} cor={corDe(c.circuito)}
-                          ativo={ativo(c.circuito)} onClick={() => setSel(c)} />
-              : <Capacitor key={c.ref} c={c} cor={corDe(c.circuito)}
-                           ativo={ativo(c.circuito)} onClick={() => setSel(c)} />
-          ))}
+        <div style={{ background: '#fff3bf', borderRadius: 6, padding: '9px 12px',
+                      fontSize: 12, marginBottom: 12, lineHeight: 1.55 }}>
+          ⚠️ <b>O lado da solda é desenhado espelhado</b>, porque é assim que você o vê ao
+          virar a placa na mão. Repare no <b style={{ color: '#c92a2a' }}>marco vermelho do
+          furo 1,1</b>: em cima ele fica à esquerda, embaixo à direita. Confira esse marco
+          antes de soldar cada fio — não espelhar é o erro nº 1 desta montagem.
+        </div>
 
-          {CI && <Chip ci={CI} cor={corDe(4)} ativo={ativo(4)} onClick={() => setSel(CI)} />}
-          {MODULOS.map(m => (
-            <Modulo key={m.ref} m={m} ativo={ativo(m.circuito)} onClick={() => setSel(m)} />
-          ))}
-
-          {BORNES.map(b => (
-            <Borne key={b.ref} b={b} placa={PLACA} ativo={circuito === null}
-                   onVia={(bb, v) => setSel({ ...v, ref: `${bb.ref}-${v.n}`,
-                                              ehVia: true, borne: bb })} />
-          ))}
-
-          {/* régua de 50 mm para conferir a escala com uma régua de verdade */}
-          <g transform={`translate(${X(1)} ${alt + 9})`}>
-            <line x1={0} y1={0} x2={50} y2={0} stroke="#495057" strokeWidth={0.4} />
-            <line x1={0} y1={-1.5} x2={0} y2={1.5} stroke="#495057" strokeWidth={0.4} />
-            <line x1={50} y1={-1.5} x2={50} y2={1.5} stroke="#495057" strokeWidth={0.4} />
-            <text x={25} y={-2.4} textAnchor="middle" fontSize={2.2} fill="#495057">
-              50 mm reais
-            </text>
-          </g>
-        </svg>
+        <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+          {(modo === 'ambos' || modo === 'topo') && <Face face="topo" {...props} />}
+          {(modo === 'ambos' || modo === 'verso') && <Face face="verso" {...props} />}
+        </div>
       </div>
 
       {/* ── lateral ── */}
-      <aside style={{ width: 350, background: '#fff', borderLeft: '1px solid #dee2e6',
+      <aside style={{ width: 360, background: '#fff', borderLeft: '1px solid #dee2e6',
                       overflowY: 'auto', flexShrink: 0 }}>
         <div style={{ background: '#1d3557', color: '#fff', padding: '13px 15px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <b style={{ fontSize: 16 }}>{titulo} · lado dos componentes</b>
+            <b style={{ fontSize: 16 }}>{titulo}</b>
             {onFechar && <button onClick={onFechar} style={{
               background: '#ffffff33', color: '#fff', border: 'none', borderRadius: 5,
               width: 26, height: 26, cursor: 'pointer' }}>×</button>}
@@ -322,17 +394,15 @@ export default function PlacaIlhada({ dados, titulo, onFechar }) {
           </div>
         </div>
 
-        <div style={{ padding: '10px 15px', borderBottom: '1px solid #eee',
-                      display: 'flex', gap: 7, flexWrap: 'wrap', alignItems: 'center' }}>
-          <label style={{ fontSize: 11.5, color: '#495057', display: 'flex', gap: 5 }}>
-            <input type="checkbox" checked={verJumpers}
-                   onChange={e => setVerJumpers(e.target.checked)} />
-            fios por baixo
-          </label>
-          <input type="range" min={4} max={16} step={0.5} value={escala}
-                 onChange={e => setEscala(+e.target.value)} style={{ flex: 1, minWidth: 90 }} />
-          <span style={{ fontSize: 11, color: '#868e96' }}>zoom</span>
-        </div>
+        {PLACA.bruta && (
+          <div style={{ padding: '11px 15px', background: '#e7f5ff',
+                        borderBottom: '1px solid #a5d8ff', fontSize: 11.5, lineHeight: 1.55 }}>
+            <b style={{ color: '#1971c2' }}>✂️ Da placa comprada até esta</b>
+            <div style={{ marginTop: 4 }}>{PLACA.bruta.nome} — {PLACA.bruta.furos}</div>
+            <div style={{ marginTop: 5 }}>{PLACA.bruta.corte}</div>
+            <div style={{ marginTop: 5, color: '#1864ab' }}>💡 {PLACA.bruta.sobra}</div>
+          </div>
+        )}
 
         <div style={{ padding: '11px 15px', borderBottom: '1px solid #eee' }}>
           <div style={{ fontSize: 11, color: '#868e96', marginBottom: 7, letterSpacing: 0.4 }}>
@@ -359,9 +429,66 @@ export default function PlacaIlhada({ dados, titulo, onFechar }) {
           }}>
             🔬 Como cada perna é ligada — vista ampliada
           </button>
-          <div style={{ fontSize: 11, color: '#f08c00', marginTop: 7, lineHeight: 1.45 }}>
-            💡 Eles <b>não se tocam</b>. A única coisa que compartilham é o barramento de
-            0 V. Isole um de cada vez e a placa deixa de ser confusa.
+        </div>
+
+        {/* ⭐ a lista de fios, para riscar enquanto solda */}
+        <div style={{ padding: '11px 15px', borderBottom: '1px solid #eee' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between',
+                        alignItems: 'baseline', marginBottom: 7 }}>
+            <span style={{ fontSize: 11, color: '#868e96', letterSpacing: 0.4 }}>
+              OS {JUMPERS.length} FIOS — risque enquanto solda
+            </span>
+            <span style={{ fontSize: 11, fontWeight: 700,
+                           color: faltam ? '#e8590c' : '#2f9e44' }}>
+              {faltam ? `faltam ${faltam}` : 'todos ✓'}
+            </span>
+          </div>
+          {feitos.length > 0 && (
+            <button onClick={() => setFeitos([])} style={{
+              fontSize: 10.5, background: '#f1f3f5', border: '1px solid #ced4da',
+              borderRadius: 4, padding: '3px 8px', cursor: 'pointer', marginBottom: 7 }}>
+              limpar as marcações
+            </button>
+          )}
+          {JUMPERS.filter(j => ativo(j.circuito)).map(j => {
+            const feito = feitos.includes(j.n);
+            const este = fio === j.n;
+            const mm = compr(j);
+            return (
+              <div key={j.n} onClick={() => setFio(este ? null : j.n)}
+                style={{
+                  display: 'flex', gap: 7, alignItems: 'flex-start', cursor: 'pointer',
+                  padding: '5px 7px', borderRadius: 5, marginBottom: 2,
+                  background: este ? '#fff3bf' : (feito ? '#f8f9fa' : '#fff'),
+                  border: `1px solid ${este ? '#f59f00' : '#f1f3f5'}`,
+                  opacity: feito && !este ? 0.55 : 1,
+                }}>
+                <input type="checkbox" checked={feito} onClick={e => e.stopPropagation()}
+                       onChange={() => marca(j.n)} style={{ marginTop: 2 }} />
+                <span style={{ fontFamily: 'monospace', fontSize: 11, fontWeight: 700,
+                               color: corDe(j.circuito), minWidth: 16 }}>{j.n}</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 11.5, textDecoration: feito ? 'line-through' : 'none' }}>
+                    {j.sinal}
+                  </div>
+                  <div style={{ fontSize: 10, color: '#868e96', fontFamily: 'monospace' }}>
+                    ({j.de[0]},{j.de[1]}) → ({j.para[0]},{j.para[1]}) ·{' '}
+                    {mm.toFixed(0)} mm — corte {(mm + 15).toFixed(0)}
+                  </div>
+                  {j.alerta && (
+                    <div style={{ fontSize: 10, color: '#c92a2a', fontWeight: 700 }}>
+                      ⚠️ confira este antes de energizar
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+          <div style={{ marginTop: 8, padding: 9, background: '#f1f3f5', borderRadius: 5,
+                        fontSize: 10.5, color: '#495057', lineHeight: 1.5 }}>
+            📐 <b>"corte X"</b> é o comprimento a cortar: a distância entre os furos mais
+            15 mm para descascar as duas pontas e sobrar folga. Fio <b>isolado</b> de
+            0,25 mm² — só o barramento de 0 V é nu.
           </div>
         </div>
 
@@ -385,11 +512,6 @@ export default function PlacaIlhada({ dados, titulo, onFechar }) {
                 <div style={{ marginTop: 3, color: '#666' }}>
                   Coluna {sel.col} · linha {sel.borne.linha}
                 </div>
-                {sel.alerta && (
-                  <div style={{ marginTop: 5, color: '#c92a2a' }}>
-                    ⚠️ Via crítica — confira a anilha antes de energizar.
-                  </div>
-                )}
               </div>
             )}
             {sel.papel && (
@@ -431,13 +553,7 @@ export default function PlacaIlhada({ dados, titulo, onFechar }) {
                        color: '#343a40' }}>
             {ORDEM_MONTAGEM.map((p, i) => <li key={i} style={{ marginBottom: 4 }}>{p}</li>)}
           </ol>
-          <div style={{ marginTop: 11, padding: 10, background: '#f1f3f5', borderRadius: 6,
-                        fontSize: 11, color: '#495057', lineHeight: 1.5 }}>
-            <b>Por que os fios aparecem tracejados:</b> eles ficam do lado da solda, por
-            baixo. Como são <b>isolados</b>, podem cruzar o barramento de 0 V sem encostar.
-            O único fio <b>nu</b> da placa é o próprio barramento.
-          </div>
-          <div style={{ marginTop: 9, padding: 10, background: '#fff5f5', borderRadius: 6,
+          <div style={{ marginTop: 11, padding: 10, background: '#fff5f5', borderRadius: 6,
                         fontSize: 11, color: '#c92a2a', lineHeight: 1.5 }}>
             <b>Caixa:</b> {PLACA.caixa}.<br />{PLACA.nota}
           </div>

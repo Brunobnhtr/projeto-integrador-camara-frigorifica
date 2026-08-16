@@ -21,6 +21,21 @@ export const PLACA = {
   linhas: 29,
   get larguraMm() { return this.colunas * PASSO; }, // 60,96 mm
   get alturaMm() { return this.linhas * PASSO; },   // 73,66 mm
+  /* ⭐ A PLACA COMPRADA É DE 7 × 9 cm.
+     A largura já bate: 24 colunas × 2,54 = 60,96 mm, que é o que cabe
+     nos 61 mm úteis da caixa DIN de 4 módulos. Só a ALTURA sobra —
+     e sobra numa direção só, então é um corte reto, ao longo de uma
+     fileira de furos. Nada de recorte em L. */
+  bruta: {
+    nome: 'Placa ilhada 7 × 9 cm (AliExpress)',
+    colunas: 24, linhas: 36,   // ⚠️ conferir contando na placa que chegar
+    furos: '24 × 36 furos — ⚠️ CONTE quando chegar, há versões de 25 × 35',
+    corte: 'Corte na fileira 30, tirando 7 fileiras (≈ 17,8 mm). Risque dos '
+         + 'dois lados com estilete apoiado numa régua de metal, na LINHA ENTRE '
+         + 'furos, e quebre apoiando na quina da bancada.',
+    sobra: 'A tira que sai (24 × 7 furos) serve de gabarito para conferir o '
+         + 'espaçamento dos bornes antes de soldar na placa boa.',
+  },
   caixa: 'Caixa modular DIN de 4 módulos (70 mm)',
   nota: 'Precisou virar 4 módulos: o borne J1 tem 11 vias × 5,08 mm = 55,9 mm, '
       + 'que NÃO cabe nos 45 mm úteis de uma caixa de 3 módulos.',
@@ -262,7 +277,8 @@ export const CIRCUITOS = [
 ];
 
 export const ORDEM_MONTAGEM = [
-  'Corte a placa em 24 × 29 furos (≈ 61 × 74 mm).',
+  'Corte a placa de 7 × 9 cm na fileira 30 — sobram 24 × 29 furos (≈ 61 × 74 mm). '
+  + 'A largura já vem certa: corte reto, só na altura.',
   'Solde o BARRAMENTO DE 0 V primeiro — fio nu, bem esticado, na linha 10.',
   'Solde os dois BORNES. São eles que definem a geometria de tudo.',
   'Solde o SOQUETE DIP-18 (sem o CI dentro), chanfro à direita.',

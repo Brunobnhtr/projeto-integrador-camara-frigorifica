@@ -18,6 +18,21 @@ export const PLACA = {
   linhas: 29,
   get larguraMm() { return this.colunas * PASSO; },  // 60,96 mm
   get alturaMm() { return this.linhas * PASSO; },    // 73,66 mm
+  /* ⭐ A PLACA COMPRADA É DE 7 × 9 cm.
+     A largura já bate: 24 colunas × 2,54 = 60,96 mm, que é o que cabe
+     nos 61 mm úteis da caixa DIN de 4 módulos. Só a ALTURA sobra —
+     e sobra numa direção só, então é um corte reto, ao longo de uma
+     fileira de furos. Nada de recorte em L. */
+  bruta: {
+    nome: 'Placa ilhada 7 × 9 cm (AliExpress)',
+    colunas: 24, linhas: 36,   // ⚠️ conferir contando na placa que chegar
+    furos: '24 × 36 furos — ⚠️ CONTE quando chegar, há versões de 25 × 35',
+    corte: 'Corte na fileira 30, tirando 7 fileiras (≈ 17,8 mm). Risque dos '
+         + 'dois lados com estilete apoiado numa régua de metal, na LINHA ENTRE '
+         + 'furos, e quebre apoiando na quina da bancada.',
+    sobra: 'A tira que sai (24 × 7 furos) serve de gabarito para conferir o '
+         + 'espaçamento dos bornes antes de soldar na placa boa.',
+  },
   caixa: 'Caixa modular DIN de 4 módulos (70 mm)',
   nota: 'Mesma caixa da PI-1. O borne J3 tem 7 vias × 5,08 = 35,6 mm e divide '
       + 'a borda de baixo com o J2 (2 vias) — juntos dão 45,7 mm nos 61 disponíveis.',
@@ -241,7 +256,8 @@ export const CIRCUITOS = [
 ];
 
 export const ORDEM_MONTAGEM = [
-  'Corte a placa em 24 × 29 furos (≈ 61 × 74 mm) — mesma medida da PI-1.',
+  'Corte a placa de 7 × 9 cm na fileira 30 — mesma medida da PI-1. Corte reto, '
+  + 'só na altura; a largura de 24 colunas já vem certa.',
   'Solde o BARRAMENTO DE 0 V primeiro: fio nu esticado na linha 11.',
   'Solde os TRÊS BORNES. J1 em cima; J2 e J3 lado a lado embaixo.',
   'Solde as BARRAS DE PINOS FÊMEA dos dois módulos — sem os módulos encaixados.',

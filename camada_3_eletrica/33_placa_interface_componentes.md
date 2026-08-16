@@ -364,7 +364,49 @@ I = (5 V − 3,1 V) / 220 Ω = 8,6 mA   ✅ brilho adequado para cenografia
 
 ---
 
-## 33.3 A Placa de Interface PI-1 — construção
+## 33.3 ✂️ Da placa de 7 × 9 cm até a placa do painel
+
+As placas ilhadas compradas são de **7 × 9 cm**. As duas placas do projeto — PI-1 e PI-2 — saem cada uma de uma delas, com **um corte reto só**.
+
+### A largura já vem certa
+
+| | Placa comprada | Precisamos | Sobra |
+|---|---:|---:|---:|
+| Colunas | **24** | 24 | **0** |
+| Fileiras | **36** | 29 | **7** |
+
+⭐ **Isso é sorte útil:** 24 colunas × 2,54 = **60,96 mm**, que é exatamente o que cabe nos 61 mm úteis da caixa DIN de 4 módulos. Não é preciso cortar a largura — **só a altura**, e num corte reto ao longo de uma fileira de furos. Nada de recorte em L, nada de canto.
+
+> ⚠️ **Conte os furos quando a placa chegar.** Há versões de 7 × 9 cm com **25 × 35** furos em vez de 24 × 36. Se a sua vier assim, o layout ainda cabe (sobra uma coluna), mas confira antes de cortar. O script `npm run valida:pi2` compara os dois números e reprova se o layout não couber.
+
+### Como cortar sem lascar
+
+1. Marque a **fileira 30** — a primeira que sai
+2. Risque com **estilete apoiado numa régua de metal**, na linha **entre** furos, nunca em cima deles
+3. Risque dos **dois lados** da placa, 3 ou 4 passadas em cada
+4. Quebre apoiando na **quina da bancada**, com a linha do risco na borda
+5. Passe uma lixa fina na aresta
+
+> 💡 **Guarde a tira que sai** (24 × 7 furos). Ela serve de **gabarito**: encaixe os bornes nela primeiro para conferir o espaçamento das vias antes de soldar na placa boa. Errar o passo do borne na sobra não custa nada.
+
+### 🔎 O que os desenhos do aplicativo mostram
+
+Na aba **"Dentro do painel"**, clicando na PI-1 ou na PI-2 e depois em **"Ver a placa e como soldar"**, aparecem os **dois lados separados**:
+
+| Lado | O que tem | Como é desenhado |
+|---|---|---|
+| 🔺 **Componentes** (cima) | bornes, resistores, capacitores, CI ou módulos | como você vê na bancada |
+| 🔻 **Solda** (baixo) | barramento de 0 V, pontes de nó, **todos os fios** | ⚠️ **ESPELHADO** |
+
+> 🔥 **Por que o lado de baixo é espelhado.** Porque é assim que você o enxerga quando **vira a placa na mão**: a coluna 1, que estava à esquerda, passa para a direita. Um desenho não espelhado obriga você a fazer essa inversão de cabeça a cada fio — e é a **causa número um de fio soldado no furo errado**.
+>
+> Os dois desenhos trazem um **marco vermelho no furo (1,1)**. Confira esse marco antes de soldar cada fio: em cima ele fica à esquerda, embaixo à direita. Se os dois estiverem do mesmo lado na sua cabeça, pare.
+
+📋 A lateral traz a **lista dos fios** com o comprimento a cortar (distância entre furos + 15 mm para descascar e sobrar folga) e uma **caixa para riscar** conforme você solda. As marcações ficam salvas no navegador — dá para fechar e voltar no dia seguinte.
+
+---
+
+## 33.4 A Placa de Interface PI-1 — construção
 
 ### Onde fica no painel
 
@@ -727,7 +769,7 @@ Um **fio de cobre nu** soldado numa fileira reta de furos, atravessando a placa.
 
 ---
 
-## 33.4 A Placa de Interface PI-2 — construção
+## 33.5 A Placa de Interface PI-2 — construção
 
 > 🔧 **Veja o desenho furo por furo** na aba **"Dentro do painel"** do aplicativo: clique na PI-2 e depois em **"Ver a placa e como soldar"**.
 
@@ -814,7 +856,7 @@ Porque ele é o **instrumento de aferição**, não o método.
 
 ---
 
-## 33.5 Os 10 kΩ integrados ao BTS7960
+## 33.6 Os 10 kΩ integrados ao BTS7960
 
 Os dois pull-downs **não vão na placa PI-1**, pelo motivo explicado na §33.2: precisam estar no terminal do driver para cobrir também o rompimento do cabo.
 
@@ -832,7 +874,7 @@ Os dois pull-downs **não vão na placa PI-1**, pelo motivo explicado na §33.2:
 
 ---
 
-## 33.6 Componentes que NÃO precisam existir no painel
+## 33.7 Componentes que NÃO precisam existir no painel
 
 | Componente | Quantidade na BOM | Destino |
 |---|---:|---|
@@ -845,7 +887,7 @@ Os dois pull-downs **não vão na placa PI-1**, pelo motivo explicado na §33.2:
 
 ---
 
-## 33.7 ✅ Decisão tomada — sinaleiros de 24 V no painel, LEDs de 5 V na maquete
+## 33.8 ✅ Decisão tomada — sinaleiros de 24 V no painel, LEDs de 5 V na maquete
 
 A dúvida sobre a tensão dos LEDs está resolvida, e a divisão é por **onde** o LED fica:
 
@@ -867,7 +909,7 @@ A dúvida sobre a tensão dos LEDs está resolvida, e a divisão é por **onde**
 
 ---
 
-## 33.8 Checklist de aceitação do Doc 33
+## 33.9 Checklist de aceitação do Doc 33
 
 ### Placa PI-1
 - [ ] Placa montada com os **6 componentes discretos + 1 CI** e os 2 bornes
