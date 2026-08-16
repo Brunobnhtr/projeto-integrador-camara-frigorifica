@@ -143,23 +143,42 @@ Vale notar que isso mantém o padrão de fábrica: **é tudo Arduino**, do supor
 
 ---
 
-## 14.5 Por que a bancada continua com INA219
+## 14.5 ⭐ A bancada usa o MUX — e o motivo é o mais importante do projeto
 
-Se o mux é mais barato, por que o protótipo não usa mux?
+Seria tentador deixar a bancada com 2 INA219: para dois canais eles medem melhor, gastam menos pinos e não desperdiçam 14 entradas.
 
-**Porque para 2 canais ele é pior:**
+**Mas isso seria testar uma coisa e entregar outra.**
 
-| | 2 × INA219 | 1 mux + 2 shunts |
+> O desafio é apresentar a solução **para a empresa**. Ela não vai comprar 50 INA219. Se a bancada valida uma arquitetura e a fábrica recebe outra, **o protótipo não provou nada** sobre o que vai ser implantado.
+
+Um protótipo existe para **tirar risco do que vem depois**. O risco não está em saber se o INA219 funciona — está em saber se **o multiplexador dá conta**: se a leitura é estável, se o tempo de acomodação basta, se o ruído do painel atrapalha. Só se descobre isso montando.
+
+### 🔬 Como provar que o mux funciona: um instrumento de referência
+
+Fica **um INA219 medindo a MESMA posição 1** que o mux mede.
+
+```
+   DUT 1 ──►[ INA219 ]──►[ shunt 4,7 Ω ]──► 0 V
+                │                │
+            referência        canal 0 do mux
+                └────── as duas leituras têm que bater ──────┘
+```
+
+**Sem um instrumento de referência, "funcionou" é opinião.** Com ele, você tem número: registre as duas leituras lado a lado durante um ensaio inteiro e mostre o gráfico. Se o mux acompanhar o INA219 dentro de poucos miliampères ao longo de 4 horas e de 5 a 60 °C, a arquitetura está validada — **para as 50 também**.
+
+### O que se perde, e por que é aceitável
+
+| | INA219 | Mux + shunt |
 |---|---|---|
-| Canais desperdiçados | 0 | **14 de 16** |
-| Resolução | 16 bits | 10 bits |
-| Mede também a tensão | ✅ | ❌ |
-| Distingue *fusível queimado* de *placa morta* | ✅ | ❌ |
-| Pinos do Arduino | 0 (I²C já existia) | 5 |
+| Resolução | 16 bits | 10 bits (~1 mA) |
+| Mede tensão também | ✅ | ❌ |
+| Distingue *fusível aberto* de *placa morta* | ✅ | ❌ |
 
-Aquela distinção da terceira linha é o que se perde: o INA219 mede corrente **e** tensão, então ele sabe dizer se a corrente zerou porque o dispositivo morreu (24 V presentes) ou porque o fusível abriu (0 V). Com shunt puro, os dois casos são idênticos.
+A terceira linha é a perda real. O INA219 sabe dizer se a corrente zerou porque o dispositivo morreu (24 V presentes) ou porque o fusível abriu (0 V); com shunt puro, os dois casos são idênticos.
 
-🎓 **E é exatamente isso que se diz na defesa:** *"cada escala tem a sua ferramenta certa. Com 2 posições, o INA219 mede melhor e usa menos pinos. Com 50, ele não cabe no barramento — e aí o multiplexador é que passa a ser a escolha certa."*
+**Como recuperar isso sem voltar atrás:** um dos 16 canais do mux mede a **tensão do barramento depois do fusível**, através de um divisor. Custa um canal e dois resistores — e a distinção volta, para todas as posições.
+
+🎓 **Frase para a defesa:** *"escolhemos medir com multiplexador mesmo tendo apenas duas posições, porque é o que a empresa vai usar com cinquenta. O protótipo serve para tirar risco da implantação, não para ficar bonito na bancada."*
 
 ---
 

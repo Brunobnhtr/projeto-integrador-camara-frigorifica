@@ -757,8 +757,8 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 > ⚠️ **Confira a serigrafia do borne azul de 3 vias** antes de ligar: a ordem `V+ / L− / GND` varia entre fabricantes.
 | 🔄 **DS18B20 à prova d'água** | 1 | **Mudou de lugar:** saiu de dentro da câmara e foi para o **dissipador do lado quente**. É ele que diz quando a pós-ventilação pode parar | |
 | 🔄 **AM2315C** | 1 | **Passou a ser o único sensor de dentro da câmara.** Mede temperatura **e umidade** no mesmo encapsulamento, e já estava no barramento I²C | |
-| ⭐ **PI-2 — caixa DIN 4 módulos** para os 2 INA219 | 1 | Os 4 sensores empilhados 2 × 2 numa caixa modular. Sem ela, ficariam pendurados no chicote | |
-| ⭐ **Porta-fusível DIN 2 vias COM INTERRUPTOR** | 2 | Para as 2 posições de ensaio, com fusível tubular de 500 mA. ⭐ **O interruptor é a demonstração:** desligando a chave na frente da banca, o INA219 vê a corrente cair a zero e o sistema acusa a falha em segundos | |
+| ⭐ **PI-2 — caixa DIN 4 módulos** | 1 | Abriga o multiplexador CD74HC4067, os resistores shunt e o INA219 de referência. Sem ela, ficariam pendurados no chicote | |
+| ⭐ **Porta-fusível DIN 2 vias COM INTERRUPTOR** | 1 | Para as 2 posições de ensaio, com fusível tubular de 500 mA. ⭐ **O interruptor é a demonstração:** desligando a chave na frente da banca, o INA219 vê a corrente cair a zero e o sistema acusa a falha em segundos | |
 | **Aquecedor PTC cerâmico 24 V / 80 W** | 1 | Com aletas e ventilador, **versão de 24 V** (~3,3 A) para ligar direto no barramento. ⚠️ **60 W não existe no mercado brasileiro** — as versões reais são **80 W, 100 W e 150 W**. Use a de **80 W**: fica bem equilibrada contra os ~60 W de capacidade de refrigeração das 2 Peltier, e mantém a corrente em 3,3 A (metade da Peltier). A de 150 W passaria a ser o pior caso do ramal (6,25 A) e desequilibra o controle. Buscar `aquecedor ptc 24v ventilador` | |
 | ⚠️ **Ventoinha de reposição do RADIADOR — 3 fios** | 2 | ⭐ **A troca mais importante do kit.** As originais são de **2 fios** e não informam rotação. Têm que ser **as do radiador (lado quente)** — se elas param, a Peltier queima em < 1 min. As dos **blocos frios** podem continuar de 2 fios. Medir o tamanho no kit antes de comprar | |
 | Pasta térmica | 1 | Seringa 5 g. **O kit já vem com a junta térmica montada** — a pasta é só para retrabalho, se você abrir para trocar uma pastilha | |
@@ -833,7 +833,9 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 
 | Item | Qtd | Especificação | Link |
 |---|---:|---|---|
-| **Sensor INA219** (módulo I²C) | **2** ⬇ | Mede tensão e corrente, ±3,2 A. ⚠️ **4 endereços selecionáveis** (0x40/0x41/0x44/0x45) — um por posição, todos no mesmo par de fios | |
+| ⭐ **Módulo multiplexador analógico 16 canais — CD74HC4067** | 1 | **O coração da detecção de falha.** Varre até 16 posições de ensaio com uma única entrada analógica do Arduino. É a mesma arquitetura que a empresa usará com 50 posições. Buscar `modulo multiplexador analogico 16 canais CD74HC4067` | |
+| ⭐ **Resistor 4,7 Ω · 1% · 1/4 W** (shunt de medição) | 4 | 2 em uso + 2 reserva. Com 127 mA dá 0,60 V, lido direto pelo ADC do Arduino — sem amplificador | |
+| **Sensor INA219** (módulo I²C) | **1** ⬇ | 🔬 **Passou a ser o instrumento de REFERÊNCIA**, não o sensor de produção. Mede a mesma posição 1 que o multiplexador mede, para provar que as duas leituras batem. Sem referência, "funcionou" é opinião | |
 | **Porta-fusível DIN 2 vias COM INTERRUPTOR** | 1 | **F-P1 e F-P2** — proteção individual de cada posição, com fusível tubular de 500 mA. ⭐ O interruptor é o que permite simular a falha ao vivo | |
 | Fusível mini automotivo 500 mA | 8 | 4 usos + 4 reservas | |
 | Placa ilhada pequena | 4 | ~30 × 40 mm — corpo de cada placa simuladora de dispositivo | |

@@ -92,7 +92,10 @@ export const COMPONENTES = [
         via('GND'), via('D21/SCL'), via('D20/SDA'),
       ]},
       { ref: 'ESQ', lado: 'esquerda', legenda: 'Borda esquerda — 13 bornes (D31–D43)', pinos: [
-        via('D31'), via('D32'), via('D33'), via('D34'),
+        via('D31', 1, 'PI-2 · S0 — seleção do canal do mux'),
+        via('D32', 1, 'PI-2 · S1'),
+        via('D33', 1, 'PI-2 · S2'),
+        via('D34', 1, 'PI-2 · S3'),
         via('D35'), via('D36'), via('D37'), via('D38'),
         via('D39'), via('D40'), via('D41'), via('D42'),
         via('D43'),
@@ -103,7 +106,7 @@ export const COMPONENTES = [
         via('D52'), via('D53'), via('A15'), via('A14'),
         via('A13'), via('A12'), via('A11'), via('A10'),
         via('A9'), via('A8', 1, 'RPM da ventoinha do radiador #2'), via('A7'), via('A6'),
-        via('A5'), via('A4'), via('A3'), via('A2'),
+        via('A5'), via('A4'), via('A3'), via('A2', 1, '⭐ PI-2 · SIG — os 16 canais entram por aqui'),
         via('A1', 1, 'PI-1 J2-2 — corrente do BTS #2'), via('A0', 1, 'PI-1 J2-1 — corrente do BTS #1'), via('GND'), via('IOREF'),
         via('AREF'), via('RESET'), via('+3V3'), via('GND'),
         via('+5V', 1, 'BD-5V saída 1'), via('VIN'),
@@ -271,38 +274,50 @@ export const COMPONENTES = [
 
 
   {
-    id: 'PI-2', nome: 'PI-2 — placa dos 2 sensores INA219', trilho: 3,
-    x: 347, largura: 35, altura: 62, cor: '#ae3ec9',
-    nota: 'Caixa DIN de 2 módulos com os 2 INA219 empilhados. Cada um mede a corrente '
-        + 'de UMA posição de ensaio — é assim que o sistema sabe QUAL dispositivo '
-        + 'morreu, e não apenas que algo morreu.',
+    id: 'PI-2', nome: 'PI-2 — multiplexador de corrente (16 canais)', trilho: 3,
+    x: 347, largura: 70, altura: 62, cor: '#ae3ec9',
+    nota: '⭐ É a MESMA arquitetura que a empresa vai usar com 50 posições, montada '
+        + 'com 2. Um CD74HC4067 varre até 16 canais, cada um com seu resistor shunt, '
+        + 'e o Arduino lê tudo por UMA entrada analógica.',
     grupos: [
-      { ref: 'J1', lado: 'cima', legenda: 'Entrada — vem dos fusíveis (3)', pinos: [
+      { ref: 'J1', lado: 'cima', legenda: 'Entrada — vem dos fusíveis (4)', pinos: [
         { nome: 'IN1', usa: true, para: 'F-P1 — posição 1' },
         { nome: 'IN2', usa: true, para: 'F-P2 — posição 2' },
-        { nome: '0V', usa: true, para: 'BD-0V' },
+        { nome: 'IN3' }, { nome: 'IN4' },
       ]},
       { ref: 'J2', lado: 'baixo', legenda: 'Saída — vai para a câmara (3)', pinos: [
         { nome: 'P1', usa: true, para: 'DUT da posição 1' },
         { nome: 'P2', usa: true, para: 'DUT da posição 2' },
-        { nome: '0V', usa: true, para: 'retorno comum dos 2 DUTs' },
+        { nome: '0V', usa: true, para: 'BD-0V — retorno depois dos shunts' },
       ]},
-      { ref: 'I2C', lado: 'direita', legenda: 'Barramento I²C (4)', pinos: [
-        { nome: 'VCC', usa: true, para: 'BD-5V saída 8' },
+      { ref: 'CTRL', lado: 'direita', legenda: 'Comando e leitura (9)', pinos: [
+        { nome: '+5V', usa: true, para: 'BD-5V saída 8' },
         { nome: 'GND', usa: true, para: 'BD-0V' },
-        { nome: 'SDA', usa: true, para: 'Mega D20' },
+        { nome: 'S0', usa: true, para: 'Mega D31 — seleção de canal, bit 0' },
+        { nome: 'S1', usa: true, para: 'Mega D32 — bit 1' },
+        { nome: 'S2', usa: true, para: 'Mega D33 — bit 2' },
+        { nome: 'S3', usa: true, para: 'Mega D34 — bit 3' },
+        { nome: 'SIG', usa: true, para: 'Mega A2 — ⭐ a ÚNICA entrada analógica dos 16 canais' },
+        { nome: 'SDA', usa: true, para: 'Mega D20 — só do INA219 de referência' },
         { nome: 'SCL', usa: true, para: 'Mega D21' },
       ]},
     ],
     avisos: [
-      '⚠️ SÃO DOIS MÓDULOS, NÃO UM. Cada INA219 mede UMA linha. Com um só você saberia '
-      + 'que a corrente total caiu, mas não QUAL dos dois dispositivos parou — e é '
-      + 'justamente essa a pergunta que o projeto existe para responder.',
-      '⭐ Endereços I²C 0x40 e 0x41, escolhidos por jumper em cada módulo. Sobram o '
-      + '0x44 e o 0x45 caso o ensaio volte a ter 4 posições.',
-      '⚠️ Configure o endereço ANTES de fechar a caixa — depois não dá para alcançar '
-      + 'os jumpers.',
-      '🔌 Só 3 fios entram na câmara: os 2 positivos e um retorno comum.',
+      '⭐ POR QUE O PROTÓTIPO USA MUX E NÃO 2 INA219. O desafio é apresentar a solução '
+      + 'para a EMPRESA, e ela não vai comprar 50 INA219. Testar uma arquitetura na '
+      + 'bancada e entregar outra na fábrica não valida nada — o protótipo tem que '
+      + 'provar o que vai ser implantado.',
+      '🔬 UM INA219 FICA COMO REFERÊNCIA, medindo a mesma posição 1 que o mux mede. É '
+      + 'assim que se prova que o mux funciona: as duas leituras têm que bater. Sem um '
+      + 'instrumento de referência, "funcionou" é opinião.',
+      '📐 Shunt de 4,7 Ω · 1% · 1/4 W por canal. Com 127 mA dá 0,60 V, que o ADC do '
+      + 'Arduino lê direto — 123 contagens, ~1 mA de resolução. Não precisa de '
+      + 'amplificador, e a impedância baixa ainda faz o mux estabilizar rápido.',
+      '🎁 14 dos 16 canais ficam livres. Acrescentar posição é acrescentar shunt e fio '
+      + '— nenhuma placa nova, nenhum pino novo no Arduino.',
+      '⚠️ O shunt fica no RETORNO (lado baixo). Isso levanta o negativo de cada DUT em '
+      + '0,6 V. Para as placas simuladoras é irrelevante; se um dia entrar um DUT com '
+      + 'comunicação, confira se ele tolera essa referência deslocada.',
     ],
   },
   {
