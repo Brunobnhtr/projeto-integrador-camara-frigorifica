@@ -24,7 +24,8 @@ function posicoes(c, g) {
     const lin = Math.floor(i / porLinha);
     const col = i % porLinha;
     const desl = inicio + col * passo;
-    const rec = 4.0 + lin * 5.0;           // recuo por linha, para dentro
+    const apertado = passo < 4.2;
+    const rec = (apertado ? 3.2 : 4.0) + lin * 5.0;   // recuo, para dentro
     if (g.lado === 'cima')     return { ...p, x: c.x + desl, y: c.y + rec, passo };
     if (g.lado === 'baixo')    return { ...p, x: c.x + desl, y: c.y + c.altura - rec, passo };
     if (g.lado === 'esquerda') return { ...p, x: c.x + rec, y: c.y + desl, passo };
@@ -35,9 +36,8 @@ function posicoes(c, g) {
 export default function VistaPainelInterno() {
   const [sel, setSel] = useState(null);      // componente
   const [pino, setPino] = useState(null);    // terminal
-  const [zoom, setZoom] = useState(2.2);
+  const [zoom, setZoom] = useState(2.6);
   const [soUsados, setSoUsados] = useState(false);
-  const [folga, setFolga] = useState(0);   // mm de afastamento só para visualizar
   const rolagem = useRef(null);
 
   /* scroll do mouse dá zoom, mantendo sob o cursor o que estava sob ele */
@@ -60,25 +60,15 @@ export default function VistaPainelInterno() {
 
   /* posiciona cada componente no seu trilho */
   const comps = useMemo(() => {
-    /* `folga` afasta os componentes só para enxergar melhor. Não muda o
-       painel real — a cota do cabeçalho continua sendo a de verdade. */
-    const ordem = {};
-    for (const t of TRILHOS) {
-      ordem[t.n] = COMPONENTES.filter(c => c.trilho === t.n)
-        .sort((a, b) => a.x - b.x).map(c => c.id);
-    }
     return COMPONENTES.map(c => {
       const t = TRILHOS.find(x => x.n === c.trilho);
       const y = c.porta ? c.y : t.y - c.altura / 2;
-      const i = c.porta ? 0 : ordem[c.trilho].indexOf(c.id);
-      const x = c.porta
-        ? CAIXA.largura + folga * 4 + 40 + c.x
-        : PLACA.x + c.x + i * folga;
+      const x = c.porta ? CAIXA.largura + 40 + c.x : PLACA.x + c.x;
       return { ...c, x, y };
     });
-  }, [folga]);
+  }, []);
 
-  const larguraTotal = CAIXA.largura + folga * 4 + 40 + 250;
+  const larguraTotal = CAIXA.largura + 40 + 250;
 
   return (
     <div style={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
@@ -88,21 +78,10 @@ export default function VistaPainelInterno() {
                       background: '#fff', padding: '8px 13px', borderRadius: 7,
                       flexWrap: 'wrap' }}>
           <b style={{ fontSize: 13 }}>Painel por dentro · {CAIXA.largura} × {CAIXA.altura} mm</b>
-          {folga > 0 && (
-            <span style={{ fontSize: 11, color: '#c92a2a', fontWeight: 700 }}>
-              ⚠ afastado {folga} mm só para ver — no painel real eles ficam encostados
-            </span>
-          )}
           <label style={{ fontSize: 11.5, color: '#495057', display: 'flex', gap: 5 }}>
             <input type="checkbox" checked={soUsados}
                    onChange={e => setSoUsados(e.target.checked)} />
             só os terminais usados
-          </label>
-          <label style={{ fontSize: 11.5, color: '#495057', display: 'flex', gap: 5,
-                          alignItems: 'center' }}>
-            afastar
-            <input type="range" min={0} max={26} step={1} value={folga}
-                   onChange={e => setFolga(+e.target.value)} style={{ width: 90 }} />
           </label>
           <input type="range" min={1.2} max={10} step={0.1} value={zoom}
                  onChange={e => setZoom(+e.target.value)}
@@ -117,9 +96,9 @@ export default function VistaPainelInterno() {
              style={{ background: '#fff', borderRadius: 8, boxShadow: '0 1px 6px #0002' }}>
 
           {/* caixa e placa de montagem */}
-          <rect x={0} y={0} width={CAIXA.largura + folga * 4} height={CAIXA.altura} rx={4}
+          <rect x={0} y={0} width={CAIXA.largura} height={CAIXA.altura} rx={4}
                 fill="#dee2e6" stroke="#868e96" strokeWidth={2} />
-          <rect x={PLACA.x} y={PLACA.y} width={PLACA.largura + folga * 4}
+          <rect x={PLACA.x} y={PLACA.y} width={PLACA.largura}
                 height={PLACA.altura} rx={2} fill="#e9ecef" stroke="#ced4da"
                 strokeWidth={1} />
 
@@ -128,8 +107,8 @@ export default function VistaPainelInterno() {
             const pot = k.tipo === 'potencia';
             return (
               <g key={k.id}>
-                <rect x={k.vertical && k.id === 'CV-dir' ? k.x + folga * 4 : k.x}
-                      y={k.y} width={k.vertical ? k.w : k.w + folga * 4} height={k.h} rx={1.5}
+                <rect x={k.vertical && k.id === 'CV-dir' ? k.x : k.x}
+                      y={k.y} width={k.vertical ? k.w : k.w} height={k.h} rx={1.5}
                       fill={pot ? '#ffe3e3' : '#e7f5ff'}
                       stroke={pot ? '#ffa8a8' : '#a5d8ff'} strokeWidth={0.8} />
                 {/* dentes da canaleta */}
@@ -164,7 +143,7 @@ export default function VistaPainelInterno() {
           {/* trilhos DIN */}
           {TRILHOS.map(t => (
             <g key={t.n}>
-              <rect x={PLACA.x + 4} y={t.y - 5} width={PLACA.largura + folga * 4 - 8} height={10}
+              <rect x={PLACA.x + 4} y={t.y - 5} width={PLACA.largura - 8} height={10}
                     rx={1} fill="#b8bcc0" stroke="#868e96" strokeWidth={0.6} />
               <text x={PLACA.x + 6} y={t.y - 38} fontSize={7} fontWeight="700" fill="#8895a6">
                 {t.nome}
@@ -173,13 +152,13 @@ export default function VistaPainelInterno() {
           ))}
 
           {/* porta */}
-          <rect x={CAIXA.largura + folga * 4 + 40} y={0} width={250} height={CAIXA.altura} rx={4}
+          <rect x={CAIXA.largura + 40} y={0} width={250} height={CAIXA.altura} rx={4}
                 fill="#e9ecef" stroke="#868e96" strokeWidth={2} />
           {[70, 240, 410].map(hy => (
-            <rect key={hy} x={CAIXA.largura + folga * 4 + 36} y={hy} width={8} height={26} rx={2}
+            <rect key={hy} x={CAIXA.largura + 36} y={hy} width={8} height={26} rx={2}
                   fill="#adb5bd" />
           ))}
-          <text x={CAIXA.largura + folga * 4 + 165} y={14} textAnchor="middle" fontSize={8}
+          <text x={CAIXA.largura + 165} y={14} textAnchor="middle" fontSize={8}
                 fontWeight="700" fill="#495057">PORTA — vista de dentro</text>
 
           {/* componentes */}
@@ -206,18 +185,33 @@ export default function VistaPainelInterno() {
                   const k = `${c.id}.${g.ref}.${p.nome}`;
                   const on = pino === k;
                   const l = Math.min(LADO_T, p.passo - 0.5);
+                  const girado = p.passo < 4.2;          // não cabe deitado
+                  const rot = g.lado === 'cima' ? 90 : g.lado === 'baixo' ? -90 : 0;
                   return (
                     <g key={k} onClick={e => { e.stopPropagation(); setSel(c); setPino(k); }}
                        style={{ cursor: 'pointer' }}>
                       <rect x={p.x - l / 2} y={p.y - l / 2} width={l} height={l} rx={0.3}
                             fill={on ? '#ffd43b' : (p.usa ? '#e9c46a' : '#5c6268')}
                             stroke={on ? '#e8590c' : '#1a1d20'} strokeWidth={on ? 0.7 : 0.25} />
-                      <text x={p.x} y={p.y + l * 0.33} textAnchor="middle"
-                            fontSize={l * 0.62} fontWeight="700"
-                            fill={p.usa || on ? '#1a1d20' : '#9aa0a6'}
-                            style={{ pointerEvents: 'none' }}>
-                        {p.nome.replace(/^(GPIO|GPI)\s*/, '').replace(/ ·.*$/, '')}
-                      </text>
+                      {girado && rot ? (
+                        /* etiqueta em pé, para dentro da placa — é como os
+                           bornes de verdade são identificados */
+                        <text x={p.x} y={p.y + (rot > 0 ? l * 0.8 : -l * 0.8)}
+                              textAnchor={rot > 0 ? 'start' : 'end'}
+                              fontSize={2.5} fontWeight="700"
+                              fill={p.usa || on ? '#1a1d20' : '#8d949b'}
+                              transform={`rotate(${rot} ${p.x} ${p.y})`}
+                              style={{ pointerEvents: 'none' }}>
+                          {p.nome.replace(/^(GPIO|GPI)\s*/, '')}
+                        </text>
+                      ) : (
+                        <text x={p.x} y={p.y + l * 0.33} textAnchor="middle"
+                              fontSize={l * 0.6} fontWeight="700"
+                              fill={p.usa || on ? '#1a1d20' : '#9aa0a6'}
+                              style={{ pointerEvents: 'none' }}>
+                          {p.nome.replace(/^(GPIO|GPI)\s*/, '').replace(/ ·.*$/, '')}
+                        </text>
+                      )}
                     </g>
                   );
                 }))}

@@ -24,7 +24,7 @@ export const PLACA = { x: 12, y: 14, largura: 476, altura: 472 };
  */
 export const CANALETAS = [
   { id: 'CH-topo', tipo: 'sinal',    x: 14, y: 22,  w: 472, h: 30, nome: 'superior' },
-  { id: 'CH-3x2',  tipo: 'sinal',    x: 14, y: 166, w: 472, h: 30, nome: 'entre os trilhos 3 e 2' },
+  { id: 'CH-3x2',  tipo: 'sinal',    x: 14, y: 180, w: 472, h: 28, nome: 'entre os trilhos 3 e 2' },
   { id: 'CH-2x1',  tipo: 'potencia', x: 14, y: 296, w: 472, h: 30, nome: 'entre os trilhos 2 e 1' },
   { id: 'CH-base', tipo: 'potencia', x: 14, y: 440, w: 472, h: 32, nome: 'inferior — entradas' },
   { id: 'CV-esq',  tipo: 'potencia', x: 14, y: 22,  w: 26,  h: 450, nome: 'vertical esquerda', vertical: true },
@@ -73,12 +73,14 @@ export const COMPONENTES = [
   /* ════════════ TRILHO 3 — CONTROLE ════════════ */
   {
     id: 'MEGA', nome: 'Arduino Mega 2560 em adaptador de bornes', trilho: 3,
-    x: 32, largura: 120, altura: 72, cor: '#0ca678',
+    x: 32, largura: 134, altura: 96, cor: '#0ca678',
     nota: 'O Mega encaixa no meio da placa adaptadora e cada pino dele vira um borne '
-        + 'de parafuso nas bordas. São 82 bornes ao todo. Some a necessidade de solda '
-        + 'e de jumper solto.',
+        + 'de parafuso nas bordas. São 82 bornes em FILEIRA ÚNICA por borda, um ao '
+        + 'lado do outro — é o que obriga a placa a ser comprida.',
+    aConferir: 'Dimensões estimadas em 134 × 96 mm a partir dos 35 bornes da borda de '
+             + 'cima. Meça a placa quando ela chegar.',
     grupos: [
-      { ref: 'TOPO', lado: 'cima', linhas: 2, legenda: 'Borda de cima — 35 bornes', pinos: [
+      { ref: 'TOPO', lado: 'cima', legenda: 'Borda de cima — 35 bornes', pinos: [
         via('D30'), via('D29', 1, '⭐ MV-1 canal 3 → ventoinhas de CIRCULAÇÃO'), via('D28', 1, '⭐ MV-1 canal 2 → ventoinha do PTC'), via('D27', 1, '⭐ MV-1 canal 1 → ventoinhas do RADIADOR'),
         via('D26', 1, 'Seletora LOCAL / REMOTO'), via('D25', 1, 'PI-1 J2-8 — vigia se os 24 V caíram'), via('D24', 1, 'Emergência — bloco NF de 5 V'), via('D23', 1, 'Botão STOP (NA, 5 V)'),
         via('D22', 1, 'Botão START (NA, 5 V)'), via('+5V', 1, 'BD-5V saída 1'), via('D21', 1, 'I²C SCL — o mesmo barramento'), via('D20', 1, 'I²C SDA — AM2315C (câmara), DS3231 e 4× INA219'),
@@ -95,7 +97,7 @@ export const COMPONENTES = [
         via('D39'), via('D40'), via('D41'), via('D42'),
         via('D43'),
       ]},
-      { ref: 'BASE', lado: 'baixo', linhas: 2, legenda: 'Borda de baixo — 34 bornes', pinos: [
+      { ref: 'BASE', lado: 'baixo', legenda: 'Borda de baixo — 34 bornes', pinos: [
         via('D44'), via('D45'), via('D46'), via('D47'),
         via('D48'), via('D49'), via('D50'), via('D51'),
         via('D52'), via('D53'), via('A15'), via('A14'),
@@ -118,7 +120,7 @@ export const COMPONENTES = [
   },
   {
     id: 'PI1', nome: 'Placa de interface PI-1', trilho: 3,
-    x: 162, largura: 70, altura: 62, cor: '#f08c00',
+    x: 171, largura: 70, altura: 62, cor: '#f08c00',
     nota: 'Caixa DIN de 4 módulos. J1 só entra, J2 só sai.',
     grupos: [
       { ref: 'J1', lado: 'cima', legenda: 'ENTRADAS (11 vias · KF301 5,08 mm)', pinos: [
@@ -143,7 +145,7 @@ export const COMPONENTES = [
   },
   {
     id: 'ESP32', nome: 'DNLCB30 + ESP32 30 pinos', trilho: 3,
-    x: 242, largura: 96, altura: 76, cor: '#1971c2',
+    x: 246, largura: 96, altura: 76, cor: '#1971c2',
     nota: 'Cada lado tem DUAS colunas de bornes: a de fora é 5 V e a de dentro é o '
         + 'GPIO. Ou seja, cada sinal já vem com a alimentação ao lado — é o que a '
         + 'serigrafia chama de "5V IO Level Converter". São 62 bornes ao todo.',
@@ -220,7 +222,7 @@ export const COMPONENTES = [
   },
   {
     id: 'BTS2', nome: 'BTS7960 (IBT-2) #2 — PTC', trilho: 2,
-    x: 92, largura: 50, altura: 50, cor: '#c92a2a',
+    x: 87, largura: 50, altura: 50, cor: '#c92a2a',
     grupos: [
       { ref: 'P1', lado: 'esquerda', legenda: 'Borne verde de potência (4 parafusos)', pinos: [
         via('M−', 1, 'PTC — negativo'), via('M+', 1, 'PTC — positivo'),
@@ -236,7 +238,7 @@ export const COMPONENTES = [
   },
   {
     id: 'KA1', nome: 'KA1 — relé de selo', trilho: 2,
-    x: 152, largura: 30, altura: 50, cor: '#7048e8',
+    x: 142, largura: 30, altura: 50, cor: '#7048e8',
     nota: 'Relé de 8 pinos com 2 contatos reversíveis, em base PTF08A.',
     grupos: [
       { ref: 'REL', lado: 'baixo', legenda: 'Base PTF08A (8 terminais)', pinos: [
@@ -248,7 +250,7 @@ export const COMPONENTES = [
   },
   {
     id: 'KA2', nome: 'KA2 — relé de potência', trilho: 2,
-    x: 192, largura: 30, altura: 50, cor: '#7048e8',
+    x: 177, largura: 30, altura: 50, cor: '#7048e8',
     nota: '⚠️ Contato declarado em CORRENTE CONTÍNUA, mínimo 10 A.',
     grupos: [
       { ref: 'REL', lado: 'baixo', legenda: 'Base PTF08A (8 terminais)', pinos: [
@@ -264,7 +266,7 @@ export const COMPONENTES = [
 
   {
     id: 'MV-1', nome: 'MV-1 — módulo MOSFET 4 canais (ventoinhas)', trilho: 2,
-    x: 232, largura: 55, altura: 44, cor: '#0ca678',
+    x: 212, largura: 55, altura: 44, cor: '#0ca678',
     nota: 'Comanda as ventoinhas em três grupos, porque elas NÃO ligam todas juntas. '
         + 'MOSFET e não relé: ventoinha liga e desliga a cada ciclo de ensaio, e '
         + 'contato de relé tem vida contada em número de manobras.',
@@ -302,7 +304,7 @@ export const COMPONENTES = [
 
   {
     id: 'PI-2', nome: 'PI-2 — placa dos 4 sensores INA219', trilho: 3,
-    x: 348, largura: 70, altura: 62, cor: '#ae3ec9',
+    x: 347, largura: 70, altura: 62, cor: '#ae3ec9',
     nota: 'Caixa DIN de 4 módulos com os 4 INA219 empilhados 2 × 2. Eles medem a '
         + 'corrente de cada posição de ensaio — é como o sistema descobre que uma '
         + 'placa morreu.',
@@ -339,7 +341,7 @@ export const COMPONENTES = [
   },
   {
     id: 'F-P', nome: 'F-P1..F-P4 — fusíveis das posições de ensaio', trilho: 2,
-    x: 297, largura: 72, altura: 46, cor: '#fab005',
+    x: 272, largura: 72, altura: 46, cor: '#fab005',
     nota: '2 porta-fusíveis de 2 vias COM INTERRUPTOR. O interruptor é proposital: é '
         + 'com ele que você desliga um dispositivo na frente da banca e mostra o '
         + 'sistema detectando a falha.',
@@ -379,7 +381,7 @@ export const COMPONENTES = [
   },
   {
     id: 'BD-AUX', nome: 'BD-AUX — 12 V auxiliar', trilho: 1,
-    x: 78, largura: 36, altura: 58, cor: '#fab005',
+    x: 73, largura: 36, altura: 58, cor: '#fab005',
     grupos: [
       { ref: 'IN', lado: 'cima', legenda: 'Entrada 2,5 mm² (1)', pinos: [via('IN', 1, 'prensa-cabo do 12 V')] },
       { ref: 'OUT', lado: 'baixo', legenda: 'Saídas (4)', pinos: [
@@ -390,7 +392,7 @@ export const COMPONENTES = [
   },
   {
     id: 'BD-24V', nome: 'BD-24V — 24 V de serviços', trilho: 1,
-    x: 124, largura: 45, altura: 58, cor: '#e8590c',
+    x: 114, largura: 45, altura: 58, cor: '#e8590c',
     nota: 'PERMANENTE — não cai na emergência.',
     grupos: [
       { ref: 'IN', lado: 'cima', legenda: 'Entrada 2,5 mm² (1)', pinos: [via('IN', 1, 'prensa-cabo dos 24 V de serviços')] },
@@ -404,7 +406,7 @@ export const COMPONENTES = [
   },
   {
     id: 'BD-5V', nome: 'BD-5V — 5,10 V', trilho: 1,
-    x: 179, largura: 66, altura: 58, cor: '#f08c00',
+    x: 164, largura: 66, altura: 58, cor: '#f08c00',
     grupos: [
       { ref: 'IN', lado: 'cima', legenda: 'Entrada 2,5 mm² (1)', pinos: [via('IN', 1, 'prensa-cabo dos 5 V')] },
       { ref: 'OUT', lado: 'baixo', legenda: 'Saídas (10) ⬆', pinos: [
@@ -418,7 +420,7 @@ export const COMPONENTES = [
   },
   {
     id: 'BD-0V', nome: 'BD-0V — barra do 0 V (star ground)', trilho: 1,
-    x: 255, largura: 100, altura: 58, cor: '#212529',
+    x: 235, largura: 100, altura: 58, cor: '#212529',
     nota: '⭐ O ÚNICO 0 V do projeto. Barra de 20 pontos, ou dois blocos de 8 ligados '
         + 'por ponte de 4 mm².',
     grupos: [
@@ -443,7 +445,7 @@ export const COMPONENTES = [
   },
   {
     id: 'RTC', nome: 'RTC DS3231', trilho: 1,
-    x: 365, largura: 35, altura: 40, cor: '#0ca678',
+    x: 340, largura: 35, altura: 40, cor: '#0ca678',
     nota: 'Ficou no trilho 1 porque I²C tolera distância. Só o cartão SD precisava '
         + 'estar perto do processador — e ele foi para dentro da tela.',
     grupos: [
