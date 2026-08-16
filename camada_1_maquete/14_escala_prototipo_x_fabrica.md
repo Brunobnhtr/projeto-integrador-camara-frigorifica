@@ -20,6 +20,117 @@ Isso significa que **não é preciso propor um CLP**. A solução para 50 posiç
 
 ---
 
+## 14.0 ⚠️ Antes de tudo: são DOIS desenhos diferentes
+
+Este documento mostra duas coisas, e é fácil confundi-las. Vale deixar claro qual é qual **antes** de olhar qualquer figura.
+
+| | **O QUE VOCÊ VAI MONTAR** | **O QUE VOCÊ VAI PROPOR** |
+|---|---|---|
+| | a bancada, 2 posições | a fábrica, 50 posições |
+| Onde ficam os dispositivos | soltos dentro da câmara | encaixados em **soquetes** |
+| Retornos | **2 fios** | 50 **trilhas** de placa |
+| Onde fica a medição | placa **PI-2**, no painel | placa de suporte, **junto dos dispositivos** |
+| Soquetes | **nenhum** | 16 por suporte |
+
+> 🚨 **Os 16 soquetes e as trilhas são do desenho da FÁBRICA.** Na sua bancada não existe soquete nenhum e os retornos são dois fios comuns. Se você estava tentando encaixar aquilo no seu projeto, o problema era meu, não seu.
+
+---
+
+### O que é um "DUT"
+
+**DUT** = *Device Under Test*, dispositivo sob ensaio. É a peça que está sendo testada.
+
+| | Na empresa | **Na sua bancada** |
+|---|---|---|
+| O DUT é | uma placa eletrônica de verdade | uma **placa simuladora** que você monta |
+| Ela faz | a função dela, sob calor e frio | **consome corrente e esquenta** |
+| Composição | dezenas de componentes | 1 LED + 1 resistor de 1,2 kΩ + 1 resistor de potência |
+
+**A simuladora não precisa fazer nada útil.** O sistema mede **corrente**, não função — então qualquer coisa que consuma uma corrente estável serve para provar que a detecção funciona.
+
+---
+
+### O que vai DENTRO da câmara na sua bancada
+
+```
+   ┌───────────────── CÂMARA ─────────────────┐
+   │                                           │
+   │   [DUT 1]        [DUT 2]                  │  ← as 2 placas simuladoras
+   │                                           │
+   │   [AM2315C]                               │  ← temperatura e umidade
+   │                                           │
+   │   [ventoinha fria da Peltier ↓]           │  ← sopram para baixo
+   │   [PTC + ventoinha ↓]                     │
+   │   [2 ventoinhas do duto ↑]                │
+   └───────────────────────────────────────────┘
+              │      │      │      │
+              └──────┴──────┴──────┘
+                   4 fios das posições
+              (2 positivos + 2 retornos)
+```
+
+**Não vai medição nenhuma lá dentro.** Os shunts e o multiplexador ficam no painel, na PI-2.
+
+📌 O **DS18B20 fica FORA**, colado no dissipador quente — ele não mede a câmara, mede quando a ventoinha pode parar.
+
+---
+
+### A PI-2 existe? Sim — e é ela que faz a detecção
+
+É uma caixa DIN de 4 módulos no trilho 3. Por fora tem bornes; por dentro tem três coisas soldadas:
+
+| Dentro da PI-2 | Para quê |
+|---|---|
+| **1 módulo CD74HC4067** | o multiplexador — escolhe qual canal ler |
+| **2 resistores shunt de 4,7 Ω** | transformam corrente em tensão, um por posição |
+| **1 INA219** | o medidor de referência, para provar que o mux acerta |
+
+```
+        ┌──────────── PI-2 (caixa DIN) ────────────┐
+        │                                           │
+  RET-1 ●──[shunt 4,7 Ω]──┬──► canal 0 do mux      │
+        │                 └──► 0 V                  │
+        │                                           │
+  RET-2 ●──[shunt 4,7 Ω]──┬──► canal 1 do mux      │
+        │                 └──► 0 V                  │
+        │                        │                  │
+        │                     [ MUX ]──► SIG ●──────┼──► Arduino A2
+        │                        ▲                  │
+        │                    S0 S1 S2 S3 ●●●●───────┼──► Arduino D31–D34
+        └───────────────────────────────────────────┘
+```
+
+**O que é o multiplexador, em uma frase:** uma chave que liga **um** dos 16 canais na saída por vez — e quem escolhe qual é o Arduino.
+
+---
+
+### E o que é uma "trilha"?
+
+Trilha é o **fio impresso** numa placa de circuito. Abra qualquer aparelho: as ligações entre os componentes não são fios soltos, são linhas de cobre coladas na placa verde.
+
+```
+   FIO                          TRILHA
+   ═══════○                     ▁▁▁▁▁▁▁▁
+   solto, você corta,           desenhada na placa,
+   descasca e parafusa          já vem pronta de fábrica
+```
+
+Fazem a mesma coisa — levam corrente de um ponto a outro. A diferença é que a trilha **já vem pronta**, não tem mau contato e não custa nada além do cobre.
+
+**Por isso "50 retornos" deixa de assustar na fábrica:** lá eles não são 50 fios para alguém puxar, são 50 linhas de cobre desenhadas na placa onde os dispositivos encaixam. **Na sua bancada, com 2 posições, eles são fios mesmo — e dois fios não incomodam ninguém.**
+
+---
+
+### Por que 16 soquetes naquele desenho
+
+Porque **o multiplexador tem 16 canais**. Se um chip de R$ 3,40 lê 16 posições, faz sentido a placa de suporte segurar 16 dispositivos — assim cada suporte usa um multiplexador inteiro, sem sobra.
+
+`50 dispositivos ÷ 16 por suporte = 4 suportes` (com 14 vagas sobrando para crescer)
+
+**Na sua bancada:** um multiplexador, 2 canais usados, 14 livres. É o mesmo chip e a mesma lógica — só que a "placa de suporte" é a PI-2 e os "soquetes" são dois bornes.
+
+---
+
 ## 14.1 O que muda, lado a lado
 
 | | **Bancada — 2 posições** | **Fábrica — 50 posições** |
@@ -227,6 +338,8 @@ Aqui os retornos **são fios mesmo** — dois, saindo da câmara até a PI-2 no 
 ## 14.4 Como isso se organiza fisicamente
 
 Não se coloca 50 shunts dentro do painel de comando. A montagem industrial agrupa:
+
+> 🏭 **O desenho abaixo é da FÁBRICA, não da sua bancada.** Na bancada não há soquete nenhum — ver [§14.0](#140--antes-de-tudo-são-dois-desenhos-diferentes).
 
 ```
    ┌──── SUPORTE INSTRUMENTADO — 16 posições ────┐
