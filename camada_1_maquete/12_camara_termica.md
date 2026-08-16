@@ -185,6 +185,45 @@ PORTA DUPLA (5 + ar 10 + 5 mm):
 
 > 🎯 **Este é o argumento decisivo.** Com porta simples, a face externa **embaça e escorre água** durante a apresentação — a câmara fica opaca, você não mostra nada e ainda pinga água na maquete. Com porta dupla, o visor fica **limpo e transparente**. É exatamente por isso que os expositores refrigerados de supermercado usam vidro duplo ou triplo.
 
+### ⭐ Onde fica cada componente, e por quê
+
+```
+        ╔═══ dissipadores + coolers (LADO QUENTE, fora) ═══╗
+   ┌────╨──────────────────────────────────────────────╨────┐
+   │  ░░░░░░░░░░░░░ XPS 30 mm ░░░░░░░░░░░░░░░░░░░░░░░░░░░░  │
+   │  ░  ┌──────────────────────────────────────────┐    ░  │
+   │  ░  │        [ 2× PELTIER em série ]           │    ░  │
+   │  ░d │        [ 2 ventoinhas ] ▼ ▼              │  d ░  │
+   │  ░u │                                          │  u ░  │
+   │  ░t │              🌡️ AM2315C                  │  t ░  │
+   │  ░o │           (centro geométrico)            │  o ░  │
+   │  ░▲ │                                          │  ▲ ░  │
+   │  ░  │              [ vent. PTC ] ▲             │    ░  │
+   │  ░  │  [DUT 1]     [   PTC 24 V  ]    [DUT 2]  │    ░  │
+   │  ░  ├──────────────────────────────────────────┤    ░  │
+   │  ░  │          PLENUM 30 mm                    │    ░  │
+   │  ░  └──────────────────────────────────────────┘    ░  │
+   └─────────────────────────────────────────────────────────┘
+```
+
+| Componente | Onde | **Por que ali** |
+|---|---|---|
+| **2× Peltier** | tampa, centro | O ar frio **desce sozinho**. Embaixo, o frio empoçaria no fundo |
+| 2 ventoinhas frias | sob a Peltier, soprando ↓ | Sem elas o frio fica colado na pastilha e a câmara estratifica |
+| **🌡️ AM2315C** | **centro geométrico, suspenso** | 🔥 **O ponto mais importante da montagem** — ver abaixo |
+| **PTC 24 V** | base, centro, sobre o plenum | O ar quente **sobe sozinho** — o oposto da Peltier |
+| Ventoinha do PTC | sobre o PTC, soprando ↑ | Canal próprio no MV-1: intertravada com o aquecedor |
+| **DUT 1 e DUT 2** | base, um de cada lado | Com folga das paredes, para o ar circular em volta |
+| 2 vent. de duto | dentro dos dutos laterais | Fecham o circuito de ar, e ficam **fora** do volume útil |
+
+> 🔥 **Por que o sensor tem que ficar no centro, longe dos dois.** Encostado na Peltier ele lê **a pastilha**, não o ar: o controle enxerga −10 °C quando a câmara está a +5 °C, desliga cedo e o setpoint nunca chega. Perto do PTC acontece o mesmo ao contrário. **No centro, ele lê o que o dispositivo sob ensaio realmente sente** — que é a única temperatura que interessa.
+>
+> ⚠️ Suspenso por fio de nylon ou haste fina. **Nada de parafusar na parede** — o acrílico conduz a temperatura da parede direto para o corpo do sensor.
+
+📐 **Confira o posicionamento na aba "❄️ Dentro da câmara"** do painel interativo. O script `npm run valida:camara` cobra que nenhum componente invada a parede, que nenhum encoste no outro, que o sensor esteja mesmo no centro geométrico e que **todo fio que a câmara recebe tenha borne de verdade no painel**.
+
+---
+
 ### Balanço térmico total
 
 | Fonte de calor | Carga |

@@ -434,22 +434,26 @@ export const COMPONENTES = [
   },
   {
     id: 'BD-5V', nome: 'BD-5V — 5,10 V', trilho: 1,
-    x: 164, largura: 66, altura: 58, cor: '#f08c00',
+    x: 164, largura: 80, altura: 58, cor: '#f08c00',
     grupos: [
       { ref: 'IN', lado: 'cima', legenda: 'Entrada 2,5 mm² (1)', pinos: [via('IN', 1, 'prensa-cabo dos 5 V')] },
-      { ref: 'OUT', lado: 'baixo', legenda: 'Saídas (10) ⬆', pinos: [
+      { ref: 'OUT', lado: 'baixo', legenda: 'Saídas (12) ⬆', pinos: [
         via('O1', 1, 'Arduino · pino 5V'), via('O2', 1, 'tela ES3C28P'),
         via('O3', 1, 'RTC DS3231'), via('O4', 1, 'BTS #1 · VCC'),
         via('O5', 1, 'BTS #2 · VCC'), via('O6', 1, 'PI-1 J1-4'),
         via('O7', 1, '4 LEDs da maquete'),
         via('O8', 1, 'PI-2 — alimenta o mux e o INA219'),
-        via('O9', 1, 'MV-1 · VCC do lado do comando'), via('O10'),
+        via('O9', 1, 'MV-1 · VCC do lado do comando'),
+        via('O10', 1, '⭐ AM2315C · VCC — o sensor DENTRO da câmara'),
+        via('O11'), via('O12'),
       ]},
     ],
+    avisos: ['📌 Cresceu de 10 para 12 pontos quando o AM2315C ganhou saída própria. '
+           + 'As 11 cargas de 5 V somam ~310 mA — o LM2596 de 2 A trabalha folgado.'],
   },
   {
     id: 'BD-0V', nome: 'BD-0V — barra do 0 V (star ground)', trilho: 1,
-    x: 235, largura: 100, altura: 58, cor: '#212529',
+    x: 249, largura: 100, altura: 58, cor: '#212529',
     nota: '⭐ O ÚNICO 0 V do projeto. Barra de 20 pontos — ou dois blocos de 8 mais '
         + 'um de 4, ligados por ponte de 4 mm².',
     grupos: [
@@ -463,18 +467,19 @@ export const COMPONENTES = [
         via('R11', 1, 'KA1 · A2'), via('R12', 1, 'KA2 · A2'),
         via('R13', 1, 'MV-1 · GND da carga (lado VIN)'),
         via('R14', 1, 'MV-1 · GND do comando (lado isolado)'),
-        via('R15'), via('R16', 1, 'LEDs da maquete −'),
+        via('R15', 1, '⭐ AM2315C · GND — o sensor DENTRO da câmara'),
+        via('R16', 1, 'LEDs da maquete −'),
         via('R17', 1, 'PI-2 · 0V — retorno das posições, depois dos shunts'),
         via('R18', 1, 'seletora LOCAL/REMOTO — contato para o 0 V'),
         via('R19'), via('R20'),
       ]},
     ],
-    avisos: ['🔥 É o componente mais fácil de subdimensionar. Chegam 17 retornos + a '
+    avisos: ['🔥 É o componente mais fácil de subdimensionar. Chegam 18 retornos + a '
            + 'entrada. Um bloco comum de 8 saídas NÃO serve.'],
   },
   {
     id: 'RTC', nome: 'RTC DS3231', trilho: 1,
-    x: 340, largura: 35, altura: 40, cor: '#0ca678',
+    x: 354, largura: 35, altura: 40, cor: '#0ca678',
     nota: 'Ficou no trilho 1 porque I²C tolera distância. Só o cartão SD precisava '
         + 'estar perto do processador — e ele foi para dentro da tela.',
     grupos: [
