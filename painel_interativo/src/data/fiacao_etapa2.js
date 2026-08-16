@@ -37,14 +37,14 @@ export const FIOS_ETAPA2 = [
     n: 'C3', etapa: 2, func: 'srv24', nome: 'nó CMD → selo do KA1', classe: 'potencia',
     de: { comp: 'S0', via: '12' }, para: { comp: 'KA1', via: '11' },
     mm2: 0.5,
-    rota: ['CP-base', 'CP-vpot', 'CH-2x1'],
+    rota: ['CP-base', 'CP-vpot', 'CH-base'],
     diz: 'O mesmo nó do C2, indo para o comum do contato de selo do KA1.',
   },
   {
     n: 'C4', etapa: 2, func: 'srv24', nome: 'REARME → bobina do KA1', classe: 'potencia',
     de: { comp: 'S3', via: '14' }, para: { comp: 'KA1', via: 'A1' },
     mm2: 0.5,
-    rota: ['CP-3x4', 'CP-vpot', 'CH-2x1'],
+    rota: ['CP-3x4', 'CP-vpot', 'CH-base'],
     diz: 'Apertar o rearme energiza a bobina do KA1 pela primeira vez.',
     porque: '⭐ É NA de propósito. Fio partido no rearme impede a máquina de ligar — '
           + 'que é o estado seguro. Se fosse NF, um fio partido ligaria tudo sozinho.',
@@ -78,7 +78,7 @@ export const FIOS_ETAPA2 = [
     n: 'C8', etapa: 2, func: 'srv24', nome: 'STOP → bobina do KA2', classe: 'potencia',
     de: { comp: 'S2', via: '12' }, para: { comp: 'KA2', via: 'A1' },
     mm2: 0.5,
-    rota: ['CP-3x4', 'CP-vpot', 'CH-2x1'],
+    rota: ['CP-3x4', 'CP-vpot', 'CH-base'],
     diz: 'Bloco NF: em repouso conduz; apertado abre e o KA2 solta.',
     porque: '⭐ NF, e em HARDWARE. O STOP corta a bobina do KA2 sem passar por '
           + 'semicondutor nenhum — nem pelo Arduino. O bloco de 5 V do mesmo botão vai '
@@ -105,7 +105,7 @@ export const FIOS_ETAPA2 = [
     n: 'C11', etapa: 2, func: 'pot24', nome: '24 V comandado → BD-POT', classe: 'potencia',
     de: { comp: 'KA2', via: '14' }, para: { comp: 'BD-POT', via: 'IN' },
     mm2: 1.5,
-    rota: ['CH-2x1'],
+    rota: ['CH-base', 'CV-esq', 'CH-2x1'],
     diz: 'A saída do contato de potência do KA2, indo ao barramento comutado.',
     porque: '⭐ Daqui para a frente tudo cai na emergência: os dois BTS e o 24 V de '
           + 'potência da PI-1. É a fronteira entre o que morre e o que continua vivo.',

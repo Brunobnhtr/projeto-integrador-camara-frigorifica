@@ -161,8 +161,18 @@ const via = (nome, usa, para) => ({ nome, ...(usa ? { usa: true, para } : {}) })
    O desenho fala 'KA1-14'; a base PTF08A tem gravado '5'. Guardar os
    dois no modelo é o que impede a troca na hora de parafusar.
 
-   Padrão do relé adotado — 8 pinos, 2 reversíveis, bobina 24 Vcc:
-     A1=13  A2=14   ·   11=9  12=1  14=5   ·   21=12  22=4  24=8       */
+     ⚠️ AS FILEIRAS SÃO DE FÁBRICA, não são escolha do projeto. O relé
+     de 8 pinos (MY2 / LY2 / JQX-13F) sai assim, e não há como remontar:
+
+        FILEIRA DE CIMA     4      8      12     14
+                            NF2    NA2   COM2   bobina
+        nome IEC            22     24     21     A2
+
+        FILEIRA DE BAIXO    1      5      9      13
+                            NF1    NA1   COM1   bobina
+        nome IEC            12     14     11     A1
+
+     A bobina fica na DIREITA, com uma perna em cada fileira. */
 const PINO_BASE = { A1: 13, A2: 14, 11: 9, 12: 1, 14: 5, 21: 12, 22: 4, 24: 8 };
 const rele = (nome, usa, para) => ({
   ...via(nome, usa, para), pino: PINO_BASE[nome],
@@ -254,7 +264,7 @@ export const COMPONENTES = [
   },
   {
     id: 'ESP32', nome: 'DNLCB30 + ESP32 30 pinos', trilho: 2,
-    x: 350, largura: 96, altura: 84, cor: '#1971c2',
+    x: 268, largura: 96, altura: 84, cor: '#1971c2',
     nota: 'Os nomes são os da serigrafia da borda externa, exatamente como estão '
         + 'impressos na placa. Cada bloco tem 15 bornes em FILEIRA ÚNICA — o "5V" é o '
         + 'primeiro borne de cada um, não uma coluna à parte.',
@@ -365,7 +375,7 @@ export const COMPONENTES = [
   },
   {
     id: 'F-P', nome: 'F-P1 e F-P2 — fusíveis das posições de ensaio', trilho: 2,
-    x: 306, largura: 36, altura: 46, cor: '#fab005',
+    x: 224, largura: 36, altura: 46, cor: '#fab005',
     nota: '1 porta-fusível de 2 vias COM INTERRUPTOR — um fusível e uma chave por posição.',
     grupos: [
       { ref: 'IN', lado: 'cima', legenda: 'Entrada comum (1)', pinos: [
@@ -421,8 +431,8 @@ export const COMPONENTES = [
     ],
   },
   {
-    id: 'KA1', nome: 'KA1 — relé de selo', trilho: 2,
-    x: 150, largura: 34, altura: 50, cor: '#7048e8',
+    id: 'KA1', nome: 'KA1 — relé de selo', trilho: 1,
+    x: 357, largura: 34, altura: 50, cor: '#7048e8',
     nota: 'Relé de 8 pinos com 2 contatos reversíveis, em base PTF08A.',
     grupos: [
       /* ⭐ A base PTF08A tem os 8 terminais em DUAS fileiras de 4.
@@ -430,32 +440,34 @@ export const COMPONENTES = [
          frente para a CH-2x1 (potência), que é por onde a cadeia de
          comando anda. Em cima ficam os que só levam ponte curta na
          própria base, e os NF que o projeto não usa. */
-      { ref: 'CIMA', lado: 'cima', legenda: 'Fileira de cima — pinos 1, 4, 5 e 12', pinos: [
+      { ref: 'CIMA', lado: 'cima', legenda: 'Fileira de cima · pinos 4 · 8 · 12 · 14', pinos: [
+        rele('22'),
+        rele('24', 1, 'S2-11 (bloco NF do STOP) → daí para o KA2 · A1'),
+        rele('21', 1, 'ponte curta do 11 — comum do contato de SAÍDA'),
+        rele('A2', 1, 'BD-0V · R11'),
+      ]},
+      { ref: 'BAIXO', lado: 'baixo', legenda: 'Fileira de baixo · pinos 1 · 5 · 9 · 13', pinos: [
         rele('12'),
         rele('14', 1, '⭐ ponte curta até o A1: é ISTO que faz o relé se segurar'),
-        rele('21', 1, 'ponte curta do 11 — comum do contato de SAÍDA'), rele('22'),
-      ]},
-      { ref: 'BAIXO', lado: 'baixo', legenda: 'Fileira de baixo — os fios externos', pinos: [
-        rele('A1', 1, '⭐ do REARME (S3-14) OU do próprio selo (14) — os dois em paralelo'),
-        rele('A2', 1, 'BD-0V · R11'),
         rele('11', 1, 'nó CMD — comum do contato de SELO'),
-        rele('24', 1, 'S2-11 (bloco NF do STOP) → daí para o KA2 · A1'),
+        rele('A1', 1, '⭐ do REARME (S3-14) OU do próprio selo (14) — os dois em paralelo'),
       ]},
     ],
   },
   {
-    id: 'KA2', nome: 'KA2 — relé de potência', trilho: 2,
-    x: 190, largura: 34, altura: 50, cor: '#7048e8',
+    id: 'KA2', nome: 'KA2 — relé de potência', trilho: 1,
+    x: 397, largura: 34, altura: 50, cor: '#7048e8',
     nota: '⚠️ Contato declarado em CORRENTE CONTÍNUA, mínimo 10 A.',
     grupos: [
-      { ref: 'CIMA', lado: 'cima', legenda: 'Fileira de cima — pinos 1, 4, 8 e 12', pinos: [
-        rele('12'), rele('21'), rele('22'), rele('24'),
-      ]},
-      { ref: 'BAIXO', lado: 'baixo', legenda: 'Fileira de baixo — os fios externos', pinos: [
-        rele('A1', 1, 'S2-12 — vem pelo bloco NF do STOP, que vem do KA1 · 24'),
+      { ref: 'CIMA', lado: 'cima', legenda: 'Fileira de cima · pinos 4 · 8 · 12 · 14', pinos: [
+        rele('22'), rele('24'), rele('21'),
         rele('A2', 1, 'BD-0V · R12'),
-        rele('11', 1, '⚡ entrada dos 24 V do prensa-cabo PG9-1'),
+      ]},
+      { ref: 'BAIXO', lado: 'baixo', legenda: 'Fileira de baixo · pinos 1 · 5 · 9 · 13', pinos: [
+        rele('12'),
         rele('14', 1, '⚡ saída para o BD-POT — é este contato que corta a potência'),
+        rele('11', 1, '⚡ entrada dos 24 V do prensa-cabo PG9-1'),
+        rele('A1', 1, 'S2-12 — vem pelo bloco NF do STOP, que vem do KA1 · 24'),
       ]},
     ],
     avisos: ['📌 Sobra um contato reversível inteiro (21-22-24) sem uso. Serve de '
@@ -465,7 +477,7 @@ export const COMPONENTES = [
 
   {
     id: 'MV-1', nome: 'MV-1 — módulo MOSFET 4 canais, isolado', trilho: 2,
-    x: 232, largura: 66, altura: 51, cor: '#0ca678',
+    x: 150, largura: 66, altura: 51, cor: '#0ca678',
     nota: 'Comanda os três grupos de ventoinha e ainda sobra um canal. Optoacoplador '
         + 'em cada entrada, jumper H/L por canal e 66 × 50,5 mm.',
     grupos: [
@@ -518,7 +530,7 @@ export const COMPONENTES = [
   /* ════════════ TRILHO 1 — DISTRIBUIÇÃO ════════════ */
   {
     id: 'BD-POT', nome: 'BD-POT — 24 V de potência', trilho: 1,
-    x: 32, largura: 36, altura: 58, cor: '#c92a2a',
+    x: 30, largura: 36, altura: 58, cor: '#c92a2a',
     nota: 'COMUTADO pelo KA2 — cai na emergência.',
     grupos: [
       { ref: 'IN', lado: 'cima', legenda: 'Entrada 4 mm² (1)', pinos: [via('IN', 1, 'KA2 · terminal 14')] },
@@ -530,7 +542,7 @@ export const COMPONENTES = [
   },
   {
     id: 'BD-AUX', nome: 'BD-AUX — 12 V auxiliar', trilho: 1,
-    x: 73, largura: 36, altura: 58, cor: '#fab005',
+    x: 72, largura: 36, altura: 58, cor: '#fab005',
     grupos: [
       { ref: 'IN', lado: 'cima', legenda: 'Entrada 2,5 mm² (1)', pinos: [via('IN', 1, 'prensa-cabo do 12 V')] },
       { ref: 'OUT', lado: 'baixo', legenda: 'Saídas (4)', pinos: [
@@ -555,7 +567,7 @@ export const COMPONENTES = [
   },
   {
     id: 'BD-5V', nome: 'BD-5V — 5,10 V', trilho: 1,
-    x: 164, largura: 80, altura: 58, cor: '#f08c00',
+    x: 165, largura: 80, altura: 58, cor: '#f08c00',
     grupos: [
       { ref: 'IN', lado: 'cima', legenda: 'Entrada 2,5 mm² (1)', pinos: [via('IN', 1, 'prensa-cabo dos 5 V')] },
       { ref: 'OUT', lado: 'baixo', legenda: 'Saídas (12) ⬆', pinos: [
@@ -574,7 +586,7 @@ export const COMPONENTES = [
   },
   {
     id: 'BD-0V', nome: 'BD-0V — barra do 0 V (star ground)', trilho: 1,
-    x: 249, largura: 100, altura: 58, cor: '#212529',
+    x: 251, largura: 100, altura: 58, cor: '#212529',
     nota: '⭐ O ÚNICO 0 V do projeto. Barra de 20 pontos — ou dois blocos de 8 mais '
         + 'um de 4, ligados por ponte de 4 mm².',
     grupos: [
@@ -599,10 +611,12 @@ export const COMPONENTES = [
            + 'entrada. Um bloco comum de 8 saídas NÃO serve.'],
   },
   {
-    id: 'RTC', nome: 'RTC DS3231', trilho: 1,
-    x: 354, largura: 35, altura: 40, cor: '#0ca678',
-    nota: 'Ficou no trilho 1 porque I²C tolera distância. Só o cartão SD precisava '
-        + 'estar perto do processador — e ele foi para dentro da tela.',
+    id: 'RTC', nome: 'RTC DS3231', trilho: 3,
+    x: 402, largura: 35, altura: 40, cor: '#0ca678',
+    nota: '⭐ Subiu para o trilho 3, ao lado do Arduino: o I²C fica curto e o módulo '
+        + 'sai da canaleta de potência. Abriu espaço no trilho 1 para os dois relés, '
+        + 'que precisam de canaleta de POTÊNCIA nas duas bordas — e no trilho 1 as '
+        + 'duas vizinhas (CH-2x1 e CH-base) são exatamente isso.',
     grupos: [
       { ref: 'RTC', lado: 'baixo', legenda: 'Pinos (6)', pinos: [
         via('VCC', 1, 'BD-5V saída 3'), via('GND', 1, 'BD-0V'),

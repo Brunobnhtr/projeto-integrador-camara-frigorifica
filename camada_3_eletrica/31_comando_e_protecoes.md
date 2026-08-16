@@ -360,20 +360,34 @@ Os 8 terminais de um relé de base não ficam todos de um lado: são **duas file
 
 No projeto a divisão não é estética — ela segue por onde o fio precisa sair:
 
-| | KA1 | KA2 |
-|---|---|---|
-| **Fileira de BAIXO**<br>(de frente para a CH-2x1, potência) | `A1` `A2` `11` `24` | `A1` `A2` `11` `14` |
-| **Fileira de CIMA** | `12` `14` `21` `22` | `12` `21` `22` `24` |
+```
+   FILEIRA DE CIMA     ○ 4      ○ 8      ○ 12     ○ 14
+                        NF2      NA2      COM2     bobina
+   nome IEC             22       24       21       A2
+                         └──┐  ┌──┘                  §
+                            ╲╱                       §  (bobina)
+                         ┌──┘  └──┐                  §
+   nome IEC             12       14       11       A1
+                        NF1      NA1      COM1     bobina
+   FILEIRA DE BAIXO    ○ 1      ○ 5      ○ 9      ○ 13
+```
 
-> ⭐ **Na fileira de baixo ficam os terminais que recebem FIO EXTERNO.** O trilho 2 tem a canaleta de potência embaixo (CH-2x1) e a de sinal em cima (CH-3x2) — e a cadeia de comando é potência. Se um terminal com fio externo estivesse em cima, o fio teria que atravessar o corpo do relé para chegar na canaleta certa.
+> 🔥 **Esta distribuição é DE FÁBRICA — não é escolha de projeto.** O relé de 8 pinos (MY2 / LY2 / JQX-13F) sai assim e não há como remontar. Qualquer desenho que ponha os terminais em outra ordem está errado, por mais organizado que pareça.
 
-**Em cima ficam os que só levam ponte curta na própria base:**
+📌 **A bobina fica à direita, com uma perna em cada fileira:** `A1` embaixo (pino 13) e `A2` em cima (pino 14).
 
-- `KA1-14 → KA1-A1` — **o selo**, atravessando o soquete de uma fileira à outra
-- `KA1-11 → KA1-21` — a ponte que leva o nó CMD aos dois contatos
-- `12` e `22` — os NF que o projeto não usa
+### ⭐ E é por isso que os relés ficam no TRILHO 1
 
-📌 **Confira a serigrafia da sua base.** A distribuição dos números nas duas fileiras varia de fabricante; o que não varia é a lógica: `A1`/`A2` são a bobina, o dígito **1** é o comum, o **2** é o NF e o **4** é o NA.
+Um relé recebe fio nas **duas** fileiras — não há como concentrar tudo de um lado. Então as canaletas **acima e abaixo dele** precisam ser as duas de **potência**, porque a cadeia de comando é potência (bobina de relé dá pico ao desligar).
+
+| Trilho | Canaleta acima | Canaleta abaixo | Serve? |
+|---|---|---|---|
+| 2 | CH-3x2 · **sinal** | CH-2x1 · potência | ❌ a fileira de cima ficaria sem caminho |
+| **1** | **CH-2x1 · potência** | **CH-base · potência** | ✅ |
+
+**O relé desceu para o trilho 1 e o RTC subiu para o 3**, trocando de lugar. Os dois ganharam: o relé passou a ter canaleta de potência nas duas bordas, e o RTC saiu de perto da potência e ficou ao lado do Arduino, encurtando o I²C.
+
+📐 Isso não foi escolha estética — foi a **pinagem de fábrica do relé que impôs o layout**. Foi o script `npm run valida:fiacao` que apontou, ao reprovar os fios que saíam da fileira de cima.
 
 ---
 

@@ -65,7 +65,7 @@ const FIOS_ETAPA1 = [
     n: 'E1', etapa: 1, func: 'pot24', nome: '24 V de POTÊNCIA', classe: 'potencia',
     de: { prensa: 'PG9-1' }, para: { comp: 'KA2', via: '11' },
     mm2: 1.5,
-    rota: ['CH-base', 'CV-esq', 'CH-2x1'],
+    rota: ['CH-base'],
     diz: 'Vem do ramal R1, que desce no poste 4. Conduz os 6 A das Peltier — é o fio '
        + 'mais carregado do painel.',
     porque: '⭐ Ele NÃO vai direto ao barramento. Entra pelo contato 11 do KA2, e só sai '

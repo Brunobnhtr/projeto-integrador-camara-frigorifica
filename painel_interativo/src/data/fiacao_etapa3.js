@@ -73,7 +73,7 @@ export const FIOS_ETAPA3 = [
     aviso: '⚠️ Entrando pelo pino 5V, o regulador do Arduino fica FORA do caminho. '
          + 'Nunca alimente pelo 5V e pelo USB ao mesmo tempo.' },
   { ...cinco('D8', { comp: 'BD-5V', via: 'O3' }, { comp: 'RTC', via: 'VCC' },
-      'O relógio, que guarda a hora dos ensaios.'), rota: ['CH-base'] },
+      'O relógio, que guarda a hora dos ensaios.'), rota: ['CH-base', 'CV-esq', 'CH-3x2'] },
   { ...cinco('D9', { comp: 'BD-5V', via: 'O4' }, { comp: 'BTS1', via: 'VCC' },
       'Lado lógico do BTS #1 — não confundir com o B+.'),
     rota: ['CH-base', 'CV-esq', 'CH-2x1'],
@@ -122,7 +122,7 @@ export const FIOS_ETAPA3 = [
   { ...zero('D21', { comp: 'ESP32', via: '−' }, { comp: 'BD-0V', via: 'R7' },
       'Retorno do DNLCB30.'), rota: ['CH-2x1', 'CV-esq', 'CH-base'] },
   { ...zero('D22', { comp: 'RTC', via: 'GND' }, { comp: 'BD-0V', via: 'R8' },
-      'Retorno do relógio.'), rota: ['CH-base'] },
+      'Retorno do relógio.'), rota: ['CH-3x2', 'CV-esq', 'CH-base'] },
   { ...zero('D23', { comp: 'MV-1', via: 'GND-P' }, { comp: 'BD-0V', via: 'R13' },
       'Retorno das CARGAS do MV-1 — o lado dos 12 V das ventoinhas.'),
     rota: ['CH-2x1', 'CV-esq', 'CH-base'] },
