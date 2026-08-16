@@ -472,10 +472,69 @@ Troque quando a sílica indicadora mudar de cor (azul → rosa). Pode ser regene
 
 ## 12.7 Dutos e circulação de ar
 
-| Modo | Atuador | Fans internas | Caminho do ar |
+> 🔥 **CORREÇÃO DE PROJETO.** A versão anterior deste documento dizia que o ar **invertia
+> o sentido** entre resfriar e aquecer. **Isso não é executável**, e a razão é simples:
+>
+> - **Uma ventoinha DC não gira ao contrário.** Invertendo a polaridade ela não parte — a
+>   eletrônica interna de comutação não trabalha em reverso. E mesmo que partisse, a pá é
+>   assimétrica e moveria quase nada de ar para trás.
+> - **As 2 ventoinhas do duto dividem um canal só** (MV-1 · O3). Não existe comando que
+>   faça uma soprar para cima e depois para baixo.
+>
+> **O circuito de ar é ÚNICO e fixo.** O que o controle escolhe é qual fonte energizar.
+
+### O circuito de ar — sempre o mesmo
+
+```
+              ┌──────── retorno pelo topo ────────┐
+              │                                   │
+              ▼          [ PELTIER ]              │
+              │          [ ventoinhas ▼ ]         │
+              │                                   │
+   duto  ▲    │            🌡️ sensor              │    ▲  duto
+   esq.  ▲    ▼                                   │    ▲  dir.
+         ▲    │          [ vent. PTC ▼ ]          │    ▲
+         ▲    │   [DUT1]  [  PTC  ]  [DUT2]       │    ▲
+         ▲    └──────────── plenum ───────────────┘    ▲
+         └────────────────────────────────────────────┘
+```
+
+| Modo | O que é energizado | Ventoinhas | Caminho do ar |
 |---|---|---|---|
-| **Frio** | 2× Peltier em série (topo) | Sopram **↓** | Centro ↓ → plenum inferior → dutos laterais ↑ → retorno pelo topo |
-| **Quente** | PTC de 24 V (base) | Sopram **↑** | Centro ↑ → dutos pelo topo → laterais ↓ → retorno pelo plenum |
+| **Frio** | 2× Peltier (topo) | circulação (O3) | **sempre o mesmo:** centro ↓ → plenum → dutos ↑ → topo |
+| **Quente** | PTC de 24 V (base) | circulação (O3) **+ a do PTC (O2)** | **idem** |
+
+> ⭐ **E é assim que câmara climática de verdade funciona:** um circuito de ar fixo, com o
+> aquecedor e o evaporador **no mesmo trajeto**. O controlador decide o que ligar; o
+> ventilador nunca muda de sentido.
+
+⚠️ **Consequência prática:** a **ventoinha do PTC sopra para BAIXO**, igual às de cima. Ela
+empurra o ar sobre o aquecedor e para dentro do plenum, de onde ele sobe pelos dutos e
+volta pelo topo. O ar aquecido **atravessa todo o volume** — só entra pelas laterais em vez
+de pelo centro.
+
+### 🔌 Dois prensa-cabos na parede, e não um
+
+São **16 condutores** entrando na câmara, divididos em dois grupos que **não podem dividir o mesmo furo**:
+
+| | **PC-1 · POTÊNCIA** | **PC-2 · MEDIÇÃO E SINAL** |
+|---|---|---|
+| Fios | **8** | **8** |
+| O quê | Peltier ± e PTC ± (1,5 mm²)<br>ventoinhas O2 e O3 (0,5 mm²) | positivos e retornos das 2 posições (0,5 mm²)<br>AM2315C: VCC GND SDA SCL (0,25 mm²) |
+| Característica | **6 A chaveados pelos BTS** | 17,6 mA medidos · pulsos de I²C |
+| Onde | canto inferior da parede traseira | canto superior, **≥ 100 mm** do PC-1 |
+
+> 🔥 **Por que não pode ser um só.** Cada corte de 6 A nos BTS gera um transiente que se acopla **por indutância mútua** em qualquer condutor que corra paralelo. Do outro lado estão justamente os dois sinais mais frágeis do projeto: o **retorno das posições**, que carrega a corrente que está sendo medida, e o **I²C**, com pulsos de microssegundos. Um transiente induzido ali vira **leitura errada** ou **sensor travado** — e o pior é que a falha é intermitente, aparecendo só quando a Peltier chaveia.
+>
+> 📐 **Dentro do PC-2, trance cada par:** o positivo de cada posição com o **seu próprio** retorno, e SDA com SCL. Par trançado tem área de laço quase nula — o que se induz numa volta se cancela na seguinte.
+
+📌 É a mesma lógica das canaletas segregadas dentro do painel, aplicada à travessia da parede. Não adianta separar potência e sinal no painel inteiro e depois juntar tudo num furo só.
+
+---
+
+📐 **O que continua valendo:** o PTC fica embaixo e a Peltier em cima. Não é mais pelo
+sentido do ar forçado, e sim porque **cada fonte fica no início do trajeto que a favorece** —
+e porque, com tudo desligado, a convecção natural ainda ajuda em vez de atrapalhar.
 
 ### Verificação da velocidade do ar
 

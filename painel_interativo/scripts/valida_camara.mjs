@@ -2,7 +2,8 @@
    1. todo fio que a câmara diz receber tem borne de verdade no painel;
    2. nenhum componente invade a parede nem encosta no vizinho.       */
 
-import { COMPONENTES, UTIL, BASE_INT, TRAVESSIA } from '../src/data/camara.js';
+import { COMPONENTES, UTIL, BASE_INT, TRAVESSIA, PRENSAS }
+  from '../src/data/camara.js';
 import { COMPONENTES as PAINEL } from '../src/data/painel_completo.js';
 
 let erros = 0, avisos = 0;
@@ -82,7 +83,50 @@ for (const f of COMPONENTES.filter(c => c.tipo === 'frio' || c.tipo === 'quente'
   else console.log(`  . ${f.id}: ${d.toFixed(0)}px (${rel}% da altura útil)`);
 }
 
-/* ── 4. a conta dos condutores fecha? ──────────────────────────────── */
+/* ── 4. ventoinha DC não inverte ───────────────────────────────────── */
+console.log('\n=== o circuito de ar fecha? ===');
+/* Ventoinha DC não gira ao contrário, então o circuito é fixo. Para ele
+   FECHAR, o centro e os dutos têm que soprar em sentidos OPOSTOS — se
+   soprassem no mesmo, uma metade empurraria contra a outra.          */
+const fans = COMPONENTES.filter(c => c.tipo === 'ar');
+const zona = f => (f.x + f.w / 2 < UTIL.x1 || f.x + f.w / 2 > UTIL.x2) ? 'duto' : 'centro';
+const grupo = z => [...new Set(fans.filter(f => zona(f) === z).map(f => f.sopra))];
+
+const centro = grupo('centro'), duto = grupo('duto');
+if (centro.length !== 1)
+  err(`as ventoinhas do centro discordam (${centro.join(' e ')}) — `
+    + fans.filter(f => zona(f) === 'centro').map(f => `${f.id}=${f.sopra}`).join(', '));
+else if (duto.length !== 1)
+  err(`as ventoinhas dos dutos discordam (${duto.join(' e ')}) — e elas dividem o canal O3`);
+else if (centro[0] === duto[0])
+  err(`centro e dutos sopram os dois para "${centro[0]}" — isso não é um circuito, `
+    + 'é uma metade empurrando contra a outra');
+else
+  console.log(`  . centro sopra "${centro[0]}", dutos sopram "${duto[0]}" — o circuito fecha`);
+
+/* ── 5. potência e sinal em prensa-cabos diferentes ────────────────── */
+console.log('\n=== potência e sinal estão separados? ===');
+const grupoDo = new Map();
+for (const t of TRAVESSIA) {
+  if (!grupoDo.has(t.pc)) grupoDo.set(t.pc, new Set());
+  grupoDo.get(t.pc).add(t.g);
+}
+const SENSIVEL = new Set(['Sinal', 'Ensaio']);
+const BRUTO = new Set(['Potência', 'Ventilação']);
+for (const [pc, gs] of grupoDo) {
+  const temS = [...gs].some(g => SENSIVEL.has(g));
+  const temB = [...gs].some(g => BRUTO.has(g));
+  if (temS && temB)
+    err(`${pc} mistura sensível e potência: ${[...gs].join(', ')}`);
+  else
+    console.log(`  . ${pc}: ${[...gs].join(', ')} — ${temS ? 'sensível' : 'potência'}`);
+}
+for (const c of COMPONENTES) {
+  if (!c.pc) err(`${c.id} não diz por qual prensa-cabo entra`);
+  else if (!PRENSAS.some(p => p.id === c.pc)) err(`${c.id} aponta para ${c.pc}, que não existe`);
+}
+
+/* ── 6. a conta dos condutores fecha? ──────────────────────────────── */
 console.log('\n=== os condutores da travessia batem? ===');
 const decl = TRAVESSIA.reduce((a, t) => a + t.n, 0);
 const reais = usados.size;

@@ -24,7 +24,7 @@ export const BASE_INT = UTIL.y2 - CAIXA.plenum;      // 485
 
 export const COMPONENTES = [
   {
-    id: 'PELT', nome: '2× Peltier TEC1-12706', tipo: 'frio',
+    id: 'PELT', pc: 'PC-1', nome: '2× Peltier TEC1-12706', tipo: 'frio',
     x: 378, y: 133, w: 124, h: 34, cor: '#1971c2',
     onde: 'Encaixadas na TAMPA, no centro. Face fria para dentro, face quente para fora.',
     porque: 'No topo porque o ar frio desce sozinho. Colocá-las embaixo faria o frio '
@@ -45,7 +45,7 @@ export const COMPONENTES = [
     ],
   },
   {
-    id: 'VF', nome: '2× ventoinha fria 40 mm', tipo: 'ar',
+    id: 'VF', pc: 'PC-1', nome: '2× ventoinha fria 40 mm', tipo: 'ar',
     x: 390, y: 178, w: 100, h: 26, cor: '#4dabf7', sopra: 'baixo',
     onde: 'Logo abaixo das Peltier, soprando PARA BAIXO.',
     porque: 'Sem elas o frio fica colado na pastilha e a câmara estratifica — topo '
@@ -62,7 +62,7 @@ export const COMPONENTES = [
     ],
   },
   {
-    id: 'VD1', nome: 'ventoinha do duto esq.', tipo: 'ar',
+    id: 'VD1', pc: 'PC-1', nome: 'ventoinha do duto esq.', tipo: 'ar',
     x: 236, y: 300, w: 36, h: 30, cor: '#4dabf7', sopra: 'cima', pequeno: true,
     onde: 'Dentro do duto lateral esquerdo (30 × 30 mm).',
     porque: 'Fecha o circuito: o ar que desceu pelo centro sobe pelas laterais e volta '
@@ -75,7 +75,7 @@ export const COMPONENTES = [
            + 'sem furar o volume útil.'],
   },
   {
-    id: 'VD2', nome: 'ventoinha do duto dir.', tipo: 'ar',
+    id: 'VD2', pc: 'PC-1', nome: 'ventoinha do duto dir.', tipo: 'ar',
     x: 608, y: 300, w: 36, h: 30, cor: '#4dabf7', sopra: 'cima', pequeno: true,
     onde: 'Dentro do duto lateral direito.',
     porque: 'Idem à esquerda — o retorno tem que ser simétrico, senão um lado da câmara '
@@ -87,7 +87,7 @@ export const COMPONENTES = [
     avisos: [],
   },
   {
-    id: 'SENS', nome: 'AM2315C — temperatura e umidade', tipo: 'sensor',
+    id: 'SENS', pc: 'PC-2', nome: 'AM2315C — temperatura e umidade', tipo: 'sensor',
     x: 402, y: 310, w: 76, h: 40, cor: '#f76707',
     onde: '⭐ NO CENTRO GEOMÉTRICO, suspenso no ar — longe da Peltier e longe do PTC.',
     porque: 'Este é o ponto mais importante da montagem. Se o sensor encostar na Peltier '
@@ -113,7 +113,7 @@ export const COMPONENTES = [
     ],
   },
   {
-    id: 'PTC', nome: 'PTC 24 V — aquecedor', tipo: 'quente',
+    id: 'PTC', pc: 'PC-1', nome: 'PTC 24 V — aquecedor', tipo: 'quente',
     x: 385, y: 430, w: 110, h: 30, cor: '#e03131',
     onde: 'Na base interna, no centro, sobre o plenum de 30 mm.',
     porque: 'Embaixo porque o ar quente sobe sozinho — o oposto da Peltier. E sobre o '
@@ -133,20 +133,27 @@ export const COMPONENTES = [
     ],
   },
   {
-    id: 'VP', nome: 'ventoinha do PTC', tipo: 'ar',
-    x: 405, y: 396, w: 70, h: 26, cor: '#4dabf7', sopra: 'cima',
-    onde: 'Logo acima do PTC, soprando PARA CIMA.',
-    porque: 'Empurra o ar aquecido para o topo, que é o caminho inverso do ciclo de frio. '
-          + 'Canal próprio no MV-1 para poder girar sem as outras.',
+    id: 'VP', pc: 'PC-1', nome: 'ventoinha do PTC', tipo: 'ar',
+    x: 405, y: 396, w: 70, h: 26, cor: '#4dabf7', sopra: 'baixo',
+    onde: 'Logo acima do PTC, soprando PARA BAIXO — no MESMO sentido das de cima.',
+    porque: 'Empurra o ar sobre o PTC e para dentro do plenum, de onde ele sobe pelos '
+          + 'dutos. Canal próprio no MV-1 para o intertravamento com o aquecedor.',
     terminais: [
       { t: '+', de: 'MV-1 · O2+', ref: ['MV-1', 'O2+'], fio: '0,5 mm² vermelho' },
       { t: '−', de: 'MV-1 · O2−', ref: ['MV-1', 'O2−'], fio: '0,5 mm² preto' },
     ],
-    avisos: ['⭐ CANAL SEPARADO DE PROPÓSITO. Ela é intertravada com o PTC: o aquecedor não '
-           + 'liga sem ela girando, e ela continua girando depois que ele desliga.'],
+    avisos: [
+      '🔥 SOPRA PARA BAIXO, IGUAL ÀS DE CIMA — e isto NÃO é engano. Uma ventoinha DC não '
+      + 'gira ao contrário: invertendo a polaridade ela simplesmente não parte, e mesmo '
+      + 'que partisse a pá é assimétrica e moveria quase nada de ar. Como as 2 do duto '
+      + 'dividem um canal só, o circuito de ar é FIXO: sempre desce pelo centro e sobe '
+      + 'pelos dutos. Ver Doc 12 §12.7.',
+      '⭐ CANAL SEPARADO DE PROPÓSITO. Ela é intertravada com o PTC: o aquecedor não liga '
+      + 'sem ela girando, e ela continua girando depois que ele desliga.',
+    ],
   },
   {
-    id: 'DUT1', nome: 'Posição de ensaio 1', tipo: 'dut',
+    id: 'DUT1', pc: 'PC-2', nome: 'Posição de ensaio 1', tipo: 'dut',
     x: 296, y: 420, w: 76, h: 56, cor: '#c92a2a', dut: 1,
     onde: 'Na base interna, à esquerda, com folga das paredes.',
     porque: 'É o dispositivo sob ensaio — o motivo de a câmara existir. Consome 17,6 mA '
@@ -164,7 +171,7 @@ export const COMPONENTES = [
     ],
   },
   {
-    id: 'DUT2', nome: 'Posição de ensaio 2', tipo: 'dut',
+    id: 'DUT2', pc: 'PC-2', nome: 'Posição de ensaio 2', tipo: 'dut',
     x: 508, y: 420, w: 76, h: 56, cor: '#2f9e44', dut: 2,
     onde: 'Na base interna, à direita.',
     porque: 'Consome 9,8 mA — propositalmente DIFERENTE da posição 1. É o que prova que '
@@ -187,13 +194,30 @@ export const EXTERNOS = [
   { id: 'DIS2', nome: 'dissipador + cooler', x: 446, y: 74, w: 68, h: 50 },
 ];
 
-/* ⭐ tudo o que atravessa a parede — a conta que a banca vai pedir */
+/* ⭐ DOIS prensa-cabos, e não um. Potência que chaveia 6 A não pode
+   dividir cabo com a medição de 17,6 mA nem com os pulsos do I²C.   */
+export const PRENSAS = [
+  {
+    id: 'PC-1', nome: 'POTÊNCIA', y: 200, cor: '#c92a2a', lado: 'esq',
+    onde: 'canto inferior esquerdo da parede traseira',
+    diz: 'Os BTS chaveiam 6 A por estes fios. É a fonte de ruído do projeto — por isso '
+       + 'ele sai sozinho.',
+  },
+  {
+    id: 'PC-2', nome: 'MEDIÇÃO E SINAL', y: 440, cor: '#1971c2', lado: 'esq',
+    onde: 'canto superior esquerdo, a pelo menos 100 mm do PC-1',
+    diz: 'Os retornos das posições carregam a corrente que está sendo medida, e o I²C '
+       + 'carrega pulsos de microssegundos. Um transiente de 6 A induzido aqui vira '
+       + 'leitura errada ou sensor travado.',
+  },
+];
+
 export const TRAVESSIA = [
-  { g: 'Potência', n: 2, o: 'Peltier + e −', de: 'BTS #1', mm: '1,5 mm²' },
-  { g: 'Potência', n: 2, o: 'PTC + e −', de: 'BTS #2', mm: '1,5 mm²' },
-  { g: 'Ventilação', n: 2, o: 'circulação (4 ventoinhas)', de: 'MV-1 · O3', mm: '0,5 mm²' },
-  { g: 'Ventilação', n: 2, o: 'ventoinha do PTC', de: 'MV-1 · O2', mm: '0,5 mm²' },
-  { g: 'Ensaio', n: 2, o: 'positivos das posições', de: 'F-P1 e F-P2', mm: '0,5 mm²' },
-  { g: 'Ensaio', n: 2, o: 'retornos individuais', de: 'PI-2 · RET-1/2', mm: '0,5 mm²' },
-  { g: 'Sinal', n: 4, o: 'AM2315C (VCC GND SDA SCL)', de: 'Mega + BD-5V', mm: '0,25 mm²' },
+  { pc: 'PC-1', g: 'Potência',   n: 2, o: 'Peltier + e −', de: 'BTS #1', mm: '1,5 mm²' },
+  { pc: 'PC-1', g: 'Potência',   n: 2, o: 'PTC + e −', de: 'BTS #2', mm: '1,5 mm²' },
+  { pc: 'PC-1', g: 'Ventilação', n: 2, o: 'circulação (4 ventoinhas)', de: 'MV-1 · O3', mm: '0,5 mm²' },
+  { pc: 'PC-1', g: 'Ventilação', n: 2, o: 'ventoinha do PTC', de: 'MV-1 · O2', mm: '0,5 mm²' },
+  { pc: 'PC-2', g: 'Ensaio',     n: 2, o: 'positivos das posições', de: 'F-P1 e F-P2', mm: '0,5 mm²' },
+  { pc: 'PC-2', g: 'Ensaio',     n: 2, o: 'retornos individuais', de: 'PI-2 · RET-1/2', mm: '0,5 mm²' },
+  { pc: 'PC-2', g: 'Sinal',      n: 4, o: 'AM2315C (VCC GND SDA SCL)', de: 'Mega + BD-5V', mm: '0,25 mm²' },
 ];

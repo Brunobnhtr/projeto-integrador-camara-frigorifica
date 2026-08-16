@@ -345,8 +345,8 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 | Peça | Espessura | Dimensão | Qtd | Observação |
 |---|---|---|---:|---|
 | Parede lateral ESQ / DIR | 5 mm transp. | 110 × 250 mm | 2 | Recorte 90 × 210 mm (duto), bordas 45° |
-| Parede traseira | 5 mm transp. | 210 × 250 mm | 1 | Bordas 45° |
-| Tampa topo | 5 mm transp. | 210 × 110 mm | 1 | Recorte da Peltier + prensa-cabo |
+| Parede traseira | 5 mm transp. | 210 × 250 mm | 1 | Bordas 45° + **2 furos Ø 16 mm para prensa-cabo**, um no canto inferior e outro no superior, ⚠️ **afastados ≥ 100 mm** |
+| Tampa topo | 5 mm transp. | 210 × 110 mm | 1 | Recorte das 2 Peltier |
 | Base externa | 5 mm transp. | 210 × 110 mm | 1 | Furo do dreno |
 | Base interna (apoio do PTC) | 5 mm transp. | 190 × 90 mm | 1 | Bordas 90° |
 | **Porta — vidro externo** | 5 mm transp. | 210 × 250 mm | 1 | **Porta dupla (ver §C.3)** |
@@ -427,6 +427,7 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 | **Sinaleiros LED 22 mm 24 V** | 4 | Verde (RUN), Azul (COOL), Amarelo (HEAT), Vermelho (FAULT). ⚠️ **24 V confirmado** — acionados pelo **ULN2803 da placa PI-1**, alimentados pelo **BD-24V permanente** (o vermelho de FALHA precisa continuar aceso com a emergência acionada). ~20 mA cada, resistor interno já incluso | |
 | **Prensa-cabo PG9** | 3 | Entrada **24 V de potência** (vindo do P1) · saída de potência para a câmara · saída de sinais | |
 | **Prensa-cabo PG7** | 2 | Entrada 5 V (do T2) e entrada 12 V auxiliar + 24 V (do T3) | |
+| ⭐ **Prensa-cabo PG9 — parede da CÂMARA** | 2 | **PC-1 (potência)** e **PC-2 (medição e sinal)**, um em cada canto da parede traseira. ⚠️ **Não é economia juntar num só:** os BTS chaveiam 6 A e induziriam transiente nos retornos de 17,6 mA e no I²C. Ver Doc 12 §12.7 | |
 | Bolsa porta-documentos p/ porta | 1 | Guarda o diagrama elétrico — **padrão em painel industrial** | |
 
 ---
