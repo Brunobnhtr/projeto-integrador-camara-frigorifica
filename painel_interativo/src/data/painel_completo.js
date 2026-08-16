@@ -145,73 +145,43 @@ export const COMPONENTES = [
   },
   {
     id: 'ESP32', nome: 'DNLCB30 + ESP32 30 pinos', trilho: 3,
-    x: 246, largura: 96, altura: 90, cor: '#1971c2',
-    nota: 'Só os bornes de parafuso. O soquete de 30 pinos onde o ESP32 encaixa fica '
-        + 'no meio da placa, coberto por ele — não há nada para ligar ali. '
-        + 'Esquerda com 14 linhas (H1), direita com 15 (H2).',
+    x: 246, largura: 96, altura: 84, cor: '#1971c2',
+    nota: 'Os nomes são os da serigrafia da borda externa, exatamente como estão '
+        + 'impressos na placa. Cada bloco tem 15 bornes em FILEIRA ÚNICA — o "5V" é o '
+        + 'primeiro borne de cada um, não uma coluna à parte.',
     grupos: [
-      { ref: 'H1', lado: 'esquerda', linhas: 2,
-        legenda: 'Borne esquerdo H1 — 14 pares (5 V fora · sinal dentro)', pinos: [
+      { ref: 'H1', lado: 'esquerda', legenda: 'Bloco esquerdo — 15 bornes', pinos: [
         { nome: '5V' },
-        { nome: 'GPIO15' },
-        { nome: '5V' },
-        { nome: 'GPIO4' },
-        { nome: '5V' },
-        { nome: 'GPIO16' },
-        { nome: '5V' },
-        { nome: 'GPIO17' },
-        { nome: '5V' },
-        { nome: 'GPIO5' },
-        { nome: '5V' },
-        { nome: 'GPIO18' },
-        { nome: '5V' },
+        { nome: 'D15' },
+        { nome: 'D4' },
+        { nome: 'D16' },
+        { nome: 'D17' },
+        { nome: 'D5' },
+        { nome: 'D18' },
         { nome: 'GND' },
-        { nome: '5V' },
-        { nome: 'GPIO19' },
-        { nome: '5V' },
-        { nome: 'GPIO21' },
-        { nome: '5V' },
-        { nome: 'GPI3 (RX0)', usa: true, para: 'Mega D18 — Serial1 (só entrada, com pull-up)' },
-        { nome: '5V' },
-        { nome: 'GPIO1 (TX0)', usa: true, para: 'Mega D19 — Serial1' },
-        { nome: '5V' },
-        { nome: 'GPIO22' },
-        { nome: '5V' },
-        { nome: 'GPIO23' },
-        { nome: '5V' },
+        { nome: 'D19' },
+        { nome: 'D21' },
+        { nome: 'RX0', usa: true, para: 'Mega D18 — Serial1 (só entrada, com pull-up)' },
+        { nome: 'TX0', usa: true, para: 'Mega D19 — Serial1' },
+        { nome: 'D22' },
+        { nome: 'D23' },
         { nome: 'GND' },
       ]},
-      { ref: 'H2', lado: 'direita', linhas: 2,
-        legenda: 'Borne direito H2 — 15 pares (5 V fora · sinal dentro)', pinos: [
+      { ref: 'H2', lado: 'direita', legenda: 'Bloco direito — 15 bornes', pinos: [
         { nome: '5V' },
         { nome: 'GND' },
-        { nome: '5V' },
-        { nome: 'GPIO13' },
-        { nome: '5V' },
-        { nome: 'GPIO12' },
-        { nome: '5V' },
-        { nome: 'GPIO14' },
-        { nome: '5V' },
-        { nome: 'GPIO27' },
-        { nome: '5V' },
-        { nome: 'GPIO26' },
-        { nome: '5V' },
-        { nome: 'GPIO25' },
-        { nome: '5V' },
+        { nome: 'D13' },
+        { nome: 'D14' },
+        { nome: 'D27' },
+        { nome: 'D26' },
+        { nome: 'D25' },
         { nome: 'GND' },
-        { nome: '5V' },
-        { nome: 'GPIO33' },
-        { nome: '5V' },
-        { nome: 'GPIO32' },
-        { nome: '5V' },
-        { nome: 'GPI35' },
-        { nome: '5V' },
-        { nome: 'GPI34' },
-        { nome: '5V' },
-        { nome: 'GPI39 (VN)' },
-        { nome: '5V' },
-        { nome: 'GPI36 (VP)' },
-        { nome: '5V' },
+        { nome: 'D33' },
+        { nome: 'D32' },
+        { nome: 'D35' },
+        { nome: 'D34' },
+        { nome: 'VN' },
+        { nome: 'VP' },
         { nome: 'GND' },
       ]},
       { ref: 'PWR', lado: 'baixo', legenda: 'Alimentação DC 7–30 V (2)', pinos: [
@@ -219,23 +189,20 @@ export const COMPONENTES = [
       ]},
     ],
     avisos: [
-      '✅ O ESQUEMÁTICO RESOLVEU AS DUAS DÚVIDAS. No conector H1 o segundo borne é '
-      + '**D4**, não D14 — o diagrama do vendedor tinha um erro de digitação. E o H2 '
-      + 'tem **D12 E D14**, os dois: o diagrama simplesmente esqueceu de listar o D12.',
-      '⚠️ Isso derruba a nota 1 do fabricante ("2/12PIN didn\'t lead out"). O D12 ESTÁ '
-      + 'no borne, e está no esquemático como D12_O. Quem não sai é só o D2. Se for '
-      + 'usar o D12, confirme com multímetro antes.',
-      '⭐ CADA SINAL VEM COM UM 5 V AO LADO. A coluna de fora entrega 5 V e a de dentro '
-      + 'é o sinal, já convertido. O esquemático mostra três TXS0108E — conversores '
-      + 'bidirecionais de 8 bits, 24 canais ao todo.',
-      '🚨 SÃO CONVERSORES DIGITAIS. É a nota 4 do fabricante, e ela tem consequência '
-      + 'prática: um sinal ANALÓGICO que passe por esses bornes sai deformado. Se um '
-      + 'dia precisar ler um sensor analógico no ESP32, ligue direto no pino dele, '
-      + 'não pelo borne.',
-      '⚠️ GPI3 (RX0), 34, 35, 36(VP) e 39(VN) são SÓ ENTRADA. E o RX0 usado como '
-      + 'entrada precisa de pull-up (nota 3 do fabricante).',
-      '📌 Os 5 V dos bornes somam no máximo 0,5 A. Serve para sensor, não para carga.',
-      '📌 O projeto usa 4 bornes de 60: RX0, TX0 e os dois de alimentação.',
+      '✅ Corrigido pela serigrafia da borda externa. Eu tinha desenhado duas colunas '
+      + '(5 V de fora, sinal de dentro) e não é isso: é UMA fileira de 15 bornes, e o '
+      + '"5V" é simplesmente o primeiro deles. O que parecia segunda coluna nas fotos '
+      + 'é o furo de entrada do fio, que fica ao lado do parafuso.',
+      '✅ E a nota 1 do fabricante estava certa: NÃO existe borne D12. O bloco direito '
+      + 'vai de D13 direto para D14. Eu tinha lido D12 no esquemático, mas aquilo era '
+      + 'o pino do soquete do ESP32, não o borne.',
+      '⚠️ RX0, D34, D35, VN e VP são SÓ ENTRADA. E o RX0 usado como entrada precisa de '
+      + 'pull-up (nota 3 do fabricante).',
+      '🚨 SÃO CONVERSORES DIGITAIS (três TXS0108E no esquemático). É a nota 4 do '
+      + 'fabricante: sinal ANALÓGICO que passe por esses bornes sai deformado. Para ler '
+      + 'sensor analógico, ligue direto no pino do ESP32.',
+      '📌 O 5V de cada bloco entrega no máximo 0,5 A. Serve para sensor, não para carga.',
+      '📌 O projeto usa 4 bornes de 32: RX0, TX0 e os dois de alimentação.',
     ],
   },
 
