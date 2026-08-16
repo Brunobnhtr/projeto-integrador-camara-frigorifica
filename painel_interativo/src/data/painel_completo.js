@@ -265,41 +265,58 @@ export const COMPONENTES = [
   },
 
   {
-    id: 'MV-1', nome: 'MV-1 — módulo MOSFET 4 canais (ventoinhas)', trilho: 2,
-    x: 212, largura: 55, altura: 44, cor: '#0ca678',
-    nota: 'Comanda as ventoinhas em três grupos, porque elas NÃO ligam todas juntas. '
-        + 'MOSFET e não relé: ventoinha liga e desliga a cada ciclo de ensaio, e '
-        + 'contato de relé tem vida contada em número de manobras.',
+    id: 'MV-1', nome: 'MV-1 — MOSFET isolado · grupo RADIADOR', trilho: 2,
+    x: 232, largura: 38, altura: 24, cor: '#0ca678',
+    nota: 'Comanda: 2 ventoinhas do radiador (lado quente). Liga resfriando. Desliga só quando o dissipador chegar perto da ambiente.',
     grupos: [
-      { ref: 'CTRL', lado: 'cima', legenda: 'Comando — vem do Arduino (5)', pinos: [
-        { nome: 'IN1', usa: true, para: 'Mega D27 — grupo RADIADOR' },
-        { nome: 'IN2', usa: true, para: 'Mega D28 — grupo PTC' },
-        { nome: 'IN3', usa: true, para: 'Mega D29 — grupo CIRCULAÇÃO' },
-        { nome: 'IN4' },
-        { nome: 'GND', usa: true, para: 'BD-0V — referência do comando' },
+      { ref: 'IN', lado: 'cima', legenda: 'Comando, isolado por optoacoplador (2)', pinos: [
+        { nome: 'SIG', usa: true, para: 'Mega D27' },
+        { nome: 'GND', usa: true, para: 'BD-0V' },
       ]},
-      { ref: 'PWR', lado: 'esquerda', legenda: 'Alimentação das cargas (2)', pinos: [
+      { ref: 'OUT', lado: 'baixo', legenda: 'Carga (3)', pinos: [
         { nome: 'V+', usa: true, para: 'BD-AUX saída 1 — 12 V' },
-        { nome: 'V−', usa: true, para: 'BD-0V' },
-      ]},
-      { ref: 'OUT', lado: 'baixo', legenda: 'Saídas para as ventoinhas (8)', pinos: [
-        { nome: 'O1+', usa: true, para: '2 ventoinhas do RADIADOR +' },
-        { nome: 'O1−', usa: true, para: '2 ventoinhas do RADIADOR −' },
-        { nome: 'O2+', usa: true, para: 'ventoinha do PTC +' },
-        { nome: 'O2−', usa: true, para: 'ventoinha do PTC −' },
-        { nome: 'O3+', usa: true, para: '2 frias da Peltier + 2 do duto  +' },
-        { nome: 'O3−', usa: true, para: '2 frias da Peltier + 2 do duto  −' },
-        { nome: 'O4+' }, { nome: 'O4−' },
+        { nome: 'L−', usa: true, para: '2 ventoinhas do radiador (lado quente) — negativo (é o que ele chaveia)' },
+        { nome: 'GND', usa: true, para: 'BD-0V' },
       ]},
     ],
     avisos: [
-      '⚠️ A VENTOINHA DO PTC PRECISA DE FIO PRÓPRIO. Se ela vier ligada nos mesmos '
-      + 'dois fios do aquecedor, vai receber o PWM de 1 Hz do BTS #2 e ficar dando '
-      + 'trancos uma vez por segundo. Separe os fios ao desembalar o PTC.',
-      '🔥 A pós-ventilação depende deste módulo E do Arduino continuarem vivos depois '
-      + 'do fim do ensaio. Os dois estão em barramentos PERMANENTES (BD-AUX e BD-5V), '
-      + 'que não caem com a emergência — foi por isso que deu certo.',
+      '⭐ O optoacoplador é o que faz este módulo valer mais que um MOSFET solto: o pino do Arduino só acende um LED de ~10 mA, e quem puxa a carga do gate é a alimentação da própria ventoinha. O chaveamento não volta para o Arduino.',
+      '🔎 Confira a serigrafia do borne azul de 3 vias antes de ligar — a ordem V+ / L− / GND varia entre fabricantes.',
     ],
+  },
+  {
+    id: 'MV-2', nome: 'MV-2 — MOSFET isolado · grupo PTC', trilho: 2,
+    x: 275, largura: 38, altura: 24, cor: '#0ca678',
+    nota: 'Comanda: ventoinha do aquecedor PTC. Liga aquecendo. Também com pós-ventilação — as aletas guardam muito calor.',
+    grupos: [
+      { ref: 'IN', lado: 'cima', legenda: 'Comando, isolado por optoacoplador (2)', pinos: [
+        { nome: 'SIG', usa: true, para: 'Mega D28' },
+        { nome: 'GND', usa: true, para: 'BD-0V' },
+      ]},
+      { ref: 'OUT', lado: 'baixo', legenda: 'Carga (3)', pinos: [
+        { nome: 'V+', usa: true, para: 'BD-AUX saída 2 — 12 V' },
+        { nome: 'L−', usa: true, para: 'ventoinha do aquecedor PTC — negativo (é o que ele chaveia)' },
+        { nome: 'GND', usa: true, para: 'BD-0V' },
+      ]},
+    ],
+    avisos: [],
+  },
+  {
+    id: 'MV-3', nome: 'MV-3 — MOSFET isolado · grupo CIRCULAÇÃO', trilho: 2,
+    x: 318, largura: 38, altura: 24, cor: '#0ca678',
+    nota: 'Comanda: 2 frias da Peltier + 2 do duto. Liga em qualquer ensaio, frio ou quente. Desliga na hora, no fim.',
+    grupos: [
+      { ref: 'IN', lado: 'cima', legenda: 'Comando, isolado por optoacoplador (2)', pinos: [
+        { nome: 'SIG', usa: true, para: 'Mega D29' },
+        { nome: 'GND', usa: true, para: 'BD-0V' },
+      ]},
+      { ref: 'OUT', lado: 'baixo', legenda: 'Carga (3)', pinos: [
+        { nome: 'V+', usa: true, para: 'BD-AUX saída 3 — 12 V' },
+        { nome: 'L−', usa: true, para: '2 frias da Peltier + 2 do duto — negativo (é o que ele chaveia)' },
+        { nome: 'GND', usa: true, para: 'BD-0V' },
+      ]},
+    ],
+    avisos: [],
   },
 
   {
@@ -341,7 +358,7 @@ export const COMPONENTES = [
   },
   {
     id: 'F-P', nome: 'F-P1..F-P4 — fusíveis das posições de ensaio', trilho: 2,
-    x: 272, largura: 72, altura: 46, cor: '#fab005',
+    x: 366, largura: 72, altura: 46, cor: '#fab005',
     nota: '2 porta-fusíveis de 2 vias COM INTERRUPTOR. O interruptor é proposital: é '
         + 'com ele que você desliga um dispositivo na frente da banca e mostra o '
         + 'sistema detectando a falha.',
@@ -385,8 +402,9 @@ export const COMPONENTES = [
     grupos: [
       { ref: 'IN', lado: 'cima', legenda: 'Entrada 2,5 mm² (1)', pinos: [via('IN', 1, 'prensa-cabo do 12 V')] },
       { ref: 'OUT', lado: 'baixo', legenda: 'Saídas (4)', pinos: [
-        via('O1', 1, 'MV-1 · V+ — alimenta os 3 grupos de ventoinha'),
-        via('O2'), via('O3'), via('O4'),
+        via('O1', 1, 'MV-1 · V+ — ventoinhas do radiador'),
+        via('O2', 1, 'MV-2 · V+ — ventoinha do PTC'),
+        via('O3', 1, 'MV-3 · V+ — circulação'), via('O4'),
       ]},
     ],
   },
@@ -421,23 +439,26 @@ export const COMPONENTES = [
   {
     id: 'BD-0V', nome: 'BD-0V — barra do 0 V (star ground)', trilho: 1,
     x: 235, largura: 100, altura: 58, cor: '#212529',
-    nota: '⭐ O ÚNICO 0 V do projeto. Barra de 20 pontos, ou dois blocos de 8 ligados '
-        + 'por ponte de 4 mm².',
+    nota: '⭐ O ÚNICO 0 V do projeto. Barra de 24 pontos — três blocos de 8 ligados '
+        + 'por ponte de 4 mm² também servem.',
     grupos: [
       { ref: 'IN', lado: 'cima', legenda: 'Entrada 10 mm² (1)', pinos: [via('IN', 1, 'retorno do padrão de entrada')] },
-      { ref: 'R', lado: 'baixo', linhas: 2, legenda: 'Retornos (20 pontos)', pinos: [
+      { ref: 'R', lado: 'baixo', linhas: 2, legenda: 'Retornos (24 pontos)', pinos: [
         via('R1', 1, 'BTS #1 · B−'), via('R2', 1, 'BTS #2 · B−'),
         via('R3', 1, 'BTS #1 · GND lógica'), via('R4', 1, 'BTS #2 · GND lógica'),
         via('R5', 1, 'Arduino · GND'), via('R6', 1, 'PI-1 J1-9'),
         via('R7', 1, 'DNLCB30 · −'), via('R8', 1, 'RTC DS3231 · GND'),
         via('R9', 1, 'tela ES3C28P · GND'), via('R10', 1, 'conversor de nível · GND'),
         via('R11', 1, 'KA1 · A2'), via('R12', 1, 'KA2 · A2'),
-        via('R13', 1, 'MV-1 · V− (potência das ventoinhas)'),
-        via('R14', 1, 'MV-1 · GND (referência do comando)'),
-        via('R15'), via('R16', 1, 'LEDs da maquete −'),
+        via('R13', 1, 'MV-1 · GND da carga'),
+        via('R14', 1, 'MV-2 · GND da carga'),
+        via('R15', 1, 'MV-3 · GND da carga'), via('R16', 1, 'LEDs da maquete −'),
         via('R17', 1, 'retorno das 4 posições de ensaio'),
         via('R18', 1, 'seletora LOCAL/REMOTO — contato para o 0 V'),
-        via('R19'), via('R20'),
+        via('R19', 1, 'MV-1 · GND do comando (lado isolado)'),
+        via('R20', 1, 'MV-2 · GND do comando'),
+        via('R21', 1, 'MV-3 · GND do comando'),
+        via('R22'), via('R23'), via('R24'),
       ]},
     ],
     avisos: ['🔥 É o componente mais fácil de subdimensionar. Chegam 17 retornos + a '

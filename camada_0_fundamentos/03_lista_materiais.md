@@ -721,7 +721,31 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 |---|---:|---|---|
 | ⭐ **Kit duplo de refrigeração Peltier** (2× TEC1-12706) | 1 | **Adotado — kit já conferido por foto** ([`imagens/peltir.avif`](../imagens/peltir.avif)): 2 conjuntos lado a lado, **cada pastilha com seu par de fios** e **cada ventoinha com cabo próprio**, o que viabiliza as modificações 1 e 2 sem cortar nada. Traz **2 pastilhas + radiador + 2 blocos frios + ventoinhas + montagem térmica pronta**. Anunciado como **12 V / 15 A**, ou seja, **vem ligado em PARALELO** — ⚠️ **religar em SÉRIE** para 24 V / 6,0 A (ver as 3 modificações abaixo). ~200 × 115 × 85 mm. Buscar `kit peltier duplo TEC1-12706 refrigeração` | |
 | Pastilha Peltier TEC1-12706 avulsa | 1 | **Reserva.** ⚠️ Trocar uma pastilha do kit exige desmontar a junta térmica — tenha a peça, mas conte com o trabalho | |
-| ⭐ **Módulo MOSFET 4 canais** (MV-1) | 1 | Comanda os 3 grupos de ventoinha. Entrada de 3–5 V, saída até 24 V. **MOSFET e não relé:** ventoinha liga e desliga a cada ciclo, e contato de relé tem vida contada em manobras. Buscar `modulo mosfet 4 canais irf540` | |
+| ⭐ **Módulo MOSFET isolado 1 canal — AOD4184** | **3** | Um para cada grupo de ventoinha (MV-1 radiador, MV-2 PTC, MV-3 circulação). O módulo é de **1 canal**, então são três. Buscar `modulo mosfet optoacoplador AOD4184` | |
+
+> ### ⭐ Qual dos três MOSFET escolher
+>
+> A mesma placa é vendida com três transistores diferentes. Para este projeto:
+>
+> | Modelo | Limite | Veredito |
+> |---|---|---|
+> | **AOD4184** | 40 V · 50 A | ✅ **este** |
+> | FR120N | 100 V · 9,4 A | 🟡 serve, mas esquenta mais |
+> | LR7843 | 30 V · 161 A | ❌ **evite** |
+>
+> **Por que não o LR7843, apesar de ser o mais "forte".** Os 161 A não interessam — a maior carga aqui é meio ampère. O que interessa é a **tensão**: 30 V é perto demais dos 24 V que o painel tem. Quando uma ventoinha desliga, o enrolamento dela devolve um pico que passa da tensão de alimentação, e esse pico come a margem que sobra. Escolher componente pela corrente e esquecer a tensão é um erro clássico.
+>
+> **O AOD4184 dá 40 V** — margem confortável para 12 V e para 24 V — e com 5,5 mΩ de resistência ele praticamente não esquenta.
+>
+> **Por que o FR120N fica em segundo.** Ele tem a melhor margem de tensão (100 V), mas 0,36 Ω de resistência contra 0,0055 Ω do AOD4184. Com meio ampère isso é irrelevante na prática; só não há motivo para escolher o pior dos dois.
+>
+> ### 🎁 O optoacoplador vale mais do que parece
+>
+> Esse módulo isola o comando da carga. Como o projeto tem **um único 0 V**, a isolação galvânica em si acaba desfeita no star ground — mas o ganho real é outro: **o pino do Arduino só acende um LED de ~10 mA**. Quem fornece a corrente de gate é a alimentação da própria ventoinha.
+>
+> Sem o optoacoplador, o pino do Arduino teria que carregar e descarregar o gate do MOSFET a cada chaveamento, e esses picos voltariam pela trilha de terra da placa — bem ao lado das entradas analógicas que leem a corrente das Peltier.
+>
+> ⚠️ **Confira a serigrafia do borne azul de 3 vias** antes de ligar: a ordem `V+ / L− / GND` varia entre fabricantes.
 | 🔄 **DS18B20 à prova d'água** | 1 | **Mudou de lugar:** saiu de dentro da câmara e foi para o **dissipador do lado quente**. É ele que diz quando a pós-ventilação pode parar | |
 | 🔄 **AM2315C** | 1 | **Passou a ser o único sensor de dentro da câmara.** Mede temperatura **e umidade** no mesmo encapsulamento, e já estava no barramento I²C | |
 | ⭐ **PI-2 — caixa DIN 4 módulos** para os 4 INA219 | 1 | Os 4 sensores empilhados 2 × 2 numa caixa modular. Sem ela, ficariam pendurados no chicote | |

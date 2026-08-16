@@ -24,8 +24,7 @@ function posicoes(c, g) {
     const lin = Math.floor(i / porLinha);
     const col = i % porLinha;
     const desl = inicio + col * passo;
-    const apertado = passo < 4.2;
-    const rec = (apertado ? 3.2 : 4.0) + lin * 5.0;   // recuo, para dentro
+    const rec = 3.0 + lin * 11.0;          // recuo, para dentro da placa
     if (g.lado === 'cima')     return { ...p, x: c.x + desl, y: c.y + rec, passo };
     if (g.lado === 'baixo')    return { ...p, x: c.x + desl, y: c.y + c.altura - rec, passo };
     if (g.lado === 'esquerda') return { ...p, x: c.x + rec, y: c.y + desl, passo };
@@ -36,7 +35,7 @@ function posicoes(c, g) {
 export default function VistaPainelInterno() {
   const [sel, setSel] = useState(null);      // componente
   const [pino, setPino] = useState(null);    // terminal
-  const [zoom, setZoom] = useState(2.6);
+  const [zoom, setZoom] = useState(3.0);
   const [soUsados, setSoUsados] = useState(false);
   const rolagem = useRef(null);
 
@@ -184,34 +183,40 @@ export default function VistaPainelInterno() {
                   if (soUsados && !p.usa) return null;
                   const k = `${c.id}.${g.ref}.${p.nome}`;
                   const on = pino === k;
-                  const l = Math.min(LADO_T, p.passo - 0.5);
-                  const girado = p.passo < 4.2;          // não cabe deitado
-                  const rot = g.lado === 'cima' ? 90 : g.lado === 'baixo' ? -90 : 0;
+                  /* O terminal é um RETÂNGULO com o lado comprido entrando na
+                     placa — igual à faixa de identificação de um borne real.
+                     Assim o ID cabe em pé mesmo com passo apertado. */
+                  const vert = g.lado === 'esquerda' || g.lado === 'direita';
+                  const estreito = p.passo < 4.4;
+                  const curto = Math.min(LADO_T, p.passo - 0.5);
+                  const comp = estreito ? 9.5 : curto;    // o lado que entra na placa
+                  const rw = vert ? comp : curto;
+                  const rh = vert ? curto : comp;
+                  const dentro = g.lado === 'cima' ? 1 : g.lado === 'baixo' ? -1 : 0;
+                  const dx = vert ? (g.lado === 'esquerda' ? comp / 2 - curto / 2 : curto / 2 - comp / 2) : 0;
+                  const rot = estreito && !vert ? (dentro > 0 ? 90 : -90) : 0;
                   return (
                     <g key={k} onClick={e => { e.stopPropagation(); setSel(c); setPino(k); }}
                        style={{ cursor: 'pointer' }}>
-                      <rect x={p.x - l / 2} y={p.y - l / 2} width={l} height={l} rx={0.3}
+                      <rect x={p.x + dx - rw / 2} y={p.y + dentro * (comp - curto) / 2 - rh / 2}
+                            width={rw} height={rh} rx={0.4}
                             fill={on ? '#ffd43b' : (p.usa ? '#e9c46a' : '#5c6268')}
                             stroke={on ? '#e8590c' : '#1a1d20'} strokeWidth={on ? 0.7 : 0.25} />
-                      {girado && rot ? (
-                        /* etiqueta em pé, para dentro da placa — é como os
-                           bornes de verdade são identificados */
-                        <text x={p.x} y={p.y + (rot > 0 ? l * 0.8 : -l * 0.8)}
-                              textAnchor={rot > 0 ? 'start' : 'end'}
-                              fontSize={2.5} fontWeight="700"
-                              fill={p.usa || on ? '#1a1d20' : '#8d949b'}
-                              transform={`rotate(${rot} ${p.x} ${p.y})`}
-                              style={{ pointerEvents: 'none' }}>
-                          {p.nome.replace(/^(GPIO|GPI)\s*/, '')}
-                        </text>
-                      ) : (
-                        <text x={p.x} y={p.y + l * 0.33} textAnchor="middle"
-                              fontSize={l * 0.6} fontWeight="700"
-                              fill={p.usa || on ? '#1a1d20' : '#9aa0a6'}
-                              style={{ pointerEvents: 'none' }}>
-                          {p.nome.replace(/^(GPIO|GPI)\s*/, '').replace(/ ·.*$/, '')}
-                        </text>
-                      )}
+                      {(() => {
+                        const cx = p.x + dx;
+                        const cy = p.y + dentro * (comp - curto) / 2;
+                        const txt = p.nome.replace(/^(GPIO|GPI)\s*/, '').replace(/ ·.*$/, '');
+                        return (
+                          <text x={cx} y={cy + (rot ? 0 : curto * 0.32)}
+                                textAnchor="middle" dominantBaseline={rot ? 'central' : undefined}
+                                fontSize={estreito ? 2.6 : curto * 0.58} fontWeight="700"
+                                fill={p.usa || on ? '#1a1d20' : '#9aa0a6'}
+                                transform={rot ? `rotate(${rot} ${cx} ${cy})` : undefined}
+                                style={{ pointerEvents: 'none' }}>
+                            {txt}
+                          </text>
+                        );
+                      })()}
                     </g>
                   );
                 }))}
