@@ -13,6 +13,46 @@
 
 export const CAIXA = { largura: 400, altura: 500, profundidade: 200 };
 export const PLACA = { x: 12, y: 14, largura: 376, altura: 472 };
+/* ── CANALETAS ────────────────────────────────────────────────────────
+ * Os caminhos por onde os fios andam. A divisão POTÊNCIA × SINAL não é
+ * organização: é o que impede o chaveamento dos BTS de sujar a leitura
+ * dos sensores.
+ */
+export const CANALETAS = [
+  { id: 'CH-topo', tipo: 'sinal',    x: 14, y: 22,  w: 372, h: 30, nome: 'superior' },
+  { id: 'CH-3x2',  tipo: 'sinal',    x: 14, y: 166, w: 372, h: 30, nome: 'entre os trilhos 3 e 2' },
+  { id: 'CH-2x1',  tipo: 'potencia', x: 14, y: 296, w: 372, h: 30, nome: 'entre os trilhos 2 e 1' },
+  { id: 'CH-base', tipo: 'potencia', x: 14, y: 440, w: 372, h: 32, nome: 'inferior — entradas' },
+  { id: 'CV-esq',  tipo: 'potencia', x: 14, y: 22,  w: 26,  h: 450, nome: 'vertical esquerda', vertical: true },
+  { id: 'CV-dir',  tipo: 'sinal',    x: 360, y: 22, w: 26,  h: 450, nome: 'vertical direita', vertical: true },
+];
+
+export const REGRA_SEGREGACAO = {
+  titulo: 'Por que potência e sinal não podem dividir canaleta',
+  texto: 'Os BTS chaveiam 6 ampères a cada segundo. Cada chaveamento gera um pulso '
+       + 'eletromagnético que o fio ao lado capta por indução — é o mesmo princípio de '
+       + 'um transformador, só que indesejado. Num cabo de potência isso não faz '
+       + 'diferença; num cabo que leva 0 a 5 V analógicos, vira leitura falsa.',
+  quemSofre: [
+    'IS dos BTS → PI-1: sinal analógico, o mais sensível do painel',
+    '1-Wire do DS18B20: pulsos de microssegundos, corrompe fácil',
+    'I²C dos INA219 e do RTC: o barramento trava se pegar ruído',
+  ],
+  quemPolui: [
+    'Saída dos BTS para a Peltier e o PTC: 6 A chaveados',
+    'Entrada de 24 V dos BTS: a corrente vem em pulsos, não contínua',
+    'Bobinas dos relés KA1 e KA2: dão um pico ao desligar',
+  ],
+  regras: [
+    'Canaleta VERMELHA só potência, canaleta AZUL só sinal. Nunca misture.',
+    'Se um cabo de sinal precisar cruzar um de potência, cruze a 90°. Cruzamento '
+    + 'perpendicular quase não acopla; paralelo lado a lado é o pior caso.',
+    'Cabo de sinal longo e solto vira antena. Prenda-o na canaleta em vez de deixar '
+    + 'sobra enrolada.',
+    'O 0 V não separa: ele é único e vai por onde for mais curto.',
+  ],
+};
+
 export const TRILHOS = [
   { n: 3, y: 125, nome: 'TRILHO 3 — Controle' },
   { n: 2, y: 255, nome: 'TRILHO 2 — Potência' },
@@ -28,24 +68,26 @@ export const COMPONENTES = [
 
   /* ════════════ TRILHO 3 — CONTROLE ════════════ */
   {
-    id: 'MEGA', nome: 'Arduino Mega 2560 + Sensor Shield', trilho: 3,
-    x: 20, largura: 110, altura: 62, cor: '#0ca678',
-    nota: 'O Mega tem 70 pinos de sinal. O projeto usa 23 — e é bom que sobre, '
-        + 'porque pino livre é o que permite consertar um erro sem trocar de placa.',
+    id: 'MEGA', nome: 'Arduino Mega 2560 em adaptador de bornes', trilho: 3,
+    x: 34, largura: 120, altura: 72, cor: '#0ca678',
+    aConferir: 'Dimensões e ORDEM dos bornes ainda a confirmar — a foto do adaptador '
+             + 'não tem resolução para ler a serigrafia.',
+    nota: 'O Mega encaixa no meio da placa adaptadora, e cada pino dele vira um borne '
+        + 'de parafuso nas bordas. Some a necessidade de solda e de jumper solto.',
     grupos: [
-      { ref: 'POWER', lado: 'baixo', legenda: 'Barra de alimentação (8 pinos)', pinos: [
+      { ref: 'POWER', lado: 'baixo', legenda: 'Alimentação — bornes (8)', pinos: [
         via('IOREF'), via('RESET'), via('3V3'),
         via('5V', 1, 'BD-5V saída 1'),
         via('GND', 1, 'BD-0V'), via('GND'), via('VIN'), via('NC'),
       ]},
-      { ref: 'ANALOG', lado: 'baixo', legenda: 'Entradas analógicas (16 pinos)', pinos: [
+      { ref: 'ANALOG', lado: 'baixo', legenda: 'Analógicas A0–A15 — bornes (16)', pinos: [
         via('A0', 1, 'PI-1 J2-1 — corrente do BTS #1'),
         via('A1', 1, 'PI-1 J2-2 — corrente do BTS #2'),
         via('A2'), via('A3'), via('A4'), via('A5'), via('A6'), via('A7'),
         via('A8', 1, 'RPM do cooler externo #2'),
         via('A9'), via('A10'), via('A11'), via('A12'), via('A13'), via('A14'), via('A15'),
       ]},
-      { ref: 'PWM', lado: 'cima', legenda: 'Digitais 0–13 + GND + AREF (16 pinos)', pinos: [
+      { ref: 'PWM', lado: 'esquerda', legenda: 'Digitais 0–13 + GND + AREF — bornes (16)', pinos: [
         via('D0'), via('D1'),
         via('D2', 1, 'PI-1 J2-3 — 1-Wire do DS18B20'),
         via('D3', 1, 'RPM do cooler externo #1'),
@@ -60,7 +102,7 @@ export const COMPONENTES = [
         via('D12', 1, 'PI-1 J1-8 → sinaleiro FALHA'),
         via('D13'), via('GND'), via('AREF'),
       ]},
-      { ref: 'DIGITAL', lado: 'cima', linhas: 2, legenda: 'Digitais 22–53 + 5V ×2 + GND ×2 (36 pinos)', pinos: [
+      { ref: 'DIGITAL', lado: 'cima', legenda: 'Digitais 14–53 + 5V + GND — bornes (36)', pinos: [
         via('D14'), via('D15'),
         via('D16', 1, 'Serial2 TX → conversor → tela'),
         via('D17', 1, 'Serial2 RX ← conversor ← tela'),
@@ -77,15 +119,18 @@ export const COMPONENTES = [
       ]},
     ],
     avisos: [
-      '⚠️ O Mega tem só 5 pinos GND no total. O projeto usa 1 (para o BD-0V), então '
-      + 'sobram 4 — suficiente, mas conte antes de pendurar sensor direto na placa.',
-      '📌 D50–D53 (SPI) ficaram LIVRES quando o cartão SD mudou para a tela ES3C28P. '
-      + 'São 4 pinos rápidos de graça, caso precise de outro periférico.',
+      '🔎 A ORDEM DOS BORNES AINDA PRECISA SER CONFERIDA. A foto do adaptador tem '
+      + '440 × 440 px e a serigrafia não é legível nem ampliando 12×. A estrutura está '
+      + 'certa (bornes nas três bordas, Mega encaixado no meio), mas a sequência dos '
+      + 'pinos em cada borda é suposição pela ordem do próprio Mega.',
+      '⚠️ O Mega tem só 5 pinos GND. O projeto usa 1 (para o BD-0V), sobram 4 — conte '
+      + 'antes de pendurar sensor direto na placa.',
+      '📌 D50–D53 (SPI) ficaram LIVRES quando o cartão SD mudou para a tela ES3C28P.',
     ],
   },
   {
     id: 'PI1', nome: 'Placa de interface PI-1', trilho: 3,
-    x: 137, largura: 70, altura: 62, cor: '#f08c00',
+    x: 154, largura: 70, altura: 62, cor: '#f08c00',
     nota: 'Caixa DIN de 4 módulos. J1 só entra, J2 só sai.',
     grupos: [
       { ref: 'J1', lado: 'cima', legenda: 'ENTRADAS (11 vias · KF301 5,08 mm)', pinos: [
@@ -110,7 +155,7 @@ export const COMPONENTES = [
   },
   {
     id: 'ESP32', nome: 'DNLCB30 + ESP32 30 pinos', trilho: 3,
-    x: 214, largura: 96, altura: 62, cor: '#1971c2',
+    x: 224, largura: 96, altura: 62, cor: '#1971c2',
     nota: 'Placa de expansão com bornes de parafuso. Já converte 3,3 V ↔ 5 V e '
         + 'aceita 24 V direto na alimentação.',
     grupos: [
@@ -137,7 +182,7 @@ export const COMPONENTES = [
   /* ════════════ TRILHO 2 — POTÊNCIA ════════════ */
   {
     id: 'BTS1', nome: 'BTS7960 (IBT-2) #1 — Peltier', trilho: 2,
-    x: 20, largura: 50, altura: 50, cor: '#c92a2a',
+    x: 34, largura: 50, altura: 50, cor: '#c92a2a',
     grupos: [
       { ref: 'P1', lado: 'esquerda', legenda: 'Borne verde de potência (4 parafusos)', pinos: [
         via('M−', 1, 'Peltier — negativo'), via('M+', 1, 'Peltier — positivo'),
@@ -155,7 +200,7 @@ export const COMPONENTES = [
   },
   {
     id: 'BTS2', nome: 'BTS7960 (IBT-2) #2 — PTC', trilho: 2,
-    x: 77, largura: 50, altura: 50, cor: '#c92a2a',
+    x: 90, largura: 50, altura: 50, cor: '#c92a2a',
     grupos: [
       { ref: 'P1', lado: 'esquerda', legenda: 'Borne verde de potência (4 parafusos)', pinos: [
         via('M−', 1, 'PTC — negativo'), via('M+', 1, 'PTC — positivo'),
@@ -171,7 +216,7 @@ export const COMPONENTES = [
   },
   {
     id: 'KA1', nome: 'KA1 — relé de selo', trilho: 2,
-    x: 145, largura: 30, altura: 50, cor: '#7048e8',
+    x: 150, largura: 30, altura: 50, cor: '#7048e8',
     nota: 'Relé de 8 pinos com 2 contatos reversíveis, em base PTF08A.',
     grupos: [
       { ref: 'REL', lado: 'baixo', legenda: 'Base PTF08A (8 terminais)', pinos: [
@@ -183,7 +228,7 @@ export const COMPONENTES = [
   },
   {
     id: 'KA2', nome: 'KA2 — relé de potência', trilho: 2,
-    x: 182, largura: 30, altura: 50, cor: '#7048e8',
+    x: 185, largura: 30, altura: 50, cor: '#7048e8',
     nota: '⚠️ Contato declarado em CORRENTE CONTÍNUA, mínimo 10 A.',
     grupos: [
       { ref: 'REL', lado: 'baixo', legenda: 'Base PTF08A (8 terminais)', pinos: [
@@ -196,20 +241,11 @@ export const COMPONENTES = [
     avisos: ['📌 Sobra um contato reversível inteiro (21-22-24) sem uso. Serve de '
            + 'reserva para um intertravamento futuro.'],
   },
-  {
-    id: 'FAN-BTS', nome: 'Cooler 40 mm dos BTS', trilho: 2,
-    x: 225, largura: 42, altura: 42, cor: '#fab005',
-    grupos: [
-      { ref: 'FAN', lado: 'baixo', legenda: '2 fios', pinos: [
-        via('+', 1, 'BD-AUX saída 1'), via('−', 1, 'BD-0V'),
-      ]},
-    ],
-  },
 
   /* ════════════ TRILHO 1 — DISTRIBUIÇÃO ════════════ */
   {
     id: 'BD-POT', nome: 'BD-POT — 24 V de potência', trilho: 1,
-    x: 20, largura: 36, altura: 58, cor: '#c92a2a',
+    x: 34, largura: 36, altura: 58, cor: '#c92a2a',
     nota: 'COMUTADO pelo KA2 — cai na emergência.',
     grupos: [
       { ref: 'IN', lado: 'cima', legenda: 'Entrada 4 mm² (1)', pinos: [via('IN', 1, 'KA2 · terminal 14')] },
@@ -221,18 +257,19 @@ export const COMPONENTES = [
   },
   {
     id: 'BD-AUX', nome: 'BD-AUX — 12 V auxiliar', trilho: 1,
-    x: 61, largura: 36, altura: 58, cor: '#fab005',
+    x: 70, largura: 36, altura: 58, cor: '#fab005',
     grupos: [
       { ref: 'IN', lado: 'cima', legenda: 'Entrada 2,5 mm² (1)', pinos: [via('IN', 1, 'prensa-cabo do 12 V')] },
       { ref: 'OUT', lado: 'baixo', legenda: 'Saídas (4)', pinos: [
-        via('O1', 1, 'cooler dos BTS'), via('O2', 1, 'cooler da Peltier #1'),
-        via('O3', 1, 'cooler da Peltier #2'), via('O4'),
+        via('O1', 1, 'ventoinha do radiador #1 — sempre ligada'),
+        via('O2', 1, 'ventoinha do radiador #2 — sempre ligada'),
+        via('O3', 1, 'ventoinhas do duto (2×) — sempre ligadas'), via('O4'),
       ]},
     ],
   },
   {
     id: 'BD-24V', nome: 'BD-24V — 24 V de serviços', trilho: 1,
-    x: 102, largura: 45, altura: 58, cor: '#e8590c',
+    x: 106, largura: 45, altura: 58, cor: '#e8590c',
     nota: 'PERMANENTE — não cai na emergência.',
     grupos: [
       { ref: 'IN', lado: 'cima', legenda: 'Entrada 2,5 mm² (1)', pinos: [via('IN', 1, 'prensa-cabo dos 24 V de serviços')] },
@@ -246,7 +283,7 @@ export const COMPONENTES = [
   },
   {
     id: 'BD-5V', nome: 'BD-5V — 5,10 V', trilho: 1,
-    x: 152, largura: 54, altura: 58, cor: '#f08c00',
+    x: 151, largura: 54, altura: 58, cor: '#f08c00',
     grupos: [
       { ref: 'IN', lado: 'cima', legenda: 'Entrada 2,5 mm² (1)', pinos: [via('IN', 1, 'prensa-cabo dos 5 V')] },
       { ref: 'OUT', lado: 'baixo', legenda: 'Saídas (8)', pinos: [
@@ -259,7 +296,7 @@ export const COMPONENTES = [
   },
   {
     id: 'BD-0V', nome: 'BD-0V — barra do 0 V (star ground)', trilho: 1,
-    x: 211, largura: 100, altura: 58, cor: '#212529',
+    x: 205, largura: 100, altura: 58, cor: '#212529',
     nota: '⭐ O ÚNICO 0 V do projeto. Barra de 20 pontos, ou dois blocos de 8 ligados '
         + 'por ponte de 4 mm².',
     grupos: [
@@ -271,8 +308,8 @@ export const COMPONENTES = [
         via('R7', 1, 'DNLCB30 · −'), via('R8', 1, 'RTC DS3231 · GND'),
         via('R9', 1, 'tela ES3C28P · GND'), via('R10', 1, 'conversor de nível · GND'),
         via('R11', 1, 'KA1 · A2'), via('R12', 1, 'KA2 · A2'),
-        via('R13', 1, 'cooler dos BTS −'), via('R14', 1, 'cooler Peltier #1 −'),
-        via('R15', 1, 'cooler Peltier #2 −'), via('R16', 1, 'LEDs da maquete −'),
+        via('R13', 1, 'ventoinha do radiador #1 −'), via('R14', 1, 'ventoinha do radiador #2 −'),
+        via('R15', 1, 'ventoinhas do duto −'), via('R16', 1, 'LEDs da maquete −'),
         via('R17', 1, 'retorno das 4 posições de ensaio'),
         via('R18', 1, 'seletora LOCAL/REMOTO — contato para o 0 V'),
         via('R19'), via('R20'),
@@ -283,7 +320,7 @@ export const COMPONENTES = [
   },
   {
     id: 'RTC', nome: 'RTC DS3231', trilho: 1,
-    x: 316, largura: 35, altura: 40, cor: '#0ca678',
+    x: 305, largura: 35, altura: 40, cor: '#0ca678',
     nota: 'Ficou no trilho 1 porque I²C tolera distância. Só o cartão SD precisava '
         + 'estar perto do processador — e ele foi para dentro da tela.',
     grupos: [
@@ -367,7 +404,7 @@ export const COMPONENTES = [
     ]}],
   },
   {
-    id: 'S4', nome: 'Botão STOP (preto)', porta: true,
+    id: 'S3', nome: 'Botão STOP (preto)', porta: true,
     x: 125, y: 250, largura: 30, altura: 30, cor: '#495057',
     grupos: [{ ref: 'NA', lado: 'baixo', legenda: 'Bloco NA de 5 V (2)', pinos: [
       via('1', 1, 'BD-5V'), via('2', 1, 'Mega D23'),

@@ -1,12 +1,14 @@
-import { useState, useMemo } from 'react';
-import { CAIXA, PLACA, TRILHOS, COMPONENTES } from '../data/painel_completo';
+import { useState, useMemo, useRef } from 'react';
+import {
+  CAIXA, PLACA, TRILHOS, COMPONENTES, CANALETAS, REGRA_SEGREGACAO,
+} from '../data/painel_completo';
 
 /* O painel visto de frente, com a porta aberta ao lado.
    Cada terminal é um quadrado com o ID dentro, na borda onde ele fica
    de verdade no componente. Tudo em milímetros.                        */
 
-const PASSO_MIN = 3.6;   // mm entre centros de terminais
-const LADO_T = 3.0;      // mm do quadradinho
+const PASSO_MIN = 4.6;   // mm entre centros de terminais
+const LADO_T = 4.0;      // mm do quadradinho — grande o bastante para o ID caber
 
 /* Distribui os terminais de um grupo ao longo da borda que ele ocupa. */
 function posicoes(c, g) {
@@ -15,14 +17,14 @@ function posicoes(c, g) {
   const porLinha = Math.ceil(n / linhas);
   const vert = g.lado === 'esquerda' || g.lado === 'direita';
   const compr = vert ? c.altura : c.largura;
-  const passo = Math.max(1.9, Math.min(PASSO_MIN, (compr - 4) / porLinha));
+  const passo = Math.max(2.6, Math.min(PASSO_MIN, (compr - 3) / porLinha));
   const inicio = (compr - (porLinha - 1) * passo) / 2;
 
   return g.pinos.map((p, i) => {
     const lin = Math.floor(i / porLinha);
     const col = i % porLinha;
     const desl = inicio + col * passo;
-    const rec = 3.4 + lin * 4.2;           // recuo por linha, para dentro
+    const rec = 4.0 + lin * 5.0;           // recuo por linha, para dentro
     if (g.lado === 'cima')     return { ...p, x: c.x + desl, y: c.y + rec, passo };
     if (g.lado === 'baixo')    return { ...p, x: c.x + desl, y: c.y + c.altura - rec, passo };
     if (g.lado === 'esquerda') return { ...p, x: c.x + rec, y: c.y + desl, passo };
@@ -35,6 +37,25 @@ export default function VistaPainelInterno() {
   const [pino, setPino] = useState(null);    // terminal
   const [zoom, setZoom] = useState(2.2);
   const [soUsados, setSoUsados] = useState(false);
+  const rolagem = useRef(null);
+
+  /* scroll do mouse dá zoom, mantendo sob o cursor o que estava sob ele */
+  const aoRolar = e => {
+    if (!e.ctrlKey && !e.shiftKey && !e.altKey && !e.metaKey) {
+      const el = rolagem.current;
+      if (!el) return;
+      e.preventDefault();
+      const fator = e.deltaY < 0 ? 1.12 : 1 / 1.12;
+      const novo = Math.min(10, Math.max(1.2, zoom * fator));
+      const rx = (el.scrollLeft + e.nativeEvent.offsetX) / zoom;
+      const ry = (el.scrollTop + e.nativeEvent.offsetY) / zoom;
+      setZoom(novo);
+      requestAnimationFrame(() => {
+        el.scrollLeft = rx * novo - e.nativeEvent.offsetX;
+        el.scrollTop = ry * novo - e.nativeEvent.offsetY;
+      });
+    }
+  };
 
   /* posiciona cada componente no seu trilho */
   const comps = useMemo(() => COMPONENTES.map(c => {
@@ -48,7 +69,8 @@ export default function VistaPainelInterno() {
 
   return (
     <div style={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
-      <div style={{ flex: 1, overflow: 'auto', padding: 14, background: '#eef1f5' }}>
+      <div ref={rolagem} onWheel={aoRolar}
+           style={{ flex: 1, overflow: 'auto', padding: 14, background: '#eef1f5' }}>
         <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 10,
                       background: '#fff', padding: '8px 13px', borderRadius: 7,
                       flexWrap: 'wrap' }}>
@@ -58,11 +80,11 @@ export default function VistaPainelInterno() {
                    onChange={e => setSoUsados(e.target.checked)} />
             só os terminais usados
           </label>
-          <input type="range" min={1.2} max={6} step={0.1} value={zoom}
+          <input type="range" min={1.2} max={10} step={0.1} value={zoom}
                  onChange={e => setZoom(+e.target.value)}
-                 style={{ flex: 1, minWidth: 110, maxWidth: 260 }} />
+                 style={{ flex: 1, minWidth: 110, maxWidth: 240 }} />
           <span style={{ fontSize: 11, color: '#868e96' }}>
-            zoom {zoom.toFixed(1)}× — aumente para ler os IDs
+            {zoom.toFixed(1)}× · 🖱️ role o mouse sobre o desenho
           </span>
         </div>
 
@@ -75,6 +97,43 @@ export default function VistaPainelInterno() {
                 fill="#dee2e6" stroke="#868e96" strokeWidth={2} />
           <rect x={PLACA.x} y={PLACA.y} width={PLACA.largura} height={PLACA.altura}
                 rx={2} fill="#e9ecef" stroke="#ced4da" strokeWidth={1} />
+
+          {/* canaletas — o caminho dos fios */}
+          {CANALETAS.map(k => {
+            const pot = k.tipo === 'potencia';
+            return (
+              <g key={k.id}>
+                <rect x={k.x} y={k.y} width={k.w} height={k.h} rx={1.5}
+                      fill={pot ? '#ffe3e3' : '#e7f5ff'}
+                      stroke={pot ? '#ffa8a8' : '#a5d8ff'} strokeWidth={0.8} />
+                {/* dentes da canaleta */}
+                {Array.from({ length: Math.floor((k.vertical ? k.h : k.w) / 7) }, (_, i) => (
+                  k.vertical
+                    ? <line key={i} x1={k.x + 1.5} y1={k.y + 4 + i * 7}
+                            x2={k.x + k.w - 1.5} y2={k.y + 4 + i * 7}
+                            stroke={pot ? '#ffc9c9' : '#c5e4fb'} strokeWidth={0.5} />
+                    : <line key={i} x1={k.x + 4 + i * 7} y1={k.y + 1.5}
+                            x2={k.x + 4 + i * 7} y2={k.y + k.h - 1.5}
+                            stroke={pot ? '#ffc9c9' : '#c5e4fb'} strokeWidth={0.5} />
+                ))}
+                {!k.vertical && (
+                  <text x={k.x + k.w - 3} y={k.y + k.h / 2 + 2} textAnchor="end"
+                        fontSize={4.5} fontWeight="700"
+                        fill={pot ? '#e03131' : '#1971c2'}>
+                    {pot ? 'POTÊNCIA' : 'SINAL'}
+                  </text>
+                )}
+                {k.vertical && (
+                  <text x={k.x + k.w / 2} y={k.y + 12} textAnchor="middle"
+                        fontSize={4.5} fontWeight="700"
+                        fill={pot ? '#e03131' : '#1971c2'}
+                        transform={`rotate(-90 ${k.x + k.w / 2} ${k.y + 12})`}>
+                    {pot ? 'POTÊNCIA' : 'SINAL'}
+                  </text>
+                )}
+              </g>
+            );
+          })}
 
           {/* trilhos DIN */}
           {TRILHOS.map(t => (
@@ -185,6 +244,33 @@ export default function VistaPainelInterno() {
                 </div>
               );
             })}
+            <div style={{ padding: 12, background: '#fff5f5', border: '2px solid #ffc9c9',
+                          borderRadius: 7, marginBottom: 14 }}>
+              <b style={{ fontSize: 12.5, color: '#c92a2a' }}>
+                ⚡ {REGRA_SEGREGACAO.titulo}
+              </b>
+              <div style={{ fontSize: 11.5, color: '#495057', marginTop: 6,
+                            lineHeight: 1.55 }}>{REGRA_SEGREGACAO.texto}</div>
+              <div style={{ fontSize: 11, marginTop: 8 }}>
+                <b style={{ color: '#1971c2' }}>Quem sofre (canaleta azul)</b>
+                <ul style={{ margin: '3px 0 0', paddingLeft: 16, color: '#495057',
+                             lineHeight: 1.5 }}>
+                  {REGRA_SEGREGACAO.quemSofre.map(t => <li key={t}>{t}</li>)}
+                </ul>
+              </div>
+              <div style={{ fontSize: 11, marginTop: 7 }}>
+                <b style={{ color: '#e03131' }}>Quem polui (canaleta vermelha)</b>
+                <ul style={{ margin: '3px 0 0', paddingLeft: 16, color: '#495057',
+                             lineHeight: 1.5 }}>
+                  {REGRA_SEGREGACAO.quemPolui.map(t => <li key={t}>{t}</li>)}
+                </ul>
+              </div>
+              <ul style={{ margin: '8px 0 0', paddingLeft: 16, fontSize: 11,
+                           color: '#343a40', lineHeight: 1.55 }}>
+                {REGRA_SEGREGACAO.regras.map(t => <li key={t}>{t}</li>)}
+              </ul>
+            </div>
+
             <div style={{ fontSize: 12, fontWeight: 700, color: '#1d3557' }}>PORTA</div>
             {COMPONENTES.filter(c => c.porta).map(c => {
               const ps = c.grupos.flatMap(g => g.pinos);
@@ -221,6 +307,13 @@ export default function VistaPainelInterno() {
               </div>
             </div>
             <div style={{ padding: '12px 16px' }}>
+              {sel.aConferir && (
+                <div style={{ fontSize: 11.5, color: '#7a5c00', background: '#fff9db',
+                              border: '2px solid #ffe066', borderRadius: 6,
+                              padding: '9px 11px', marginBottom: 11, lineHeight: 1.5 }}>
+                  🔎 <b>A conferir:</b> {sel.aConferir}
+                </div>
+              )}
               {sel.nota && (
                 <div style={{ fontSize: 12, color: '#495057', lineHeight: 1.55,
                               marginBottom: 12 }}>{sel.nota}</div>
