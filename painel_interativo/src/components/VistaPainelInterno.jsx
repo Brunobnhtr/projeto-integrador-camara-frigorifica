@@ -1,4 +1,24 @@
 import { useState, useMemo, useRef } from 'react';
+import PlacaIlhada from './PlacaIlhada';
+import PlacaReal from './PlacaReal';
+import * as PI1 from '../data/pi1_fisico';
+import * as PI2 from '../data/pi2_fisico';
+import { PINAGENS } from '../data/pinagens';
+
+/* Quais componentes do painel têm desenho de placa, e qual.
+   'ilhada' = placa que VOCÊ monta furo por furo.
+   'real'   = módulo comprado, desenhado a partir da foto.        */
+const PLACAS = {
+  PI1:  { tipo: 'ilhada', dados: PI1, titulo: 'Placa PI-1',
+          rotulo: 'a placa que você vai montar — 20 jumpers, 3 circuitos' },
+  'PI-2': { tipo: 'ilhada', dados: PI2, titulo: 'Placa PI-2',
+          rotulo: 'a placa que você vai montar — shunts, mux e INA219' },
+  BTS1: { tipo: 'real', chave: 'BTS1', rotulo: 'módulo comprado — pinagem tirada da foto' },
+  BTS2: { tipo: 'real', chave: 'BTS1', rotulo: 'módulo comprado — igual ao BTS #1' },
+  ESP32:{ tipo: 'real', chave: 'ESP32', rotulo: 'placa DNLCB30 — 32 bornes de parafuso' },
+  HMI:  { tipo: 'real', chave: 'HMI',  rotulo: 'tela ES3C28P — conectores e área útil' },
+  CONV: { tipo: 'real', chave: 'CONV', rotulo: 'conversor de nível — 2 canais' },
+};
 import {
   CAIXA, PLACA, TRILHOS, COMPONENTES, CANALETAS, REGRA_SEGREGACAO,
 } from '../data/painel_completo';
@@ -41,6 +61,7 @@ export default function VistaPainelInterno() {
   const [pino, setPino] = useState(null);    // terminal
   const [zoom, setZoom] = useState(3.0);
   const [soUsados, setSoUsados] = useState(false);
+  const [placa, setPlaca] = useState(null);   // desenho da placa em tela cheia
   const rolagem = useRef(null);
 
   /* scroll do mouse dá zoom, mantendo sob o cursor o que estava sob ele */
@@ -354,6 +375,23 @@ export default function VistaPainelInterno() {
                   🔧 <b>Soldado dentro da placa</b> — não tem borne:<br />{sel.interno}
                 </div>
               )}
+              {PLACAS[sel.id] && (
+                <button onClick={() => setPlaca(PLACAS[sel.id])} style={{
+                  display: 'block', width: '100%', marginBottom: 13, cursor: 'pointer',
+                  background: PLACAS[sel.id].tipo === 'ilhada' ? '#5f3dc4' : '#1d3557',
+                  color: '#fff', border: 'none', borderRadius: 7, padding: '11px 12px',
+                  textAlign: 'left',
+                }}>
+                  <div style={{ fontSize: 13, fontWeight: 700 }}>
+                    {PLACAS[sel.id].tipo === 'ilhada'
+                      ? '🔧 Ver a placa e como soldar'
+                      : '🔍 Ver o módulo e a pinagem real'}
+                  </div>
+                  <div style={{ fontSize: 11, opacity: 0.82, marginTop: 2 }}>
+                    {PLACAS[sel.id].rotulo}
+                  </div>
+                </button>
+              )}
               {sel.grupos.map(g => (
                 <div key={g.ref} style={{ marginBottom: 13 }}>
                   <div style={{ fontSize: 11, color: '#868e96', marginBottom: 5 }}>
@@ -406,6 +444,32 @@ export default function VistaPainelInterno() {
           </>
         )}
       </aside>
+
+      {/* ── a placa, em tela cheia ── */}
+      {placa && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 150, background: '#eef1f5' }}>
+          {placa.tipo === 'ilhada' ? (
+            <PlacaIlhada dados={placa.dados} titulo={placa.titulo}
+                         onFechar={() => setPlaca(null)} />
+          ) : (
+            <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ background: '#1d3557', color: '#fff', padding: '12px 16px',
+                            display: 'flex', justifyContent: 'space-between',
+                            alignItems: 'center', flexShrink: 0 }}>
+                <b style={{ fontSize: 15 }}>
+                  {PINAGENS[placa.chave]?.nome ?? placa.chave} · módulo comprado
+                </b>
+                <button onClick={() => setPlaca(null)} style={{
+                  background: '#ffffff33', color: '#fff', border: 'none', borderRadius: 5,
+                  width: 26, height: 26, cursor: 'pointer' }}>×</button>
+              </div>
+              <div style={{ flex: 1, overflow: 'auto' }}>
+                <PlacaReal chave={placa.chave} />
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

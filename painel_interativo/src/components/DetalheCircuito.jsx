@@ -1,6 +1,5 @@
-import {
-  COMPONENTES_PI1, CI1, NOS, JUMPERS, BORNES, BARRAMENTO_0V, CIRCUITOS, DUVIDAS,
-} from '../data/pi1_fisico';
+/* Recebe o layout físico da placa por prop (`dados`), para servir tanto
+   à PI-1, que tem um CI nu, quanto à PI-2, que tem módulos encaixados. */
 
 /* Vista ampliada de UM circuito, para responder à pergunta que o desenho
    da placa inteira não responde: "o fio entra em qual perna?"           */
@@ -67,8 +66,8 @@ function CorteLateral() {
 }
 
 /* ── vista de cima dos furos de um nó ───────────────────────────────── */
-function VistaDoNo({ no }) {
-  const comps = COMPONENTES_PI1.filter(c => c.circuito === no.circuito);
+function VistaDoNo({ no, discretos, BARRAMENTO_0V }) {
+  const comps = discretos.filter(c => c.circuito === no.circuito);
   const cols = [];
   for (let c = no.de; c <= no.ate; c++) cols.push(c);
 
@@ -168,11 +167,16 @@ function VistaDoNo({ no }) {
   );
 }
 
-export default function DetalheCircuito({ circuito, onFechar }) {
+export default function DetalheCircuito({ dados, circuito, onFechar }) {
+  const { NOS, JUMPERS, BORNES, BARRAMENTO_0V, CIRCUITOS, DUVIDAS } = dados;
+  const discretos = dados.COMPONENTES_PI1 ?? dados.COMPONENTES_PI2 ?? [];
+  const CI1 = dados.CI1 ?? null;
+  const MODULOS = dados.MODULOS ?? [];
+
   const info = CIRCUITOS.find(c => c.id === circuito);
   const nos = NOS.filter(n => n.circuito === circuito);
   const jumps = JUMPERS.filter(j => j.circuito === circuito);
-  const comps = COMPONENTES_PI1.filter(c => c.circuito === circuito);
+  const comps = discretos.filter(c => c.circuito === circuito);
   const duvidas = DUVIDAS[circuito];
 
   const viaDe = (col, lin) => {
@@ -182,8 +186,12 @@ export default function DetalheCircuito({ circuito, onFechar }) {
         if (v) return `${b.ref}-${v.n} (${v.sinal})`;
       }
     if (lin === BARRAMENTO_0V.linha) return 'barramento de 0 V';
-    const p = CI1.pinos.find(x => x.col === col && x.lin === lin);
+    const p = CI1?.pinos.find(x => x.col === col && x.lin === lin);
     if (p) return `CI pino ${p.n} (${p.nome})`;
+    for (const m of MODULOS) {
+      const mp = m.pinos.find(x => x.col === col && x.lin === lin);
+      if (mp) return `${m.ref} · ${m.valor} — pino ${mp.nome}`;
+    }
     const n = NOS.find(x => x.linha === lin && col >= x.de && col <= x.ate);
     if (n) return n.ref;
     return `furo ${col},${lin}`;
@@ -231,7 +239,7 @@ export default function DetalheCircuito({ circuito, onFechar }) {
           {nos.map(no => (
             <div key={no.ref} style={{ background: '#fff', borderRadius: 8, padding: 14,
                                        marginBottom: 14, border: '1px solid #dee2e6' }}>
-              <VistaDoNo no={no} />
+              <VistaDoNo no={no} discretos={discretos} BARRAMENTO_0V={BARRAMENTO_0V} />
               <div style={{ fontSize: 12, color: '#495057', marginTop: 6, lineHeight: 1.5 }}>
                 {no.nota}
               </div>

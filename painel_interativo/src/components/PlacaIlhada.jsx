@@ -1,21 +1,23 @@
 import { useState, useMemo } from 'react';
-import {
-  PASSO, PLACA, BORNES, BARRAMENTO_0V, COMPONENTES_PI1, CI1, NOS, JUMPERS,
-  CIRCUITOS, ORDEM_MONTAGEM,
-} from '../data/pi1_fisico';
 import DetalheCircuito from './DetalheCircuito';
 
-/* Tudo aqui é desenhado em MILÍMETROS. O SVG faz a conversão para pixels,
-   então o desenho é dimensionalmente verdadeiro em qualquer zoom. */
+/* Desenha uma placa ilhada montada à mão, a partir do arquivo de layout
+   físico dela (pi1_fisico.js ou pi2_fisico.js). Tudo em MILÍMETROS — o
+   SVG converte para pixels, então o desenho é dimensionalmente
+   verdadeiro em qualquer zoom.
+
+   A PI-1 tem um CI nu num soquete; a PI-2 tem dois módulos comprados
+   que encaixam em barra de pinos. Os dois casos são desenhados aqui. */
+
+const PASSO = 2.54;
 const X = c => c * PASSO;
 const Y = l => l * PASSO;
-const corDe = id => CIRCUITOS.find(c => c.id === id)?.cor ?? '#868e96';
 
 /* ── furos ─────────────────────────────────────────────────────────── */
-function Furos({ ocupados }) {
+function Furos({ placa, ocupados }) {
   const furos = [];
-  for (let c = 1; c <= PLACA.colunas; c++) {
-    for (let l = 1; l <= PLACA.linhas; l++) {
+  for (let c = 1; c <= placa.colunas; c++) {
+    for (let l = 1; l <= placa.linhas; l++) {
       const k = `${c},${l}`;
       const usado = ocupados.has(k);
       furos.push(
@@ -32,7 +34,7 @@ function Furos({ ocupados }) {
 }
 
 /* ── componentes discretos ─────────────────────────────────────────── */
-function Resistor({ c, ativo, onClick }) {
+function Resistor({ c, cor, ativo, onClick }) {
   const [[c1, l1], [c2, l2]] = c.furos;
   const x1 = X(c1), y1 = Y(l1), x2 = X(c2), y2 = Y(l2);
   const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
@@ -44,7 +46,7 @@ function Resistor({ c, ativo, onClick }) {
       <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#adb5bd" strokeWidth={0.55} />
       <g transform={`translate(${mx} ${my}) rotate(${ang})`}>
         <rect x={-corpo / 2} y={-1.35} width={corpo} height={2.7} rx={1.1}
-              fill="#c9b28a" stroke={ativo ? corDe(c.circuito) : '#8d7c5e'}
+              fill="#c9b28a" stroke={ativo ? cor : '#8d7c5e'}
               strokeWidth={ativo ? 0.5 : 0.3} />
         {/* faixas de código de cores — decorativas; o valor real está no rótulo */}
         {[-1.5, -0.4, 0.7].map((d, i) => (
@@ -52,16 +54,15 @@ function Resistor({ c, ativo, onClick }) {
                 fill={['#7a4b28', '#2b2b2b', '#b34a2f'][i]} opacity={0.8} />
         ))}
       </g>
-      <text x={mx} y={my - 2.6} textAnchor="middle" fontSize={2.1}
-            fontWeight="700" fill={corDe(c.circuito)}>{c.ref}</text>
-      <text x={mx} y={my + 4.3} textAnchor="middle" fontSize={1.85} fill="#495057">
-        {c.valor}
+      <text x={mx + 4.2} y={my - 1.2} fontSize={2.1} fontWeight="700" fill={cor}>
+        {c.ref}
       </text>
+      <text x={mx + 4.2} y={my + 1.6} fontSize={1.85} fill="#495057">{c.valor}</text>
     </g>
   );
 }
 
-function Capacitor({ c, ativo, onClick }) {
+function Capacitor({ c, cor, ativo, onClick }) {
   const [[c1, l1], [c2, l2]] = c.furos;
   const x1 = X(c1), y1 = Y(l1), x2 = X(c2), y2 = Y(l2);
   const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
@@ -71,41 +72,35 @@ function Capacitor({ c, ativo, onClick }) {
       <line x1={x2} y1={y2} x2={mx} y2={my} stroke="#adb5bd" strokeWidth={0.55} />
       {/* cerâmico de disco visto de lado */}
       <ellipse cx={mx} cy={my} rx={2.5} ry={1.9} fill="#2d6cb5"
-               stroke={ativo ? corDe(c.circuito) : '#1e4a7d'}
-               strokeWidth={ativo ? 0.5 : 0.3} />
+               stroke={ativo ? cor : '#1e4a7d'} strokeWidth={ativo ? 0.5 : 0.3} />
       <text x={mx} y={my + 0.65} textAnchor="middle" fontSize={1.5}
             fill="#fff" fontWeight="700">104</text>
-      <text x={mx + 3.4} y={my - 1.2} fontSize={2.1} fontWeight="700"
-            fill={corDe(c.circuito)}>{c.ref}</text>
+      <text x={mx + 3.4} y={my - 1.2} fontSize={2.1} fontWeight="700" fill={cor}>{c.ref}</text>
       <text x={mx + 3.4} y={my + 1.4} fontSize={1.8} fill="#495057">{c.valor}</text>
     </g>
   );
 }
 
-/* ── o CI no soquete ───────────────────────────────────────────────── */
-function CircuitoIntegrado({ ativo, onClick }) {
-  const x1 = X(CI1.colEsq) - PASSO / 2, x2 = X(CI1.colDir) + PASSO / 2;
-  const y1 = Y(CI1.linhaTopo) - PASSO / 2, y2 = Y(CI1.linhaBase) + PASSO / 2;
-  const cor = corDe(4);
+/* ── CI nu, no soquete (PI-1) ──────────────────────────────────────── */
+function Chip({ ci, cor, ativo, onClick }) {
+  const x1 = X(ci.colEsq) - PASSO / 2, x2 = X(ci.colDir) + PASSO / 2;
+  const y1 = Y(ci.linhaTopo) - PASSO / 2, y2 = Y(ci.linhaBase) + PASSO / 2;
   return (
     <g onClick={onClick} style={{ cursor: 'pointer' }} opacity={ativo ? 1 : 0.35}>
-      {/* soquete */}
       <rect x={x1 - 0.8} y={y1 - 0.8} width={x2 - x1 + 1.6} height={y2 - y1 + 1.6}
             rx={0.6} fill="#2b2b2b" stroke="#000" strokeWidth={0.3} />
-      {/* corpo do chip */}
       <rect x={x1} y={y1} width={x2 - x1} height={y2 - y1} rx={0.5}
             fill="#3a3a3a" stroke={ativo ? cor : '#111'} strokeWidth={ativo ? 0.6 : 0.3} />
       {/* CHANFRO — à direita nesta montagem */}
       <path d={`M ${x2} ${(y1 + y2) / 2 - 2.2} A 2.2 2.2 0 0 0 ${x2} ${(y1 + y2) / 2 + 2.2}`}
             fill="#1a1a1a" stroke="#666" strokeWidth={0.25} />
       <text x={(x1 + x2) / 2} y={(y1 + y2) / 2 + 0.8} textAnchor="middle"
-            fontSize={2.4} fill="#f1f3f5" fontWeight="700">ULN2803A</text>
-      {/* pinos */}
-      {CI1.pinos.map(p => (
+            fontSize={2.4} fill="#f1f3f5" fontWeight="700">{ci.valor}</text>
+      {ci.pinos.map(p => (
         <g key={p.n}>
           <rect x={X(p.col) - 0.62} y={Y(p.lin) - 0.62} width={1.24} height={1.24}
                 fill={p.livre ? '#868e96' : '#e9c46a'} rx={0.15} />
-          <text x={X(p.col)} y={p.lin === CI1.linhaTopo ? Y(p.lin) - 2.0 : Y(p.lin) + 3.3}
+          <text x={X(p.col)} y={p.lin === ci.linhaTopo ? Y(p.lin) - 2.0 : Y(p.lin) + 3.3}
                 textAnchor="middle" fontSize={1.5}
                 fill={p.livre ? '#adb5bd' : '#f8f9fa'} fontWeight={p.livre ? 400 : 700}>
             {p.nome}
@@ -113,30 +108,77 @@ function CircuitoIntegrado({ ativo, onClick }) {
         </g>
       ))}
       <text x={x1 - 1.5} y={y1 - 3.2} fontSize={2.1} fontWeight="700" fill={cor}>
-        CI1 · chanfro →
+        {ci.ref} · chanfro →
+      </text>
+    </g>
+  );
+}
+
+/* ── módulo comprado, em barra de pinos fêmea (PI-2) ───────────────── */
+function Modulo({ m, ativo, onClick }) {
+  const { colEsq, colDir, linTopo, linBase } = m.corpo;
+  const x1 = X(colEsq) - PASSO / 2, x2 = X(colDir) + PASSO / 2;
+  const y1 = Y(linTopo) - PASSO / 2, y2 = Y(linBase) + PASSO / 2;
+  /* as barras fêmea: uma por linha de pinos */
+  const linhas = [...new Set(m.pinos.map(p => p.lin))];
+  return (
+    <g onClick={onClick} style={{ cursor: 'pointer' }} opacity={ativo ? 1 : 0.3}>
+      {/* a placa do módulo, verde como PCB de fábrica */}
+      <rect x={x1} y={y1} width={x2 - x1} height={y2 - y1} rx={0.8}
+            fill="#1e5631" stroke={ativo ? m.cor : '#123a20'}
+            strokeWidth={ativo ? 0.7 : 0.35} opacity={0.92} />
+      <text x={(x1 + x2) / 2} y={(y1 + y2) / 2 - 0.6} textAnchor="middle"
+            fontSize={2.9} fill="#e6f4ea" fontWeight="700">{m.valor}</text>
+      <text x={(x1 + x2) / 2} y={(y1 + y2) / 2 + 2.6} textAnchor="middle"
+            fontSize={1.9} fill="#a8d5b8">{m.descricao}</text>
+
+      {/* barras de pinos fêmea soldadas na PI-2 */}
+      {linhas.map(l => {
+        const desta = m.pinos.filter(p => p.lin === l);
+        const a = Math.min(...desta.map(p => p.col));
+        const b = Math.max(...desta.map(p => p.col));
+        return (
+          <rect key={l} x={X(a) - 1.1} y={Y(l) - 1.25} width={X(b) - X(a) + 2.2}
+                height={2.5} rx={0.3} fill="#111" stroke="#000" strokeWidth={0.2} />
+        );
+      })}
+
+      {m.pinos.map(p => (
+        <g key={p.n}>
+          <rect x={X(p.col) - 0.55} y={Y(p.lin) - 0.55} width={1.1} height={1.1}
+                rx={0.12}
+                fill={p.alerta ? '#ff6b6b' : (p.livre ? '#5c6b62' : '#e9c46a')} />
+          {!p.livre && (
+            <text x={X(p.col)} y={Y(p.lin) < (y1 + y2) / 2 ? Y(p.lin) - 1.9 : Y(p.lin) + 3.2}
+                  textAnchor="middle" fontSize={1.35} fontWeight="700"
+                  fill={p.alerta ? '#c92a2a' : '#343a40'}>{p.nome}</text>
+          )}
+        </g>
+      ))}
+      <text x={x1} y={y1 - 1.6} fontSize={2.1} fontWeight="700" fill={m.cor}>
+        {m.ref} · encaixa na barra
       </text>
     </g>
   );
 }
 
 /* ── bornes ────────────────────────────────────────────────────────── */
-function Borne({ b, ativo, onVia }) {
+function Borne({ b, placa, ativo, onVia }) {
   const primeira = b.vias[0].col, ultima = b.vias[b.vias.length - 1].col;
   const x1 = X(primeira) - PASSO, x2 = X(ultima) + PASSO;
   const y1 = Y(b.corpo[0]), y2 = Y(b.corpo[1]);
-  const emCima = b.linha < PLACA.linhas / 2;
+  const emCima = b.linha < placa.linhas / 2;
   return (
     <g opacity={ativo ? 1 : 0.4}>
       <rect x={x1} y={y1} width={x2 - x1} height={y2 - y1} rx={1}
             fill="#2f6f3e" stroke="#1c4526" strokeWidth={0.4}
             style={{ filter: 'saturate(0.85)' }} />
       <text x={(x1 + x2) / 2} y={emCima ? y1 - 5.5 : y2 + 8.2}
-            textAnchor="middle" fontSize={3.4} fontWeight="700" fill={b.cor}>
+            textAnchor="middle" fontSize={3.0} fontWeight="700" fill={b.cor}>
         {b.ref} — {b.papel}
       </text>
       {b.vias.map(v => (
         <g key={v.n} onClick={() => onVia(b, v)} style={{ cursor: 'pointer' }}>
-          {/* parafuso de aperto */}
           <circle cx={X(v.col)} cy={emCima ? y1 + 2.6 : y2 - 2.6} r={1.8}
                   fill="#c0c4c8" stroke="#7a7f84" strokeWidth={0.3} />
           <line x1={X(v.col) - 1.1} y1={emCima ? y1 + 2.6 : y2 - 2.6}
@@ -146,7 +188,7 @@ function Borne({ b, ativo, onVia }) {
           {/* rótulo girado, senão não cabe entre vias de 5,08 mm */}
           <text x={X(v.col)} y={emCima ? y1 - 1.6 : y2 + 2.2}
                 textAnchor={emCima ? 'start' : 'end'} fontSize={1.95} fontWeight="700"
-                fill={v.alerta ? '#c92a2a' : '#212529'}
+                fill={v.alerta ? '#c92a2a' : (v.livre ? '#adb5bd' : '#212529')}
                 transform={`rotate(-62 ${X(v.col)} ${emCima ? y1 - 1.6 : y2 + 2.2})`}>
             {b.ref}-{v.n} {v.sinal}
           </text>
@@ -157,23 +199,33 @@ function Borne({ b, ativo, onVia }) {
 }
 
 /* ── placa ─────────────────────────────────────────────────────────── */
-export default function PlacaPI1({ onFechar }) {
-  const [circuito, setCircuito] = useState(null);   // filtro por circuito
-  const [sel, setSel] = useState(null);             // item clicado
+export default function PlacaIlhada({ dados, titulo, onFechar }) {
+  const {
+    PLACA, BORNES, BARRAMENTO_0V, NOS, JUMPERS, CIRCUITOS, ORDEM_MONTAGEM,
+  } = dados;
+  const DISCRETOS = dados.COMPONENTES_PI1 ?? dados.COMPONENTES_PI2 ?? [];
+  const CI = dados.CI1 ?? null;
+  const MODULOS = dados.MODULOS ?? [];
+
+  const [circuito, setCircuito] = useState(null);
+  const [sel, setSel] = useState(null);
   const [verJumpers, setVerJumpers] = useState(true);
-  const [escala, setEscala] = useState(7);          // px por mm
-  const [detalhe, setDetalhe] = useState(null);     // circuito aberto em detalhe
+  const [escala, setEscala] = useState(7);
+  const [detalhe, setDetalhe] = useState(null);
 
   const ativo = id => circuito === null || circuito === id;
+  const corDe = id => CIRCUITOS.find(c => c.id === id)?.cor ?? '#868e96';
 
   const ocupados = useMemo(() => {
     const s = new Set();
-    COMPONENTES_PI1.forEach(c => c.furos.forEach(([a, b]) => s.add(`${a},${b}`)));
-    CI1.pinos.forEach(p => s.add(`${p.col},${p.lin}`));
+    DISCRETOS.forEach(c => c.furos.forEach(([a, b]) => s.add(`${a},${b}`)));
+    if (CI) CI.pinos.forEach(p => s.add(`${p.col},${p.lin}`));
+    MODULOS.forEach(m => m.pinos.forEach(p => s.add(`${p.col},${p.lin}`)));
     BORNES.forEach(b => b.vias.forEach(v => s.add(`${v.col},${b.linha}`)));
-    for (let c = BARRAMENTO_0V.de; c <= BARRAMENTO_0V.ate; c++) s.add(`${c},${BARRAMENTO_0V.linha}`);
+    for (let c = BARRAMENTO_0V.de; c <= BARRAMENTO_0V.ate; c++)
+      s.add(`${c},${BARRAMENTO_0V.linha}`);
     return s;
-  }, []);
+  }, [dados]);
 
   const larg = X(PLACA.colunas + 0.5), alt = Y(PLACA.linhas + 0.5);
 
@@ -183,7 +235,6 @@ export default function PlacaPI1({ onFechar }) {
       <div style={{ flex: 1, overflow: 'auto', padding: 20 }}>
         <svg width={(larg + 34) * escala / 3.2} viewBox={`-15 -13 ${larg + 32} ${alt + 26}`}
              style={{ background: '#fff', borderRadius: 8, boxShadow: '0 1px 6px #0002' }}>
-          {/* corpo da placa */}
           <rect x={X(0.5)} y={Y(0.5)} width={X(PLACA.colunas)} height={Y(PLACA.linhas)}
                 rx={1.2} fill="#d8c9a3" stroke="#a8946a" strokeWidth={0.5} />
 
@@ -203,7 +254,7 @@ export default function PlacaPI1({ onFechar }) {
             );
           })}
 
-          <Furos ocupados={ocupados} />
+          <Furos placa={PLACA} ocupados={ocupados} />
 
           {/* barramento de 0 V — fio NU, o único da placa */}
           <line x1={X(BARRAMENTO_0V.de)} y1={Y(BARRAMENTO_0V.linha)}
@@ -224,17 +275,23 @@ export default function PlacaPI1({ onFechar }) {
             </g>
           ))}
 
-          {COMPONENTES_PI1.map(c => (
+          {DISCRETOS.map(c => (
             c.tipo === 'resistor'
-              ? <Resistor key={c.ref} c={c} ativo={ativo(c.circuito)} onClick={() => setSel(c)} />
-              : <Capacitor key={c.ref} c={c} ativo={ativo(c.circuito)} onClick={() => setSel(c)} />
+              ? <Resistor key={c.ref} c={c} cor={corDe(c.circuito)}
+                          ativo={ativo(c.circuito)} onClick={() => setSel(c)} />
+              : <Capacitor key={c.ref} c={c} cor={corDe(c.circuito)}
+                           ativo={ativo(c.circuito)} onClick={() => setSel(c)} />
           ))}
 
-          <CircuitoIntegrado ativo={ativo(4)} onClick={() => setSel(CI1)} />
+          {CI && <Chip ci={CI} cor={corDe(4)} ativo={ativo(4)} onClick={() => setSel(CI)} />}
+          {MODULOS.map(m => (
+            <Modulo key={m.ref} m={m} ativo={ativo(m.circuito)} onClick={() => setSel(m)} />
+          ))}
 
           {BORNES.map(b => (
-            <Borne key={b.ref} b={b} ativo={circuito === null}
-                   onVia={(bb, v) => setSel({ ...v, ref: `${bb.ref}-${v.n}`, ehVia: true, borne: bb })} />
+            <Borne key={b.ref} b={b} placa={PLACA} ativo={circuito === null}
+                   onVia={(bb, v) => setSel({ ...v, ref: `${bb.ref}-${v.n}`,
+                                              ehVia: true, borne: bb })} />
           ))}
 
           {/* régua de 50 mm para conferir a escala com uma régua de verdade */}
@@ -254,7 +311,7 @@ export default function PlacaPI1({ onFechar }) {
                       overflowY: 'auto', flexShrink: 0 }}>
         <div style={{ background: '#1d3557', color: '#fff', padding: '13px 15px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <b style={{ fontSize: 16 }}>Placa PI-1 · lado dos componentes</b>
+            <b style={{ fontSize: 16 }}>{titulo} · lado dos componentes</b>
             {onFechar && <button onClick={onFechar} style={{
               background: '#ffffff33', color: '#fff', border: 'none', borderRadius: 5,
               width: 26, height: 26, cursor: 'pointer' }}>×</button>}
@@ -279,7 +336,7 @@ export default function PlacaPI1({ onFechar }) {
 
         <div style={{ padding: '11px 15px', borderBottom: '1px solid #eee' }}>
           <div style={{ fontSize: 11, color: '#868e96', marginBottom: 7, letterSpacing: 0.4 }}>
-            OS 4 CIRCUITOS — clique para isolar um
+            OS {CIRCUITOS.length} CIRCUITOS — clique para isolar um
           </div>
           {CIRCUITOS.map(c => (
             <button key={c.id} onClick={() => setCircuito(circuito === c.id ? null : c.id)}
@@ -330,8 +387,7 @@ export default function PlacaPI1({ onFechar }) {
                 </div>
                 {sel.alerta && (
                   <div style={{ marginTop: 5, color: '#c92a2a' }}>
-                    ⚠️ Via de 24 V. Anilha de cor diferente da outra — trocar as duas
-                    muda o comportamento na emergência.
+                    ⚠️ Via crítica — confira a anilha antes de energizar.
                   </div>
                 )}
               </div>
@@ -340,12 +396,22 @@ export default function PlacaPI1({ onFechar }) {
               <div style={{ fontSize: 11.5, marginTop: 6, lineHeight: 1.5 }}>
                 {sel.papel}
                 {sel.porque && (
-                  <div style={{ marginTop: 6, paddingTop: 6, borderTop: '1px solid #f5a52444' }}>
+                  <div style={{ marginTop: 6, paddingTop: 6,
+                                borderTop: '1px solid #f5a52444' }}>
                     <b>Por que existe:</b> {sel.porque}
+                  </div>
+                )}
+                {sel.ligacao && (
+                  <div style={{ marginTop: 6, paddingTop: 6,
+                                borderTop: '1px solid #f5a52444' }}>
+                    <b>Como ligar:</b> {sel.ligacao}
                   </div>
                 )}
                 {sel.aviso && (
                   <div style={{ marginTop: 6, color: '#c92a2a' }}>⚠️ {sel.aviso}</div>
+                )}
+                {sel.aConferir && (
+                  <div style={{ marginTop: 6, color: '#7a5c00' }}>🔎 {sel.aConferir}</div>
                 )}
                 {sel.furos && (
                   <div style={{ marginTop: 6, color: '#666' }}>
@@ -379,7 +445,7 @@ export default function PlacaPI1({ onFechar }) {
       </aside>
 
       {detalhe != null && (
-        <DetalheCircuito circuito={detalhe} onFechar={() => setDetalhe(null)} />
+        <DetalheCircuito dados={dados} circuito={detalhe} onFechar={() => setDetalhe(null)} />
       )}
     </div>
   );

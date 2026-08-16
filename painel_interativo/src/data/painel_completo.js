@@ -217,18 +217,19 @@ export const COMPONENTES = [
         + 'resistores shunt e o INA219 de referência. Os bornes abaixo são os FIOS que '
         + 'chegam e saem — não os pinos dos componentes.',
     interno: '1 × módulo CD74HC4067 (16 canais) · 2 × shunt 47 Ω 1% · 1 × INA219 '
-           + '(referência) · o pino EN do mux vai soldado ao 0 V dentro da placa',
+           + '(referência) · o pino EN do mux vai soldado ao 0 V dentro da placa. '
+           + '🔧 Clique no botão acima para ver o desenho furo por furo.',
     grupos: [
       { ref: 'J1', lado: 'cima', legenda: 'RETORNOS que voltam da câmara (4 vias)', pinos: [
         { nome: 'RET-1', usa: true, para: 'volta do DUT da posição 1 — o shunt dela está aqui dentro' },
         { nome: 'RET-2', usa: true, para: 'volta do DUT da posição 2' },
         { nome: 'RET-3' }, { nome: 'RET-4' },
       ]},
-      { ref: 'J2', lado: 'baixo', legenda: 'Painel — alimentação e retorno (2 vias)', pinos: [
+      { ref: 'J2', lado: 'baixo', legenda: 'Alimentação (2 vias) — divide a borda de baixo com o J3', pinos: [
         { nome: '0V', usa: true, para: 'BD-0V — o comum, DEPOIS dos shunts' },
         { nome: '+5V', usa: true, para: 'BD-5V saída 8 — alimenta o mux e o INA219' },
       ]},
-      { ref: 'J3', lado: 'direita', legenda: 'Sinais para o Arduino (7 vias)', pinos: [
+      { ref: 'J3', lado: 'baixo', legenda: 'Sinais para o Arduino (7 vias)', pinos: [
         { nome: 'S0', usa: true, para: 'Mega D31 — seleção de canal, bit 0' },
         { nome: 'S1', usa: true, para: 'Mega D32 — bit 1' },
         { nome: 'S2', usa: true, para: 'Mega D33 — bit 2' },

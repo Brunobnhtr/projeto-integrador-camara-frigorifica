@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import VistaMaquete from './components/VistaMaquete';
 import VistaPainelInterno from './components/VistaPainelInterno';
-import MapaComponentes from './components/MapaComponentes';
 import VistaDeteccao from './components/VistaDeteccao';
 import VistaCamara from './components/VistaCamara';
 
@@ -18,8 +17,6 @@ const ABAS = [
     dica: 'Corte frontal — onde fica cada componente e por que fica ali' },
   { id: 'deteccao', nome: 'Detecção de falha', icone: '🔬',
     dica: 'O circuito completo das posições de ensaio — os 4 fios, o shunt e o mux' },
-  { id: 'mapa',    nome: 'Mapa de ligações',  icone: '🔌',
-    dica: 'Todos os componentes e cabos, para consultar uma conexão' },
 ];
 
 export default function App() {
@@ -59,7 +56,6 @@ export default function App() {
         {aba === 'painel'  && <VistaPainelInterno />}
         {aba === 'camara'  && <VistaCamara />}
         {aba === 'deteccao' && <VistaDeteccao />}
-        {aba === 'mapa'    && <MapaComponentes />}
       </div>
     </div>
   );
