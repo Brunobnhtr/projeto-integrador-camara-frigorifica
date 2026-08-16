@@ -12,7 +12,8 @@
     "valida:maquete": "node scripts/valida_maquete.mjs",
     "valida:painel": "node scripts/valida_painel.mjs",
     "valida:camara": "node scripts/valida_camara.mjs",
-    "valida:pi2": "node scripts/valida_pi2.mjs"
+    "valida:pi2": "node scripts/valida_pi2.mjs",
+    "bornes": "node scripts/lista_bornes.mjs"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.0",

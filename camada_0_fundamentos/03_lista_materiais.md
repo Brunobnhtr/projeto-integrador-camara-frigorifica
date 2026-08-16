@@ -875,8 +875,9 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 | Item | Qtd | Especificação | Link |
 |---|---:|---|---|
 | **Placa ilhada (padrão furos isolados)** | 1 | ~5 × 7 cm. ⚠️ **Ilhada, não de barramento** — na de barramento você acaba tendo que cortar trilha, e é dali que saem os curtos difíceis de achar | |
-| **Caixa modular para trilho DIN — 4 módulos (70 mm)** | 1 | Invólucro da PI-1. Fica ao lado do Arduino no trilho 3. ⚠️ **Precisa ser 4 módulos, não 3:** o borne J1 tem 11 vias × 5,08 mm = 55,9 mm e não cabe nos ~45 mm úteis de uma caixa de 3M. Buscar `caixa para trilho din 4m modular` | |
-| **Borne KF301 / KRE passo 5,08 mm — 8 vias** | 2 | Um borne superior (lado Arduino) e um inferior (lado campo). ⚠️ **Passo 5,08 mm, não 3,5 mm** — 5,08 é exatamente **2 furos** da placa ilhada (2,54 mm); o de 3,5 mm não encaixa em furo nenhum | |
+| **Caixa modular para trilho DIN — 4 módulos (70 mm)** | 2 | Invólucros da PI-1 e da PI-2. Fica ao lado do Arduino no trilho 3. ⚠️ **Precisa ser 4 módulos, não 3:** o borne J1 tem 11 vias × 5,08 mm = 55,9 mm e não cabe nos ~45 mm úteis de uma caixa de 3M. Buscar `caixa para trilho din 4m modular` | |
+| ⭐ **Borne KF301 / KRE passo 5,08 mm — 3 vias** | 10 | 6 em uso + 4 reserva. **Encaixam lado a lado** — não se compra bloco de 11 vias, montam-se 3+3+3+2 | |
+| ⭐ **Borne KF301 / KRE passo 5,08 mm — 2 vias** | 12 | 7 em uso + 5 reserva. Junto com os de 3 vias formam as **32 vias** das duas placas | |
 | **CI ULN2803A** (DIP 18 pinos) | 2 | **Driver dos 4 sinaleiros de 24 V** — 8 canais Darlington, 500 mA/50 V, com diodos de proteção internos. 1 uso + 1 reserva (o CI é barato e é o único ponto onde 24 V encosta na lógica) | |
 | **Soquete DIP 18 pinos** | 1 | ⚠️ **Solde o soquete, não o CI.** Permite trocar o chip sem dessoldar nada | |
 | Fio rígido 0,25 mm² para interligação | 1 m | Ligações por baixo da placa. ⚠️ Não usar "sobra de perna" de componente em trecho longo — oxida e não é isolada | |

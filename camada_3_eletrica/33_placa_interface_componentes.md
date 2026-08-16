@@ -379,6 +379,44 @@ As placas ilhadas compradas são de **7 × 9 cm**. As duas placas do projeto —
 
 > ⚠️ **Conte os furos quando a placa chegar.** Há versões de 7 × 9 cm com **25 × 35** furos em vez de 24 × 36. Se a sua vier assim, o layout ainda cabe (sobra uma coluna), mas confira antes de cortar. O script `npm run valida:pi2` compara os dois números e reprova se o layout não couber.
 
+### 🔩 Qual borne comprar — e a armadilha dos 5,00 mm
+
+**Borne KF301 (no Brasil, "KRE") de passo 5,08 mm.**
+
+O número que importa é o **passo**, porque ele tem que ser múltiplo exato dos 2,54 mm da placa:
+
+| Passo | Cai em quantos furos | Serve? |
+|---|---|---|
+| 2,54 mm | 1 furo | alinha, mas é apertado para parafusar |
+| **5,08 mm** | **2 furos** | ✅ **é este** |
+| 7,62 mm | 3 furos | alinha, mas ocupa espaço demais |
+| 3,50 / 3,81 mm | não alinha | ❌ |
+| **5,00 mm** | **quase 2 furos** | 🔥 **a armadilha** |
+
+> 🔥 **5,00 mm e 5,08 mm são vendidos lado a lado e parecem idênticos.** A diferença é de 0,08 mm por via — some no primeiro pino e some no segundo. Mas ela **acumula**: num bloco de 11 vias, o último pino sai **0,8 mm** fora do furo, que é quase o diâmetro do furo inteiro. Ou não entra, ou entra torto e forçado.
+>
+> **Leia o passo no título do anúncio.** Tem que dizer **5.08**, não "5.0" nem "5mm".
+
+### Eles se encaixam — não compre bloco grande
+
+Os KF301 têm **rabo de andorinha nas laterais**: blocos de 2 e de 3 vias deslizam um no outro e viram um só. É assim que se fazem as contagens ímpares.
+
+| Placa | Borne | Vias | Largura | Monta-se com |
+|---|---|---:|---:|---|
+| PI-1 | J1 | 11 | 55,9 mm | 3 × 3 vias + 1 × 2 vias |
+| PI-1 | J2 | 8 | 40,6 mm | 2 × 3 vias + 1 × 2 vias |
+| PI-2 | J1 | 4 | 20,3 mm | 2 × 2 vias |
+| PI-2 | J2 | 2 | 10,2 mm | 1 × 2 vias |
+| PI-2 | J3 | 7 | 35,6 mm | 1 × 3 vias + 2 × 2 vias |
+
+**Total: 32 vias = 6 blocos de 3 + 7 blocos de 2.** Comprando com reserva: **10 de 3 vias e 12 de 2 vias**.
+
+📐 Rode `node scripts/lista_bornes.mjs` para recalcular — o script lê os layouts, refaz a conta e confere se os bornes de cada borda cabem nos 61 mm da placa. A lista escrita à mão **já ficou errada uma vez** (pedia 2 bornes de 8 vias quando o projeto precisava de 32), e é por isso que ela agora é gerada.
+
+⚠️ **Procure por:** `KF301-5.08 2P`, `KF301-5.08 3P`, ou no Brasil `borne KRE 5,08mm 2 vias`. Confira que o anúncio menciona **encaixável / splicable**, senão os blocos não deslizam um no outro.
+
+📌 **Corrente:** o KF301-5.08 é de 10 A / 300 V e aceita fio de 0,13 a 1,5 mm². Os fios que chegam nele são de 0,25 a 0,5 mm² e a maior corrente é de dezenas de miliampères — sobra de tudo. O que decide aqui é a **geometria**, não a corrente.
+
 ### Como cortar sem lascar
 
 1. Marque a **fileira 30** — a primeira que sai
