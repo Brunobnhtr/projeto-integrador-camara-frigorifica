@@ -124,8 +124,10 @@ export const COMPONENTES = [
   },
   {
     id: 'PI1', nome: 'Placa de interface PI-1', trilho: 3,
-    x: 171, largura: 70, altura: 62, cor: '#f08c00',
-    nota: 'Caixa DIN de 4 módulos. J1 só entra, J2 só sai.',
+    x: 176, largura: 105, altura: 62, cor: '#f08c00',
+    nota: 'Caixa DIN de 6 módulos. A placa cresceu para 86 × 74 mm — a largura '
+        + 'extra é o que dá espaço para os fios correrem em canais separados por '
+        + 'baixo, em vez de amontoados. J1 só entra, J2 só sai.',
     grupos: [
       { ref: 'J1', lado: 'cima', legenda: 'ENTRADAS (11 vias · KF301 5,08 mm)', pinos: [
         via('J1-1', 1, 'BTS #1 · R_IS'), via('J1-2', 1, 'BTS #2 · R_IS'),
@@ -148,8 +150,8 @@ export const COMPONENTES = [
            + 'espaço no trilho.'],
   },
   {
-    id: 'ESP32', nome: 'DNLCB30 + ESP32 30 pinos', trilho: 3,
-    x: 246, largura: 96, altura: 84, cor: '#1971c2',
+    id: 'ESP32', nome: 'DNLCB30 + ESP32 30 pinos', trilho: 2,
+    x: 345, largura: 96, altura: 84, cor: '#1971c2',
     nota: 'Os nomes são os da serigrafia da borda externa, exatamente como estão '
         + 'impressos na placa. Cada bloco tem 15 bornes em FILEIRA ÚNICA — o "5V" é o '
         + 'primeiro borne de cada um, não uma coluna à parte.',
@@ -212,8 +214,8 @@ export const COMPONENTES = [
 
   {
     id: 'PI-2', nome: 'PI-2 — medição de corrente das posições', trilho: 3,
-    x: 347, largura: 70, altura: 62, cor: '#ae3ec9',
-    nota: 'Caixa DIN de 4 módulos. Dentro dela ficam soldados o multiplexador, os '
+    x: 291, largura: 105, altura: 62, cor: '#ae3ec9',
+    nota: 'Caixa DIN de 6 módulos, igual à PI-1 — as duas saem da MESMA placa de 9 × 15 cm cortada ao meio. Dentro dela ficam soldados o multiplexador, os '
         + 'resistores shunt e o INA219 de referência. Os bornes abaixo são os FIOS que '
         + 'chegam e saem — não os pinos dos componentes.',
     interno: '1 × módulo CD74HC4067 (16 canais) · 2 × shunt 47 Ω 1% · 1 × INA219 '

@@ -9,6 +9,7 @@
 import {
   PLACA, BORNES, BARRAMENTO_0V, COMPONENTES_PI1, CI1, NOS, JUMPERS,
 } from '../src/data/pi1_fisico.js';
+import { rotear, conflitos } from '../src/lib/roteador.js';
 
 /* Duas coisas MUITO diferentes disputam espaço num furo:
    · perna PASSANTE  — atravessa o furo (componente, pino do CI, borne).
@@ -113,10 +114,25 @@ BORNES.forEach(b => b.vias.forEach(v => {
 
 const maxP = Math.max(...[...passantes.values()].map(v => v.length));
 const maxJ = Math.max(...[...jumpers.values()].map(v => v.length));
+let notaFios = null;
+/* ── 11. o roteamento dos fios fecha? ──────────────────────────────── */
+const fios = rotear(JUMPERS, PLACA);
+const conf = conflitos(fios);
+for (const c of conf)
+  erros.push(`fios ${c.a} e ${c.b} disputam o canal ${c.canal} — o roteador não achou lugar`);
+const maior = fios.reduce((a, f) => f.comprimento > a.comprimento ? f : a);
+const hops = fios.reduce((a, f) => a + f.hops.length, 0);
+if (maior.comprimento > 200)
+  avisos.push(`o fio ${maior.n} ficou com ${maior.comprimento.toFixed(0)} mm — muito longo `
+    + 'para placa ilhada, considere reposicionar as pontas');
+notaFios = `  . ${fios.length} fios roteados em ${new Set(fios.map(f => f.canal)).size} `
+  + `canais · ${hops} cruzamentos · o maior tem ${maior.comprimento.toFixed(0)} mm`;
+
 console.log(`placa: ${PLACA.colunas}x${PLACA.linhas} furos = `
           + `${PLACA.larguraMm.toFixed(1)} x ${PLACA.alturaMm.toFixed(1)} mm`);
 console.log(`furos com perna passante: ${passantes.size}  ·  pior caso: ${maxP} por furo`);
 console.log(`ilhas que recebem jumper: ${jumpers.size}  ·  pior caso: ${maxJ} fios na mesma ilha`);
+if (notaFios) console.log(notaFios);
 console.log(`componentes: ${COMPONENTES_PI1.length} + CI  ·  jumpers: ${JUMPERS.length}`
           + `  ·  nós: ${NOS.length}`);
 avisos.forEach(a => console.log('  . ' + a));

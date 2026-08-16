@@ -1,30 +1,39 @@
 import { useState, useMemo, useEffect } from 'react';
 import DetalheCircuito from './DetalheCircuito';
+import { rotear } from '../lib/roteador';
 
 /* Desenha uma placa ilhada montada à mão, a partir do arquivo de layout
    físico dela (pi1_fisico.js ou pi2_fisico.js).
 
-   ⭐ A DECISÃO DE PROJETO DESTA TELA: os dois lados são desenhos
-   SEPARADOS. Numa placa ilhada os componentes ficam em cima e TODA a
-   fiação fica embaixo — misturar as duas coisas num desenho só é o que
-   fazia esta vista virar espaguete.
+   ⭐ TRÊS DECISÕES DE PROJETO DESTA TELA:
 
-   E o lado de baixo é desenhado ESPELHADO, porque é assim que você o
-   enxerga quando vira a placa na mão. Não espelhar é a causa número um
-   de fio soldado no furo errado.                                      */
+   1. Os dois lados são desenhos SEPARADOS. Numa placa ilhada os
+      componentes ficam em cima e TODA a fiação fica embaixo.
+   2. O lado de baixo é ESPELHADO, porque é assim que você o vê ao virar
+      a placa na mão.
+   3. Os fios andam em ÂNGULO RETO, cada um no seu canal, e ganham uma
+      lombada em arco onde passam por cima de outro.                   */
 
 const PASSO = 2.54;
 
 /* ── um lado da placa ──────────────────────────────────────────────── */
 function Face({
   face, PLACA, BORNES, BARRAMENTO_0V, NOS, JUMPERS, DISCRETOS, CI, MODULOS,
-  corDe, ativo, escala, sel, setSel, fio, setFio, feitos,
+  corDe, ativo, setSel, fio, setFio, feitos,
 }) {
   const verso = face === 'verso';
   /* virando a placa, a coluna 1 vai para a direita */
   const M = c => (verso ? PLACA.colunas + 1 - c : c);
   const X = c => M(c) * PASSO;
   const Y = l => l * PASSO;
+
+  /* o roteamento é feito já nas coordenadas deste lado */
+  const fios = useMemo(() => {
+    if (!verso) return [];
+    return rotear(JUMPERS.map(j => ({
+      ...j, de: [M(j.de[0]), j.de[1]], para: [M(j.para[0]), j.para[1]],
+    })), PLACA);
+  }, [verso, JUMPERS, PLACA]);
 
   const passantes = useMemo(() => {
     const s = new Set();
@@ -33,21 +42,22 @@ function Face({
     MODULOS.forEach(m => m.pinos.forEach(p => s.add(`${p.col},${p.lin}`)));
     BORNES.forEach(b => b.vias.forEach(v => s.add(`${v.col},${b.linha}`)));
     return s;
-  }, [PLACA, DISCRETOS, CI, MODULOS, BORNES]);
+  }, [DISCRETOS, CI, MODULOS, BORNES]);
 
   const larg = PLACA.colunas * PASSO, alt = PLACA.linhas * PASSO;
+  /* bandas reservadas fora da placa para os rótulos dos bornes */
+  const vb = { x: -5 * PASSO, y: -26, w: larg + 11 * PASSO, h: alt + 26 + 46 };
 
-  /* ── furos ── */
   const furos = [];
   for (let c = 1; c <= PLACA.colunas; c++)
     for (let l = 1; l <= PLACA.linhas; l++) {
       const usado = passantes.has(`${c},${l}`);
       furos.push(
         <g key={`${c},${l}`}>
-          <circle cx={X(c)} cy={Y(l)} r={usado ? 1.05 : 0.85}
-                  fill={usado ? '#e8b04b' : '#cbb98e'} opacity={usado ? 1 : 0.35} />
-          <circle cx={X(c)} cy={Y(l)} r={0.42} fill="#4a3c10"
-                  opacity={usado ? 0.9 : 0.35} />
+          <circle cx={X(c)} cy={Y(l)} r={usado ? 1.05 : 0.8}
+                  fill={usado ? '#e8b04b' : '#c4b183'} opacity={usado ? 1 : 0.3} />
+          <circle cx={X(c)} cy={Y(l)} r={0.4} fill="#4a3c10"
+                  opacity={usado ? 0.9 : 0.3} />
         </g>,
       );
     }
@@ -58,74 +68,80 @@ function Face({
         background: verso ? '#5f3dc4' : '#1d3557', color: '#fff',
         padding: '7px 12px', borderRadius: '7px 7px 0 0', fontSize: 12.5,
         fontWeight: 700, display: 'flex', justifyContent: 'space-between',
+        flexWrap: 'wrap', gap: 6,
       }}>
-        <span>{verso ? '🔻 LADO DA SOLDA — por baixo' : '🔺 LADO DOS COMPONENTES — por cima'}</span>
-        <span style={{ fontWeight: 400, opacity: 0.85 }}>
-          {verso ? 'ESPELHADO · como você vê ao virar a placa' : 'como você vê na bancada'}
+        <span>{verso ? '🔻 LADO DA SOLDA' : '🔺 LADO DOS COMPONENTES'}</span>
+        <span style={{ fontWeight: 400, opacity: 0.85, fontSize: 11 }}>
+          {verso ? 'ESPELHADO — como você vê ao virar' : 'como você vê na bancada'}
         </span>
       </div>
 
-      <svg width="100%" viewBox={`${-PASSO * 4} ${-PASSO * 5} ${larg + PASSO * 8} ${alt + PASSO * 11}`}
+      <svg width="100%" viewBox={`${vb.x} ${vb.y} ${vb.w} ${vb.h}`}
            style={{ background: '#fff', borderRadius: '0 0 7px 7px',
                     boxShadow: '0 1px 6px #0002', display: 'block' }}>
-        {/* corpo da placa */}
-        <rect x={0} y={0} width={larg} height={alt} rx={1.2}
+        {/* corpo da placa — a borda passa MEIO furo fora da última coluna */}
+        <rect x={PASSO * 0.5} y={PASSO * 0.5} width={larg} height={alt} rx={1.2}
               fill={verso ? '#c9b98c' : '#d8c9a3'} stroke="#a8946a" strokeWidth={0.5} />
 
         {/* ⭐ o marco do furo (1,1) — é ele que impede soldar espelhado errado */}
         <g>
-          <path d={`M ${X(1) - 2.6} ${Y(1) - 2.6} l 3.4 0 l -3.4 3.4 z`} fill="#c92a2a" />
-          <text x={X(1) + (verso ? 3.2 : -3.2)} y={Y(1) - 3.0}
-                textAnchor={verso ? 'start' : 'end'} fontSize={2.1}
-                fontWeight="700" fill="#c92a2a">furo 1,1</text>
+          <path d={`M ${X(1) - 2.4} ${Y(1) - 2.4} l 3.2 0 l -3.2 3.2 z`} fill="#c92a2a" />
+          <text x={X(1) + (verso ? 3.4 : -3.4)} y={Y(1) - 3.2}
+                textAnchor={verso ? 'start' : 'end'} fontSize={2.0}
+                fontWeight="700" fill="#c92a2a">1,1</text>
         </g>
 
         {furos}
 
-        {/* ── LADO DE BAIXO: barramento, pontes e todos os jumpers ── */}
+        {/* ── LADO DE BAIXO: barramento, pontes e os fios roteados ── */}
         {verso && (
           <>
             <line x1={X(BARRAMENTO_0V.de)} y1={Y(BARRAMENTO_0V.linha)}
                   x2={X(BARRAMENTO_0V.ate)} y2={Y(BARRAMENTO_0V.linha)}
-                  stroke="#212529" strokeWidth={1.7} strokeLinecap="round"
-                  opacity={ativo(0) ? 1 : 0.12} />
-            <text x={X(BARRAMENTO_0V.ate) + (verso ? -2 : 2)} y={Y(BARRAMENTO_0V.linha) - 1.6}
-                  textAnchor={verso ? 'end' : 'start'} fontSize={2.2} fontWeight="700"
-                  fill="#212529" opacity={ativo(0) ? 1 : 0.2}>barramento 0 V (fio NU)</text>
+                  stroke="#212529" strokeWidth={1.8} strokeLinecap="round"
+                  opacity={ativo(0) ? 1 : 0.1} />
+            <text x={(X(BARRAMENTO_0V.de) + X(BARRAMENTO_0V.ate)) / 2}
+                  y={Y(BARRAMENTO_0V.linha) - 2.2} textAnchor="middle"
+                  fontSize={2.1} fontWeight="700" fill="#212529"
+                  opacity={ativo(0) ? 1 : 0.15}>barramento de 0 V · fio NU</text>
 
             {NOS.map(n => (
               <g key={n.ref} opacity={ativo(n.circuito) ? 1 : 0.1}>
                 <line x1={X(n.de)} y1={Y(n.linha)} x2={X(n.ate)} y2={Y(n.linha)}
-                      stroke="#212529" strokeWidth={1.3} strokeLinecap="round" />
-                <text x={(X(n.de) + X(n.ate)) / 2} y={Y(n.linha) - 1.7} textAnchor="middle"
-                      fontSize={1.7} fontWeight="700" fill="#212529">{n.ref}</text>
+                      stroke="#212529" strokeWidth={1.4} strokeLinecap="round" />
+                <text x={(X(n.de) + X(n.ate)) / 2} y={Y(n.linha) - 1.9}
+                      textAnchor="middle" fontSize={1.7} fontWeight="700"
+                      fill="#212529">{n.ref}</text>
               </g>
             ))}
 
-            {JUMPERS.map(j => {
+            {fios.map(f => {
               const so = fio != null;
-              const este = fio === j.n;
-              if (so && !este) return null;
-              const feito = feitos.includes(j.n);
-              const [x1, y1] = [X(j.de[0]), Y(j.de[1])];
-              const [x2, y2] = [X(j.para[0]), Y(j.para[1])];
-              const op = ativo(j.circuito) ? (feito && !este ? 0.22 : 1) : 0.08;
+              if (so && fio !== f.n) return null;
+              const este = fio === f.n;
+              const feito = feitos.includes(f.n);
+              const op = ativo(f.circuito) ? (feito && !este ? 0.2 : 1) : 0.07;
+              const [ex, ey] = f.pontos[f.pontos.length - 1];
+              const rot = f.pontos[Math.floor(f.pontos.length / 2)];
               return (
-                <g key={j.n} onClick={() => setFio(este ? null : j.n)}
+                <g key={f.n} onClick={() => setFio(este ? null : f.n)}
                    style={{ cursor: 'pointer' }} opacity={op}>
-                  <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="transparent" strokeWidth={4} />
-                  <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={corDe(j.circuito)}
-                        strokeWidth={este ? 1.5 : 0.8} strokeLinecap="round"
+                  <path d={f.d} fill="none" stroke="transparent" strokeWidth={3.5} />
+                  <path d={f.d} fill="none" stroke={corDe(f.circuito)}
+                        strokeWidth={este ? 1.3 : 0.75} strokeLinecap="round"
+                        strokeLinejoin="round"
                         strokeDasharray={feito && !este ? '1.4 1.2' : undefined} />
-                  {[[x1, y1], [x2, y2]].map(([x, y], i) => (
-                    <circle key={i} cx={x} cy={y} r={este ? 1.5 : 1.0}
-                            fill={corDe(j.circuito)} />
-                  ))}
-                  <circle cx={(x1 + x2) / 2} cy={(y1 + y2) / 2} r={este ? 2.4 : 1.7}
-                          fill="#fff" stroke={corDe(j.circuito)} strokeWidth={0.45} />
-                  <text x={(x1 + x2) / 2} y={(y1 + y2) / 2 + (este ? 0.85 : 0.6)}
-                        textAnchor="middle" fontSize={este ? 2.4 : 1.7} fontWeight="700"
-                        fill={corDe(j.circuito)}>{j.n}</text>
+                  {/* ponto de solda nas duas pontas */}
+                  <circle cx={f.pontos[0][0] * PASSO} cy={f.pontos[0][1] * PASSO}
+                          r={este ? 1.4 : 0.95} fill={corDe(f.circuito)} />
+                  <circle cx={ex * PASSO} cy={ey * PASSO}
+                          r={este ? 1.4 : 0.95} fill={corDe(f.circuito)} />
+                  {/* o número, no meio do percurso */}
+                  <circle cx={rot[0] * PASSO} cy={rot[1] * PASSO} r={este ? 2.2 : 1.55}
+                          fill="#fff" stroke={corDe(f.circuito)} strokeWidth={0.4} />
+                  <text x={rot[0] * PASSO} y={rot[1] * PASSO + (este ? 0.8 : 0.55)}
+                        textAnchor="middle" fontSize={este ? 2.3 : 1.6} fontWeight="700"
+                        fill={corDe(f.circuito)}>{f.n}</text>
                 </g>
               );
             })}
@@ -135,26 +151,25 @@ function Face({
         {/* ── LADO DE CIMA: bornes, componentes, CI e módulos ── */}
         {!verso && (
           <>
-            {/* fantasma das fileiras reservadas, para não pôr componente em cima */}
             <line x1={X(BARRAMENTO_0V.de)} y1={Y(BARRAMENTO_0V.linha)}
                   x2={X(BARRAMENTO_0V.ate)} y2={Y(BARRAMENTO_0V.linha)}
-                  stroke="#868e96" strokeWidth={0.9} strokeDasharray="1.2 1.2" opacity={0.5} />
+                  stroke="#868e96" strokeWidth={0.8} strokeDasharray="1.2 1.2"
+                  opacity={0.45} />
             <text x={X(BARRAMENTO_0V.ate) + 2} y={Y(BARRAMENTO_0V.linha) + 0.8}
-                  fontSize={1.8} fill="#868e96">0 V (por baixo)</text>
+                  fontSize={1.7} fill="#868e96">0 V (por baixo)</text>
 
             {DISCRETOS.map(c => {
               const [[c1, l1], [c2, l2]] = c.furos;
               const x1 = X(c1), y1 = Y(l1), x2 = X(c2), y2 = Y(l2);
               const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
-              const cor = corDe(c.circuito);
-              const on = ativo(c.circuito);
+              const cor = corDe(c.circuito), on = ativo(c.circuito);
               const ang = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
-              const cap = c.tipo === 'capacitor';
+              const vert = Math.abs(x2 - x1) < 0.1;
               return (
                 <g key={c.ref} onClick={() => setSel(c)} style={{ cursor: 'pointer' }}
-                   opacity={on ? 1 : 0.2}>
+                   opacity={on ? 1 : 0.18}>
                   <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#8a8f94" strokeWidth={0.55} />
-                  {cap ? (
+                  {c.tipo === 'capacitor' ? (
                     <ellipse cx={mx} cy={my} rx={2.5} ry={1.9} fill="#2d6cb5"
                              stroke={cor} strokeWidth={0.45} />
                   ) : (
@@ -167,21 +182,24 @@ function Face({
                       ))}
                     </g>
                   )}
-                  <text x={mx + 4} y={my - 0.9} fontSize={2.1} fontWeight="700" fill={cor}>
-                    {c.ref}
-                  </text>
-                  <text x={mx + 4} y={my + 1.9} fontSize={1.8} fill="#495057">{c.valor}</text>
+                  <text x={mx + (vert ? 4 : 0)} y={my + (vert ? -0.8 : -4)}
+                        textAnchor={vert ? 'start' : 'middle'} fontSize={2.1}
+                        fontWeight="700" fill={cor}>{c.ref}</text>
+                  <text x={mx + (vert ? 4 : 0)} y={my + (vert ? 2 : 6.4)}
+                        textAnchor={vert ? 'start' : 'middle'} fontSize={1.8}
+                        fill="#495057">{c.valor}</text>
                 </g>
               );
             })}
 
             {CI && (() => {
-              const x1 = X(CI.colEsq) - PASSO / 2, x2 = X(CI.colDir) + PASSO / 2;
+              const xs = [X(CI.colEsq), X(CI.colDir)];
+              const x1 = Math.min(...xs) - PASSO / 2, x2 = Math.max(...xs) + PASSO / 2;
               const y1 = Y(CI.linhaTopo) - PASSO / 2, y2 = Y(CI.linhaBase) + PASSO / 2;
-              const cor = corDe(4), on = ativo(4);
+              const cor = corDe(4);
               return (
                 <g onClick={() => setSel(CI)} style={{ cursor: 'pointer' }}
-                   opacity={on ? 1 : 0.2}>
+                   opacity={ativo(4) ? 1 : 0.18}>
                   <rect x={x1 - 0.8} y={y1 - 0.8} width={x2 - x1 + 1.6} height={y2 - y1 + 1.6}
                         rx={0.6} fill="#2b2b2b" stroke="#000" strokeWidth={0.3} />
                   <rect x={x1} y={y1} width={x2 - x1} height={y2 - y1} rx={0.5}
@@ -201,7 +219,8 @@ function Face({
                             fontWeight={p.livre ? 400 : 700}>{p.nome}</text>
                     </g>
                   ))}
-                  <text x={x1} y={y1 - 3.4} fontSize={2.1} fontWeight="700" fill={cor}>
+                  <text x={(x1 + x2) / 2} y={y1 - 3.4} textAnchor="middle"
+                        fontSize={2.1} fontWeight="700" fill={cor}>
                     {CI.ref} · chanfro à direita
                   </text>
                 </g>
@@ -210,14 +229,13 @@ function Face({
 
             {MODULOS.map(m => {
               const { colEsq, colDir, linTopo, linBase } = m.corpo;
-              const xa = Math.min(X(colEsq), X(colDir)) - PASSO / 2;
-              const xb = Math.max(X(colEsq), X(colDir)) + PASSO / 2;
+              const xs = [X(colEsq), X(colDir)];
+              const xa = Math.min(...xs) - PASSO / 2, xb = Math.max(...xs) + PASSO / 2;
               const y1 = Y(linTopo) - PASSO / 2, y2 = Y(linBase) + PASSO / 2;
-              const on = ativo(m.circuito);
               const linhas = [...new Set(m.pinos.map(p => p.lin))];
               return (
                 <g key={m.ref} onClick={() => setSel(m)} style={{ cursor: 'pointer' }}
-                   opacity={on ? 1 : 0.2}>
+                   opacity={ativo(m.circuito) ? 1 : 0.18}>
                   <rect x={xa} y={y1} width={xb - xa} height={y2 - y1} rx={0.8}
                         fill="#1e5631" stroke={m.cor} strokeWidth={0.6} opacity={0.93} />
                   <text x={(xa + xb) / 2} y={(y1 + y2) / 2 - 0.4} textAnchor="middle"
@@ -225,11 +243,10 @@ function Face({
                   <text x={(xa + xb) / 2} y={(y1 + y2) / 2 + 2.8} textAnchor="middle"
                         fontSize={1.9} fill="#a8d5b8">{m.descricao}</text>
                   {linhas.map(l => {
-                    const desta = m.pinos.filter(p => p.lin === l);
-                    const xs = desta.map(p => X(p.col));
+                    const px = m.pinos.filter(p => p.lin === l).map(p => X(p.col));
                     return (
-                      <rect key={l} x={Math.min(...xs) - 1.1} y={Y(l) - 1.25}
-                            width={Math.max(...xs) - Math.min(...xs) + 2.2} height={2.5}
+                      <rect key={l} x={Math.min(...px) - 1.1} y={Y(l) - 1.25}
+                            width={Math.max(...px) - Math.min(...px) + 2.2} height={2.5}
                             rx={0.3} fill="#111" />
                     );
                   })}
@@ -239,14 +256,15 @@ function Face({
                             rx={0.12}
                             fill={p.alerta ? '#ff6b6b' : (p.livre ? '#5c6b62' : '#e9c46a')} />
                       {!p.livre && (
-                        <text x={X(p.col)}
-                              y={Y(p.lin) < (y1 + y2) / 2 ? Y(p.lin) - 1.9 : Y(p.lin) + 3.2}
-                              textAnchor="middle" fontSize={1.35} fontWeight="700"
+                        <text x={X(p.col)} y={Y(p.lin) - 1.6} textAnchor="start"
+                              fontSize={1.4} fontWeight="700"
+                              transform={`rotate(-90 ${X(p.col)} ${Y(p.lin) - 1.6})`}
                               fill={p.alerta ? '#c92a2a' : '#343a40'}>{p.nome}</text>
                       )}
                     </g>
                   ))}
-                  <text x={xa} y={y1 - 1.8} fontSize={2.0} fontWeight="700" fill={m.cor}>
+                  <text x={(xa + xb) / 2} y={y1 - 2.0} textAnchor="middle"
+                        fontSize={2.0} fontWeight="700" fill={m.cor}>
                     {m.ref} · encaixa na barra fêmea
                   </text>
                 </g>
@@ -255,18 +273,22 @@ function Face({
           </>
         )}
 
-        {/* bornes — aparecem nos dois lados, porque atravessam a placa */}
+        {/* ── bornes — aparecem nos dois lados, porque atravessam a placa ── */}
         {BORNES.map(b => {
           const cols = b.vias.map(v => X(v.col));
           const x1 = Math.min(...cols) - PASSO, x2 = Math.max(...cols) + PASSO;
           const y1 = Y(b.corpo[0]), y2 = Y(b.corpo[1]);
           const emCima = b.linha < PLACA.linhas / 2;
+          /* ⭐ os rótulos das vias saem na VERTICAL, numa faixa RESERVADA fora
+             da placa — na diagonal eles se atropelavam com o título do borne */
+          const yRot = emCima ? y1 - 2.6 : y2 + 2.6;
+          const yTit = emCima ? y1 - 20 : y2 + 21;
           return (
-            <g key={b.ref} opacity={verso ? 0.42 : 1}>
+            <g key={b.ref} opacity={verso ? 0.4 : 1}>
               <rect x={x1} y={y1} width={x2 - x1} height={y2 - y1} rx={1}
                     fill={verso ? '#8aa891' : '#2f6f3e'} stroke="#1c4526" strokeWidth={0.4} />
-              <text x={(x1 + x2) / 2} y={emCima ? y1 - 5.8 : y2 + 8.4} textAnchor="middle"
-                    fontSize={2.9} fontWeight="700" fill={b.cor}>
+              <text x={(x1 + x2) / 2} y={yTit} textAnchor="middle"
+                    fontSize={2.8} fontWeight="700" fill={b.cor}>
                 {b.ref} — {b.papel}
               </text>
               {b.vias.map(v => (
@@ -284,11 +306,11 @@ function Face({
                   )}
                   <rect x={X(v.col) - 0.55} y={Y(b.linha) - 0.55} width={1.1} height={1.1}
                         fill="#d9a441" />
-                  <text x={X(v.col)} y={emCima ? y1 - 1.6 : y2 + 2.2}
-                        textAnchor={emCima ? 'start' : 'end'} fontSize={1.9} fontWeight="700"
+                  <text x={X(v.col)} y={yRot} fontSize={1.95} fontWeight="700"
+                        textAnchor={emCima ? 'start' : 'end'}
                         fill={v.alerta ? '#c92a2a' : (v.livre ? '#adb5bd' : '#212529')}
-                        transform={`rotate(-62 ${X(v.col)} ${emCima ? y1 - 1.6 : y2 + 2.2})`}>
-                    {b.ref}-{v.n} {v.sinal}
+                        transform={`rotate(-90 ${X(v.col)} ${yRot})`}>
+                    {b.ref}-{v.n} · {v.sinal}
                   </text>
                 </g>
               ))}
@@ -297,7 +319,7 @@ function Face({
         })}
 
         {/* régua de 50 mm, para conferir a impressão com uma régua de verdade */}
-        <g transform={`translate(0 ${alt + PASSO * 4})`}>
+        <g transform={`translate(${PASSO} ${alt + 40})`}>
           <line x1={0} y1={0} x2={50} y2={0} stroke="#495057" strokeWidth={0.4} />
           <line x1={0} y1={-1.5} x2={0} y2={1.5} stroke="#495057" strokeWidth={0.4} />
           <line x1={50} y1={-1.5} x2={50} y2={1.5} stroke="#495057" strokeWidth={0.4} />
@@ -317,10 +339,10 @@ export default function PlacaIlhada({ dados, titulo, onFechar }) {
   const CI = dados.CI1 ?? null;
   const MODULOS = dados.MODULOS ?? [];
 
-  const [modo, setModo] = useState('ambos');   // topo | verso | ambos
+  const [modo, setModo] = useState('ambos');
   const [circuito, setCircuito] = useState(null);
   const [sel, setSel] = useState(null);
-  const [fio, setFio] = useState(null);        // jumper isolado
+  const [fio, setFio] = useState(null);
   const [detalhe, setDetalhe] = useState(null);
   const chaveLS = `soldado:${titulo}`;
   const [feitos, setFeitos] = useState(() => {
@@ -334,12 +356,15 @@ export default function PlacaIlhada({ dados, titulo, onFechar }) {
   const corDe = id => CIRCUITOS.find(c => c.id === id)?.cor ?? '#868e96';
   const marca = n => setFeitos(f => f.includes(n) ? f.filter(x => x !== n) : [...f, n]);
 
-  /* comprimento real de cada fio, para cortar antes de soldar */
-  const compr = j => Math.hypot(j.para[0] - j.de[0], j.para[1] - j.de[1]) * PASSO;
+  /* o comprimento vem do caminho roteado, não da linha reta —
+     é ele que diz quanto fio cortar de verdade */
+  const roteados = useMemo(() => rotear(JUMPERS, PLACA), [JUMPERS, PLACA]);
+  const porN = useMemo(() => new Map(roteados.map(f => [f.n, f])), [roteados]);
+  const totalHops = roteados.reduce((a, f) => a + f.hops.length, 0);
 
   const props = {
     PLACA, BORNES, BARRAMENTO_0V, NOS, JUMPERS, DISCRETOS, CI, MODULOS,
-    corDe, ativo, sel, setSel, fio, setFio, feitos,
+    corDe, ativo, setSel, fio, setFio, feitos,
   };
   const faltam = JUMPERS.filter(j => !feitos.includes(j.n)).length;
 
@@ -367,9 +392,12 @@ export default function PlacaIlhada({ dados, titulo, onFechar }) {
         <div style={{ background: '#fff3bf', borderRadius: 6, padding: '9px 12px',
                       fontSize: 12, marginBottom: 12, lineHeight: 1.55 }}>
           ⚠️ <b>O lado da solda é desenhado espelhado</b>, porque é assim que você o vê ao
-          virar a placa na mão. Repare no <b style={{ color: '#c92a2a' }}>marco vermelho do
-          furo 1,1</b>: em cima ele fica à esquerda, embaixo à direita. Confira esse marco
-          antes de soldar cada fio — não espelhar é o erro nº 1 desta montagem.
+          virar a placa. Confira o <b style={{ color: '#c92a2a' }}>marco vermelho do furo
+          1,1</b> antes de soldar cada fio: em cima ele fica à esquerda, embaixo à direita.
+          <br />
+          🌉 Onde um fio <b>passa por cima de outro</b>, ele ganha uma <b>lombada em arco</b>.
+          Quem tem a lombada vai por cima; quem passa reto fica embaixo.
+          {totalHops > 0 && <> Nesta placa são <b>{totalHops} cruzamentos</b>.</>}
         </div>
 
         <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
@@ -398,9 +426,11 @@ export default function PlacaIlhada({ dados, titulo, onFechar }) {
           <div style={{ padding: '11px 15px', background: '#e7f5ff',
                         borderBottom: '1px solid #a5d8ff', fontSize: 11.5, lineHeight: 1.55 }}>
             <b style={{ color: '#1971c2' }}>✂️ Da placa comprada até esta</b>
-            <div style={{ marginTop: 4 }}>{PLACA.bruta.nome} — {PLACA.bruta.furos}</div>
+            <div style={{ marginTop: 4 }}>
+              {PLACA.bruta.nome} — {PLACA.bruta.colunas} × {PLACA.bruta.linhas} furos
+            </div>
             <div style={{ marginTop: 5 }}>{PLACA.bruta.corte}</div>
-            <div style={{ marginTop: 5, color: '#1864ab' }}>💡 {PLACA.bruta.sobra}</div>
+            <div style={{ marginTop: 5, color: '#1864ab' }}>{PLACA.bruta.sobra}</div>
           </div>
         )}
 
@@ -453,9 +483,10 @@ export default function PlacaIlhada({ dados, titulo, onFechar }) {
           {JUMPERS.filter(j => ativo(j.circuito)).map(j => {
             const feito = feitos.includes(j.n);
             const este = fio === j.n;
-            const mm = compr(j);
+            const r = porN.get(j.n);
+            const mm = r?.comprimento ?? 0;
             return (
-              <div key={j.n} onClick={() => setFio(este ? null : j.n)}
+              <div key={j.n} onClick={() => { setFio(este ? null : j.n); setModo('verso'); }}
                 style={{
                   display: 'flex', gap: 7, alignItems: 'flex-start', cursor: 'pointer',
                   padding: '5px 7px', borderRadius: 5, marginBottom: 2,
@@ -468,12 +499,14 @@ export default function PlacaIlhada({ dados, titulo, onFechar }) {
                 <span style={{ fontFamily: 'monospace', fontSize: 11, fontWeight: 700,
                                color: corDe(j.circuito), minWidth: 16 }}>{j.n}</span>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 11.5, textDecoration: feito ? 'line-through' : 'none' }}>
+                  <div style={{ fontSize: 11.5,
+                                textDecoration: feito ? 'line-through' : 'none' }}>
                     {j.sinal}
                   </div>
                   <div style={{ fontSize: 10, color: '#868e96', fontFamily: 'monospace' }}>
                     ({j.de[0]},{j.de[1]}) → ({j.para[0]},{j.para[1]}) ·{' '}
-                    {mm.toFixed(0)} mm — corte {(mm + 15).toFixed(0)}
+                    corte {(mm + 15).toFixed(0)} mm
+                    {r?.hops.length > 0 && ` · 🌉 ${r.hops.length}`}
                   </div>
                   {j.alerta && (
                     <div style={{ fontSize: 10, color: '#c92a2a', fontWeight: 700 }}>
@@ -486,9 +519,10 @@ export default function PlacaIlhada({ dados, titulo, onFechar }) {
           })}
           <div style={{ marginTop: 8, padding: 9, background: '#f1f3f5', borderRadius: 5,
                         fontSize: 10.5, color: '#495057', lineHeight: 1.5 }}>
-            📐 <b>"corte X"</b> é o comprimento a cortar: a distância entre os furos mais
-            15 mm para descascar as duas pontas e sobrar folga. Fio <b>isolado</b> de
-            0,25 mm² — só o barramento de 0 V é nu.
+            📐 O <b>corte</b> é o comprimento do caminho em ângulo reto mais 15 mm para
+            descascar as pontas e sobrar folga — <b>não</b> a linha reta entre os furos.
+            Fio <b>isolado</b> de 0,25 mm²; só o barramento de 0 V é nu.
+            <br />🌉 = quantas vezes este fio passa por cima de outro.
           </div>
         </div>
 

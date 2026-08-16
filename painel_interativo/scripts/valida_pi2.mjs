@@ -10,6 +10,7 @@
 import {
   PLACA, BORNES, BARRAMENTO_0V, COMPONENTES_PI2, MODULOS, NOS, JUMPERS, CIRCUITOS,
 } from '../src/data/pi2_fisico.js';
+import { rotear, conflitos } from '../src/lib/roteador.js';
 import { COMPONENTES as PAINEL } from '../src/data/painel_completo.js';
 
 const erros = [], avisos = [];
@@ -123,14 +124,31 @@ if (PLACA.bruta) {
     err(`a placa comprada tem ${b.colunas} colunas e o layout precisa de ${PLACA.colunas}`);
   if (b.linhas < PLACA.linhas)
     err(`a placa comprada tem ${b.linhas} fileiras e o layout precisa de ${PLACA.linhas}`);
+  const pedacos = Math.floor(b.linhas / PLACA.linhas);
+  if (pedacos < 2)
+    avi(`de uma placa comprada sai ${pedacos} placa(s) — o projeto conta com 2`);
   const ultima = Math.max(...[...passantes.keys()].map(k => +k.split(',')[1]));
   if (ultima > PLACA.linhas)
     err(`há perna na fileira ${ultima}, depois do corte na ${PLACA.linhas + 1}`);
   else
-    notaCorte = `  . corte na fileira ${PLACA.linhas + 1}: sobram `
-      + `${b.colunas - PLACA.colunas} coluna(s) e ${b.linhas - PLACA.linhas} fileira(s) `
-      + `da placa de 7 × 9 cm`;
+    notaCorte = `  . de UMA placa de 9 × 15 cm (${b.colunas}×${b.linhas}) saem `
+      + `${Math.floor(b.linhas / PLACA.linhas)} placas de ${PLACA.colunas}×${PLACA.linhas} `
+      + `— a PI-1 e a PI-2`;
 }
+
+let notaFios = null;
+/* ── 11. o roteamento dos fios fecha? ──────────────────────────────── */
+const fios = rotear(JUMPERS, PLACA);
+const conf = conflitos(fios);
+for (const c of conf)
+  err(`fios ${c.a} e ${c.b} disputam o canal ${c.canal} — o roteador não achou lugar`);
+const maior = fios.reduce((a, f) => f.comprimento > a.comprimento ? f : a);
+const hops = fios.reduce((a, f) => a + f.hops.length, 0);
+if (maior.comprimento > 200)
+  avi(`o fio ${maior.n} ficou com ${maior.comprimento.toFixed(0)} mm — muito longo `
+    + 'para placa ilhada, considere reposicionar as pontas');
+notaFios = `  . ${fios.length} fios roteados em ${new Set(fios.map(f => f.canal)).size} `
+  + `canais · ${hops} cruzamentos · o maior tem ${maior.comprimento.toFixed(0)} mm`;
 
 /* ── relatório ─────────────────────────────────────────────────────── */
 console.log(`\nPI-2 · ${PLACA.colunas}×${PLACA.linhas} furos · `
@@ -140,6 +158,7 @@ console.log(`  ${BORNES.reduce((a, b) => a + b.vias.length, 0)} vias de borne ·
   + `${JUMPERS.length} jumpers`);
 if (notaCorte) console.log(notaCorte);
 
+if (notaFios) console.log(notaFios);
 avisos.forEach(a => console.log('  ! ' + a));
 if (erros.length) {
   console.log('\nERROS:');

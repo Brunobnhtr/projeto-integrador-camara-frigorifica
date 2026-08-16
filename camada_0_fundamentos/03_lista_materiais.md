@@ -427,6 +427,7 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 | **Sinaleiros LED 22 mm 24 V** | 4 | Verde (RUN), Azul (COOL), Amarelo (HEAT), Vermelho (FAULT). ⚠️ **24 V confirmado** — acionados pelo **ULN2803 da placa PI-1**, alimentados pelo **BD-24V permanente** (o vermelho de FALHA precisa continuar aceso com a emergência acionada). ~20 mA cada, resistor interno já incluso | |
 | **Prensa-cabo PG9** | 3 | Entrada **24 V de potência** (vindo do P1) · saída de potência para a câmara · saída de sinais | |
 | **Prensa-cabo PG7** | 2 | Entrada 5 V (do T2) e entrada 12 V auxiliar + 24 V (do T3) | |
+| ⭐ **Placa ilhada (padrão) 9 × 15 cm** | 3 | 2 em uso + 1 reserva. ⭐ **Cada placa rende AS DUAS**: um corte reto no meio dá dois pedaços de 34 × 29 furos — um vira a PI-1, o outro a PI-2. ⚠️ Conte os furos: há versões 34 × 58 e 35 × 59 | |
 | ⭐ **Prensa-cabo PG9 — parede da CÂMARA** | 2 | **PC-1 (potência)** e **PC-2 (medição e sinal)**, um em cada canto da parede traseira. ⚠️ **Não é economia juntar num só:** os BTS chaveiam 6 A e induziriam transiente nos retornos de 17,6 mA e no I²C. Ver Doc 12 §12.7 | |
 | Bolsa porta-documentos p/ porta | 1 | Guarda o diagrama elétrico — **padrão em painel industrial** | |
 
@@ -875,7 +876,7 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 | Item | Qtd | Especificação | Link |
 |---|---:|---|---|
 | **Placa ilhada (padrão furos isolados)** | 1 | ~5 × 7 cm. ⚠️ **Ilhada, não de barramento** — na de barramento você acaba tendo que cortar trilha, e é dali que saem os curtos difíceis de achar | |
-| **Caixa modular para trilho DIN — 4 módulos (70 mm)** | 2 | Invólucros da PI-1 e da PI-2. Fica ao lado do Arduino no trilho 3. ⚠️ **Precisa ser 4 módulos, não 3:** o borne J1 tem 11 vias × 5,08 mm = 55,9 mm e não cabe nos ~45 mm úteis de uma caixa de 3M. Buscar `caixa para trilho din 4m modular` | |
+| ⭐ **Caixa modular para trilho DIN — 6 módulos (105 mm)** | 2 | Invólucros da PI-1 e da PI-2, no trilho 3. ⚠️ **6 módulos, não 4:** as placas passaram a 86,4 mm de largura, e uma caixa de 4M só comporta 61 mm. A largura extra é o que permite rotear os fios em canais separados por baixo. Buscar `caixa para trilho din 6m modular` | |
 | ⭐ **Borne KF301 / KRE passo 5,08 mm — 3 vias** | 10 | 6 em uso + 4 reserva. **Encaixam lado a lado** — não se compra bloco de 11 vias, montam-se 3+3+3+2 | |
 | ⭐ **Borne KF301 / KRE passo 5,08 mm — 2 vias** | 12 | 7 em uso + 5 reserva. Junto com os de 3 vias formam as **32 vias** das duas placas | |
 | **CI ULN2803A** (DIP 18 pinos) | 2 | **Driver dos 4 sinaleiros de 24 V** — 8 canais Darlington, 500 mA/50 V, com diodos de proteção internos. 1 uso + 1 reserva (o CI é barato e é o único ponto onde 24 V encosta na lógica) | |

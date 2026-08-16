@@ -17,28 +17,28 @@
 export const PASSO = 2.54; // mm — passo padrão de placa ilhada / perfurada
 
 export const PLACA = {
-  colunas: 24,
+  colunas: 34,
   linhas: 29,
   get larguraMm() { return this.colunas * PASSO; }, // 60,96 mm
   get alturaMm() { return this.linhas * PASSO; },   // 73,66 mm
-  /* ⭐ A PLACA COMPRADA É DE 7 × 9 cm.
-     A largura já bate: 24 colunas × 2,54 = 60,96 mm, que é o que cabe
-     nos 61 mm úteis da caixa DIN de 4 módulos. Só a ALTURA sobra —
-     e sobra numa direção só, então é um corte reto, ao longo de uma
-     fileira de furos. Nada de recorte em L. */
+  /* ⭐ A PLACA COMPRADA É DE 9 × 15 cm, e ela rende AS DUAS placas:
+     um corte só, no meio da altura, dá dois pedaços de 34 × 29 furos.
+     34 colunas × 2,54 = 86,4 mm — precisa de caixa DIN de 6 módulos.
+     A altura de 29 fileiras (73,7 mm) é o teto da caixa DIN, então é por
+     ela que a placa se orienta: cresce em largura, nunca em altura. */
   bruta: {
-    nome: 'Placa ilhada 7 × 9 cm (AliExpress)',
-    colunas: 24, linhas: 36,   // ⚠️ conferir contando na placa que chegar
-    furos: '24 × 36 furos — ⚠️ CONTE quando chegar, há versões de 25 × 35',
-    corte: 'Corte na fileira 30, tirando 7 fileiras (≈ 17,8 mm). Risque dos '
-         + 'dois lados com estilete apoiado numa régua de metal, na LINHA ENTRE '
-         + 'furos, e quebre apoiando na quina da bancada.',
-    sobra: 'A tira que sai (24 × 7 furos) serve de gabarito para conferir o '
-         + 'espaçamento dos bornes antes de soldar na placa boa.',
+    nome: 'Placa ilhada 9 × 15 cm (AliExpress)',
+    colunas: 34, linhas: 58,   // ⚠️ conferir contando; há versões 35 × 59
+    corte: 'Um corte reto no meio, entre as fileiras 29 e 30. Risque dos dois '
+         + 'lados com estilete apoiado numa régua de metal, na LINHA ENTRE furos, '
+         + 'e quebre na quina da bancada.',
+    sobra: '⭐ Os DOIS pedaços são usados: um vira a PI-1 e o outro a PI-2. '
+         + 'Uma placa comprada resolve as duas.',
   },
-  caixa: 'Caixa modular DIN de 4 módulos (70 mm)',
-  nota: 'Precisou virar 4 módulos: o borne J1 tem 11 vias × 5,08 mm = 55,9 mm, '
-      + 'que NÃO cabe nos 45 mm úteis de uma caixa de 3 módulos.',
+  caixa: 'Caixa modular DIN de 6 módulos (105 mm)',
+  nota: 'A caixa cresceu de 4 para 6 módulos junto com a placa. Os 86,4 mm de '
+      + 'largura não cabem nos 61 mm úteis de uma caixa de 4M — e é essa largura '
+      + 'a mais que dá espaço para os fios correrem em canais separados.',
 };
 
 /* ── BORNES ────────────────────────────────────────────────────────────
@@ -85,7 +85,7 @@ export const BORNES = [
  * Fio de cobre NU esticado numa fileira reta. É o único condutor "nu" da
  * placa — todo o resto é fio isolado. Solde este primeiro.
  */
-export const BARRAMENTO_0V = { linha: 10, de: 2, ate: 20 };
+export const BARRAMENTO_0V = { linha: 10, de: 2, ate: 32 };
 
 /* ── COMPONENTES ───────────────────────────────────────────────────────
  * `furos` = onde cada perna entra. 2 furos = 5,08 mm · 4 furos = 10,16 mm
@@ -119,25 +119,25 @@ export const COMPONENTES_PI1 = [
   },
   {
     ref: 'R1', tipo: 'resistor', valor: '22 kΩ', circuito: 3,
-    furos: [[18, 6], [22, 6]],
+    furos: [[29, 6], [33, 6]],
     polaridade: false,
-    ligacao: 'Perna direita no 24V-POT (furo 22,6), perna esquerda no nó D25 (furo 18,6).',
+    ligacao: 'Perna direita no 24V-POT (furo 33,6), perna esquerda no nó D25 (furo 29,6).',
     papel: 'Braço de cima do divisor de tensão',
   },
   {
     ref: 'R2', tipo: 'resistor', valor: '4,7 kΩ', circuito: 3,
-    furos: [[17, 6], [17, 10]],
+    furos: [[28, 6], [28, 10]],
     polaridade: false,
-    ligacao: 'Perna de cima no nó D25 (furo 17,6), perna de baixo no 0 V (furo 17,10).',
+    ligacao: 'Perna de cima no nó D25 (furo 28,6), perna de baixo no 0 V (furo 28,10).',
     papel: 'Braço de baixo do divisor — 24 × 4,7/26,7 = 4,22 V',
     porque: 'O Arduino queima com 24 V num pino. O divisor entrega 4,22 V, '
           + 'que ele lê como "tem 24 V lá fora" sem morrer.',
   },
   {
     ref: 'C3', tipo: 'capacitor', valor: '100 nF', circuito: 3,
-    furos: [[16, 6], [16, 10]],
+    furos: [[27, 6], [27, 10]],
     polaridade: false,
-    ligacao: 'Perna de cima no nó D25 (furo 16,6), perna de baixo no 0 V (furo 16,10).',
+    ligacao: 'Perna de cima no nó D25 (furo 27,6), perna de baixo no 0 V (furo 27,10).',
     papel: 'Segura o nó do divisor, que é de alta impedância e capta ruído',
   },
 ];
@@ -150,7 +150,7 @@ export const COMPONENTES_PI1 = [
  */
 export const CI1 = {
   ref: 'CI1', valor: 'ULN2803A', soquete: 'Soquete DIP-18',
-  linhaTopo: 13, linhaBase: 16, colEsq: 8, colDir: 16,
+  linhaTopo: 13, linhaBase: 16, colEsq: 16, colDir: 24,
   chanfro: 'direita',
   papel: 'É o "relé de interface" dos sinaleiros: deixa um pino de 5 V do Arduino '
        + 'acender um sinaleiro industrial de 24 V.',
@@ -160,24 +160,24 @@ export const CI1 = {
   aviso: 'Girar o CI 180° liga os 24 V do COM direto na entrada e destrói o chip '
        + 'E o pino do Arduino. Confira o chanfro antes de energizar.',
   pinos: [
-    { n: 1,  nome: 'IN1',  col: 16, lin: 13 },
-    { n: 2,  nome: 'IN2',  col: 15, lin: 13 },
-    { n: 3,  nome: 'IN3',  col: 14, lin: 13 },
-    { n: 4,  nome: 'IN4',  col: 13, lin: 13 },
-    { n: 5,  nome: 'IN5',  col: 12, lin: 13, livre: true },
-    { n: 6,  nome: 'IN6',  col: 11, lin: 13, livre: true },
-    { n: 7,  nome: 'IN7',  col: 10, lin: 13, livre: true },
-    { n: 8,  nome: 'IN8',  col: 9,  lin: 13, livre: true },
-    { n: 9,  nome: 'GND',  col: 8,  lin: 13 },
-    { n: 10, nome: 'COM',  col: 8,  lin: 16 },
-    { n: 11, nome: 'OUT8', col: 9,  lin: 16, livre: true },
-    { n: 12, nome: 'OUT7', col: 10, lin: 16, livre: true },
-    { n: 13, nome: 'OUT6', col: 11, lin: 16, livre: true },
-    { n: 14, nome: 'OUT5', col: 12, lin: 16, livre: true },
-    { n: 15, nome: 'OUT4', col: 13, lin: 16 },
-    { n: 16, nome: 'OUT3', col: 14, lin: 16 },
-    { n: 17, nome: 'OUT2', col: 15, lin: 16 },
-    { n: 18, nome: 'OUT1', col: 16, lin: 16 },
+    { n: 1,  nome: 'IN1',  col: 24, lin: 13 },
+    { n: 2,  nome: 'IN2',  col: 23, lin: 13 },
+    { n: 3,  nome: 'IN3',  col: 22, lin: 13 },
+    { n: 4,  nome: 'IN4',  col: 21, lin: 13 },
+    { n: 5,  nome: 'IN5',  col: 20, lin: 13, livre: true },
+    { n: 6,  nome: 'IN6',  col: 19, lin: 13, livre: true },
+    { n: 7,  nome: 'IN7',  col: 18, lin: 13, livre: true },
+    { n: 8,  nome: 'IN8',  col: 17, lin: 13, livre: true },
+    { n: 9,  nome: 'GND',  col: 16, lin: 13 },
+    { n: 10, nome: 'COM',  col: 16, lin: 16 },
+    { n: 11, nome: 'OUT8', col: 17, lin: 16, livre: true },
+    { n: 12, nome: 'OUT7', col: 18, lin: 16, livre: true },
+    { n: 13, nome: 'OUT6', col: 19, lin: 16, livre: true },
+    { n: 14, nome: 'OUT5', col: 20, lin: 16, livre: true },
+    { n: 15, nome: 'OUT4', col: 21, lin: 16 },
+    { n: 16, nome: 'OUT3', col: 22, lin: 16 },
+    { n: 17, nome: 'OUT2', col: 23, lin: 16 },
+    { n: 18, nome: 'OUT1', col: 24, lin: 16 },
   ],
 };
 
@@ -196,9 +196,9 @@ export const NOS = [
     furos: { 3: 'chega o fio de J1-3 (DATA)', 4: 'sai o fio para J2-3 (D2)',
              6: 'perna esquerda do R3' },
     nota: 'O sensor e o Arduino conversam por este nó; o R3 só o mantém levantado.' },
-  { ref: 'nó D25', linha: 6, de: 15, ate: 18, circuito: 3,
-    furos: { 15: 'sai o fio para J2-8 (D25)', 16: 'perna de cima do C3',
-             17: 'perna de cima do R2', 18: 'perna esquerda do R1' },
+  { ref: 'nó D25', linha: 6, de: 26, ate: 29, circuito: 3,
+    furos: { 26: 'sai o fio para J2-8 (D25)', 27: 'perna de cima do C3',
+             28: 'perna de cima do R2', 29: 'perna esquerda do R1' },
     nota: 'Quatro pernas, quatro furos. É o ponto onde os 24 V já viraram 4,22 V.' },
 ];
 
@@ -214,19 +214,19 @@ export const JUMPERS = [
   { n: 5,  de: [6, 2],   para: [3, 5],   circuito: 2, sinal: 'DATA → nó 1-Wire' },
   { n: 6,  de: [4, 5],   para: [6, 28],  circuito: 2, sinal: 'nó 1-Wire → sai D2', cruzaBus: true },
   { n: 7,  de: [8, 2],   para: [10, 5],  circuito: 2, sinal: '+5 V → R3' },
-  { n: 8,  de: [10, 2],  para: [16, 13], circuito: 4, sinal: 'D9 → IN1' },
-  { n: 9,  de: [12, 2],  para: [15, 13], circuito: 4, sinal: 'D10 → IN2' },
-  { n: 10, de: [14, 2],  para: [14, 13], circuito: 4, sinal: 'D11 → IN3' },
-  { n: 11, de: [16, 2],  para: [13, 13], circuito: 4, sinal: 'D12 → IN4' },
+  { n: 8,  de: [10, 2],  para: [24, 13], circuito: 4, sinal: 'D9 → IN1' },
+  { n: 9,  de: [12, 2],  para: [23, 13], circuito: 4, sinal: 'D10 → IN2' },
+  { n: 10, de: [14, 2],  para: [22, 13], circuito: 4, sinal: 'D11 → IN3' },
+  { n: 11, de: [16, 2],  para: [21, 13], circuito: 4, sinal: 'D12 → IN4' },
   { n: 12, de: [18, 2],  para: [18, 10], circuito: 0, sinal: '0 V do borne → barramento' },
-  { n: 13, de: [20, 2],  para: [8, 16],  circuito: 4, sinal: '24V-SRV → COM do CI', alerta: true },
-  { n: 14, de: [22, 2],  para: [22, 6],  circuito: 3, sinal: '24V-POT → R1', alerta: true },
-  { n: 15, de: [8, 13],  para: [8, 10],  circuito: 0, sinal: 'GND do CI → barramento' },
-  { n: 16, de: [16, 16], para: [8, 28],  circuito: 4, sinal: 'OUT1 → L1−' },
-  { n: 17, de: [15, 16], para: [10, 28], circuito: 4, sinal: 'OUT2 → L2−' },
-  { n: 18, de: [14, 16], para: [12, 28], circuito: 4, sinal: 'OUT3 → L3−' },
-  { n: 19, de: [13, 16], para: [14, 28], circuito: 4, sinal: 'OUT4 → L4−' },
-  { n: 20, de: [15, 6],  para: [16, 28], circuito: 3, sinal: 'nó D25 → sai D25', cruzaBus: true },
+  { n: 13, de: [20, 2],  para: [16, 16], circuito: 4, sinal: '24V-SRV → COM do CI', alerta: true },
+  { n: 14, de: [22, 2],  para: [33, 6],  circuito: 3, sinal: '24V-POT → R1', alerta: true },
+  { n: 15, de: [16, 13], para: [16, 10], circuito: 0, sinal: 'GND do CI → barramento' },
+  { n: 16, de: [24, 16], para: [8, 28],  circuito: 4, sinal: 'OUT1 → L1−' },
+  { n: 17, de: [23, 16], para: [10, 28], circuito: 4, sinal: 'OUT2 → L2−' },
+  { n: 18, de: [22, 16], para: [12, 28], circuito: 4, sinal: 'OUT3 → L3−' },
+  { n: 19, de: [21, 16], para: [14, 28], circuito: 4, sinal: 'OUT4 → L4−' },
+  { n: 20, de: [26, 6],  para: [16, 28], circuito: 3, sinal: 'nó D25 → sai D25', cruzaBus: true },
 ];
 
 /* ── AS 3 PERGUNTAS QUE TODO MUNDO FAZ ─────────────────────────────────
@@ -277,9 +277,9 @@ export const CIRCUITOS = [
 ];
 
 export const ORDEM_MONTAGEM = [
-  'Corte a placa de 7 × 9 cm na fileira 30 — sobram 24 × 29 furos (≈ 61 × 74 mm). '
-  + 'A largura já vem certa: corte reto, só na altura.',
-  'Solde o BARRAMENTO DE 0 V primeiro — fio nu, bem esticado, na linha 10.',
+  'Corte a placa de 9 × 15 cm ao meio, entre as fileiras 29 e 30. Os DOIS pedaços '
+  + 'de 34 × 29 furos servem: um é a PI-1, o outro é a PI-2.',
+  'Solde o BARRAMENTO DE 0 V primeiro — fio nu, esticado da coluna 2 à 32, na linha 10.',
   'Solde os dois BORNES. São eles que definem a geometria de tudo.',
   'Solde o SOQUETE DIP-18 (sem o CI dentro), chanfro à direita.',
   'Solde os RESISTORES deitados: R3, R1, R2.',

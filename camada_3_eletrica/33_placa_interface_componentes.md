@@ -364,20 +364,86 @@ I = (5 V − 3,1 V) / 220 Ω = 8,6 mA   ✅ brilho adequado para cenografia
 
 ---
 
-## 33.3 ✂️ Da placa de 7 × 9 cm até a placa do painel
+## 33.3 ✂️ Uma placa de 9 × 15 cm vira as duas placas
 
-As placas ilhadas compradas são de **7 × 9 cm**. As duas placas do projeto — PI-1 e PI-2 — saem cada uma de uma delas, com **um corte reto só**.
+As placas ilhadas compradas são de **9 × 15 cm**. Um corte reto no meio dá **dois pedaços de 34 × 29 furos** — um é a PI-1, o outro é a PI-2.
 
-### A largura já vem certa
+```
+   ┌──────────────────┐  ← placa comprada, 34 × 58 furos (90 × 150 mm)
+   │                  │
+   │      PI-1        │     34 × 29 furos  ·  86,4 × 73,7 mm
+   │                  │
+   ├ ─ ─ ─ ─ ─ ─ ─ ─ ─┤  ← ÚNICO corte, entre as fileiras 29 e 30
+   │                  │
+   │      PI-2        │     34 × 29 furos  ·  86,4 × 73,7 mm
+   │                  │
+   └──────────────────┘
+```
 
-| | Placa comprada | Precisamos | Sobra |
-|---|---:|---:|---:|
-| Colunas | **24** | 24 | **0** |
-| Fileiras | **36** | 29 | **7** |
+### Por que 29 fileiras, e não mais
 
-⭐ **Isso é sorte útil:** 24 colunas × 2,54 = **60,96 mm**, que é exatamente o que cabe nos 61 mm úteis da caixa DIN de 4 módulos. Não é preciso cortar a largura — **só a altura**, e num corte reto ao longo de uma fileira de furos. Nada de recorte em L, nada de canto.
+Porque **a caixa DIN limita a altura, não a largura**. Uma caixa modular aceita placa de até ~74 mm de altura, seja ela de 4, 6 ou 12 módulos — a altura é padronizada pelo trilho. Então:
 
-> ⚠️ **Conte os furos quando a placa chegar.** Há versões de 7 × 9 cm com **25 × 35** furos em vez de 24 × 36. Se a sua vier assim, o layout ainda cabe (sobra uma coluna), mas confira antes de cortar. O script `npm run valida:pi2` compara os dois números e reprova se o layout não couber.
+> ⭐ **A placa cresce em largura, nunca em altura.** 29 fileiras (73,7 mm) é o teto; as colunas é que dão o espaço extra.
+
+### O que a largura extra comprou
+
+| | Antes (24 col · 61 mm) | **Agora (34 col · 86 mm)** |
+|---|---|---|
+| Área | 4 500 mm² | **6 370 mm² (+42 %)** |
+| Caixa DIN | 4 módulos | **6 módulos** |
+| Fiação | fios retos, cruzando no meio | **canais separados, em ângulo reto** |
+
+⚠️ **A caixa mudou de 4M para 6M**, e isso teve consequência no painel: as duas placas de 105 mm não cabiam no trilho 3 junto com o Arduino e o DNLCB30. **O DNLCB30 desceu para o trilho 2.**
+
+| Trilho | Antes | Agora |
+|---|---|---|
+| 3 — Controle | Mega · PI-1 · DNLCB30 · PI-2 = 370 mm | Mega · PI-1 · PI-2 = **344 mm** |
+| 2 — Potência | 262 mm | + DNLCB30 = **358 mm** |
+
+📌 O DNLCB30 conversa com o Mega por UART. Descer um trilho acrescenta uns 130 mm ao par TX/RX — irrelevante a 115200 baud. Mas ele passa a ficar perto dos BTS, então **esse par vai pela canaleta de sinal, nunca junto da saída dos BTS**.
+
+### Como cortar sem lascar
+
+1. Marque a linha **entre as fileiras 29 e 30**
+2. Risque com **estilete apoiado numa régua de metal**, na linha **entre** furos, nunca em cima deles
+3. Risque dos **dois lados** da placa, 3 ou 4 passadas em cada
+4. Quebre apoiando na **quina da bancada**, com a linha do risco na borda
+5. Passe uma lixa fina na aresta
+
+> ⚠️ **Conte os furos quando a placa chegar.** Há versões de 9 × 15 cm com **35 × 59**. Se a sua vier assim, sobra uma coluna e uma fileira — o layout cabe igual. O `npm run valida:pi2` compara os dois números e reprova se não couber.
+
+### 🔎 O que os desenhos do aplicativo mostram
+
+Na aba **"Dentro do painel"**, clicando na PI-1 ou na PI-2 e depois em **"Ver a placa e como soldar"**, aparecem os **dois lados separados**:
+
+| Lado | O que tem | Como é desenhado |
+|---|---|---|
+| 🔺 **Componentes** (cima) | bornes, resistores, capacitores, CI ou módulos | como você vê na bancada |
+| 🔻 **Solda** (baixo) | barramento de 0 V, pontes de nó, **todos os fios** | ⚠️ **ESPELHADO** |
+
+> 🔥 **Por que o lado de baixo é espelhado.** Porque é assim que você o enxerga quando **vira a placa na mão**: a coluna 1, que estava à esquerda, passa para a direita. Um desenho não espelhado obriga você a fazer essa inversão de cabeça a cada fio — e é a **causa número um de fio soldado no furo errado**.
+>
+> Os dois desenhos trazem um **marco vermelho no furo (1,1)**. Em cima ele fica à esquerda, embaixo à direita.
+
+### 🌉 Os fios andam em ângulo reto, e a lombada diz quem passa por cima
+
+Os fios não são desenhados em linha reta de um furo ao outro. Cada um **acompanha as fileiras e colunas de furos** e ocupa um **canal horizontal só seu** — o mesmo princípio das canaletas do painel, aplicado à placa.
+
+**Onde um fio precisa cruzar outro, ele ganha uma lombada em arco.** É a convenção de esquema elétrico:
+
+```
+        ╭─╮                    quem tem a LOMBADA passa POR CIMA
+   ─────╯ ╰─────               quem passa RETO fica POR BAIXO
+         │
+         │
+```
+
+📌 Na prática os dois fios encostam mesmo — são isolados, então não há curto. A lombada existe para **você conseguir seguir um fio até o fim** sem perdê-lo no cruzamento.
+
+📋 A lateral traz a **lista dos fios** com o comprimento a cortar — que é o do **caminho em ângulo reto**, não o da linha reta, mais 15 mm para descascar e sobrar folga — e uma **caixa para riscar** conforme você solda, salva no navegador.
+
+---
 
 ### 🔩 Qual borne comprar — e a armadilha dos 5,00 mm
 

@@ -14,28 +14,22 @@
 export const PASSO = 2.54;
 
 export const PLACA = {
-  colunas: 24,
+  colunas: 34,
   linhas: 29,
   get larguraMm() { return this.colunas * PASSO; },  // 60,96 mm
   get alturaMm() { return this.linhas * PASSO; },    // 73,66 mm
-  /* ⭐ A PLACA COMPRADA É DE 7 × 9 cm.
-     A largura já bate: 24 colunas × 2,54 = 60,96 mm, que é o que cabe
-     nos 61 mm úteis da caixa DIN de 4 módulos. Só a ALTURA sobra —
-     e sobra numa direção só, então é um corte reto, ao longo de uma
-     fileira de furos. Nada de recorte em L. */
+  /* ⭐ O OUTRO PEDAÇO da mesma placa de 9 × 15 cm que dá a PI-1.
+     Um corte no meio, dois pedaços de 34 × 29 furos, duas placas. */
   bruta: {
-    nome: 'Placa ilhada 7 × 9 cm (AliExpress)',
-    colunas: 24, linhas: 36,   // ⚠️ conferir contando na placa que chegar
-    furos: '24 × 36 furos — ⚠️ CONTE quando chegar, há versões de 25 × 35',
-    corte: 'Corte na fileira 30, tirando 7 fileiras (≈ 17,8 mm). Risque dos '
-         + 'dois lados com estilete apoiado numa régua de metal, na LINHA ENTRE '
-         + 'furos, e quebre apoiando na quina da bancada.',
-    sobra: 'A tira que sai (24 × 7 furos) serve de gabarito para conferir o '
-         + 'espaçamento dos bornes antes de soldar na placa boa.',
+    nome: 'Placa ilhada 9 × 15 cm (AliExpress) — o segundo pedaço',
+    colunas: 34, linhas: 58,   // ⚠️ conferir contando; há versões 35 × 59
+    corte: 'Mesmo corte da PI-1: reto, entre as fileiras 29 e 30.',
+    sobra: '⭐ Não há sobra — os dois pedaços viram placa.',
   },
-  caixa: 'Caixa modular DIN de 4 módulos (70 mm)',
-  nota: 'Mesma caixa da PI-1. O borne J3 tem 7 vias × 5,08 = 35,6 mm e divide '
-      + 'a borda de baixo com o J2 (2 vias) — juntos dão 45,7 mm nos 61 disponíveis.',
+  caixa: 'Caixa modular DIN de 6 módulos (105 mm)',
+  nota: 'Mesma caixa da PI-1. Com 86,4 mm de largura, J2 (2 vias) e J3 (7 vias) '
+      + 'ocupam 45,7 mm dos 86,4 da borda de baixo — sobra folga entre os dois '
+      + 'blocos, que é o que faltava na versão estreita.',
 };
 
 /* ── BORNES ─────────────────────────────────────────────────────────── */
@@ -74,7 +68,7 @@ export const BORNES = [
 ];
 
 /* ── BARRAMENTO DE 0 V ──────────────────────────────────────────────── */
-export const BARRAMENTO_0V = { linha: 11, de: 2, ate: 21 };
+export const BARRAMENTO_0V = { linha: 11, de: 2, ate: 32 };
 
 /* ── COMPONENTES DISCRETOS ──────────────────────────────────────────── */
 export const COMPONENTES_PI2 = [
@@ -145,9 +139,9 @@ export const MODULOS = [
   {
     ref: 'M2', valor: 'INA219', descricao: 'medidor de referência',
     circuito: 4, cor: '#f08c00',
-    corpo: { colEsq: 12, colDir: 22, linTopo: 3, linBase: 9 },
+    corpo: { colEsq: 23, colDir: 33, linTopo: 3, linBase: 9 },
     aConferir: 'A maioria dos módulos GY-219 traz VIN+ / VIN− num borne de parafuso, e '
-             + 'não em pino. Se for o caso, os furos [14,8] e [17,8] viram os do borne.',
+             + 'não em pino. Se for o caso, os furos [25,8] e [29,8] viram os do borne.',
     papel: 'O instrumento de referência. Fica em série com o retorno da posição 1, ANTES '
          + 'do shunt R1 — mede a mesma corrente que o mux vai medir.',
     porque: '⭐ É a prova da banca. Se o INA219 e o multiplexador dizem o mesmo número na '
@@ -158,12 +152,12 @@ export const MODULOS = [
          + 'sensor que se encosta no fio: ele fica NO caminho. Ligar VIN+ e VIN− trocados '
          + 'faz a leitura sair negativa.',
     pinos: [
-      { n: 1, nome: 'VCC',  col: 13, lin: 4 },
-      { n: 2, nome: 'GND',  col: 15, lin: 4 },
-      { n: 3, nome: 'SCL',  col: 17, lin: 4 },
-      { n: 4, nome: 'SDA',  col: 19, lin: 4 },
-      { n: 5, nome: 'VIN+', col: 14, lin: 8, alerta: true },
-      { n: 6, nome: 'VIN−', col: 17, lin: 8, alerta: true },
+      { n: 1, nome: 'VCC',  col: 24, lin: 4 },
+      { n: 2, nome: 'GND',  col: 26, lin: 4 },
+      { n: 3, nome: 'SCL',  col: 28, lin: 4 },
+      { n: 4, nome: 'SDA',  col: 30, lin: 4 },
+      { n: 5, nome: 'VIN+', col: 25, lin: 8, alerta: true },
+      { n: 6, nome: 'VIN−', col: 29, lin: 8, alerta: true },
     ],
   },
 ];
@@ -185,24 +179,24 @@ export const NOS = [
 
 /* ── JUMPERS ────────────────────────────────────────────────────────── */
 export const JUMPERS = [
-  { n: 1,  de: [2, 2],   para: [14, 8],  circuito: 1, sinal: 'RET-1 → INA219 VIN+' },
-  { n: 2,  de: [17, 8],  para: [3, 6],   circuito: 1, sinal: 'INA219 VIN− → nó RET-1' },
+  { n: 1,  de: [2, 2],   para: [25, 8],  circuito: 1, sinal: 'RET-1 → INA219 VIN+' },
+  { n: 2,  de: [29, 8],  para: [3, 6],   circuito: 1, sinal: 'INA219 VIN− → nó RET-1' },
   { n: 3,  de: [4, 6],   para: [3, 15],  circuito: 1, sinal: 'nó RET-1 → mux C0', cruzaBus: true },
   { n: 4,  de: [4, 2],   para: [8, 6],   circuito: 2, sinal: 'RET-2 → nó RET-2' },
   { n: 5,  de: [9, 6],   para: [4, 15],  circuito: 2, sinal: 'nó RET-2 → mux C1', cruzaBus: true },
   { n: 6,  de: [2, 28],  para: [2, 11],  circuito: 0, sinal: '0 V do borne → barramento' },
   { n: 7,  de: [4, 28],  para: [9, 22],  circuito: 3, sinal: '+5 V → mux VCC' },
-  { n: 8,  de: [4, 28],  para: [13, 4],  circuito: 4, sinal: '+5 V → INA219 VCC' },
+  { n: 8,  de: [4, 28],  para: [24, 4],  circuito: 4, sinal: '+5 V → INA219 VCC' },
   { n: 9,  de: [10, 22], para: [10, 11], circuito: 0, sinal: 'mux GND → barramento' },
   { n: 10, de: [7, 22],  para: [7, 11],  circuito: 3, sinal: '⚠️ mux EN → barramento (0 V)', alerta: true },
-  { n: 11, de: [15, 4],  para: [15, 11], circuito: 0, sinal: 'INA219 GND → barramento' },
+  { n: 11, de: [26, 4],  para: [26, 11], circuito: 0, sinal: 'INA219 GND → barramento' },
   { n: 12, de: [3, 22],  para: [8, 28],  circuito: 3, sinal: 'mux S0 → J3-1' },
   { n: 13, de: [4, 22],  para: [10, 28], circuito: 3, sinal: 'mux S1 → J3-2' },
   { n: 14, de: [5, 22],  para: [12, 28], circuito: 3, sinal: 'mux S2 → J3-3' },
   { n: 15, de: [6, 22],  para: [14, 28], circuito: 3, sinal: 'mux S3 → J3-4' },
   { n: 16, de: [8, 22],  para: [16, 28], circuito: 3, sinal: 'mux SIG → J3-5' },
-  { n: 17, de: [19, 4],  para: [18, 28], circuito: 4, sinal: 'INA219 SDA → J3-6', cruzaBus: true },
-  { n: 18, de: [17, 4],  para: [20, 28], circuito: 4, sinal: 'INA219 SCL → J3-7', cruzaBus: true },
+  { n: 17, de: [30, 4],  para: [18, 28], circuito: 4, sinal: 'INA219 SDA → J3-6', cruzaBus: true },
+  { n: 18, de: [28, 4],  para: [20, 28], circuito: 4, sinal: 'INA219 SCL → J3-7', cruzaBus: true },
 ];
 
 /* ── AS PERGUNTAS QUE ESTA PLACA LEVANTA ────────────────────────────── */
@@ -256,9 +250,8 @@ export const CIRCUITOS = [
 ];
 
 export const ORDEM_MONTAGEM = [
-  'Corte a placa de 7 × 9 cm na fileira 30 — mesma medida da PI-1. Corte reto, '
-  + 'só na altura; a largura de 24 colunas já vem certa.',
-  'Solde o BARRAMENTO DE 0 V primeiro: fio nu esticado na linha 11.',
+  'Use o SEGUNDO pedaço da placa de 9 × 15 cm cortada para a PI-1 — 34 × 29 furos.',
+  'Solde o BARRAMENTO DE 0 V primeiro: fio nu esticado da coluna 2 à 32, na linha 11.',
   'Solde os TRÊS BORNES. J1 em cima; J2 e J3 lado a lado embaixo.',
   'Solde as BARRAS DE PINOS FÊMEA dos dois módulos — sem os módulos encaixados.',
   'Solde os dois SHUNTS em pé: R1 no furo (2,6)→(2,11) e R2 no (7,6)→(7,11).',
