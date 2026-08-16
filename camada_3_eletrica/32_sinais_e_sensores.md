@@ -179,11 +179,13 @@ Duas armadilhas do Arduino Mega estão documentadas aqui, e as duas eram silenci
 | **D28** | ⭐ MV-1 canal 2 → **ventoinha do PTC** | `OUTPUT` | `HIGH` = ligada |
 | **D29** | ⭐ MV-1 canal 3 → **circulação** (2 frias + 2 do duto) | `OUTPUT` | `HIGH` = ligadas |
 | **D31–D34** | ⭐ **PI-2 · S0–S3** — seleção de canal do multiplexador | `OUTPUT` | 4 bits = 16 canais |
-| **A2** | ⭐ **PI-2 · SIG** — a **única** entrada analógica dos 16 canais | `INPUT` | shunt 4,7 Ω · ~1 mA por contagem |
+| **A2** | ⭐ **PI-2 · SIG** — a **única** entrada analógica dos 16 canais | `INPUT` | shunt 47 Ω · ~1 mA por contagem |
 
 > ⭐ **Cinco pinos para dezesseis canais.** É essa a economia que o multiplexador traz — e ela não muda quando o número de posições cresce. Quatro placas de multiplexador atendem 64 canais com 8 pinos, porque os S0–S3 são compartilhados entre elas.
 >
-> 📐 **Por que o shunt é grande (4,7 Ω) e não pequeno (0,1 Ω):** com 0,1 Ω a tensão de 127 mA seria 12,7 mV, e o ADC de 10 bits do Arduino só enxerga passos de 4,88 mV — daria 2 contagens. Com 4,7 Ω a leitura vai a 0,60 V, ou seja **123 contagens**, e dispensa amplificador. A impedância baixa ainda faz o multiplexador estabilizar rápido entre um canal e outro.
+> 📐 **Por que o shunt é grande (47 Ω) e não pequeno (0,1 Ω):** com 0,1 Ω a tensão de 17,6 mA seria 1,8 mV, e o ADC de 10 bits do Arduino só enxerga passos de 4,88 mV — daria **zero contagem**. Com 47 Ω a leitura vai a 0,83 V, ou seja **170 contagens**, e dispensa amplificador.
+>
+> ⭐ **A regra geral:** dimensione o shunt pela corrente que quer medir, mirando entre 0,5 V e 1 V no fundo de escala. `R = V_alvo ÷ I_max`. Abaixo de 0,5 V o ruído incomoda; acima de 1 V a queda começa a atrapalhar a própria carga.
 
 > ### ⭐ Por que `LOW` = REMOTO, e não o contrário
 >

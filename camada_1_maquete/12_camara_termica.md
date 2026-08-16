@@ -195,10 +195,12 @@ PORTA DUPLA (5 + ar 10 + 5 mm):
 | Sensores e cabos | 0,2 W |
 | Infiltração média (aberturas de porta) | ~0,8 W |
 | **CARGA TÉRMICA TOTAL (câmara vazia)** | **≈ 9,5 W** |
-| ⭐ **2 posições de ensaio energizadas** (~3 W cada) | **+12,0 W** |
-| **CARGA TÉRMICA TOTAL COM DISPOSITIVOS** | **≈ 21,5 W** |
+| **2 posições de ensaio energizadas** (0,37 + 0,21 W) | **+0,6 W** |
+| **CARGA TÉRMICA TOTAL COM DISPOSITIVOS** | **≈ 10,1 W** |
 
-> ⭐ **Os dispositivos sob ensaio mais que dobram a carga térmica** — e é assim que tem que ser, porque um ensaio com a cabine vazia não representa a realidade. A capacidade das 2 Peltier (≈ 60 W a ΔT = 20 K) absorve isso com **margem de 2,8×**. Detalhes das posições em [Doc 13](13_posicoes_de_ensaio.md).
+> 📌 **Os simuladores praticamente não aquecem, e isso é uma decisão consciente.** Eles existem para consumir uma corrente conhecida — o que se está provando é a **detecção de falha**, não o desempenho térmico. Ver [Doc 13 §13.3b](13_posicoes_de_ensaio.md).
+>
+> ⚠️ **Diga isto na apresentação:** numa cabine real as placas sob ensaio dissipariam dezenas de watts, e o ciclo de resfriamento seria mais lento do que o demonstrado aqui. A margem das Peltier (≈ 60 W a ΔT = 20 K contra 10,1 W) mostra que o dimensionamento **suportaria** essa carga extra — a maquete só não a reproduz.
 
 ### As Peltier dão conta?
 

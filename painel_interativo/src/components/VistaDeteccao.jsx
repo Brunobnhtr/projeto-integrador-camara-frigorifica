@@ -11,12 +11,12 @@ const FIOS = [
   { id: 'P1+', nome: 'Positivo da posição 1', cor: '#c92a2a', grupo: 'ida',
     d: 'M 196 96 L 300 96 L 300 118 L 520 118',
     de: 'F-P via 1 (depois do fusível e da chave)', para: 'DUT 1 · terminal +',
-    leva: '24 V · ~127 mA',
+    leva: '24 V · 17,6 mA',
     nota: 'Sai do porta-fusível já protegido. Vai direto para a câmara — NÃO passa pela PI-2.' },
   { id: 'P2+', nome: 'Positivo da posição 2', cor: '#e8590c', grupo: 'ida',
     d: 'M 196 118 L 286 118 L 286 262 L 520 262',
     de: 'F-P via 2', para: 'DUT 2 · terminal +',
-    leva: '24 V · ~92 mA',
+    leva: '24 V · 9,8 mA',
     nota: 'Mesma coisa da posição 1, pelo segundo fusível.' },
   { id: 'R1−', nome: 'Retorno da posição 1', cor: '#1971c2', grupo: 'volta',
     d: 'M 520 176 L 340 176 L 340 320 L 196 320',
@@ -53,18 +53,20 @@ const BLOCOS = [
        + 'que escolheu, ele sabe de qual posição é a leitura.' },
   { id: 'DUT1', nome: 'DUT 1', x: 520, y: 96, w: 130, h: 80, cor: '#1971c2',
     sub: 'placa simuladora', ehDut: true,
-    diz: 'Um LED que mostra "estou viva" e um resistor de potência que consome e '
-       + 'aquece. Consome ~127 mA em 24 V.',
-    nota: '❓ Por que 24 V se é só um LED? Porque o LED NÃO é a carga — ele gasta 18 mA. '
-        + 'Quem trabalha é o resistor de potência, que precisa dissipar ~2,6 W para '
-        + 'simular o calor de uma placa real. Em 5 V, os mesmos 2,6 W custariam 524 mA, '
-        + 'e o shunt de 4,7 Ω comeria METADE da alimentação. Ver Doc 13 §13.3b.' },
+    diz: 'Um LED em série com um resistor de 1,2 kΩ. Consome 17,6 mA, e é essa '
+       + 'corrente constante que o sistema aprende como "normal".',
+    nota: '❓ Por que 24 V e não 12 V? Porque o barramento de 12 V é o mesmo das '
+        + 'ventoinhas. Quando uma ventoinha parte — ou trava — ela afunda a tensão por '
+        + 'um instante, a corrente do DUT muda junto e o sistema acusaria falha onde não '
+        + 'há. O 24 V é limpo. Ver Doc 13 §13.3b.' },
   { id: 'DUT2', nome: 'DUT 2', x: 520, y: 240, w: 130, h: 80, cor: '#0ca678',
     sub: 'resistor diferente', ehDut: true,
-    diz: 'Igual ao DUT 1, mas com resistor de 330 Ω — consome ~92 mA. Correntes '
+    diz: 'Igual ao DUT 1, mas com resistor de 2,2 kΩ — consome 9,8 mA. Correntes '
        + 'diferentes provam que o sistema não usa um limiar único: cada posição é '
        + 'comparada com o normal dela.' },
 ];
+
+const h_i = b => b.h - 4;
 
 export default function VistaDeteccao() {
   const [sel, setSel] = useState(null);
@@ -143,7 +145,7 @@ export default function VistaDeteccao() {
             <rect x={222} y={314} width={30} height={12} rx={2} fill="#c9b28a"
                   stroke="#8d7c5e" strokeWidth={0.8} />
             <text x={237} y={311} textAnchor="middle" fontSize={7.5} fill="#495057">
-              shunt 4,7 Ω
+              shunt 47 Ω
             </text>
             <line x1={196} y1={320} x2={222} y2={320} stroke="#1971c2" strokeWidth={2} />
             <line x1={252} y1={320} x2={276} y2={320} stroke="#212529" strokeWidth={2} />
@@ -200,36 +202,39 @@ export default function VistaDeteccao() {
               {/* o circuito do DUT, desenhado por dentro */}
               {b.ehDut && (
                 <>
-                  <line x1={b.x} y1={b.y + 22} x2={b.x + 16} y2={b.y + 22}
+                  {/* entra o positivo */}
+                  <line x1={b.x} y1={b.y + 46} x2={b.x + 22} y2={b.y + 46}
                         stroke="#495057" strokeWidth={1.4} />
-                  <text x={b.x - 4} y={b.y + 25} textAnchor="end" fontSize={8}
+                  <text x={b.x - 4} y={b.y + 49} textAnchor="end" fontSize={8}
                         fontWeight="700" fill="#c92a2a">+</text>
-                  <rect x={b.x + 24} y={b.y + 36} width={20} height={8} rx={1}
-                        fill="#c9b28a" stroke="#8d7c5e" strokeWidth={0.6} />
-                  <text x={b.x + 34} y={b.y + 34} textAnchor="middle" fontSize={7}
-                        fill="#495057">1,2 k</text>
-                  <circle cx={b.x + 58} cy={b.y + 40} r={5} fill="#40c057" />
-                  <text x={b.x + 70} y={b.y + 43} fontSize={7.5} fill="#495057">LED</text>
-                  <rect x={b.x + 24} y={b.y + 58} width={26} height={9} rx={1}
-                        fill="#c9b28a" stroke="#8d7c5e" strokeWidth={0.6} />
-                  <text x={b.x + 37} y={b.y + 56} textAnchor="middle" fontSize={7}
-                        fill="#495057">{b.id === 'DUT1' ? '220 Ω 5 W' : '330 Ω 5 W'}</text>
-                  <line x1={b.x + 16} y1={b.y + 22} x2={b.x + 16} y2={b.y + 62}
-                        stroke="#495057" strokeWidth={1.2} />
-                  <line x1={b.x + 16} y1={b.y + 40} x2={b.x + 24} y2={b.y + 40}
-                        stroke="#495057" strokeWidth={1.2} />
-                  <line x1={b.x + 16} y1={b.y + 62} x2={b.x + 24} y2={b.y + 62}
-                        stroke="#495057" strokeWidth={1.2} />
-                  <line x1={b.x + 50} y1={b.y + 62} x2={b.x + 92} y2={b.y + 62}
-                        stroke="#495057" strokeWidth={1.2} />
-                  <line x1={b.x + 63} y1={b.y + 40} x2={b.x + 92} y2={b.y + 40}
-                        stroke="#495057" strokeWidth={1.2} />
-                  <line x1={b.x + 92} y1={b.y + 40} x2={b.x + 92} y2={b.y + 80}
+                  {/* resistor em série */}
+                  <rect x={b.x + 22} y={b.y + 41} width={26} height={10} rx={1}
+                        fill="#c9b28a" stroke="#8d7c5e" strokeWidth={0.7} />
+                  <text x={b.x + 35} y={b.y + 38} textAnchor="middle" fontSize={7.5}
+                        fontWeight="600" fill="#495057">
+                    {b.id === 'DUT1' ? '1,2 kΩ' : '2,2 kΩ'}
+                  </text>
+                  <line x1={b.x + 48} y1={b.y + 46} x2={b.x + 62} y2={b.y + 46}
                         stroke="#495057" strokeWidth={1.4} />
-                  <line x1={b.x} y1={b.y + 80} x2={b.x + 92} y2={b.y + 80}
+                  {/* o LED */}
+                  <circle cx={b.x + 68} cy={b.y + 46} r={6}
+                          fill={b.id === 'DUT1' ? '#fa5252' : '#40c057'}
+                          stroke="#495057" strokeWidth={0.8} />
+                  <text x={b.x + 68} y={b.y + 63} textAnchor="middle" fontSize={7}
+                        fill="#868e96">LED</text>
+                  <line x1={b.x + 74} y1={b.y + 46} x2={b.x + 106} y2={b.y + 46}
                         stroke="#495057" strokeWidth={1.4} />
-                  <text x={b.x - 4} y={b.y + 83} textAnchor="end" fontSize={8}
+                  {/* desce e sai pelo retorno */}
+                  <line x1={b.x + 106} y1={b.y + 46} x2={b.x + 106} y2={b.y + 70}
+                        stroke="#495057" strokeWidth={1.4} />
+                  <line x1={b.x} y1={b.y + 70} x2={b.x + 106} y2={b.y + 70}
+                        stroke="#495057" strokeWidth={1.4} />
+                  <text x={b.x - 4} y={b.y + 73} textAnchor="end" fontSize={8}
                         fontWeight="700" fill="#1971c2">−</text>
+                  <text x={b.x + b.w / 2} y={b.y + h_i(b)} textAnchor="middle" fontSize={8}
+                        fontWeight="700" fill={b.cor}>
+                    {b.id === 'DUT1' ? '17,6 mA' : '9,8 mA'}
+                  </text>
                 </>
               )}
             </g>
@@ -278,7 +283,7 @@ export default function VistaDeteccao() {
               <b>⭐ Por que 2 retornos e não 1</b>
               <div style={{ marginTop: 5 }}>
                 Se os dois dispositivos dividissem o mesmo fio de volta, as correntes
-                se somariam antes do shunt. O sistema veria "caiu 127 mA" sem saber de
+                se somariam antes do shunt. O sistema veria "caiu a corrente" sem saber de
                 quem — e a pergunta que o projeto existe para responder é justamente
                 <b> qual</b> parou.
               </div>

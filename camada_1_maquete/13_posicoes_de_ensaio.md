@@ -39,7 +39,7 @@ Uma analogia: é a diferença entre um disjuntor e um monitor cardíaco. **O dis
 | | Sistema real da empresa | **Maquete (bancada de validação)** |
 |---|---:|---:|
 | Posições de ensaio | até 50 | **4** |
-| Proteção individual | disjuntores | **porta-fusível DIN + fusível 500 mA** |
+| Proteção individual | disjuntores | **porta-fusível DIN + fusível 100 mA** |
 | Medição de corrente | não existe (é a melhoria proposta) | **INA219 por posição** |
 
 **4 é o número certo por três motivos:**
@@ -75,19 +75,18 @@ O edital diz que os dispositivos ficam *"energizados e operando em modo de simul
 ```
             PLACA SIMULADORA DE DUT  (uma por posição)
 
-   +24 V ──┬──[ R1 · 1,2 kΩ ]──┤▶├── LED ──┐   ← indica "estou vivo"
-           │                                │
-           └──[ R2 · 220 Ω / 5 W ]──────────┤   ← consome e aquece
-                                            │
-   0 V ─────────────────────────────────────┘
+   +24 V ──[ R · resistor ]──┤▶├── LED ──┐
+                                          │
+                                          └──► retorno, para o shunt na PI-2
 
-   Corrente total: ~130 mA    ·    Potência: ~3 W
+   POSIÇÃO 1 · LED vermelho · R = 1,2 kΩ  →  17,6 mA
+   POSIÇÃO 2 · LED verde    · R = 2,2 kΩ  →   9,8 mA
 ```
 
 | Elemento | Função no ensaio |
 |---|---|
 | **LED** | Sinal visual de que a posição está energizada e funcionando — visível pela porta transparente da câmara |
-| **Resistor de potência** | Dissipa ~3 W, simulando o calor que uma placa real gera. **Isso é importante:** a carga térmica dos dispositivos afeta o comportamento da câmara, e um ensaio com a cabine vazia não representa a realidade |
+| **Resistor em série** | Fixa a corrente que a posição consome. É esse valor constante que o sistema aprende como "normal" — e cuja ausência denuncia a falha |
 | **Corrente definida** | Dá ao sistema um valor de referência: se cair fora da faixa, algo mudou |
 
 > 💡 **Um detalhe que vale ponto:** as 2 placas somam **~6 W dentro da câmara**. Isso soma à carga térmica calculada no [Doc 12](12_camara_termica.md) (9,5 W → ~15,5 W). **A margem de refrigeração das 2 Peltier (≈ 60 W) absorve isso com folga** — mas o cálculo precisa mostrar que você considerou, porque é exatamente o tipo de coisa que uma banca pergunta.
@@ -96,53 +95,57 @@ O edital diz que os dispositivos ficam *"energizados e operando em modo de simul
 
 ---
 
-## 13.3b ❓ "Se é só um LED, por que 24 V e não 5 V?"
+## 13.3b ❓ Sem carga térmica — o DUT é só LED e resistor
 
-Porque **o LED não é a carga** — ele é só a lâmpada que mostra que a posição está viva. Quem faz o trabalho é o **resistor de potência**, e é ele que decide a tensão.
+**Decisão tomada:** o simulador **não** vai reproduzir o calor de uma placa real. Ele existe para uma coisa só — **consumir uma corrente conhecida e estável**, para que o sistema possa perceber quando ela some.
 
-### O que o DUT precisa fazer
+```
+   +24 V ──[ R ]──┤▶├── LED ──► retorno
+```
 
-| Parte | Consome | Para quê |
-|---|---:|---|
-| LED + 1,2 kΩ | ~18 mA · 0,4 W | mostrar que está energizado |
-| **Resistor de potência** | **~109 mA · 2,6 W** | **simular o calor de uma placa real** |
+| | Posição 1 | Posição 2 |
+|---|---|---|
+| LED | vermelho | verde |
+| Resistor | **1,2 kΩ · 1/2 W** | **2,2 kΩ · 1/2 W** |
+| Corrente | **17,6 mA** | **9,8 mA** |
+| Calor gerado | 0,37 W | 0,21 W |
 
-Um ensaio térmico com a câmara vazia não representa nada: numa cabine real, as próprias placas aquecem, e esse calor muda o comportamento do controle. Por isso o simulador **tem que esquentar**.
+**As correntes são propositalmente diferentes.** Com dois valores distintos, fica provado que o sistema compara cada posição **com o normal dela** — e não com um limiar único. Numa fábrica, as 50 placas nunca consomem igual.
 
-### E aí a conta muda tudo
+### ⚡ E isso obriga a mudar o shunt
 
-Para dissipar os mesmos **2,6 W**:
+Com a corrente caindo de 127 mA para 17,6 mA, um shunt de 4,7 Ω entregaria só 83 mV — **17 contagens** do conversor A/D, perto demais do ruído.
 
-| | **24 V** | 5 V |
-|---|---:|---:|
-| Corrente | **109 mA** | **524 mA** |
-| Resistor | 220 Ω / 5 W | 9,5 Ω / 5 W |
-| Duas posições somam | **218 mA** | **1,05 A** |
+A correção é subir o shunt na mesma proporção:
 
-> ⚡ **Mesma potência, quase cinco vezes menos corrente.** É `P = V × I`: subindo a tensão, a corrente desce na mesma proporção. É exatamente por isso que a rede elétrica transmite em alta tensão.
+| Shunt | Tensão com 17,6 mA | Contagens do ADC | Veredito |
+|---|---:|---:|---|
+| 4,7 Ω | 0,083 V | **17** | ruim |
+| **47 Ω** | **0,83 V** | **170** | ✅ |
 
-### 🔥 E o problema que mata a ideia dos 5 V: o shunt
+`P = I² × R = 0,0176² × 47 = 0,015 W` — o shunt nem esquenta, e um resistor de 1/4 W sobra.
 
-Nossa medição usa um resistor shunt de **4,7 Ω**. Veja o que acontece com ele em cada tensão:
+> ⭐ **A regra:** o shunt se dimensiona pela corrente que se quer medir, não por um valor de tabela. Alvo entre **0,5 V e 1 V** no fundo de escala — abaixo disso o ruído incomoda, acima disso a queda começa a atrapalhar a carga.
 
-| | 24 V · 109 mA | 5 V · 524 mA |
-|---|---:|---:|
-| Queda no shunt | 0,51 V | **2,46 V** |
-| Percentual da alimentação | **2,1%** — irrelevante | **49%** — inviável |
+### Por que continua em 24 V, e não 12 V
 
-Em 5 V, o resistor de medição comeria **metade da tensão** antes de ela chegar ao dispositivo. Para evitar isso, o shunt teria que cair para ~0,24 Ω — e aí a leitura desabaria de 123 contagens do ADC para **26**, com perda de resolução de cinco vezes. Voltaríamos a precisar de amplificador.
+Os dois funcionariam. O que decide é **de onde vem cada barramento**:
 
-### E ainda haveria a conta do ramal de 5 V
+| | BD-24V | BD-AUX (12 V) |
+|---|---|---|
+| O que mais alimenta | ESP32, sinaleiros, comando | **as ventoinhas** |
+| Qualidade da tensão | estável | oscila quando as ventoinhas partem |
 
-O barramento de 5 V já alimenta Arduino, tela, RTC, lógica dos BTS e os LEDs da maquete — cerca de **310 mA**. Somar 1,05 A das duas posições levaria o LM2596 a **1,35 A**, esquentando sem necessidade. Nos 24 V, os mesmos 218 mA passam despercebidos.
+⚠️ **Ventoinha travada puxa corrente de rotor bloqueado**, e isso afunda o barramento por um instante. Se os DUTs estivessem no mesmo 12 V, aquele afundamento mudaria a corrente deles — e o sistema acusaria falha onde não há.
 
-### 🎓 A regra que fica
+**Os 0,24 W a mais desperdiçados nos resistores valem muito menos que um alarme falso.**
 
-> **Carga que dissipa potência vai na tensão mais alta disponível; lógica vai na mais baixa.** É o mesmo motivo pelo qual as Peltier foram ligadas em série para 24 V em vez de paralelo em 12 V.
+### O que se perde sem a carga térmica
 
-📌 **Se o DUT fosse mesmo só um LED**, sem carga térmica, 5 V seria a escolha certa. Mas aí o ensaio testaria uma câmara vazia — e o edital pede o contrário.
+Vale registrar, porque a banca pode perguntar: os simuladores geram 0,6 W no total, então **a câmara vai se comportar como se estivesse vazia**. Na cabine real, as placas ajudam a aquecer e atrapalham a resfriar.
 
----
+Isso **não invalida a demonstração** — o que está sendo provado é a detecção de falha, não o desempenho térmico. Mas convém dizer na apresentação que, com placas reais dentro, o ciclo de resfriamento seria um pouco mais lento.
+
 
 ## 13.4 O sensor INA219 — o que ele faz e por que este
 
@@ -150,7 +153,7 @@ O barramento de 5 V já alimenta Arduino, tela, RTC, lógica dos BTS e os LEDs d
 |---|---|
 | **O que é** | Sensor de corrente e tensão com interface I²C |
 | **Como mede** | Um resistor *shunt* de 0,1 Ω em série com a carga; ele lê a queda de tensão sobre esse resistor e converte em corrente |
-| **Faixa** | ±3,2 A com resolução de 0,8 mA — muito mais do que precisamos |
+| **Faixa** | ±3,2 A com resolução de 0,8 mA. ⚠️ Para 17,6 mA convém programar o ganho para a escala de ±400 mA, onde a resolução vai a 0,1 mA |
 | **Endereços** | **4 selecionáveis** por jumpers: 0x40 e 0x41 |
 | **Ligação** | 2 fios de dados (SDA/SCL) compartilhados + alimentação |
 
@@ -164,7 +167,7 @@ O barramento de 5 V já alimenta Arduino, tela, RTC, lógica dos BTS e os LEDs d
 
 ```
                          ┌─── porta-fusível DIN ───┐
-   BD-24V ───────────────┤  F-P1 · fusível 500 mA  ├──────┐
+   BD-24V ───────────────┤  F-P1 · fusível 100 mA  ├──────┐
    (24 V permanente)     └─────────────────────────┘      │
                                                            │
                         ┌──────────────────────────────────┴──┐
@@ -181,8 +184,8 @@ O barramento de 5 V já alimenta Arduino, tela, RTC, lógica dos BTS e os LEDs d
 
 | Posição | Fusível | Endereço INA219 | Jumper A0 | Jumper A1 |
 |---|---|---|---|---|
-| **P-1** | F-P1 · 500 mA | **0x40** | — | — |
-| **P-2** | F-P2 · 500 mA | **0x41** | ponte | — |
+| **P-1** | F-P1 · 100 mA | **0x40** | — | — |
+| **P-2** | F-P2 · 100 mA | **0x41** | ponte | — |
 | ~~P-3~~ | ~~F-P3~~ | ~~0x44~~ | — | **reserva** — endereço livre para crescer |
 | ~~P-4~~ | ~~F-P4~~ | ~~0x45~~ | — | **reserva** |
 
@@ -200,10 +203,14 @@ A lógica é deliberadamente simples — e a simplicidade é o que a torna confi
 
 | Corrente lida | Interpretação | Ação |
 |---|---|---|
-| **110 – 150 mA** | Normal | Nada |
-| **< 20 mA** por mais de 2 s | **Dispositivo morto ou fusível aberto** | Alarme `DUT_n_MORTO` · registra no SD · publica por MQTT · LED FAULT |
-| **> 300 mA** | Consumo anormal (pré-falha) | Alerta `DUT_n_SOBRECARGA` |
-| **0 mA em TODAS as posições** | Provavelmente o barramento caiu, não 4 falhas simultâneas | Alarme de **sistema**, não de dispositivo |
+| **entre 85% e 115%** da referência | Normal | Nada |
+| **< 50%** da referência por mais de 2 s | **Dispositivo morto ou fusível aberto** | Alarme `DUT_n_MORTO` · registra no SD · publica por MQTT · LED FAULT |
+| **> 150%** da referência | Consumo anormal (pré-falha) | Alerta `DUT_n_SOBRECARGA` |
+| **queda em TODAS as posições ao mesmo tempo** | Provavelmente o barramento caiu, não várias falhas simultâneas | Alarme de **sistema**, não de dispositivo |
+
+> ⭐ **Os limiares são percentuais, não valores fixos** — e é isso que faz a solução escalar. A posição 1 consome 17,6 mA e a posição 2 consome 9,8 mA; um limiar único de "20 mA" acusaria a posição 2 como morta o tempo todo. **Cada posição é comparada com o normal dela**, aprendido na primeira partida com a câmara em temperatura ambiente.
+>
+> 📐 Com o shunt de 47 Ω, cada contagem do ADC vale `4,88 mV ÷ 47 Ω = 0,104 mA`. A posição 2, a mais fraca, é lida em 94 contagens — resolução de sobra para distinguir 50% de 100%.
 
 > 💡 **A última linha é o tipo de detalhe que separa um projeto pensado de um projeto copiado.** Se todas as posições zeram ao mesmo tempo, a causa quase certamente é comum — fusível geral, cabo solto, fonte. Reportar "4 dispositivos falharam" seria tecnicamente verdade e praticamente inútil.
 
@@ -212,8 +219,8 @@ A lógica é deliberadamente simples — e a simplicidade é o que a torna confi
 ### O que vai para o registro
 
 ```
-2026-08-13 14:32:07 | ENSAIO #14 | T=-2.1C | SP=-2.0 | DUT1=128mA DUT2=131mA
-                                            DUT3=0mA ** FALHA ** DUT4=127mA
+2026-08-13 14:32:07 | ENSAIO #14 | T=-2.1C | SP=-2.0 | DUT1=17.6mA (100%)
+                                                       DUT2= 0.0mA ** FALHA **
 ```
 
 Cada linha traz **o instante, a temperatura da câmara e a corrente de cada posição**. É isso que permite responder, depois do ensaio: *"a posição 3 parou aos 47 minutos, quando a câmara passava por −2 °C descendo"* — que é uma informação de engenharia, não um "deu erro".
@@ -226,9 +233,9 @@ Cada linha traz **o instante, a temperatura da câmara e a corrente de cada posi
 |---|---:|---|---:|
 | **Sensor INA219** (módulo I²C) | **2** ⬇ | Corrente/tensão, ±3,2 A, endereço selecionável | R$ 60 |
 | **Porta-fusível DIN 2 vias com interruptor** | 1 | Trilho DIN 35 mm — **F-P1 e F-P2** | R$ 25 |
-| Fusível mini automotivo 500 mA | 8 | 4 usos + 4 reservas | R$ 10 |
+| Fusível tubular 5×20 mm · 100 mA | 8 | 4 usos + 4 reservas | R$ 10 |
 | Placa ilhada pequena | 4 | ~30 × 40 mm — placas simuladoras de DUT | R$ 8 |
-| Resistor 220 Ω / 5 W | 4 | Carga térmica de cada simulador (~3 W) | R$ 8 |
+| Resistor 1,2 kΩ e 2,2 kΩ · 1/2 W | 4 | Limitador de cada simulador | R$ 2 |
 | Resistor 1,2 kΩ 1/4 W | 4 | Limitador do LED indicador | R$ 2 |
 | LED 5 mm difuso | 4 | Indicação visual "posição viva" | R$ 2 |
 | Micro-chave ou jumper | 4 | **Simulação de falha** para a demonstração | R$ 8 |
@@ -239,10 +246,11 @@ Cada linha traz **o instante, a temperatura da câmara e a corrente de cada posi
 
 ## 13.8 ✅ Checklist de aceitação
 
-- [ ] 2 posições montadas, cada uma com **fusível próprio** de 500 mA
+- [ ] 2 posições montadas, cada uma com **fusível próprio** de 100 mA
 - [ ] Os 2 INA219 com **endereços diferentes** (0x40 e 0x41 — o 0x44 e o 0x45 ficam de reserva), configurados antes da montagem
 - [ ] Scanner I²C encontra **6 dispositivos** no barramento
-- [ ] Cada placa simuladora consome **130 mA ± 20 mA** medidos com multímetro
+- [ ] Posição 1 consome **17,6 mA ± 1 mA** e posição 2 **9,8 mA ± 1 mA**, medidos com multímetro
+- [ ] ⭐ As duas leituras **anotadas** — são elas que o firmware vai usar como referência de cada posição
 - [ ] LED de cada posição aceso com a alimentação ligada
 - [ ] Posições alimentadas pelo **BD-24V permanente** — continuam energizadas com a emergência acionada
 - [ ] **Ensaio de detecção:** abrir o jumper de cada posição, uma por vez, e confirmar o alarme em **menos de 3 s** na IHM e no dashboard
@@ -330,15 +338,15 @@ Um bastidor de CLP com quatro cartões de entrada analógica é **absolutamente 
 
 ### 🔌 E no nosso protótipo, o que entra nas duas posições?
 
-Duas **placas simuladoras de DUT** — as mesmas descritas em §13.3: um LED que mostra "estou viva" e um resistor de potência que consome e aquece.
+Duas **placas simuladoras de DUT** — as mesmas descritas em §13.3: um LED em série com um resistor, consumindo uma corrente conhecida e estável.
 
 💡 **Vale montar as duas DIFERENTES**, e isso não é capricho:
 
 | | Posição 1 | Posição 2 |
 |---|---|---|
-| Resistor | 220 Ω / 5 W | 330 Ω / 5 W |
-| Corrente | ~127 mA | ~92 mA |
-| Calor | ~2,6 W | ~1,7 W |
+| Resistor | 1,2 kΩ · 1/2 W | 2,2 kΩ · 1/2 W |
+| Corrente | **17,6 mA** | **9,8 mA** |
+| Leitura no shunt de 47 Ω | 0,83 V · 170 contagens | 0,46 V · 94 contagens |
 
 **Por quê:** com correntes diferentes, você prova que o sistema **não usa um limiar único**. Cada posição aprende a corrente normal dela e compara consigo mesma. Isso é o que acontece na empresa, onde as 50 placas nunca são idênticas — e com duas placas iguais essa qualidade do projeto fica invisível.
 

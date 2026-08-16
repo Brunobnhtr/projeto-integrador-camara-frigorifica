@@ -216,7 +216,7 @@ export const COMPONENTES = [
     nota: 'Caixa DIN de 4 módulos. Dentro dela ficam soldados o multiplexador, os '
         + 'resistores shunt e o INA219 de referência. Os bornes abaixo são os FIOS que '
         + 'chegam e saem — não os pinos dos componentes.',
-    interno: '1 × módulo CD74HC4067 (16 canais) · 2 × shunt 4,7 Ω 1% · 1 × INA219 '
+    interno: '1 × módulo CD74HC4067 (16 canais) · 2 × shunt 47 Ω 1% · 1 × INA219 '
            + '(referência) · o pino EN do mux vai soldado ao 0 V dentro da placa',
     grupos: [
       { ref: 'J1', lado: 'cima', legenda: 'RETORNOS que voltam da câmara (4 vias)', pinos: [
@@ -265,17 +265,17 @@ export const COMPONENTES = [
       { ref: 'IN', lado: 'cima', legenda: 'Entrada comum (1)', pinos: [
         { nome: 'V+', usa: true, para: 'BD-24V saída 4' },
       ]},
-      { ref: 'OUT', lado: 'baixo', legenda: 'Saídas com fusível de 500 mA (2)', pinos: [
+      { ref: 'OUT', lado: 'baixo', legenda: 'Saídas com fusível de 100 mA (2)', pinos: [
         { nome: 'F-P1', usa: true, para: 'DUT da posição 1, na câmara — direto, sem passar pela PI-2' },
         { nome: 'F-P2', usa: true, para: 'DUT da posição 2, na câmara' },
       ]},
     ],
     avisos: [
-      '⭐ CADA VIA FAZ DUAS COISAS. O fusível de 500 mA protege contra curto; o '
+      '⭐ CADA VIA FAZ DUAS COISAS. O fusível de 100 mA protege contra curto; o '
       + 'interruptor permite DESLIGAR a posição na frente da banca e mostrar o sistema '
       + 'detectando a falha em segundos, com a outra posição seguindo normal.',
-      '📌 Fusível de 500 mA para uma carga de ~130 mA. Ele existe para curto, não para '
-      + 'sobrecarga leve.',
+      '📌 Fusível de 100 mA para uma carga de 17,6 mA. Ele existe para curto, não para '
+      + 'sobrecarga leve — nenhum fusível detecta um dispositivo que simplesmente parou.',
     ],
   },
 
