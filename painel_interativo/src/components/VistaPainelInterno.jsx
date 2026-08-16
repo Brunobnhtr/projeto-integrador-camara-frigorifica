@@ -21,8 +21,12 @@ function posicoes(c, g) {
   const inicio = (compr - (porLinha - 1) * passo) / 2;
 
   return g.pinos.map((p, i) => {
-    const lin = Math.floor(i / porLinha);
-    const col = i % porLinha;
+    /* Os dados vêm INTERCALADOS — [5V, sinal, 5V, sinal, ...] — porque é
+       assim que o borne é: um par por linha. Então a coluna avança a cada
+       `linhas` pinos, e não na metade da lista. Dividir a lista ao meio
+       colocaria metade dos pares numa coluna e metade na outra. */
+    const lin = linhas > 1 ? i % linhas : 0;
+    const col = linhas > 1 ? Math.floor(i / linhas) : i;
     const desl = inicio + col * passo;
     const rec = 3.0 + lin * 11.0;          // recuo, para dentro da placa
     if (g.lado === 'cima')     return { ...p, x: c.x + desl, y: c.y + rec, passo };
