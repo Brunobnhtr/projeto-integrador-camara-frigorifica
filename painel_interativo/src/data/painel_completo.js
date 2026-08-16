@@ -70,62 +70,46 @@ export const COMPONENTES = [
   {
     id: 'MEGA', nome: 'Arduino Mega 2560 em adaptador de bornes', trilho: 3,
     x: 34, largura: 120, altura: 72, cor: '#0ca678',
-    aConferir: 'Dimensões e ORDEM dos bornes ainda a confirmar — a foto do adaptador '
-             + 'não tem resolução para ler a serigrafia.',
-    nota: 'O Mega encaixa no meio da placa adaptadora, e cada pino dele vira um borne '
-        + 'de parafuso nas bordas. Some a necessidade de solda e de jumper solto.',
+    nota: 'O Mega encaixa no meio da placa adaptadora e cada pino dele vira um borne '
+        + 'de parafuso nas bordas. São 82 bornes ao todo. Some a necessidade de solda '
+        + 'e de jumper solto.',
     grupos: [
-      { ref: 'POWER', lado: 'baixo', legenda: 'Alimentação — bornes (8)', pinos: [
-        via('IOREF'), via('RESET'), via('3V3'),
-        via('5V', 1, 'BD-5V saída 1'),
-        via('GND', 1, 'BD-0V'), via('GND'), via('VIN'), via('NC'),
+      { ref: 'TOPO', lado: 'cima', linhas: 2, legenda: 'Borda de cima — 35 bornes', pinos: [
+        via('D30'), via('D29', 1, '⭐ MV-1 canal 3 → ventoinhas de CIRCULAÇÃO'), via('D28', 1, '⭐ MV-1 canal 2 → ventoinha do PTC'), via('D27', 1, '⭐ MV-1 canal 1 → ventoinhas do RADIADOR'),
+        via('D26', 1, 'Seletora LOCAL / REMOTO'), via('D25', 1, 'PI-1 J2-8 — vigia se os 24 V caíram'), via('D24', 1, 'Emergência — bloco NF de 5 V'), via('D23', 1, 'Botão STOP (NA, 5 V)'),
+        via('D22', 1, 'Botão START (NA, 5 V)'), via('+5V', 1, 'BD-5V saída 1'), via('D21', 1, 'I²C SCL — o mesmo barramento'), via('D20', 1, 'I²C SDA — AM2315C, DS3231 e 4× INA219'),
+        via('D19', 1, 'Serial1 RX ← DNLCB30/ESP32'), via('D18', 1, 'Serial1 TX → DNLCB30/ESP32'), via('D17', 1, 'Serial2 RX ← conversor ← tela'), via('D16', 1, 'Serial2 TX → conversor → tela'),
+        via('D15'), via('D14'), via('D0'), via('D1'),
+        via('D2', 1, 'PI-1 J2-3 — 1-Wire do DS18B20 (2 sensores no mesmo fio)'), via('D3', 1, 'RPM da ventoinha do radiador #1'), via('D4', 1, 'BTS #1 · R_EN e L_EN juntos'), via('D5', 1, 'BTS #1 · RPWM (frio)'),
+        via('D6', 1, 'BTS #2 · RPWM (quente)'), via('D7', 1, 'BTS #2 · R_EN e L_EN juntos'), via('D8'), via('D9', 1, 'PI-1 J1-5 → sinaleiro ENERGIZADO'),
+        via('D10', 1, 'PI-1 J1-6 → sinaleiro RESFRIANDO'), via('D11', 1, 'PI-1 J1-7 → sinaleiro AQUECENDO'), via('D12', 1, 'PI-1 J1-8 → sinaleiro FALHA'), via('D13'),
+        via('GND'), via('D21/SCL'), via('D20/SDA'),
       ]},
-      { ref: 'ANALOG', lado: 'baixo', legenda: 'Analógicas A0–A15 — bornes (16)', pinos: [
-        via('A0', 1, 'PI-1 J2-1 — corrente do BTS #1'),
-        via('A1', 1, 'PI-1 J2-2 — corrente do BTS #2'),
-        via('A2'), via('A3'), via('A4'), via('A5'), via('A6'), via('A7'),
-        via('A8', 1, 'RPM do cooler externo #2'),
-        via('A9'), via('A10'), via('A11'), via('A12'), via('A13'), via('A14'), via('A15'),
+      { ref: 'ESQ', lado: 'esquerda', legenda: 'Borda esquerda — 13 bornes (D31–D43)', pinos: [
+        via('D31'), via('D32'), via('D33'), via('D34'),
+        via('D35'), via('D36'), via('D37'), via('D38'),
+        via('D39'), via('D40'), via('D41'), via('D42'),
+        via('D43'),
       ]},
-      { ref: 'PWM', lado: 'esquerda', legenda: 'Digitais 0–13 + GND + AREF — bornes (16)', pinos: [
-        via('D0'), via('D1'),
-        via('D2', 1, 'PI-1 J2-3 — 1-Wire do DS18B20'),
-        via('D3', 1, 'RPM do cooler externo #1'),
-        via('D4', 1, 'BTS #1 · R_EN e L_EN juntos'),
-        via('D5', 1, 'BTS #1 · RPWM (frio)'),
-        via('D6', 1, 'BTS #2 · RPWM (quente)'),
-        via('D7', 1, 'BTS #2 · R_EN e L_EN juntos'),
-        via('D8'),
-        via('D9',  1, 'PI-1 J1-5 → sinaleiro ENERGIZADO'),
-        via('D10', 1, 'PI-1 J1-6 → sinaleiro RESFRIANDO'),
-        via('D11', 1, 'PI-1 J1-7 → sinaleiro AQUECENDO'),
-        via('D12', 1, 'PI-1 J1-8 → sinaleiro FALHA'),
-        via('D13'), via('GND'), via('AREF'),
-      ]},
-      { ref: 'DIGITAL', lado: 'cima', legenda: 'Digitais 14–53 + 5V + GND — bornes (36)', pinos: [
-        via('D14'), via('D15'),
-        via('D16', 1, 'Serial2 TX → conversor → tela'),
-        via('D17', 1, 'Serial2 RX ← conversor ← tela'),
-        via('D18', 1, 'Serial1 TX → DNLCB30/ESP32'),
-        via('D19', 1, 'Serial1 RX ← DNLCB30/ESP32'),
-        via('D20', 1, 'I²C SDA — AM2315C, DS3231 e 4× INA219'),
-        via('D21', 1, 'I²C SCL — o mesmo barramento'),
-        via('D22', 1, 'Botão START (NA, 5 V)'),
-        via('D23', 1, 'Botão STOP (NA, 5 V)'),
-        via('D24', 1, 'Emergência — bloco NF de 5 V'),
-        via('D25', 1, 'PI-1 J2-8 — vigia se os 24 V caíram'),
-        ...Array.from({ length: 24 }, (_, i) => via(`D${26 + i}`)),
-        via('5V'), via('5V'), via('GND'), via('GND'),
+      { ref: 'BASE', lado: 'baixo', linhas: 2, legenda: 'Borda de baixo — 34 bornes', pinos: [
+        via('D44'), via('D45'), via('D46'), via('D47'),
+        via('D48'), via('D49'), via('D50'), via('D51'),
+        via('D52'), via('D53'), via('A15'), via('A14'),
+        via('A13'), via('A12'), via('A11'), via('A10'),
+        via('A9'), via('A8', 1, 'RPM da ventoinha do radiador #2'), via('A7'), via('A6'),
+        via('A5'), via('A4'), via('A3'), via('A2'),
+        via('A1', 1, 'PI-1 J2-2 — corrente do BTS #2'), via('A0', 1, 'PI-1 J2-1 — corrente do BTS #1'), via('GND'), via('IOREF'),
+        via('AREF'), via('RESET'), via('+3V3'), via('GND'),
+        via('+5V', 1, 'BD-5V saída 1'), via('VIN'),
       ]},
     ],
     avisos: [
-      '🔎 A ORDEM DOS BORNES AINDA PRECISA SER CONFERIDA. A foto do adaptador tem '
-      + '440 × 440 px e a serigrafia não é legível nem ampliando 12×. A estrutura está '
-      + 'certa (bornes nas três bordas, Mega encaixado no meio), mas a sequência dos '
-      + 'pinos em cada borda é suposição pela ordem do próprio Mega.',
-      '⚠️ O Mega tem só 5 pinos GND. O projeto usa 1 (para o BD-0V), sobram 4 — conte '
-      + 'antes de pendurar sensor direto na placa.',
-      '📌 D50–D53 (SPI) ficaram LIVRES quando o cartão SD mudou para a tela ES3C28P.',
+      '✅ Pinagem conferida na foto do adaptador: 35 bornes em cima, 13 à esquerda e '
+      + '34 embaixo. O D21/SCL e o D20/SDA aparecem DUAS vezes na borda de cima — é o '
+      + 'mesmo pino, espelhado, como no Mega original. Use um dos dois, não os dois.',
+      '⚠️ Há 3 bornes GND (um em cima, dois embaixo) e 2 de +5V. O projeto usa 1 de '
+      + 'cada. Os outros servem para sensores, sem precisar de régua extra.',
+      '📌 D50–D53 ficaram LIVRES quando o cartão SD mudou para a tela ES3C28P.',
     ],
   },
   {
@@ -242,6 +226,44 @@ export const COMPONENTES = [
            + 'reserva para um intertravamento futuro.'],
   },
 
+  {
+    id: 'MV-1', nome: 'MV-1 — módulo MOSFET 4 canais (ventoinhas)', trilho: 2,
+    x: 230, largura: 55, altura: 44, cor: '#0ca678',
+    nota: 'Comanda as ventoinhas em três grupos, porque elas NÃO ligam todas juntas. '
+        + 'MOSFET e não relé: ventoinha liga e desliga a cada ciclo de ensaio, e '
+        + 'contato de relé tem vida contada em número de manobras.',
+    grupos: [
+      { ref: 'CTRL', lado: 'cima', legenda: 'Comando — vem do Arduino (5)', pinos: [
+        { nome: 'IN1', usa: true, para: 'Mega D27 — grupo RADIADOR' },
+        { nome: 'IN2', usa: true, para: 'Mega D28 — grupo PTC' },
+        { nome: 'IN3', usa: true, para: 'Mega D29 — grupo CIRCULAÇÃO' },
+        { nome: 'IN4' },
+        { nome: 'GND', usa: true, para: 'BD-0V — referência do comando' },
+      ]},
+      { ref: 'PWR', lado: 'esquerda', legenda: 'Alimentação das cargas (2)', pinos: [
+        { nome: 'V+', usa: true, para: 'BD-AUX saída 1 — 12 V' },
+        { nome: 'V−', usa: true, para: 'BD-0V' },
+      ]},
+      { ref: 'OUT', lado: 'baixo', legenda: 'Saídas para as ventoinhas (8)', pinos: [
+        { nome: 'O1+', usa: true, para: '2 ventoinhas do RADIADOR +' },
+        { nome: 'O1−', usa: true, para: '2 ventoinhas do RADIADOR −' },
+        { nome: 'O2+', usa: true, para: 'ventoinha do PTC +' },
+        { nome: 'O2−', usa: true, para: 'ventoinha do PTC −' },
+        { nome: 'O3+', usa: true, para: '2 frias da Peltier + 2 do duto  +' },
+        { nome: 'O3−', usa: true, para: '2 frias da Peltier + 2 do duto  −' },
+        { nome: 'O4+' }, { nome: 'O4−' },
+      ]},
+    ],
+    avisos: [
+      '⚠️ A VENTOINHA DO PTC PRECISA DE FIO PRÓPRIO. Se ela vier ligada nos mesmos '
+      + 'dois fios do aquecedor, vai receber o PWM de 1 Hz do BTS #2 e ficar dando '
+      + 'trancos uma vez por segundo. Separe os fios ao desembalar o PTC.',
+      '🔥 A pós-ventilação depende deste módulo E do Arduino continuarem vivos depois '
+      + 'do fim do ensaio. Os dois estão em barramentos PERMANENTES (BD-AUX e BD-5V), '
+      + 'que não caem com a emergência — foi por isso que deu certo.',
+    ],
+  },
+
   /* ════════════ TRILHO 1 — DISTRIBUIÇÃO ════════════ */
   {
     id: 'BD-POT', nome: 'BD-POT — 24 V de potência', trilho: 1,
@@ -261,9 +283,8 @@ export const COMPONENTES = [
     grupos: [
       { ref: 'IN', lado: 'cima', legenda: 'Entrada 2,5 mm² (1)', pinos: [via('IN', 1, 'prensa-cabo do 12 V')] },
       { ref: 'OUT', lado: 'baixo', legenda: 'Saídas (4)', pinos: [
-        via('O1', 1, 'ventoinha do radiador #1 — sempre ligada'),
-        via('O2', 1, 'ventoinha do radiador #2 — sempre ligada'),
-        via('O3', 1, 'ventoinhas do duto (2×) — sempre ligadas'), via('O4'),
+        via('O1', 1, 'MV-1 · V+ — alimenta os 3 grupos de ventoinha'),
+        via('O2'), via('O3'), via('O4'),
       ]},
     ],
   },
@@ -308,8 +329,9 @@ export const COMPONENTES = [
         via('R7', 1, 'DNLCB30 · −'), via('R8', 1, 'RTC DS3231 · GND'),
         via('R9', 1, 'tela ES3C28P · GND'), via('R10', 1, 'conversor de nível · GND'),
         via('R11', 1, 'KA1 · A2'), via('R12', 1, 'KA2 · A2'),
-        via('R13', 1, 'ventoinha do radiador #1 −'), via('R14', 1, 'ventoinha do radiador #2 −'),
-        via('R15', 1, 'ventoinhas do duto −'), via('R16', 1, 'LEDs da maquete −'),
+        via('R13', 1, 'MV-1 · V− (potência das ventoinhas)'),
+        via('R14', 1, 'MV-1 · GND (referência do comando)'),
+        via('R15'), via('R16', 1, 'LEDs da maquete −'),
         via('R17', 1, 'retorno das 4 posições de ensaio'),
         via('R18', 1, 'seletora LOCAL/REMOTO — contato para o 0 V'),
         via('R19'), via('R20'),

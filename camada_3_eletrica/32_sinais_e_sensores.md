@@ -138,7 +138,9 @@ Duas armadilhas do Arduino Mega estão documentadas aqui, e as duas eram silenci
 
 | Pino | Destino | Detalhe |
 |---|---|---|
-| **D2** | DS18B20 (1-Wire) — centro da câmara | Pull-up de **4,7 kΩ** entre DATA e +5 V |
+| **D2** | DS18B20 (1-Wire) — **DOIS sensores no mesmo fio**: centro da câmara + dissipador quente | Pull-up de **4,7 kΩ** entre DATA e +5 V |
+
+> ⭐ **O segundo DS18B20 não custa pino.** O 1-Wire é um barramento: cada sensor tem um endereço de 64 bits gravado de fábrica, então vários convivem no mesmo par de fios. Colando um deles no dissipador do lado quente, o firmware passa a saber quando pode desligar a ventoinha — sem gastar entrada nenhuma do Arduino.
 | **D3** | **RPM do cooler externo #1 (INT1)** ⚠️ *corrigido* | `INPUT_PULLUP` + interrupção `FALLING` |
 | **A8** | **RPM do cooler externo #2 (PCINT16)** ⭐ *novo — 2ª Peltier* | `INPUT_PULLUP` + interrupção de mudança de pino. As interrupções externas do Mega acabaram: D2 é 1-Wire, D18/19 Serial1, D20/21 I²C |
 | D20 / D21 | AM2315C + DS3231 + **4× INA219** | I²C em 5 V — 6 dispositivos no mesmo par de fios |
@@ -153,6 +155,9 @@ Duas armadilhas do Arduino Mega estão documentadas aqui, e as duas eram silenci
 | **D24** | Emergência — bloco **NF** de 5 V | `INPUT_PULLUP` | `HIGH` = **acionada** |
 | **D25** | Presença dos **24 V** no BD-POT (divisor **22 k / 4,7 k** + 100 nF) | `INPUT` (**sem** pull-up) | `HIGH` = **potência disponível** |
 | **D26** | ⭐ **Seletora LOCAL / REMOTO (SA1)** — bloco NA de 5 V na porta | `INPUT_PULLUP` | `LOW` = **REMOTO** · `HIGH` = LOCAL |
+| **D27** | ⭐ MV-1 canal 1 → **2 ventoinhas do RADIADOR** | `OUTPUT` | `HIGH` = ligadas |
+| **D28** | ⭐ MV-1 canal 2 → **ventoinha do PTC** | `OUTPUT` | `HIGH` = ligada |
+| **D29** | ⭐ MV-1 canal 3 → **circulação** (2 frias + 2 do duto) | `OUTPUT` | `HIGH` = ligadas |
 
 > ### ⭐ Por que `LOW` = REMOTO, e não o contrário
 >

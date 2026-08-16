@@ -155,6 +155,11 @@ E existe uma regra que atravessa tudo:
 #define BTN_EMERG    24    // bloco NF  -> HIGH = EMERGÊNCIA ACIONADA
 #define POTENCIA_OK  25    // divisor 22k/4k7 do BD-POT -> HIGH = 24 V presente
 #define SEL_REMOTO   26    // seletora LOCAL/REMOTO -> LOW = REMOTO (ver nota)
+
+// ── VENTOINHAS: 3 grupos, no modulo MOSFET MV-1 ─────────────────────
+#define VENT_RADIADOR 27   // 2 do radiador (lado quente, fora)
+#define VENT_PTC      28   // ventoinha do aquecedor
+#define VENT_CIRCUL   29   // 2 frias da Peltier + 2 do duto
 // D26 ficou LIVRE (era o comando do antigo relé K0)
 
 // ⚠ R_EN e L_EN de cada modulo vao JUNTOS no mesmo pino do Arduino.
@@ -209,6 +214,38 @@ const double        DEGELO_DUTY         = 20.0;            // PTC em 20 %
 > **Um fio rompido não pode abrir a máquina para o mundo.** Por isso o contato da seletora fecha para o 0 V na posição REMOTO — a falha cai sempre para o lado de quem está presente e enxerga a câmara.
 >
 > Basta **um bloco NA e um pino**: aberto = LOCAL, fechado = REMOTO.
+
+> ### ⭐ As ventoinhas não ligam todas juntas — e nem desligam juntas
+>
+> Cada grupo tem uma condição diferente, e a diferença não é economia: é térmica.
+>
+> | Grupo | Liga quando | Desliga quando |
+> |---|---|---|
+> | **RADIADOR** (2, lado quente) | está **resfriando** | o dissipador voltar perto da ambiente |
+> | **PTC** (1, no aquecedor) | está **aquecendo** | as aletas voltarem perto da ambiente |
+> | **CIRCULAÇÃO** (2 frias + 2 do duto) | ensaio rodando, **frio ou quente** | fim do ensaio, na hora |
+>
+> **Por que o radiador fica DESLIGADO ao aquecer.** Com a Peltier desligada, o dissipador externo não tem calor para jogar fora — ele só vira um ralo por onde o calor da câmara escapa. Ventilá-lo naquele momento **atrapalha o aquecimento** e gasta energia.
+>
+> **⭐ Por que a ventoinha não desliga junto com a carga: a PÓS-VENTILAÇÃO.** Quando o ensaio acaba, o dissipador ainda está cheio de calor armazenado. Cortar a ventoinha ali deixa esse calor voltar por condução — no caso da Peltier, atravessando a própria pastilha no sentido errado, que é o que mais encurta a vida dela. Então a ventoinha continua girando até o dissipador esfriar.
+>
+> ```cpp
+> // O sensor do dissipador é um SEGUNDO DS18B20, no MESMO fio do primeiro.
+> // 1-Wire é barramento: cada sensor tem endereço próprio, então não
+> // custa pino nenhum a mais.
+> const float MARGEM_AMBIENTE = 5.0;      // °C acima da ambiente
+> const unsigned long POS_VENT_MAX = 600000UL;   // 10 min, rede de seguranca
+>
+> bool precisaPosVentilar(float tDissipador, float tAmbiente,
+>                         unsigned long desde) {
+>     if (millis() - desde > POS_VENT_MAX) return false;   // sensor falhou
+>     return tDissipador > tAmbiente + MARGEM_AMBIENTE;
+> }
+> ```
+>
+> ⚠️ **O `POS_VENT_MAX` não é detalhe.** Sem ele, um sensor que trave lendo 80 °C deixaria a ventoinha girando para sempre.
+>
+> ✅ **A pós-ventilação sobrevive à emergência**, e isso foi de graça: o MV-1 é alimentado pelo **BD-AUX** e o Arduino pelo **BD-5V** — os dois são barramentos permanentes, que não caem com o KA2. Ou seja, alguém pode socar o cogumelo com a câmara a 60 °C e as ventoinhas continuam tirando o calor.
 
 
 ---
