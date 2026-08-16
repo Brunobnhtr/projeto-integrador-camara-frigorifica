@@ -5,7 +5,12 @@
  * para o que o projeto liga nele? É o tipo de erro que só aparece na
  * bancada, quando falta um lugar para o fio.
  */
-import { COMPONENTES, TRILHOS, CAIXA } from '../src/data/painel_completo.js';
+import { COMPONENTES, TRILHOS, CAIXA, PLACA, CANALETAS } from '../src/data/painel_completo.js';
+
+/* largura util = placa menos as canaletas verticais */
+const cv = CANALETAS.filter(k => k.vertical);
+const UTIL = Math.round(Math.min(...cv.map(k => k.x)) === cv[0].x
+  ? cv[1].x - (cv[0].x + cv[0].w) : 0);
 
 const erros = [], avisos = [];
 let totPinos = 0, totUsados = 0;
@@ -17,8 +22,8 @@ for (const t of [...TRILHOS].sort((a, b) => a.n - b.n)) {
   const larg = comps.reduce((s, c) => s + c.largura, 0);
   console.log(`── ${t.nome}  ·  ${comps.length} componentes  ·  ${larg} mm ocupados`);
   for (const c of comps) linha(c);
-  if (larg > 360) erros.push(`${t.nome}: ${larg} mm ocupados, o trilho tem ~360 mm`);
-  else avisos.push(`${t.nome}: ${larg}/360 mm — sobram ${360 - larg} mm`);
+  if (larg > UTIL) erros.push(`${t.nome}: ${larg} mm ocupados, só há ${UTIL} mm entre as canaletas`);
+  else avisos.push(`${t.nome}: ${larg}/${UTIL} mm — sobram ${UTIL - larg} mm`);
   console.log('');
 }
 

@@ -138,7 +138,27 @@ Duas armadilhas do Arduino Mega estão documentadas aqui, e as duas eram silenci
 
 | Pino | Destino | Detalhe |
 |---|---|---|
-| **D2** | DS18B20 (1-Wire) — **DOIS sensores no mesmo fio**: centro da câmara + dissipador quente | Pull-up de **4,7 kΩ** entre DATA e +5 V |
+| **D2** | DS18B20 (1-Wire) — **no dissipador do lado quente**, fora da câmara | Pull-up de **4,7 kΩ** entre DATA e +5 V |
+
+> ### 🔄 Quem mede a câmara agora é o AM2315C
+>
+> O DS18B20 saiu de dentro da câmara. Quem mede lá dentro é o **AM2315C**, que já estava no barramento I²C e entrega **temperatura e umidade no mesmo sensor** — e a umidade importa: ensaio térmico com condensação não vale.
+>
+> O DS18B20 foi para o **dissipador do lado quente**, onde ele tem uma função que nenhum outro sensor faz: dizer quando a pós-ventilação pode parar.
+>
+> | Sensor | Onde | Mede | Serve para |
+> |---|---|---|---|
+> | **AM2315C** | dentro da câmara | temperatura **e umidade** | o controle do ensaio |
+> | **DS18B20** | colado no dissipador | temperatura | saber quando desligar a ventoinha |
+>
+> ⚠️ **Isso deixa o controle com UM sensor só, e isso é um risco.** Se o AM2315C travar lendo um valor plausível mas errado, o sistema aquece ou resfria sem perceber. O firmware tem que desconfiar dele:
+>
+> - **Faixa:** leitura fora de −10 a +80 °C é defeito, não medição
+> - **Velocidade:** temperatura que muda mais de 5 °C em 1 s é impossível numa câmara — é ruído ou sensor solto
+> - **Silêncio:** se o I²C não responder por 3 leituras seguidas, é falha
+> - **Coerência:** com a Peltier ligada há 5 minutos e a temperatura sem cair nada, algo está errado — ou o sensor, ou a refrigeração
+>
+> Qualquer um desses casos deve levar ao estado de FALHA com a potência cortada. Um sensor mentindo é pior que um sensor ausente, porque o sistema age com confiança sobre um dado falso.
 
 > ⭐ **O segundo DS18B20 não custa pino.** O 1-Wire é um barramento: cada sensor tem um endereço de 64 bits gravado de fábrica, então vários convivem no mesmo par de fios. Colando um deles no dissipador do lado quente, o firmware passa a saber quando pode desligar a ventoinha — sem gastar entrada nenhuma do Arduino.
 | **D3** | **RPM do cooler externo #1 (INT1)** ⚠️ *corrigido* | `INPUT_PULLUP` + interrupção `FALLING` |
