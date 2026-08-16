@@ -69,6 +69,7 @@
 | 11 | [Subestação e Postes](camada_1_maquete/11_subestacao_e_postes.md) | Caixa da subestação, pátio com brita e cerca, 3 postes com cruzeta e isoladores, 3 transformadores (um por poste) com leitor digital, rede compacta protegida |
 | 12 | [Câmara Térmica](camada_1_maquete/12_camara_termica.md) | Cálculo de carga térmica, escolha do isolante, barreira de vapor, **porta dupla anticondensação**, dreno com sifão, 28 peças de acrílico |
 | **13** ⭐ | [**Posições de Ensaio e Detecção de Falha**](camada_1_maquete/13_posicoes_de_ensaio.md) | **Os dispositivos energizados dentro da cabine, proteção individual por posição e detecção de dispositivo morto por medição de corrente (INA219)** |
+| **14** ⭐ | [**Do protótipo às 50 posições**](camada_1_maquete/14_escala_prototipo_x_fabrica.md) | **Como a detecção de falha escala da bancada para a fábrica** — multiplexador CD74HC4067, shunt dimensionado, custo comparado, e por que não precisa de CLP |
 
 ### CAMADA 2 — PAINEL
 *Montagem mecânica. Nenhum fio ligado.*
