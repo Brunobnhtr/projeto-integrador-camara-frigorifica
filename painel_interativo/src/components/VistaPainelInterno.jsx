@@ -409,7 +409,7 @@ export default function VistaPainelInterno() {
                                        (!etapa || t.etapa === etapa)).map(t => {
             const on = !fio || fio === t.n;
             return (
-              <g key={t.n} onClick={() => setFio(fio === t.n ? null : t.n)}
+              <g key={t.n} onClick={() => { setFio(fio === t.n ? null : t.n); setSel(null); }}
                  style={{ cursor: 'pointer' }} opacity={on ? 1 : 0.12}>
                 <polyline points={t.pts.map(p => p.join(',')).join(' ')} fill="none"
                           stroke="transparent" strokeWidth={6} />
@@ -423,14 +423,19 @@ export default function VistaPainelInterno() {
                   <circle cx={t.prensa.x} cy={CAIXA.altura + 2} r={6.5} fill="#495057" />
                   <circle cx={t.prensa.x} cy={CAIXA.altura + 2} r={3} fill={t.cor} />
                 </>)}
-                {/* a anilha, no meio do percurso */}
+                {/* ⭐ A ANILHA SÓ NO FIO ESCOLHIDO. Desenhadas todas de uma
+                    vez, elas se empilhavam embaixo dos componentes e viravam
+                    um borrão colorido que parecia um fio a mais. */}
                 {(() => {
                   const m = t.pts[Math.floor(t.pts.length / 2)];
+                  if (fio !== t.n)
+                    return <circle cx={m[0]} cy={m[1]} r={1.6} fill={t.cor}
+                                   stroke="#fff" strokeWidth={0.6} />;
                   return (
                     <g>
-                      <rect x={m[0] - 6.5} y={m[1] - 4} width={13} height={8} rx={1.5}
-                            fill="#fff" stroke={t.cor} strokeWidth={1} />
-                      <text x={m[0]} y={m[1] + 2.7} textAnchor="middle" fontSize={5.4}
+                      <rect x={m[0] - 9} y={m[1] - 5.5} width={18} height={11} rx={2}
+                            fill="#fff" stroke={t.cor} strokeWidth={1.2} />
+                      <text x={m[0]} y={m[1] + 3.2} textAnchor="middle" fontSize={7}
                             fontWeight="700" fill={t.cor}>{t.n}</text>
                     </g>
                   );
@@ -483,7 +488,9 @@ export default function VistaPainelInterno() {
                             stroke={on ? '#e8590c' : '#1a1d20'} strokeWidth={on ? 0.7 : 0.25} />
                       {(() => {
                         const cx = t.cx, cy = t.cy;
-                        const txt = p.nome.replace(/^(GPIO|GPI)\s*/, '').replace(/ ·.*$/, '');
+                        const txt = p.pino
+                          ? `${p.nome}·${p.pino}`
+                          : p.nome.replace(/^(GPIO|GPI)\s*/, '').replace(/ ·.*$/, '');
                         return (
                           <text x={cx} y={cy} textAnchor="middle"
                                 dominantBaseline="central"
@@ -660,6 +667,81 @@ export default function VistaPainelInterno() {
             })}
           </div>
         )}
+
+        {fio && !sel && (() => {
+          const f = FIOS.find(x => x.n === fio);
+          const t = tracados.find(x => x.n === fio);
+          const ponta = a => {
+            if (a.prensa) {
+              const pr = PRENSAS_PAINEL.find(x => x.id === a.prensa);
+              return { titulo: pr.id, sub: pr.nome, det: pr.diz };
+            }
+            const c = COMPONENTES.find(x => x.id === a.comp);
+            const p = c?.grupos.flatMap(g => g.pinos).find(x => x.nome === a.via);
+            const g = c?.grupos.find(gg => gg.pinos.some(x => x.nome === a.via));
+            return {
+              titulo: `${a.comp} · ${a.via}${p?.pino ? ` (pino ${p.pino})` : ''}`,
+              sub: c?.nome, det: p?.para,
+              onde: c?.porta ? 'na PORTA' : `trilho ${c?.trilho} · borda ${g?.lado}`,
+            };
+          };
+          const A = ponta(f.de), B = ponta(f.para);
+          const mm = t?.pts.length
+            ? t.pts.slice(1).reduce((s, p, i) =>
+                s + Math.hypot(p[0] - t.pts[i][0], p[1] - t.pts[i][1]), 0) : 0;
+          return (
+            <>
+              <div style={{ background: f.cor, color: '#fff', padding: '13px 16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <b style={{ fontSize: 16 }}>Fio {f.n} · {f.nome}</b>
+                  <button onClick={() => setFio(null)} style={{
+                    background: '#ffffff33', color: '#fff', border: 'none',
+                    borderRadius: 5, width: 25, height: 25, cursor: 'pointer' }}>×</button>
+                </div>
+                <div style={{ fontSize: 11, opacity: 0.92, marginTop: 3 }}>
+                  {f.mm2} mm² · {f.corNome} · etapa {f.etapa} ·{' '}
+                  {mm ? `≈ ${(mm + 40).toFixed(0)} mm de fio` : 'ponte curta'}
+                </div>
+              </div>
+              <div style={{ padding: '12px 16px' }}>
+                {[['⬅ SAI DE', A, '#2f9e44'], ['➡ CHEGA EM', B, '#c92a2a']].map(
+                  ([rot, P, cor]) => (
+                  <div key={rot} style={{ border: `2px solid ${cor}`, borderRadius: 7,
+                                          padding: '9px 11px', marginBottom: 9 }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: cor,
+                                  letterSpacing: 0.5 }}>{rot}</div>
+                    <div style={{ fontSize: 14, fontWeight: 700, fontFamily: 'monospace',
+                                  marginTop: 2 }}>{P.titulo}</div>
+                    <div style={{ fontSize: 11.5, color: '#495057' }}>{P.sub}</div>
+                    {P.onde && (
+                      <div style={{ fontSize: 10.5, color: '#868e96' }}>{P.onde}</div>
+                    )}
+                    {P.det && (
+                      <div style={{ fontSize: 11, color: '#1971c2', marginTop: 4,
+                                    lineHeight: 1.45 }}>↳ {P.det}</div>
+                    )}
+                  </div>
+                ))}
+                <div style={{ fontSize: 11, color: '#868e96', letterSpacing: 0.4,
+                              marginBottom: 3 }}>POR ONDE PASSA</div>
+                <div style={{ fontSize: 11.5, fontFamily: 'monospace', background: '#f1f3f5',
+                              borderRadius: 5, padding: '7px 9px', marginBottom: 10 }}>
+                  {f.rota.length ? f.rota.join(' → ') : 'ponte curta na própria base'}
+                </div>
+                <div style={{ fontSize: 12, lineHeight: 1.55, color: '#495057' }}>{f.diz}</div>
+                {f.porque && (
+                  <div style={{ fontSize: 11.5, background: '#e7f5ff', borderRadius: 5,
+                                padding: 9, marginTop: 8, lineHeight: 1.5 }}>{f.porque}</div>
+                )}
+                {f.aviso && (
+                  <div style={{ fontSize: 11.5, background: '#fff5f5', borderRadius: 5,
+                                padding: 9, marginTop: 8, lineHeight: 1.5,
+                                color: '#c92a2a' }}>{f.aviso}</div>
+                )}
+              </div>
+            </>
+          );
+        })()}
 
         {sel && (
           <>

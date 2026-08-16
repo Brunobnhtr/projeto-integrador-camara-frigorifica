@@ -169,6 +169,47 @@ for (const f of FIOS) {
   console.log(`       └─► ${nomeDe(f.para).padEnd(12)}  ${f.mm2} mm² ${f.corNome}`);
 }
 
+/* ── ⭐ AUDITORIA: o borne e o fio contam a MESMA história? ──────────
+   Cada terminal do inventário diz, em texto, com quem ele se liga. Cada
+   fio diz a mesma coisa em dados. Quando os dois discordam, um dos dois
+   está errado — e é exatamente aí que a montagem erra o terminal. */
+console.log('\n=== o borne e o fio concordam? ===');
+const IDS = COMPONENTES.map(c => c.id).sort((a, b) => b.length - a.length);
+const citados = txt => {
+  const achados = new Set();
+  for (const id of IDS) {
+    /* o hífen NÃO pode entrar no lookahead: 'S2-11' tem que casar com
+       'S2', que é justamente a forma como o inventário cita um borne */
+    const re = new RegExp(id.replace(/[-]/g, '.') + '(?!\w)', 'i');
+    if (re.test(txt)) achados.add(id);
+  }
+  return achados;
+};
+
+let conferidos = 0, mudos = 0;
+for (const c of COMPONENTES)
+  for (const g of c.grupos)
+    for (const p of g.pinos) {
+      if (!p.usa || !p.para) continue;
+      const meus = FIOS.filter(f =>
+        (f.de.comp === c.id && f.de.via === p.nome) ||
+        (f.para.comp === c.id && f.para.via === p.nome));
+      if (!meus.length) { mudos++; continue; }
+      conferidos++;
+      const alvos = new Set(meus.map(f =>
+        f.de.comp === c.id && f.de.via === p.nome ? f.para.comp : f.de.comp)
+        .filter(Boolean));
+      const ditos = citados(p.para);
+      ditos.delete(c.id);
+      if (!ditos.size) continue;               // o texto não nomeia ninguém
+      const bate = [...alvos].some(a => ditos.has(a));
+      if (!bate)
+        erros.push(`${c.id}.${p.nome}: o inventário diz "${p.para}" (cita `
+          + `${[...ditos].join(', ')}) mas o fio vai para ${[...alvos].join(', ')}`);
+    }
+console.log(`  . ${conferidos} bornes com fio conferidos contra o texto do inventário`);
+console.log(`  . ${mudos} bornes usados ainda sem fio declarado`);
+
 /* ── ⭐ COBERTURA: quais bornes já têm fio e quais ainda faltam ────── */
 console.log('\n=== cobertura dos bornes ===');
 const comFio = new Set();

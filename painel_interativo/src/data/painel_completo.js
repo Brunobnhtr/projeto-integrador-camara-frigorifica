@@ -156,6 +156,17 @@ export const TRILHOS = [
 
 /* ── atalhos para montar listas repetitivas ──────────────────────── */
 const via = (nome, usa, para) => ({ nome, ...(usa ? { usa: true, para } : {}) });
+
+/* ⭐ RELÉ: o nome IEC e o número do pino da base são coisas diferentes.
+   O desenho fala 'KA1-14'; a base PTF08A tem gravado '5'. Guardar os
+   dois no modelo é o que impede a troca na hora de parafusar.
+
+   Padrão do relé adotado — 8 pinos, 2 reversíveis, bobina 24 Vcc:
+     A1=13  A2=14   ·   11=9  12=1  14=5   ·   21=12  22=4  24=8       */
+const PINO_BASE = { A1: 13, A2: 14, 11: 9, 12: 1, 14: 5, 21: 12, 22: 4, 24: 8 };
+const rele = (nome, usa, para) => ({
+  ...via(nome, usa, para), pino: PINO_BASE[nome],
+});
 const bloco = (n, prefixo = 'O') =>
   Array.from({ length: n }, (_, i) => ({ nome: `${prefixo}${i + 1}` }));
 
@@ -419,16 +430,16 @@ export const COMPONENTES = [
          frente para a CH-2x1 (potência), que é por onde a cadeia de
          comando anda. Em cima ficam os que só levam ponte curta na
          própria base, e os NF que o projeto não usa. */
-      { ref: 'CIMA', lado: 'cima', legenda: 'Fileira de cima (4)', pinos: [
-        via('12'),
-        via('14', 1, '⭐ ponte curta até o A1: é ISTO que faz o relé se segurar'),
-        via('21', 1, 'ponte curta do 11 — comum do contato de SAÍDA'), via('22'),
+      { ref: 'CIMA', lado: 'cima', legenda: 'Fileira de cima — pinos 1, 4, 5 e 12', pinos: [
+        rele('12'),
+        rele('14', 1, '⭐ ponte curta até o A1: é ISTO que faz o relé se segurar'),
+        rele('21', 1, 'ponte curta do 11 — comum do contato de SAÍDA'), rele('22'),
       ]},
-      { ref: 'BAIXO', lado: 'baixo', legenda: 'Fileira de baixo — os fios externos (4)', pinos: [
-        via('A1', 1, '⭐ do REARME (S3-14) OU do próprio selo (14) — os dois em paralelo'),
-        via('A2', 1, 'BD-0V · R11'),
-        via('11', 1, 'nó CMD — comum do contato de SELO'),
-        via('24', 1, 'S2-11 (bloco NF do STOP) → daí para o KA2 · A1'),
+      { ref: 'BAIXO', lado: 'baixo', legenda: 'Fileira de baixo — os fios externos', pinos: [
+        rele('A1', 1, '⭐ do REARME (S3-14) OU do próprio selo (14) — os dois em paralelo'),
+        rele('A2', 1, 'BD-0V · R11'),
+        rele('11', 1, 'nó CMD — comum do contato de SELO'),
+        rele('24', 1, 'S2-11 (bloco NF do STOP) → daí para o KA2 · A1'),
       ]},
     ],
   },
@@ -437,14 +448,14 @@ export const COMPONENTES = [
     x: 190, largura: 34, altura: 50, cor: '#7048e8',
     nota: '⚠️ Contato declarado em CORRENTE CONTÍNUA, mínimo 10 A.',
     grupos: [
-      { ref: 'CIMA', lado: 'cima', legenda: 'Fileira de cima (4)', pinos: [
-        via('12'), via('21'), via('22'), via('24'),
+      { ref: 'CIMA', lado: 'cima', legenda: 'Fileira de cima — pinos 1, 4, 8 e 12', pinos: [
+        rele('12'), rele('21'), rele('22'), rele('24'),
       ]},
-      { ref: 'BAIXO', lado: 'baixo', legenda: 'Fileira de baixo — os fios externos (4)', pinos: [
-        via('A1', 1, 'S2-12 — vem pelo bloco NF do STOP, que vem do KA1 · 24'),
-        via('A2', 1, 'BD-0V · R12'),
-        via('11', 1, '⚡ entrada dos 24 V do prensa-cabo PG9-1'),
-        via('14', 1, '⚡ saída para o BD-POT — é este contato que corta a potência'),
+      { ref: 'BAIXO', lado: 'baixo', legenda: 'Fileira de baixo — os fios externos', pinos: [
+        rele('A1', 1, 'S2-12 — vem pelo bloco NF do STOP, que vem do KA1 · 24'),
+        rele('A2', 1, 'BD-0V · R12'),
+        rele('11', 1, '⚡ entrada dos 24 V do prensa-cabo PG9-1'),
+        rele('14', 1, '⚡ saída para o BD-POT — é este contato que corta a potência'),
       ]},
     ],
     avisos: ['📌 Sobra um contato reversível inteiro (21-22-24) sem uso. Serve de '
