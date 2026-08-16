@@ -96,6 +96,54 @@ O edital diz que os dispositivos ficam *"energizados e operando em modo de simul
 
 ---
 
+## 13.3b ❓ "Se é só um LED, por que 24 V e não 5 V?"
+
+Porque **o LED não é a carga** — ele é só a lâmpada que mostra que a posição está viva. Quem faz o trabalho é o **resistor de potência**, e é ele que decide a tensão.
+
+### O que o DUT precisa fazer
+
+| Parte | Consome | Para quê |
+|---|---:|---|
+| LED + 1,2 kΩ | ~18 mA · 0,4 W | mostrar que está energizado |
+| **Resistor de potência** | **~109 mA · 2,6 W** | **simular o calor de uma placa real** |
+
+Um ensaio térmico com a câmara vazia não representa nada: numa cabine real, as próprias placas aquecem, e esse calor muda o comportamento do controle. Por isso o simulador **tem que esquentar**.
+
+### E aí a conta muda tudo
+
+Para dissipar os mesmos **2,6 W**:
+
+| | **24 V** | 5 V |
+|---|---:|---:|
+| Corrente | **109 mA** | **524 mA** |
+| Resistor | 220 Ω / 5 W | 9,5 Ω / 5 W |
+| Duas posições somam | **218 mA** | **1,05 A** |
+
+> ⚡ **Mesma potência, quase cinco vezes menos corrente.** É `P = V × I`: subindo a tensão, a corrente desce na mesma proporção. É exatamente por isso que a rede elétrica transmite em alta tensão.
+
+### 🔥 E o problema que mata a ideia dos 5 V: o shunt
+
+Nossa medição usa um resistor shunt de **4,7 Ω**. Veja o que acontece com ele em cada tensão:
+
+| | 24 V · 109 mA | 5 V · 524 mA |
+|---|---:|---:|
+| Queda no shunt | 0,51 V | **2,46 V** |
+| Percentual da alimentação | **2,1%** — irrelevante | **49%** — inviável |
+
+Em 5 V, o resistor de medição comeria **metade da tensão** antes de ela chegar ao dispositivo. Para evitar isso, o shunt teria que cair para ~0,24 Ω — e aí a leitura desabaria de 123 contagens do ADC para **26**, com perda de resolução de cinco vezes. Voltaríamos a precisar de amplificador.
+
+### E ainda haveria a conta do ramal de 5 V
+
+O barramento de 5 V já alimenta Arduino, tela, RTC, lógica dos BTS e os LEDs da maquete — cerca de **310 mA**. Somar 1,05 A das duas posições levaria o LM2596 a **1,35 A**, esquentando sem necessidade. Nos 24 V, os mesmos 218 mA passam despercebidos.
+
+### 🎓 A regra que fica
+
+> **Carga que dissipa potência vai na tensão mais alta disponível; lógica vai na mais baixa.** É o mesmo motivo pelo qual as Peltier foram ligadas em série para 24 V em vez de paralelo em 12 V.
+
+📌 **Se o DUT fosse mesmo só um LED**, sem carga térmica, 5 V seria a escolha certa. Mas aí o ensaio testaria uma câmara vazia — e o edital pede o contrário.
+
+---
+
 ## 13.4 O sensor INA219 — o que ele faz e por que este
 
 | | |

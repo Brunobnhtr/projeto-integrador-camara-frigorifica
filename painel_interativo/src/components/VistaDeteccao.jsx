@@ -54,7 +54,11 @@ const BLOCOS = [
   { id: 'DUT1', nome: 'DUT 1', x: 520, y: 96, w: 130, h: 80, cor: '#1971c2',
     sub: 'placa simuladora', ehDut: true,
     diz: 'Um LED que mostra "estou viva" e um resistor de potência que consome e '
-       + 'aquece. Consome ~127 mA em 24 V.' },
+       + 'aquece. Consome ~127 mA em 24 V.',
+    nota: '❓ Por que 24 V se é só um LED? Porque o LED NÃO é a carga — ele gasta 18 mA. '
+        + 'Quem trabalha é o resistor de potência, que precisa dissipar ~2,6 W para '
+        + 'simular o calor de uma placa real. Em 5 V, os mesmos 2,6 W custariam 524 mA, '
+        + 'e o shunt de 4,7 Ω comeria METADE da alimentação. Ver Doc 13 §13.3b.' },
   { id: 'DUT2', nome: 'DUT 2', x: 520, y: 240, w: 130, h: 80, cor: '#0ca678',
     sub: 'resistor diferente', ehDut: true,
     diz: 'Igual ao DUT 1, mas com resistor de 330 Ω — consome ~92 mA. Correntes '
