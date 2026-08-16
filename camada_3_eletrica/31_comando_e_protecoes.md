@@ -308,7 +308,53 @@ Para esse canal ser confiável, dois reforços de R$ 0,20:
 
 ---
 
-## 31.3 🔌 As duas fileiras da base PTF08A
+## 31.3 🔍 O relé comprado — como descobrir a pinagem dele
+
+O relé do projeto é **8 pinos, 2 reversíveis (2 NA + 2 NF), bobina 24 Vcc, 10 A**, com base para trilho DIN. É o tipo mais comum — família **MY2 / LY2 / JQX-13F** — e a base costuma ser a **PTF08A**.
+
+### O que "2 NA + 2 NF" significa
+
+Não são 4 contatos independentes: são **2 contatos reversíveis**. Cada um tem três terminais — um **comum**, um **NF** e um **NA** — e a mesma lâmina se move entre os dois.
+
+```
+                    ┌── NF  (fechado em repouso)
+   COMUM ───────────┤
+                    └── NA  (fecha quando a bobina energiza)
+```
+
+Por isso **NA e NF do mesmo contato nunca fecham juntos.** No projeto o KA1 usa os dois contatos: um para o selo, outro para habilitar o KA2.
+
+### A pinagem mais provável da sua base
+
+| Nosso nome | Função | Pino na base PTF08A |
+|---|---|---:|
+| `A1` | bobina + | **13** |
+| `A2` | bobina − | **14** |
+| `11` | comum do contato 1 | **9** |
+| `12` | NF 1 | **1** |
+| `14` | NA 1 | **5** |
+| `21` | comum do contato 2 | **12** |
+| `22` | NF 2 | **4** |
+| `24` | NA 2 | **8** |
+
+> 📌 **Repare no padrão, que vale para qualquer relé IEC:** o primeiro dígito é o **número do contato** (1 ou 2) e o segundo diz **o quê** — `1` comum, `2` NF, `4` NA. Sabendo isso você lê qualquer esquema sem decorar nada.
+
+### ✅ Como confirmar em 2 minutos, sem energizar
+
+Multímetro em **continuidade** (o modo que apita), com o relé **encaixado na base e sem alimentação**:
+
+1. **Ache a bobina.** Mude para **ohmímetro**. O único par que dá entre **500 Ω e 2 kΩ** é a bobina — todo o resto dá ou zero ou infinito. Numa bobina de 24 V espere algo perto de **650 Ω**. Anote: são o `A1` e o `A2`.
+2. **Ache os dois comuns.** Cada comum apita com **exatamente um** outro terminal (o NF dele). Os que apitam em repouso são os pares **comum + NF**.
+3. **Separe comum de NF.** Alimente a bobina com 24 V. O par que **parou de apitar** era comum-NF; o terminal que **passou a apitar** com aquele mesmo comum é o **NA**.
+4. **Anote na base com caneta permanente**, usando os nossos nomes: `A1 A2 11 12 14 21 22 24`.
+
+> 🔥 **O passo 4 não é firula.** O desenho do projeto fala em `KA1-14` e `KA1-24`; a base do fabricante fala em `5` e `8`. Escrever a tradução na própria peça evita a única classe de erro que o desenho não consegue impedir.
+
+⚠️ **A bobina de 24 Vcc não tem polaridade**, a menos que o relé tenha **LED ou diodo** embutido — aí `A1` é o positivo. Se o seu tiver LED, respeite; ligado ao contrário o LED não acende e, se houver diodo, ele curto-circuita a saída.
+
+---
+
+## 31.4 🔌 As duas fileiras da base PTF08A
 
 Os 8 terminais de um relé de base não ficam todos de um lado: são **duas fileiras de 4**.
 
@@ -331,7 +377,7 @@ No projeto a divisão não é estética — ela segue por onde o fio precisa sai
 
 ---
 
-## 31.4 🔩 A numeração dos contatos — e três erros que ela evita
+## 31.5 🔩 A numeração dos contatos — e três erros que ela evita
 
 Todo bloco de contato de botoeira industrial vem com o número **gravado no próprio corpo**. A convenção é a mesma no mundo inteiro:
 
@@ -372,7 +418,7 @@ Faça **com o barramento BD-POT desligado**. Só a cadeia de comando alimentada.
 
 ---
 
-## 31.5 As botoeiras
+## 31.6 As botoeiras
 
 | Botão | Cor | Blocos | Ligação |
 |---|---|---|---|
@@ -418,7 +464,7 @@ Com isso o firmware **sabe** quando a energia foi cortada por hardware — e reg
 ---
 
 
-## 31.6 Tabela de proteções e seletividade
+## 31.7 Tabela de proteções e seletividade
 
 | Nível | Dispositivo | Ajuste | Protege contra | Tempo de atuação |
 |---:|---|---|---|---|
@@ -460,7 +506,7 @@ Com isso o firmware **sabe** quando a energia foi cortada por hardware — e reg
 
 ---
 
-## 31.7 ⚡ Pode pendurar um 0 V no outro? — a conta que decide
+## 31.8 ⚡ Pode pendurar um 0 V no outro? — a conta que decide
 
 **Depende de duas coisas: quanta corrente passa e se aquele fio é referência de alguma medição.** E nas duas o projeto tem casos dos dois tipos.
 
@@ -512,7 +558,7 @@ A barra **BD-0V tem 20 pontos** e hoje chegam **13 retornos** declarados. O scri
 
 ---
 
-## 31.8 Aterramento
+## 31.9 Aterramento
 
 ### Os três "terras" do projeto (não confundir)
 
@@ -593,7 +639,7 @@ Se o 0 V for ligado ao PE em dois lugares, cria-se um **laço de terra**: uma es
 
 ---
 
-## 31.9 Tabela de estados do sistema
+## 31.10 Tabela de estados do sistema
 
 | Evento | KA1 | KA2 | 24 V nos BTS | `R_EN` | Tela | LED |
 |---|---|---|---|---|---|---|
@@ -617,7 +663,7 @@ Se o 0 V for ligado ao PE em dois lugares, cria-se um **laço de terra**: uma es
 
 ---
 
-## 31.10 Ensaios de segurança (obrigatórios antes da apresentação)
+## 31.11 Ensaios de segurança (obrigatórios antes da apresentação)
 
 | # | Ensaio | Procedimento | Resultado esperado |
 |---:|---|---|---|
@@ -641,7 +687,7 @@ Se o 0 V for ligado ao PE em dois lugares, cria-se um **laço de terra**: uma es
 
 ---
 
-## 31.11 ✅ Checklist de aceitação
+## 31.12 ✅ Checklist de aceitação
 
 - [ ] **KA1 · relé de interface 24 Vcc, 2 contatos** instalado (selo + saída)
 - [ ] **KA2 · relé de interface 24 Vcc, contato de ≥ 10 A** instalado

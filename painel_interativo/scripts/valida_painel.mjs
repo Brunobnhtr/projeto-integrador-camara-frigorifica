@@ -6,7 +6,8 @@
  * bancada, quando falta um lugar para o fio.
  */
 import { COMPONENTES, TRILHOS, CAIXA, PLACA, CANALETAS, CANALETAS_PORTA,
-         LATERAIS, FOLGA_LATERAL } from '../src/data/painel_completo.js';
+         LATERAIS, FOLGA_LATERAL, TRILHO_X0, TRILHO_X1 }
+  from '../src/data/painel_completo.js';
 
 /* largura util = placa menos as canaletas verticais */
 const cv = CANALETAS.filter(k => k.vertical);
@@ -124,6 +125,35 @@ if (!classes.has('potencia') || !classes.has('sinal'))
     + 'não podem dividir a mesma passagem flexível');
 else if (dob.length !== 2)
   erros.push(`a dobradiça tem ${dob.length} canaletas — deve ter 2, uma por classe`);
+
+/* ── ⭐ NINGUÉM EM CIMA DE CANALETA, NEM O TRILHO ────────────────────
+   Fio só anda dentro da canaleta. Se um componente — ou o próprio
+   trilho DIN — estiver por cima dela, o fio tem que sair dela para
+   contornar, e aí ele passa por baixo da peça. Além disso a tampa da
+   canaleta não fecha. */
+console.log('\n=== a placa: componente ou trilho em cima de canaleta ===');
+for (const c of COMPONENTES.filter(x => x.trilho)) {
+  const t = TRILHOS.find(x => x.n === c.trilho);
+  const cx0 = PLACA.x + c.x, cx1 = cx0 + c.largura;
+  const cy0 = t.y - c.altura / 2, cy1 = t.y + c.altura / 2;
+  for (const k of CANALETAS)
+    if (cx0 < k.x + k.w && k.x < cx1 && cy0 < k.y + k.h && k.y < cy1)
+      erros.push(`${c.id} (${c.largura}×${c.altura}) invade a canaleta ${k.id} — `
+        + 'o fio teria que sair da canaleta para contornar');
+}
+for (const k of CANALETAS.filter(x => x.vertical)) {
+  if (TRILHO_X0 < k.x + k.w && k.x < TRILHO_X1)
+    erros.push(`o trilho DIN (${TRILHO_X0}–${TRILHO_X1}) atravessa a ${k.id} `
+      + `(${k.x}–${k.x + k.w}) — ele tem que ser CORTADO antes da canaleta`);
+}
+console.log(`  . trilho DIN de ${TRILHO_X0} a ${TRILHO_X1} mm, sem tocar nas verticais`);
+for (const t of TRILHOS) {
+  const fila = COMPONENTES.filter(c => c.trilho === t.n);
+  const fim = Math.max(...fila.map(c => PLACA.x + c.x + c.largura));
+  if (fim > TRILHO_X1)
+    erros.push(`${t.nome} termina em ${fim} mm, além do fim do trilho (${TRILHO_X1})`);
+  else console.log(`  . trilho ${t.n}: componentes até ${fim} mm de ${TRILHO_X1}`);
+}
 
 /* ── ⭐ DOIS BLOCOS NA MESMA BORDA NÃO PODEM SE SOBREPOR ─────────────
    A PI-2 tem o J2 e o J3 os dois na borda de baixo. Se cada um for

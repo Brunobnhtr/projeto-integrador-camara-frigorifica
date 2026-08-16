@@ -87,10 +87,10 @@ for (const f of FIOS) {
       const cc = COMPONENTES.find(x => x.id === alvo.comp);
       const gg = cc?.grupos.find(g => g.pinos.some(pp => pp.nome === alvo.via));
       if (!cc || !gg) continue;
-      const esperada = canaletaDoGrupo(cc, gg);
-      if (esperada && esperada !== kid)
+      const ok = canaletaDoGrupo(cc, gg);
+      if (ok.length && !ok.includes(kid))
         erros.push(`${f.n} ${lado} ${alvo.comp}.${alvo.via} (borda ${gg.lado}) usando a `
-          + `${kid} — esse borne enxerga a ${esperada}. Como está, o fio passaria `
+          + `${kid} — esse borne alcança ${ok.join(' ou ')}. Como está, o fio passaria `
           + 'por dentro do componente');
     }
   }

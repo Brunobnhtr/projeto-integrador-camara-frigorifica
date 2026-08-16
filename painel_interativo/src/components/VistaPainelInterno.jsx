@@ -25,7 +25,7 @@ const PLACAS = {
 };
 import {
   CAIXA, PLACA, TRILHOS, COMPONENTES, CANALETAS, CANALETAS_PORTA, LATERAIS,
-  REGRA_SEGREGACAO,
+  REGRA_SEGREGACAO, TRILHO_X0, TRILHO_X1,
 } from '../data/painel_completo';
 
 /* O painel visto de frente, com a porta aberta ao lado.
@@ -302,9 +302,9 @@ export default function VistaPainelInterno() {
           {/* trilhos DIN */}
           {TRILHOS.map(t => (
             <g key={t.n}>
-              <rect x={PLACA.x + 4} y={t.y - 5} width={PLACA.largura - 8} height={10}
+              <rect x={TRILHO_X0} y={t.y - 5} width={TRILHO_X1 - TRILHO_X0} height={10}
                     rx={1} fill="#b8bcc0" stroke="#868e96" strokeWidth={0.6} />
-              <text x={PLACA.x + 6} y={t.y - 38} fontSize={7} fontWeight="700" fill="#8895a6">
+              <text x={TRILHO_X0 + 2} y={t.y - 38} fontSize={7} fontWeight="700" fill="#8895a6">
                 {t.nome}
               </text>
             </g>

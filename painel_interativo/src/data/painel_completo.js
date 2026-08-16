@@ -25,7 +25,7 @@ export const PLACA = { x: 12, y: 14, largura: 476, altura: 472 };
 export const CANALETAS = [
   { id: 'CH-topo', tipo: 'sinal',    x: 14, y: 22,  w: 472, h: 30, nome: 'superior' },
   { id: 'CH-3x2',  tipo: 'sinal',    x: 14, y: 180, w: 472, h: 28, nome: 'entre os trilhos 3 e 2' },
-  { id: 'CH-2x1',  tipo: 'potencia', x: 14, y: 296, w: 472, h: 30, nome: 'entre os trilhos 2 e 1' },
+  { id: 'CH-2x1',  tipo: 'potencia', x: 14, y: 302, w: 472, h: 30, nome: 'entre os trilhos 2 e 1' },
   { id: 'CH-base', tipo: 'potencia', x: 14, y: 440, w: 472, h: 32, nome: 'inferior — entradas' },
   { id: 'CV-esq',  tipo: 'potencia', x: 14, y: 22,  w: 26,  h: 450, nome: 'vertical esquerda', vertical: true },
   { id: 'CV-dir',  tipo: 'sinal',    x: 460, y: 22, w: 26,  h: 450, nome: 'vertical direita', vertical: true },
@@ -139,6 +139,14 @@ export const LATERAIS = [
    sobe rente à borda e some atrás da peça — no desenho e na bancada.
    8 mm entre vizinhos no trilho 2, que é onde estão esses três. */
 export const FOLGA_LATERAL = 8;
+
+/* ⭐ ATÉ ONDE O TRILHO DIN VAI.
+   Ele NÃO atravessa a placa inteira: é cortado antes das canaletas
+   verticais. Trilho por cima de canaleta é o que faz o fio parecer
+   passar por baixo dele — e na bancada seria pior, porque a tampa da
+   canaleta não fecharia. */
+export const TRILHO_X0 = 42;    // logo depois da CV-esq (14..40)
+export const TRILHO_X1 = 458;   // logo antes da CV-dir (460..486)
 
 export const TRILHOS = [
   { n: 3, y: 125, nome: 'TRILHO 3 — Controle' },
@@ -716,16 +724,23 @@ export function canaletaDoGrupo(comp, grupo) {
   const base = naPorta ? comp.y + comp.altura : t.y + comp.altura / 2;
 
   if (grupo.lado === 'cima' || grupo.lado === 'baixo') {
+    /* borne de cima só alcança canaleta acima; de baixo, só a de baixo */
     const acima = grupo.lado === 'cima';
     const cand = ks.filter(k => acima ? k.y + k.h <= topo + 1 : k.y >= base - 1);
-    if (!cand.length) return null;
-    return cand.reduce((a, k) => {
+    if (!cand.length) return [];
+    return [cand.reduce((a, k) => {
       const da = acima ? topo - (a.y + a.h) : a.y - base;
       const dk = acima ? topo - (k.y + k.h) : k.y - base;
       return dk < da ? k : a;
-    }).id;
+    }).id];
   }
-  /* bornes de lateral alcançam a canaleta horizontal mais próxima */
-  return ks.reduce((a, k) =>
-    Math.abs(k.y + k.h / 2 - cy) < Math.abs(a.y + a.h / 2 - cy) ? k : a).id;
+  /* ⭐ BORNE LATERAL ALCANÇA AS DUAS. O fio sai de lado, contorna o
+     componente e sobe OU desce — as duas canaletas vizinhas servem, e
+     quem escolhe é a classe do fio. Tratar como "a mais próxima" faz o
+     resultado virar no momento em que uma canaleta anda 6 mm. */
+  const acima = ks.filter(k => k.y + k.h <= topo + 1)
+    .sort((a, b) => b.y - a.y)[0];
+  const abaixo = ks.filter(k => k.y >= base - 1).sort((a, b) => a.y - b.y)[0];
+  void cy;
+  return [acima, abaixo].filter(Boolean).map(k => k.id);
 }
