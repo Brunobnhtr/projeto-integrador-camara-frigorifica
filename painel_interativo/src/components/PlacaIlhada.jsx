@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import DetalheCircuito from './DetalheCircuito';
 import { rotear } from '../lib/roteador';
+import CaminhoSinal from './CaminhoSinal';
 
 /* Desenha uma placa ilhada montada à mão, a partir do arquivo de layout
    físico dela (pi1_fisico.js ou pi2_fisico.js).
@@ -19,7 +20,7 @@ const PASSO = 2.54;
 /* ── um lado da placa ──────────────────────────────────────────────── */
 function Face({
   face, PLACA, BORNES, BARRAMENTO_0V, NOS, JUMPERS, DISCRETOS, CI, MODULOS,
-  corDe, ativo, setSel, fio, setFio, feitos,
+  corDe, ativo, setSel, fio, setFio, feitos, escala, umLado,
 }) {
   const verso = face === 'verso';
   /* virando a placa, a coluna 1 vai para a direita */
@@ -76,9 +77,11 @@ function Face({
         </span>
       </div>
 
-      <svg width="100%" viewBox={`${vb.x} ${vb.y} ${vb.w} ${vb.h}`}
-           style={{ background: '#fff', borderRadius: '0 0 7px 7px',
-                    boxShadow: '0 1px 6px #0002', display: 'block' }}>
+      <div style={{ overflow: 'auto', background: '#fff',
+                    borderRadius: '0 0 7px 7px', boxShadow: '0 1px 6px #0002' }}>
+      <svg width={vb.w * escala * (umLado ? 1 : 0.62)}
+           viewBox={`${vb.x} ${vb.y} ${vb.w} ${vb.h}`}
+           style={{ display: 'block', minWidth: '100%' }}>
         {/* corpo da placa — a borda passa MEIO furo fora da última coluna */}
         <rect x={PASSO * 0.5} y={PASSO * 0.5} width={larg} height={alt} rx={1.2}
               fill={verso ? '#c9b98c' : '#d8c9a3'} stroke="#a8946a" strokeWidth={0.5} />
@@ -328,6 +331,7 @@ function Face({
           </text>
         </g>
       </svg>
+      </div>
     </div>
   );
 }
@@ -344,6 +348,8 @@ export default function PlacaIlhada({ dados, titulo, onFechar }) {
   const [sel, setSel] = useState(null);
   const [fio, setFio] = useState(null);
   const [detalhe, setDetalhe] = useState(null);
+  const [caminho, setCaminho] = useState(false);
+  const [escala, setEscala] = useState(6);   // px por mm
   const chaveLS = `soldado:${titulo}`;
   const [feitos, setFeitos] = useState(() => {
     try { return JSON.parse(localStorage.getItem(chaveLS)) ?? []; } catch { return []; }
@@ -364,7 +370,8 @@ export default function PlacaIlhada({ dados, titulo, onFechar }) {
 
   const props = {
     PLACA, BORNES, BARRAMENTO_0V, NOS, JUMPERS, DISCRETOS, CI, MODULOS,
-    corDe, ativo, setSel, fio, setFio, feitos,
+    corDe, ativo, setSel, fio, setFio, feitos, escala,
+    umLado: modo !== 'ambos',
   };
   const faltam = JUMPERS.filter(j => !feitos.includes(j.n)).length;
 
@@ -380,6 +387,22 @@ export default function PlacaIlhada({ dados, titulo, onFechar }) {
               border: '2px solid #1d3557', borderRadius: 7, padding: '7px 13px',
               cursor: 'pointer', fontSize: 12.5, fontWeight: 700 }}>{txt}</button>
           ))}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6,
+                        background: '#fff', border: '2px solid #adb5bd',
+                        borderRadius: 7, padding: '4px 11px' }}>
+            <button onClick={() => setEscala(e => Math.max(3, e - 1.5))} style={{
+              border: 'none', background: 'none', cursor: 'pointer', fontSize: 16,
+              fontWeight: 700, color: '#495057', lineHeight: 1 }}>−</button>
+            <input type="range" min={3} max={26} step={0.5} value={escala}
+                   onChange={e => setEscala(+e.target.value)}
+                   style={{ width: 110 }} />
+            <button onClick={() => setEscala(e => Math.min(26, e + 1.5))} style={{
+              border: 'none', background: 'none', cursor: 'pointer', fontSize: 16,
+              fontWeight: 700, color: '#495057', lineHeight: 1 }}>+</button>
+            <span style={{ fontSize: 11, color: '#868e96', minWidth: 38 }}>
+              {(escala / 3.78).toFixed(1)}×
+            </span>
+          </div>
           {fio != null && (
             <button onClick={() => setFio(null)} style={{
               background: '#fff3bf', border: '2px solid #f59f00', borderRadius: 7,
@@ -452,6 +475,16 @@ export default function PlacaIlhada({ dados, titulo, onFechar }) {
                             marginTop: 1 }}>{c.resumo}</div>
             </button>
           ))}
+          <button onClick={() => setCaminho(true)} style={{
+            display: 'block', width: '100%', marginBottom: 6, background: '#1971c2',
+            color: '#fff', border: 'none', borderRadius: 6, padding: '10px 10px',
+            cursor: 'pointer', fontSize: 12.5, fontWeight: 700, textAlign: 'left',
+          }}>
+            🔎 Siga o sinal — de qual borne até onde
+            <div style={{ fontSize: 10.5, fontWeight: 400, opacity: 0.85, marginTop: 2 }}>
+              sem geometria: só o caminho elétrico, borne a borne
+            </div>
+          </button>
           <button onClick={() => setDetalhe(circuito ?? 1)} style={{
             display: 'block', width: '100%', marginTop: 6, background: '#f08c00',
             color: '#fff', border: 'none', borderRadius: 6, padding: '9px 10px',
@@ -594,6 +627,9 @@ export default function PlacaIlhada({ dados, titulo, onFechar }) {
         </div>
       </aside>
 
+      {caminho && (
+        <CaminhoSinal dados={dados} titulo={titulo} onFechar={() => setCaminho(false)} />
+      )}
       {detalhe != null && (
         <DetalheCircuito dados={dados} circuito={detalhe} onFechar={() => setDetalhe(null)} />
       )}

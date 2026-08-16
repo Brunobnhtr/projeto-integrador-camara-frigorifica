@@ -9,6 +9,7 @@
 import {
   PLACA, BORNES, BARRAMENTO_0V, COMPONENTES_PI1, CI1, NOS, JUMPERS,
 } from '../src/data/pi1_fisico.js';
+import { construirRede } from '../src/lib/rede.js';
 import { rotear, conflitos } from '../src/lib/roteador.js';
 
 /* Duas coisas MUITO diferentes disputam espaço num furo:
@@ -132,7 +133,32 @@ console.log(`placa: ${PLACA.colunas}x${PLACA.linhas} furos = `
           + `${PLACA.larguraMm.toFixed(1)} x ${PLACA.alturaMm.toFixed(1)} mm`);
 console.log(`furos com perna passante: ${passantes.size}  ·  pior caso: ${maxP} por furo`);
 console.log(`ilhas que recebem jumper: ${jumpers.size}  ·  pior caso: ${maxJ} fios na mesma ilha`);
+
+/* ── 12. a rede elétrica fecha? ────────────────────────────────────── */
+let notaRede = null;
+{
+  const dados = { PLACA, BORNES, BARRAMENTO_0V, NOS, JUMPERS,
+                  COMPONENTES_PI1, CI1: CI1, MODULOS: [] };
+  const rede = construirRede(dados);
+  let ilhados = 0;
+  for (const b of BORNES)
+    for (const v of b.vias.filter(x => !x.livre)) {
+      const nn = rede.nos.get(rede.acha(`${v.col},${b.linha}`));
+      /* uma via usada tem que dividir o nó com ALGUÉM — senão o fio dela
+         não leva a lugar nenhum */
+      const outros = (nn?.membros ?? []).filter(m => m.ponto !== `${v.col},${b.linha}`);
+      if (!outros.length) { erros.push(`${b.ref}-${v.n} (${v.sinal}) está ilhado — nenhum outro `
+        + 'ponto no mesmo nó elétrico'); ilhados++; }
+    }
+  const comBus = [...rede.nos.values()].filter(x => x.ehBus).length;
+  if (comBus !== 1) erros.push(`o 0 V virou ${comBus} nós separados — deveria ser um só`);
+  if (!ilhados)
+    notaRede = `  . rede: ${rede.nos.size} nós elétricos · ${rede.elementos.length} `
+      + 'elementos · nenhum borne ilhado';
+}
+
 if (notaFios) console.log(notaFios);
+if (notaRede) console.log(notaRede);
 console.log(`componentes: ${COMPONENTES_PI1.length} + CI  ·  jumpers: ${JUMPERS.length}`
           + `  ·  nós: ${NOS.length}`);
 avisos.forEach(a => console.log('  . ' + a));

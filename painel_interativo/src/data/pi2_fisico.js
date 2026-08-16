@@ -115,6 +115,10 @@ export const MODULOS = [
     porque: 'Um só circuito de medição atende 16 posições. Dá para fazer isso porque '
           + 'dispositivo morto continua morto — não é preciso ler rápido, é preciso ler '
           + 'todos.',
+    interno: [
+      { de: 'C0', para: 'SIG', via: 'canal 0 — quando S3..S0 = 0000' },
+      { de: 'C1', para: 'SIG', via: 'canal 1 — quando S3..S0 = 0001' },
+    ],
     aviso: 'O pino EN é ATIVO EM NÍVEL BAIXO e NÃO tem borne: vai soldado direto ao '
          + 'barramento de 0 V. Deixá-lo solto faz o mux ficar permanentemente desligado '
          + 'e todas as leituras darem zero — que é exatamente o sintoma de "todos os '
@@ -148,6 +152,9 @@ export const MODULOS = [
           + 'posição 1, está demonstrado que o mux mede certo — e portanto que as outras '
           + '15 posições, que não têm INA219, também estão certas. Um instrumento '
           + 'calibrado validando um método barato.',
+    interno: [
+      { de: 'VIN+', para: 'VIN−', via: 'shunt interno de 0,1 Ω — a corrente atravessa' },
+    ],
     aviso: 'A corrente da posição 1 passa POR DENTRO dele, entre VIN+ e VIN−. Não é um '
          + 'sensor que se encosta no fio: ele fica NO caminho. Ligar VIN+ e VIN− trocados '
          + 'faz a leitura sair negativa.',

@@ -445,6 +445,64 @@ Os fios não são desenhados em linha reta de um furo ao outro. Cada um **acompa
 
 ---
 
+### 🔎 "Siga o sinal" — o desenho que o layout não dá
+
+O desenho da placa responde **onde fica cada coisa**. Ele não responde **de onde vem e para onde vai este sinal** — e é essa a pergunta que importa na hora de entender o circuito.
+
+Por isso existe o botão **"Siga o sinal"**: escolha um borne e o aplicativo mostra o caminho elétrico dele até o fim, **sem geometria nenhuma no meio**.
+
+### ⭐ A distinção que muda tudo: fio não é componente
+
+> **Um FIO funde dois pontos num só. Um COMPONENTE separa dois pontos.**
+
+Parece detalhe, mas é o que faz o circuito fazer sentido. Veja o que sai ao clicar em `J1-2 · IS#2`:
+
+```
+   ┌─────────────────────────────────────┐
+   │  ⬤ nó A1                            │   ⭐ os 3 pontos abaixo são
+   │     J1-2 · IS#2   ⬅ vem do BTS #2   │      O MESMO PONTO ELÉTRICO
+   │     J2-2 · A1     ➡ vai ao Mega A1  │
+   │     perna do C2                     │
+   │     unidos por: fio 3, fio 4,       │
+   │                 ponte do nó A1      │
+   └──────────────┬──────────────────────┘
+                  │ ⊣⊢ C2 · 100 nF
+   ┌──────────────▼──────────────────────┐
+   │  ⏚ barramento de 0 V  — fim         │
+   └─────────────────────────────────────┘
+```
+
+**Repare no que isso diz.** `J1-2` e `J2-2` caem **na mesma caixa** — eles são o mesmo ponto. O sinal do BTS chega e vai para o Arduino **direto**, e o capacitor **sai de lado**, para o 0 V. Ele nunca esteve no caminho.
+
+Era exatamente essa a dúvida do início do projeto: *"o fio entra por uma perna do capacitor e sai pela outra?"*. **Não.** E este desenho torna impossível confundir.
+
+### E quando o componente ESTÁ no caminho
+
+Clicando em `J1-5 · D9`, o caminho é outro:
+
+```
+   ┌──────────────────────────────────┐
+   │  J1-5 · D9  =  CI1 · IN1         │   unidos por: fio 8
+   └──────────────┬───────────────────┘
+                  │ ▷ CI1 · IN1 → OUT1   (transistor Darlington 1)
+   ┌──────────────▼───────────────────┐
+   │  J2-4 · L1−  =  CI1 · OUT1       │   unidos por: fio 16
+   └──────────────────────────────────┘
+```
+
+Aqui há **duas caixas**, porque o transistor de dentro do chip **separa** a entrada da saída. Compare com o capacitor: uma caixa só, componente pendurado.
+
+📐 Na PI-2 o mesmo desenho mostra a corrente da posição 1 entrando pelo `RET-1`, **atravessando o INA219** (`VIN+ → VIN−`), chegando ao nó, e descendo pelo shunt R1 até o 0 V — com o canal C0 do multiplexador **pendurado nesse nó**, lendo sem consumir.
+
+### O que o script confere
+
+`npm run valida:pi1` e `valida:pi2` montam essa mesma rede e reprovam se:
+
+- **algum borne ficar ilhado** — via usada cujo fio não leva a ponto nenhum;
+- **o 0 V virar mais de um nó** — se o barramento se partir, metade da placa fica sem retorno e o defeito é dos que não se acha no multímetro sem saber onde procurar.
+
+📊 Hoje: **PI-1 com 24 nós elétricos e 10 elementos · PI-2 com 28 nós e 5 elementos.**
+
 ### 🔩 Qual borne comprar — e a armadilha dos 5,00 mm
 
 **Borne KF301 (no Brasil, "KRE") de passo 5,08 mm.**

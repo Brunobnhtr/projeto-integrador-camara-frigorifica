@@ -10,6 +10,7 @@
 import {
   PLACA, BORNES, BARRAMENTO_0V, COMPONENTES_PI2, MODULOS, NOS, JUMPERS, CIRCUITOS,
 } from '../src/data/pi2_fisico.js';
+import { construirRede } from '../src/lib/rede.js';
 import { rotear, conflitos } from '../src/lib/roteador.js';
 import { COMPONENTES as PAINEL } from '../src/data/painel_completo.js';
 
@@ -158,7 +159,32 @@ console.log(`  ${BORNES.reduce((a, b) => a + b.vias.length, 0)} vias de borne ·
   + `${JUMPERS.length} jumpers`);
 if (notaCorte) console.log(notaCorte);
 
+
+/* ── 12. a rede elétrica fecha? ────────────────────────────────────── */
+let notaRede = null;
+{
+  const dados = { PLACA, BORNES, BARRAMENTO_0V, NOS, JUMPERS,
+                  COMPONENTES_PI2, CI1: null, MODULOS: MODULOS };
+  const rede = construirRede(dados);
+  let ilhados = 0;
+  for (const b of BORNES)
+    for (const v of b.vias.filter(x => !x.livre)) {
+      const nn = rede.nos.get(rede.acha(`${v.col},${b.linha}`));
+      /* uma via usada tem que dividir o nó com ALGUÉM — senão o fio dela
+         não leva a lugar nenhum */
+      const outros = (nn?.membros ?? []).filter(m => m.ponto !== `${v.col},${b.linha}`);
+      if (!outros.length) { err(`${b.ref}-${v.n} (${v.sinal}) está ilhado — nenhum outro `
+        + 'ponto no mesmo nó elétrico'); ilhados++; }
+    }
+  const comBus = [...rede.nos.values()].filter(x => x.ehBus).length;
+  if (comBus !== 1) err(`o 0 V virou ${comBus} nós separados — deveria ser um só`);
+  if (!ilhados)
+    notaRede = `  . rede: ${rede.nos.size} nós elétricos · ${rede.elementos.length} `
+      + 'elementos · nenhum borne ilhado';
+}
+
 if (notaFios) console.log(notaFios);
+if (notaRede) console.log(notaRede);
 avisos.forEach(a => console.log('  ! ' + a));
 if (erros.length) {
   console.log('\nERROS:');

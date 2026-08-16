@@ -102,16 +102,16 @@ export const COMPONENTES_PI1 = [
   },
   {
     ref: 'C2', tipo: 'capacitor', valor: '100 nF', circuito: 1,
-    furos: [[7, 8], [7, 10]],
+    furos: [[8, 8], [8, 10]],
     polaridade: false,
-    ligacao: 'Uma perna no nó A1 (furo 7,8), a outra no barramento de 0 V (furo 7,10).',
+    ligacao: 'Uma perna no nó A1 (furo 8,8), a outra no barramento de 0 V (furo 8,10).',
     papel: 'O mesmo, para o BTS #2',
   },
   {
     ref: 'R3', tipo: 'resistor', valor: '4,7 kΩ', circuito: 2,
-    furos: [[6, 5], [10, 5]],
+    furos: [[14, 6], [18, 6]],
     polaridade: false,
-    ligacao: 'Perna esquerda no nó 1-Wire (furo 6,5), perna direita no +5 V (furo 10,5).',
+    ligacao: 'Perna esquerda no nó 1-Wire (furo 14,6), perna direita no +5 V (furo 18,6).',
     papel: 'Pull-up do 1-Wire',
     porque: 'O DS18B20 só sabe PUXAR a linha para 0 V — ele não tem como levantá-la. '
           + 'Quem levanta é este resistor. SEM ele não existe barramento 1-Wire, '
@@ -159,6 +159,14 @@ export const CI1 = {
         + 'O sinaleiro fica sempre ligado ao +24 V pelo lado positivo.',
   aviso: 'Girar o CI 180° liga os 24 V do COM direto na entrada e destrói o chip '
        + 'E o pino do Arduino. Confira o chanfro antes de energizar.',
+  /* ⭐ O QUE O CHIP LIGA POR DENTRO. Sem isto não dá para rastrear um
+     sinal de ponta a ponta: o caminho morreria no pino de entrada. */
+  interno: [
+    { de: 'IN1', para: 'OUT1', via: 'transistor Darlington 1' },
+    { de: 'IN2', para: 'OUT2', via: 'transistor Darlington 2' },
+    { de: 'IN3', para: 'OUT3', via: 'transistor Darlington 3' },
+    { de: 'IN4', para: 'OUT4', via: 'transistor Darlington 4' },
+  ],
   pinos: [
     { n: 1,  nome: 'IN1',  col: 24, lin: 13 },
     { n: 2,  nome: 'IN2',  col: 23, lin: 13 },
@@ -189,12 +197,12 @@ export const NOS = [
   { ref: 'nó A0', linha: 8, de: 2, ate: 4, circuito: 1,
     furos: { 2: 'chega o fio de J1-1 (IS#1)', 3: 'perna do C1', 4: 'sai o fio para J2-1 (A0)' },
     nota: 'Três pernas se encontram — cada uma no SEU furo, unidas pela ponte de fio nu.' },
-  { ref: 'nó A1', linha: 8, de: 6, ate: 8, circuito: 1,
-    furos: { 6: 'chega o fio de J1-2 (IS#2)', 7: 'perna do C2', 8: 'sai o fio para J2-2 (A1)' },
+  { ref: 'nó A1', linha: 8, de: 7, ate: 9, circuito: 1,
+    furos: { 7: 'chega o fio de J1-2 (IS#2)', 8: 'perna do C2', 9: 'sai o fio para J2-2 (A1)' },
     nota: 'Idem ao nó A0.' },
-  { ref: 'nó 1-Wire', linha: 5, de: 3, ate: 6, circuito: 2,
-    furos: { 3: 'chega o fio de J1-3 (DATA)', 4: 'sai o fio para J2-3 (D2)',
-             6: 'perna esquerda do R3' },
+  { ref: 'nó 1-Wire', linha: 6, de: 11, ate: 14, circuito: 2,
+    furos: { 11: 'chega o fio de J1-3 (DATA)', 12: 'sai o fio para J2-3 (D2)',
+             14: 'perna esquerda do R3' },
     nota: 'O sensor e o Arduino conversam por este nó; o R3 só o mantém levantado.' },
   { ref: 'nó D25', linha: 6, de: 26, ate: 29, circuito: 3,
     furos: { 26: 'sai o fio para J2-8 (D25)', 27: 'perna de cima do C3',
@@ -209,11 +217,11 @@ export const NOS = [
 export const JUMPERS = [
   { n: 1,  de: [2, 2],   para: [2, 8],   circuito: 1, sinal: 'IS#1 → nó A0' },
   { n: 2,  de: [4, 8],   para: [2, 28],  circuito: 1, sinal: 'nó A0 → sai A0', cruzaBus: true },
-  { n: 3,  de: [4, 2],   para: [6, 8],   circuito: 1, sinal: 'IS#2 → nó A1' },
-  { n: 4,  de: [8, 8],   para: [4, 28],  circuito: 1, sinal: 'nó A1 → sai A1', cruzaBus: true },
-  { n: 5,  de: [6, 2],   para: [3, 5],   circuito: 2, sinal: 'DATA → nó 1-Wire' },
-  { n: 6,  de: [4, 5],   para: [6, 28],  circuito: 2, sinal: 'nó 1-Wire → sai D2', cruzaBus: true },
-  { n: 7,  de: [8, 2],   para: [10, 5],  circuito: 2, sinal: '+5 V → R3' },
+  { n: 3,  de: [4, 2],   para: [7, 8],   circuito: 1, sinal: 'IS#2 → nó A1' },
+  { n: 4,  de: [9, 8],   para: [4, 28],  circuito: 1, sinal: 'nó A1 → sai A1', cruzaBus: true },
+  { n: 5,  de: [6, 2],   para: [11, 6],  circuito: 2, sinal: 'DATA → nó 1-Wire' },
+  { n: 6,  de: [12, 6],  para: [6, 28],  circuito: 2, sinal: 'nó 1-Wire → sai D2', cruzaBus: true },
+  { n: 7,  de: [8, 2],   para: [18, 6],  circuito: 2, sinal: '+5 V → R3' },
   { n: 8,  de: [10, 2],  para: [24, 13], circuito: 4, sinal: 'D9 → IN1' },
   { n: 9,  de: [12, 2],  para: [23, 13], circuito: 4, sinal: 'D10 → IN2' },
   { n: 10, de: [14, 2],  para: [22, 13], circuito: 4, sinal: 'D11 → IN3' },
