@@ -398,13 +398,16 @@ export const COMPONENTES = [
   /* ════════════ TRILHO 2 — POTÊNCIA ════════════ */
   {
     id: 'BTS1', nome: 'BTS7960 (IBT-2) #1 — Peltier', trilho: 2,
+    aConferir: '📐 NO DESENHO os 8 pinos de sinal aparecem em FILA ÚNICA, na borda. '
+             + 'No módulo real eles são uma barra de 2 × 4. A ordem é a mesma; o que '
+             + 'muda é só o desenho, para dar para ver qual fio entra em qual pino.',
     x: 34, largura: 50, altura: 50, cor: '#c92a2a',
     grupos: [
       { ref: 'P1', lado: 'esquerda', legenda: 'Borne verde de potência (4 parafusos)', pinos: [
         via('M−', 1, 'Peltier — negativo'), via('M+', 1, 'Peltier — positivo'),
         via('B+', 1, 'BD-POT saída 1'), via('B−', 1, 'BD-0V'),
       ]},
-      { ref: 'J1', lado: 'direita', linhas: 2, legenda: 'Barra de sinal 2 × 4 (8 pinos)', pinos: [
+      { ref: 'J1', lado: 'direita', legenda: 'Barra de sinal — no módulo é 2 × 4', pinos: [
         via('R_PWM', 1, 'Mega D5'), via('L_PWM'),
         via('R_EN', 1, 'Mega D4'), via('L_EN', 1, 'Mega D4 — o MESMO pino'),
         via('R_IS', 1, 'PI-1 J1-1'), via('L_IS'),
@@ -422,7 +425,7 @@ export const COMPONENTES = [
         via('M−', 1, 'PTC — negativo'), via('M+', 1, 'PTC — positivo'),
         via('B+', 1, 'BD-POT saída 2'), via('B−', 1, 'BD-0V'),
       ]},
-      { ref: 'J1', lado: 'direita', linhas: 2, legenda: 'Barra de sinal 2 × 4 (8 pinos)', pinos: [
+      { ref: 'J1', lado: 'direita', legenda: 'Barra de sinal — no módulo é 2 × 4', pinos: [
         via('R_PWM', 1, 'Mega D6'), via('L_PWM'),
         via('R_EN', 1, 'Mega D7'), via('L_EN', 1, 'Mega D7 — o MESMO pino'),
         via('R_IS', 1, 'PI-1 J1-2'), via('L_IS'),
@@ -591,7 +594,7 @@ export const COMPONENTES = [
         + 'um de 4, ligados por ponte de 4 mm².',
     grupos: [
       { ref: 'IN', lado: 'cima', legenda: 'Entrada 10 mm² (1)', pinos: [via('IN', 1, 'retorno do padrão de entrada')] },
-      { ref: 'R', lado: 'baixo', linhas: 2, legenda: 'Retornos (20 pontos)', pinos: [
+      { ref: 'R', lado: 'baixo', legenda: 'Retornos (20 pontos)', pinos: [
         via('R1', 1, 'BTS #1 · B−'), via('R2', 1, 'BTS #2 · B−'),
         via('R3', 1, 'BTS #1 · GND lógica'), via('R4', 1, 'BTS #2 · GND lógica'),
         via('R5', 1, 'Arduino · GND'), via('R6', 1, 'PI-1 J1-9'),

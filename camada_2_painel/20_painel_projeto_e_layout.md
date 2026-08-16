@@ -153,6 +153,23 @@ A porta tem só o que a pessoa precisa **tocar ou ver**:
 
 > ⚠️ **Cada tensão entra pelo seu próprio prensa-cabo.** São três cabos vindos de três postes diferentes — juntá-los num furo só significa perder a rastreabilidade, apertar demais o prensa-cabo (o que amassa a capa) e colocar o cabo de **6,0 A** encostado nos de sinal.
 
+### 📐 Uma convenção do desenho: todo borne na borda, em fila única
+
+O BTS7960 tem os 8 pinos de sinal numa **barra de 2 × 4**. O desenho **endireita** isso: mostra os oito em fila única, na borda direita.
+
+> ⭐ **Por quê:** um pino da segunda fila fica no **meio** do componente — e não há como desenhar o fio entrando nele sem que ele suma atrás da peça. O objetivo desta vista é mostrar **qual fio entra em qual pino**, e fila dupla impede exatamente isso.
+
+**A ordem é a mesma; muda só o desenho.** Na hora de montar, conte os pinos na barra real do módulo — a sequência bate.
+
+| Componente | No módulo | No desenho |
+|---|---|---|
+| BTS7960 #1 e #2 | barra de sinal 2 × 4 | 8 bornes na borda direita |
+| BD-0V | barra de 20 pontos em 2 fileiras | 20 na borda de baixo |
+
+📐 O `npm run valida:painel` reprova qualquer grupo em fila dupla e avisa quando o passo entre bornes cai abaixo de 2,6 mm. Hoje os três mais apertados são `MEGA.TOPO` (3,7 mm), `MEGA.BASE` (3,9) e `BD-0V.R` (4,8) — todos legíveis.
+
+---
+
 ### ↔️ Folga lateral: os componentes que têm borne nos lados
 
 Nem todo componente recebe fio só por cima e por baixo. **Seis deles têm borne na lateral:**

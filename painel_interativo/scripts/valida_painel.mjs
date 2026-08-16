@@ -183,6 +183,36 @@ for (const c of COMPONENTES) {
   }
 }
 
+/* ── ⭐ TODO BORNE NA BORDA, EM FILA ÚNICA ───────────────────────────
+   Convenção deste desenho: nenhum grupo em fila dupla. Um pino da
+   segunda fila fica no MEIO do componente, e não há como mostrar o fio
+   entrando nele — ele sumiria atrás da peça. O módulo real pode ter
+   barra de 2 × 4; o desenho endireita, mantendo a mesma ordem. */
+console.log('\n=== todo borne alcança a borda? ===');
+for (const c of COMPONENTES)
+  for (const g of c.grupos) {
+    if ((g.linhas ?? 1) > 1)
+      erros.push(`${c.id}.${g.ref} está em fila dupla — no desenho todo borne fica `
+        + 'na borda, senão não dá para ver o fio entrando');
+    const vert = g.lado === 'esquerda' || g.lado === 'direita';
+    const compr = vert ? c.altura : c.largura;
+    const irmaos = c.grupos.filter(x => x.lado === g.lado);
+    const tot = irmaos.reduce((a, x) => a + x.pinos.length, 0);
+    const passo = (compr - 3 - 4 * (irmaos.length - 1)) / tot;
+    if (passo < 2.6)
+      erros.push(`${c.id}.${g.ref}: ${tot} vias na borda ${g.lado} de ${compr} mm dão `
+        + `passo de ${passo.toFixed(1)} mm — abaixo dos 2,6 mm legíveis`);
+  }
+const apertados = COMPONENTES.flatMap(c => c.grupos.map(g => {
+  const vert = g.lado === 'esquerda' || g.lado === 'direita';
+  const compr = vert ? c.altura : c.largura;
+  const irmaos = c.grupos.filter(x => x.lado === g.lado);
+  const tot = irmaos.reduce((a, x) => a + x.pinos.length, 0);
+  return { id: `${c.id}.${g.ref}`, passo: (compr - 3) / tot };
+})).sort((a, b) => a.passo - b.passo).slice(0, 3);
+console.log('  . os 3 mais apertados: '
+  + apertados.map(a => `${a.id} ${a.passo.toFixed(1)} mm`).join(' · '));
+
 /* ── ⭐ FOLGA PARA OS BORNES LATERAIS ────────────────────────────────
    Componente com borne na lateral precisa de espaço vazio daquele lado:
    o fio contorna a peça por fora antes de entrar no parafuso. Sem
