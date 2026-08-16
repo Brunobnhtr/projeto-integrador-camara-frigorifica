@@ -837,6 +837,7 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 | ⭐ **Arduino Nano** | **2** | O cérebro de cada módulo de ensaio: varre 16 canais, compara e responde por Modbus | |
 | ⭐ **Fusível rearmável PPTC 500 mA** | **32** | Um por posição. ⚠️ **Rearmável de propósito:** com dezenas de posições, trocar fusível de vidro vira rotina — o PPTC volta sozinho quando esfria | |
 | ⭐ **Resistor 120 Ω 1/4 W** (terminação) | **2** | Só nas DUAS pontas do barramento: o painel e o último módulo. Nos do meio, não | |
+| ⭐ **Resistor 680 Ω 1/4 W** (polarização de repouso) | **2** | 🔥 **O detalhe que ninguém lembra.** Um de A para +5 V e outro de B para 0 V, no MB-1. Sem eles, o par flutua quando ninguém fala e o receptor lê lixo. A maioria dos módulos MAX485 NÃO traz esses resistores | |
 | ⭐ **Cabo par trançado blindado 2 pares** | 10 m | Para o barramento RS-485. ⚠️ **Trançado não é detalhe** — é o que faz o ruído se cancelar | |
 | ⭐ **Módulo multiplexador 16 canais CD74HC4067** — ⚠️ **a versão em PLACA, com pinos** | **2** (vem em pacote de 5) | **O coração da detecção de falha.** Varre até 16 posições com uma única entrada analógica do Arduino. Buscar `modulo multiplexador analogico 16 canais CD74HC4067` | |
 

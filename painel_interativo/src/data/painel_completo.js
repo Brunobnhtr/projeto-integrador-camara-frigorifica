@@ -212,8 +212,9 @@ export const COMPONENTES = [
     x: 347, largura: 35, altura: 40, cor: '#e8590c',
     nota: 'Módulo MAX485 em caixa DIN de 2 módulos. É por estes dois fios que o painel '
         + 'conversa com TODOS os módulos de ensaio — 16 posições ou 64, o cabo é o mesmo.',
-    interno: 'Módulo MAX485 · resistor de terminação de 120 Ω (só porque o painel é uma '
-           + 'das PONTAS do barramento)',
+    interno: '1 × módulo MAX485 · 1 × resistor 120 Ω (terminação) · '
+           + '1 × resistor 680 Ω de A para +5 V e 1 × 680 Ω de B para 0 V '
+           + '(polarização de repouso) · 2 × TVS SM712 opcional (proteção de surto)',
     grupos: [
       { ref: 'BUS', lado: 'cima', legenda: 'Barramento RS-485 (3 vias)', pinos: [
         { nome: 'A', usa: true, para: 'linha A — vai para o MPE-1 e segue em cadeia' },
@@ -242,6 +243,11 @@ export const COMPONENTES = [
       + 'cria reflexão.',
       '🔌 O DE/RE existe porque o RS-485 é meio-duplex: os mesmos dois fios servem para '
       + 'falar e para ouvir, e alguém precisa dizer de quem é a vez.',
+      '🔥 OS DOIS RESISTORES DE 680 Ω SÃO O DETALHE QUE NINGUÉM LEMBRA. Quando nenhum '
+      + 'nó está transmitindo, o par A/B fica flutuando e o receptor lê lixo — o painel '
+      + 'acha que está recebendo mensagem quando não está. Um resistor puxando A para '
+      + 'cima e outro puxando B para baixo definem o estado de repouso. A maioria dos '
+      + 'módulos MAX485 NÃO traz isso.',
     ],
   },
 
