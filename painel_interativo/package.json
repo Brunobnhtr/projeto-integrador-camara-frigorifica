@@ -8,12 +8,13 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "valida": "node scripts/valida_pi1.mjs && node scripts/valida_pi2.mjs && node scripts/valida_maquete.mjs && node scripts/valida_painel.mjs && node scripts/valida_camara.mjs",
+    "valida": "node scripts/valida_fiacao.mjs && node scripts/valida_pi1.mjs && node scripts/valida_pi2.mjs && node scripts/valida_maquete.mjs && node scripts/valida_painel.mjs && node scripts/valida_camara.mjs",
     "valida:maquete": "node scripts/valida_maquete.mjs",
     "valida:painel": "node scripts/valida_painel.mjs",
     "valida:camara": "node scripts/valida_camara.mjs",
     "valida:pi2": "node scripts/valida_pi2.mjs",
-    "bornes": "node scripts/lista_bornes.mjs"
+    "bornes": "node scripts/lista_bornes.mjs",
+    "valida:fiacao": "node scripts/valida_fiacao.mjs"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.0",

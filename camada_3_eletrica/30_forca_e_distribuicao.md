@@ -289,17 +289,37 @@ Em cada poste, tira-se **dois fios** da linha: o positivo daquele ramal e o reto
 
 ## 30.5 TRECHO 4 — Entrada no painel e distribuição
 
-### Entradas (5 prensa-cabos separados)
+### Entradas — 5 condutores em 3 prensa-cabos
+
+📐 **Confira desenhado:** aba "🔧 Dentro do painel", botão **"🔌 Fiação · etapa 1"**. Cada fio aparece traçado pelas canaletas de verdade, com a anilha no meio do percurso. Clique num deles para isolá-lo.
+
+| Prensa-cabo | X | O que passa |
+|---|---:|---|
+| **PG9-1** | 50 mm | 24 V de potência + 0 V (os dois de 1,5 mm²) |
+| **PG7-1** | 110 mm | 5 V |
+| **PG7-2** | 170 mm | 12 V auxiliar + 24 V de serviços |
+
+⭐ **Todos entram pela BASE e sobem pela mesma rota:** `CH-base → CV-esq → CH-2x1`. As três são canaletas de **potência**, então não há mistura com sinal em nenhum trecho. O script `npm run valida:fiacao` confere isso — inclusive que as canaletas da rota realmente se tocam.
+
+
+> 🔥 **CORREÇÃO — os "retornos" 36, 38 e 40 não existem.** Esta tabela vinha de antes da
+> decisão do **0 V único**, e listava um retorno por tensão. Isso contradiz o que a maquete
+> faz: *"do transformador sai SÓ O POSITIVO"*. Os LM2596 dos postes **não são isolados** —
+> o negativo deles é fisicamente o mesmo cobre. Puxar quatro retornos não daria quatro
+> circuitos: daria **quatro caminhos para a mesma corrente**, formando malhas de terra.
+>
+> **Entram 5 condutores no painel, não 8.** Os números 36, 38 e 40 ficam vagos, como já
+> aconteceu com o 43 e o 44, para não invalidar anilhas.
 
 | # | Cabo | Cor | Seção | De → Para |
 |---|---|---|---|---|
-| 34 | **24 V potência** | Vermelho | 1,5 mm² | PG9 (X=50) → **KA2 · contato 11** (comum) |
+| 34 | **24 V potência** | Vermelho | 1,5 mm² | PG9-1 (X=50) → **KA2 · contato 11** (comum) |
 | 35 | **24 V potência comandado** | Vermelho | 1,5 mm² | **KA2 · contato 14** (NA) → **BD-POT** entrada |
-| 36 | Retorno potência | Preto | 1,5 mm² | PG9 (X=50) → **BD-0V** |
-| 37 | 5 V | Laranja | 0,5 mm² | PG7 (X=110) → **BD-5V** entrada (direto, sem fusível) |
-| 38 | Retorno 5 V | Preto | 0,5 mm² | PG7 (X=110) → **BD-0V** |
-| 39 | 12 V auxiliar | Amarelo | **0,75 mm²** | PG7 (X=170) → **BD-AUX** entrada |
-| 40 | Retorno auxiliar | Preto | **0,75 mm²** | PG7 (X=170) → **BD-0V** |
+| ⭐ **36** | **0 V comum — o único** | **Azul claro** | **1,5 mm²** | PG9-1 (X=50) → **BD-0V** entrada. Conduz a soma de tudo: **6,9 A** no pior caso |
+| 37 | 5 V | Laranja | 0,5 mm² | PG7-1 (X=110) → **BD-5V** entrada (direto, sem fusível) |
+| ~~38~~ | — | — | — | **vago** — era o "retorno 5 V" |
+| 39 | 12 V auxiliar | Amarelo | **0,75 mm²** | PG7-2 (X=170) → **BD-AUX** entrada |
+| ~~40~~ | — | — | — | **vago** — era o "retorno auxiliar" |
 | 41 | **+24 V serviços** | Vermelho | 0,5 mm² | 🔄 **Agora vem do ramal R2, pelo poste P4** (padrão de entrada) → **BD-24V** entrada |
 
 > 🔄 **Mudou de ramal: o 24 V de serviços sai do R2, não do R3.** Os dois funcionariam, mas o R2 é bem mais folgado — ele alimenta só o transformador de 5 V, e toda a eletrônica consome cerca de **75 mA** vistos do lado de 24 V. O R3 alimenta as ventoinhas e puxa uns **265 mA**.
@@ -307,7 +327,7 @@ Em cada poste, tira-se **dois fios** da linha: o positivo daquele ramal e o reto
 > ⚠️ **E há um motivo de segurança que pesa mais que a folga.** Ventoinha é a peça que mais trava mecanicamente, e uma travada puxa corrente de rotor bloqueado. Se o barramento de serviços dividisse fusível com elas, **uma ventoinha travada poderia queimar o F3 e levar junto o ESP32 e a lâmpada de FALHA** — exatamente quem deveria avisar do problema.
 >
 > 📌 **Consequência na maquete:** o R3 **termina** no transformador T3, no poste 3. Só o R1 e o R2 chegam ao poste 4, e descem lá junto com o 0 V — três entradas lado a lado no padrão de entrada.
-| 42 | Retorno 24 V | Preto | 0,5 mm² | PG7 (X=170) → **BD-0V** |
+| ~~42~~ | — | — | — | **vago** — era o "retorno 24 V" |
 | ~~43, 44~~ | — | — | **Números vagos.** Eram a entrada e a saída dos fusíveis F4/F5, eliminados junto com o crowbar. Os números seguintes foram mantidos para não invalidar as anilhas já impressas |
 
 > 🗑️ **F4 e F5 saíram do painel, e nada os substitui — de propósito.** Eles eram os fusíveis de **saída** do circuito crowbar. Hoje:

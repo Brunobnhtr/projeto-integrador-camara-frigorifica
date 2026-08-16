@@ -4,6 +4,7 @@ import PlacaReal from './PlacaReal';
 import * as PI1 from '../data/pi1_fisico';
 import * as PI2 from '../data/pi2_fisico';
 import { PINAGENS } from '../data/pinagens';
+import { PRENSAS_PAINEL, FIOS, ETAPAS } from '../data/fiacao';
 
 /* Quais componentes do painel têm desenho de placa, e qual.
    'ilhada' = placa que VOCÊ monta furo por furo.
@@ -63,6 +64,8 @@ export default function VistaPainelInterno() {
   const [zoom, setZoom] = useState(3.0);
   const [soUsados, setSoUsados] = useState(false);
   const [placa, setPlaca] = useState(null);   // desenho da placa em tela cheia
+  const [verFiacao, setVerFiacao] = useState(true);
+  const [fio, setFio] = useState(null);
   const rolagem = useRef(null);
 
   /* scroll do mouse dá zoom, mantendo sob o cursor o que estava sob ele */
@@ -93,6 +96,37 @@ export default function VistaPainelInterno() {
     });
   }, []);
 
+  /* ⭐ O caminho de cada fio, andando pela LINHA DE CENTRO de cada
+     canaleta da rota. Canaleta horizontal manda no Y, vertical manda no
+     X — é assim que o fio anda de verdade lá dentro. */
+  const tracados = useMemo(() => {
+    const kdeId = id => CANALETAS.find(k => k.id === id);
+    return FIOS.map((f, idx) => {
+      const pr = PRENSAS_PAINEL.find(x => x.id === f.de.prensa);
+      const desvio = (idx - (FIOS.length - 1) / 2) * 3.2;   // para não se sobreporem
+      const pts = [[pr.x, CAIXA.altura + 12], [pr.x, CAIXA.altura + 2]];
+      let cur = [pr.x, CAIXA.altura + 2];
+      for (const id of f.rota) {
+        const k = kdeId(id);
+        if (!k) continue;
+        if (k.vertical) cur = [k.x + k.w / 2 + desvio, cur[1]];
+        else cur = [cur[0], k.y + k.h / 2 + desvio];
+        pts.push([...cur]);
+      }
+      /* a ponta: acerta o X do borne dentro da última canaleta, e só
+         então sobe ou desce até ele */
+      const c = comps.find(x => x.id === f.para.comp);
+      let alvo = null;
+      if (c) {
+        const g = c.grupos.find(gg => gg.pinos.some(pp => pp.nome === f.para.via));
+        const pino = g && posicoes(c, g).find(pp => pp.nome === f.para.via);
+        if (pino) alvo = [pino.x, pino.y];
+      }
+      if (alvo) { pts.push([alvo[0], cur[1]]); pts.push(alvo); }
+      return { ...f, pts, prensa: pr };
+    });
+  }, [comps]);
+
   const PORTA_X = CAIXA.largura + 40, PORTA_W = 250;
   const LAT_X = PORTA_X + PORTA_W + 40, LAT_W = 200;
   const larguraTotal = LAT_X + LAT_W;
@@ -110,6 +144,13 @@ export default function VistaPainelInterno() {
                    onChange={e => setSoUsados(e.target.checked)} />
             só os terminais usados
           </label>
+          <button onClick={() => { setVerFiacao(!verFiacao); setFio(null); }} style={{
+            background: verFiacao ? '#1971c2' : '#fff',
+            color: verFiacao ? '#fff' : '#1971c2', border: '2px solid #1971c2',
+            borderRadius: 6, padding: '5px 11px', cursor: 'pointer',
+            fontSize: 11.5, fontWeight: 700 }}>
+            🔌 Fiação · etapa 1
+          </button>
           <input type="range" min={1.2} max={10} step={0.1} value={zoom}
                  onChange={e => setZoom(+e.target.value)}
                  style={{ flex: 1, minWidth: 110, maxWidth: 240 }} />
@@ -119,7 +160,7 @@ export default function VistaPainelInterno() {
         </div>
 
         <svg width={larguraTotal * zoom}
-             viewBox={`-14 -14 ${larguraTotal + 28} ${CAIXA.altura + 42}`}
+             viewBox={`-14 -14 ${larguraTotal + 28} ${CAIXA.altura + 74}`}
              style={{ background: '#fff', borderRadius: 8, boxShadow: '0 1px 6px #0002' }}>
 
           {/* caixa e placa de montagem */}
@@ -166,6 +207,43 @@ export default function VistaPainelInterno() {
               </g>
             );
           })}
+
+          {/* ⭐ ETAPA 1 DA FIAÇÃO — o que entra pela base */}
+          {verFiacao && tracados.map(t => {
+            const on = !fio || fio === t.n;
+            return (
+              <g key={t.n} onClick={() => setFio(fio === t.n ? null : t.n)}
+                 style={{ cursor: 'pointer' }} opacity={on ? 1 : 0.12}>
+                <polyline points={t.pts.map(p => p.join(',')).join(' ')} fill="none"
+                          stroke="transparent" strokeWidth={9} />
+                <polyline points={t.pts.map(p => p.join(',')).join(' ')} fill="none"
+                          stroke="#fff" strokeWidth={fio === t.n ? 6.5 : 4.6}
+                          strokeLinejoin="round" strokeLinecap="round" opacity={0.85} />
+                <polyline points={t.pts.map(p => p.join(',')).join(' ')} fill="none"
+                          stroke={t.cor} strokeWidth={fio === t.n ? 4.2 : 2.6}
+                          strokeLinejoin="round" strokeLinecap="round" />
+                {/* o prensa-cabo na base */}
+                <circle cx={t.prensa.x} cy={CAIXA.altura + 2} r={6.5} fill="#495057" />
+                <circle cx={t.prensa.x} cy={CAIXA.altura + 2} r={3} fill={t.cor} />
+                {/* a anilha, no meio do percurso */}
+                {(() => {
+                  const m = t.pts[Math.floor(t.pts.length / 2)];
+                  return (
+                    <g>
+                      <rect x={m[0] - 8} y={m[1] - 5} width={16} height={10} rx={2}
+                            fill="#fff" stroke={t.cor} strokeWidth={1} />
+                      <text x={m[0]} y={m[1] + 3.4} textAnchor="middle" fontSize={6.5}
+                            fontWeight="700" fill={t.cor}>{t.n}</text>
+                    </g>
+                  );
+                })()}
+              </g>
+            );
+          })}
+          {verFiacao && PRENSAS_PAINEL.map(pr => (
+            <text key={pr.id} x={pr.x} y={CAIXA.altura + 26} textAnchor="middle"
+                  fontSize={5.5} fontWeight="700" fill="#495057">{pr.id}</text>
+          ))}
 
           {/* trilhos DIN */}
           {TRILHOS.map(t => (
@@ -406,6 +484,57 @@ export default function VistaPainelInterno() {
                            color: '#343a40', lineHeight: 1.55 }}>
                 {REGRA_SEGREGACAO.regras.map(t => <li key={t}>{t}</li>)}
               </ul>
+            </div>
+
+            <div style={{ fontSize: 12, fontWeight: 700, color: '#1d3557',
+                          marginBottom: 5 }}>
+              🔌 FIAÇÃO — ETAPA 1: AS ENTRADAS
+            </div>
+            <div style={{ fontSize: 11, color: '#495057', lineHeight: 1.5,
+                          marginBottom: 7 }}>
+              Cinco condutores entram pela <b>base</b>, todos pela canaleta de
+              potência: <code>CH-base → CV-esq → CH-2x1</code>.
+            </div>
+            {FIOS.map(f => {
+              const on = fio === f.n;
+              return (
+                <div key={f.n} onClick={() => setFio(on ? null : f.n)} style={{
+                  display: 'flex', gap: 7, alignItems: 'center', cursor: 'pointer',
+                  padding: '5px 8px', marginBottom: 3, borderRadius: 4,
+                  background: on ? '#fff3bf' : '#f8f9fa',
+                  borderLeft: `4px solid ${f.cor}` }}>
+                  <b style={{ fontSize: 11, fontFamily: 'monospace',
+                              minWidth: 18 }}>{f.n}</b>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 11.5, fontWeight: 600 }}>{f.nome}</div>
+                    <div style={{ fontSize: 10, color: '#868e96',
+                                  fontFamily: 'monospace' }}>
+                      {f.de.prensa} → {f.para.comp}.{f.para.via} · {f.mm2} mm²
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+            {fio && (() => {
+              const f = FIOS.find(x => x.n === fio);
+              return (
+                <div style={{ background: '#fffbe6', border: '1px solid #f5a524',
+                              borderRadius: 5, padding: 9, marginBottom: 10,
+                              fontSize: 11.5, lineHeight: 1.55 }}>
+                  <b>{f.nome}</b> · {f.corNome}
+                  <div style={{ marginTop: 4 }}>{f.diz}</div>
+                  <div style={{ marginTop: 5, paddingTop: 5,
+                                borderTop: '1px solid #f5a52444' }}>{f.porque}</div>
+                  {f.aviso && (
+                    <div style={{ marginTop: 5, color: '#c92a2a' }}>{f.aviso}</div>
+                  )}
+                  <div style={{ marginTop: 5, fontFamily: 'monospace', fontSize: 10,
+                                color: '#495057' }}>{f.rota.join(' → ')}</div>
+                </div>
+              );
+            })()}
+            <div style={{ fontSize: 10.5, color: '#868e96', marginBottom: 13 }}>
+              próximas etapas: {ETAPAS.filter(e => !e.feito).map(e => e.nome).join(' · ')}
             </div>
 
             <div style={{ fontSize: 12, fontWeight: 700, color: '#1d3557' }}>PORTA</div>
