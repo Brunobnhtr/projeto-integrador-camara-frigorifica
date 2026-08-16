@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import VistaMaquete from './components/VistaMaquete';
-import VistaTrilho1 from './components/VistaTrilho1';
+import VistaPainelInterno from './components/VistaPainelInterno';
 import MapaComponentes from './components/MapaComponentes';
 
 /* A casca do aplicativo. Cada aba é uma forma diferente de olhar o mesmo
@@ -11,7 +11,7 @@ const ABAS = [
   { id: 'maquete', nome: 'A maquete de cima', icone: '🗺️',
     dica: 'Por onde a energia entra e como ela chega até a câmara' },
   { id: 'painel',  nome: 'Dentro do painel',  icone: '🔧',
-    dica: 'Os blocos de distribuição, a porta e os fios, em escala' },
+    dica: 'Todos os componentes e seus terminais, em escala real' },
   { id: 'mapa',    nome: 'Mapa de ligações',  icone: '🔌',
     dica: 'Todos os componentes e cabos, para consultar uma conexão' },
 ];
@@ -50,7 +50,7 @@ export default function App() {
 
       <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
         {aba === 'maquete' && <VistaMaquete onIrPara={setAba} />}
-        {aba === 'painel'  && <VistaTrilho1 />}
+        {aba === 'painel'  && <VistaPainelInterno />}
         {aba === 'mapa'    && <MapaComponentes />}
       </div>
     </div>
