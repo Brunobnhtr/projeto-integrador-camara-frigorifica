@@ -5,7 +5,8 @@
  * para o que o projeto liga nele? É o tipo de erro que só aparece na
  * bancada, quando falta um lugar para o fio.
  */
-import { COMPONENTES, TRILHOS, CAIXA, PLACA, CANALETAS } from '../src/data/painel_completo.js';
+import { COMPONENTES, TRILHOS, CAIXA, PLACA, CANALETAS, CANALETAS_PORTA, LATERAIS }
+  from '../src/data/painel_completo.js';
 
 /* largura util = placa menos as canaletas verticais */
 const cv = CANALETAS.filter(k => k.vertical);
@@ -92,6 +93,53 @@ for (const id of ['BD-5V', 'BD-24V', 'BD-POT', 'BD-AUX']) {
 
 console.log(`\n${'='.repeat(64)}`);
 console.log(`TOTAL: ${totUsados} terminais usados de ${totPinos}  ·  ${totPinos - totUsados} livres`);
+/* ── a porta: canaleta para cada fileira, e nada em cima de canaleta ── */
+console.log('\n=== a porta ===');
+const naPorta = COMPONENTES.filter(c => c.porta);
+const bate = (a, b) =>
+  a.x < b.x + b.w && b.x < a.x + a.largura &&
+  a.y < b.y + b.h && b.y < a.y + a.altura;
+
+for (const c of naPorta) {
+  for (const k of CANALETAS_PORTA)
+    if (bate(c, k)) erros.push(`${c.id} está em cima da canaleta ${k.id} da porta`);
+
+  /* o fio tem que ter canaleta perto — 45 mm é o alcance razoável de um
+     rabicho com folga, acima disso o chicote fica solto na porta */
+  const perto = CANALETAS_PORTA.some(k => k.vertical
+    ? Math.abs(c.x - (k.x + k.w)) < 45 || Math.abs(k.x - (c.x + c.largura)) < 45
+    : Math.abs(c.y - (k.y + k.h)) < 45 || Math.abs(k.y - (c.y + c.altura)) < 45);
+  if (!perto) erros.push(`${c.id} não tem canaleta a menos de 45 mm — o fio dele `
+    + 'ficaria solto atravessando a porta');
+}
+avisos.push(`porta: ${naPorta.length} componentes e ${CANALETAS_PORTA.length} canaletas`);
+
+const dob = CANALETAS_PORTA.filter(k => k.dobradica);
+if (dob.length !== 1)
+  erros.push(`a porta tem ${dob.length} canaletas marcadas como dobradiça — deve ser 1`);
+
+/* ── a antena TEM que estar fora, e fora da porta ────────────────────── */
+console.log('=== a antena ===');
+const ant = LATERAIS.find(a => a.id === 'ANT');
+if (!ant) erros.push('não há antena declarada — o ESP32 dentro da caixa metálica '
+  + 'fica numa gaiola de Faraday');
+else {
+  if (!['direita', 'esquerda', 'traseira', 'topo'].includes(ant.face))
+    erros.push(`a antena está na face "${ant.face}" — tem que ser uma LATERAL, `
+      + 'nunca a porta: o coaxial não suporta os ciclos de flexão');
+  if (ant.y < CAIXA.altura * 0.7)
+    avisos.push(`a antena está a ${ant.y} mm — quanto mais alta, menos obstruída`);
+  else avisos.push(`antena na lateral ${ant.face}, a ${ant.y} mm de altura, furo Ø ${ant.furo} mm`);
+  /* ela tem que estar do mesmo lado do ESP32, senão o pigtail não alcança */
+  const esp = COMPONENTES.find(c => c.id === 'ESP32');
+  if (esp) {
+    const meio = esp.x + esp.largura / 2 > 210;
+    if ((ant.face === 'direita') !== meio)
+      erros.push(`a antena está na lateral ${ant.face} e o ESP32 no lado oposto — `
+        + 'o pigtail de 30 cm não alcança');
+  }
+}
+
 avisos.forEach(a => console.log('  . ' + a));
 if (erros.length) {
   console.log('\nERROS:');

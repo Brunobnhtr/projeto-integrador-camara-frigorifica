@@ -57,6 +57,54 @@ export const REGRA_SEGREGACAO = {
   ],
 };
 
+/* ── CANALETAS DA PORTA ───────────────────────────────────────────────
+ * A porta tem tantos fios quanto a placa de montagem: 4 sinaleiros, 4
+ * comandos, a tela e o conversor. Sem canaleta viram um chumaço solto
+ * que fica preso na dobradiça.
+ *
+ * ⭐ A BORDA DA DOBRADIÇA É A ESQUERDA DO DESENHO. A porta é articulada
+ * do lado direito do painel; desenhada "vista de dentro", deitada ao
+ * lado do painel, a dobradiça cai na borda esquerda do desenho. É por
+ * ela que TODOS os fios cruzam para dentro do painel.
+ */
+export const CANALETAS_PORTA = [
+  { id: 'CP-topo', tipo: 'sinal',    x: 28, y: 10,  w: 212, h: 24, nome: 'superior' },
+  { id: 'CP-1x2',  tipo: 'sinal',    x: 28, y: 136, w: 212, h: 26, nome: 'entre a tela e os sinaleiros' },
+  { id: 'CP-2x3',  tipo: 'sinal',    x: 28, y: 214, w: 212, h: 26, nome: 'entre os sinaleiros e os comandos' },
+  { id: 'CP-3x4',  tipo: 'potencia', x: 28, y: 292, w: 212, h: 26, nome: 'entre os comandos e a emergência' },
+  { id: 'CP-base', tipo: 'potencia', x: 28, y: 384, w: 212, h: 26, nome: 'inferior' },
+  { id: 'CP-vert', tipo: 'sinal',    x: 5,  y: 10,  w: 21,  h: 400,
+    nome: 'vertical da DOBRADIÇA', vertical: true, dobradica: true },
+];
+
+/* ── O QUE FICA NAS LATERAIS DA CAIXA ─────────────────────────────────
+ * Nem tudo mora na placa de montagem ou na porta. A antena é o caso
+ * clássico: ela PRECISA sair da caixa metálica.
+ */
+export const LATERAIS = [
+  {
+    id: 'ANT', nome: 'Antena Wi-Fi 3 dBi + conector SMA de painel',
+    face: 'direita', x: 100, y: 430, furo: 6.5, cor: '#e8590c',
+    porque: '🔥 A caixa do painel é uma GAIOLA DE FARADAY. Com o ESP32 lá dentro e a '
+          + 'antena junto dele, o sinal de Wi-Fi fica preso: o alcance despenca e o '
+          + 'MQTT cai sozinho no meio do ensaio. A antena TEM que ficar do lado de fora.',
+    onde: 'Lateral DIREITA, a 100 mm da traseira e 430 mm de altura — o mais alto '
+        + 'possível, para não ser obstruída pela bancada nem pelas pessoas.',
+    avisos: [
+      '⚠️ NA LATERAL, NUNCA NA PORTA. A porta articula, e o coaxial teria que dobrar a '
+      + 'cada abertura. Cabo coaxial não suporta ciclos de flexão — ele rompe por dentro '
+      + 'e o defeito fica intermitente.',
+      '🔥 NUNCA PASSE O COAXIAL POR PRENSA-CABO. O pigtail IPEX é de 1,13 mm: o aperto '
+      + 'esmaga o dielétrico, a impedância deixa de ser 50 Ω e o alcance despenca. O '
+      + 'conector SMA de painel existe exatamente para isso — ele é preso mecanicamente '
+      + 'na chapa e não faz esforço no cabo.',
+      '📌 O ESP32 tem que ser o WROOM-32U, que traz conector IPEX. O WROOM-32 comum só '
+      + 'tem antena de placa e NÃO aceita antena externa.',
+      '⭐ O DNLCB30 está no trilho 2, do lado direito — o pigtail de 30 cm chega folgado.',
+    ],
+  },
+];
+
 export const TRILHOS = [
   { n: 3, y: 125, nome: 'TRILHO 3 — Controle' },
   { n: 2, y: 255, nome: 'TRILHO 2 — Potência' },

@@ -20,7 +20,8 @@ const PLACAS = {
   CONV: { tipo: 'real', chave: 'CONV', rotulo: 'conversor de nível — 2 canais' },
 };
 import {
-  CAIXA, PLACA, TRILHOS, COMPONENTES, CANALETAS, REGRA_SEGREGACAO,
+  CAIXA, PLACA, TRILHOS, COMPONENTES, CANALETAS, CANALETAS_PORTA, LATERAIS,
+  REGRA_SEGREGACAO,
 } from '../data/painel_completo';
 
 /* O painel visto de frente, com a porta aberta ao lado.
@@ -92,7 +93,9 @@ export default function VistaPainelInterno() {
     });
   }, []);
 
-  const larguraTotal = CAIXA.largura + 40 + 250;
+  const PORTA_X = CAIXA.largura + 40, PORTA_W = 250;
+  const LAT_X = PORTA_X + PORTA_W + 40, LAT_W = 200;
+  const larguraTotal = LAT_X + LAT_W;
 
   return (
     <div style={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
@@ -182,8 +185,92 @@ export default function VistaPainelInterno() {
             <rect key={hy} x={CAIXA.largura + 36} y={hy} width={8} height={26} rx={2}
                   fill="#adb5bd" />
           ))}
-          <text x={CAIXA.largura + 165} y={14} textAnchor="middle" fontSize={8}
+          <text x={PORTA_X + PORTA_W / 2} y={-4} textAnchor="middle" fontSize={8}
                 fontWeight="700" fill="#495057">PORTA — vista de dentro</text>
+
+          {/* canaletas da porta — mesmas regras da placa de montagem */}
+          {CANALETAS_PORTA.map(k => {
+            const pot = k.tipo === 'potencia';
+            return (
+              <g key={k.id}>
+                <rect x={PORTA_X + k.x} y={k.y} width={k.w} height={k.h} rx={1.5}
+                      fill={pot ? '#ffe3e3' : '#e7f5ff'}
+                      stroke={pot ? '#ffa8a8' : '#a5d8ff'} strokeWidth={0.8} />
+                {Array.from({ length: Math.floor((k.vertical ? k.h : k.w) / 7) }, (_, i) => (
+                  k.vertical
+                    ? <line key={i} x1={PORTA_X + k.x + 1.5} y1={k.y + 4 + i * 7}
+                            x2={PORTA_X + k.x + k.w - 1.5} y2={k.y + 4 + i * 7}
+                            stroke={pot ? '#ffc9c9' : '#c5e4fb'} strokeWidth={0.5} />
+                    : <line key={i} x1={PORTA_X + k.x + 4 + i * 7} y1={k.y + 1.5}
+                            x2={PORTA_X + k.x + 4 + i * 7} y2={k.y + k.h - 1.5}
+                            stroke={pot ? '#ffc9c9' : '#c5e4fb'} strokeWidth={0.5} />
+                ))}
+                {!k.vertical && (
+                  <text x={PORTA_X + k.x + k.w - 3} y={k.y + k.h / 2 + 2} textAnchor="end"
+                        fontSize={4.2} fontWeight="700"
+                        fill={pot ? '#e03131' : '#1971c2'}>
+                    {pot ? 'POTÊNCIA' : 'SINAL'}
+                  </text>
+                )}
+                {k.dobradica && (
+                  <text x={PORTA_X + k.x + k.w / 2} y={k.y + 120} textAnchor="middle"
+                        fontSize={4.6} fontWeight="700" fill="#e8590c"
+                        transform={`rotate(-90 ${PORTA_X + k.x + k.w / 2} ${k.y + 120})`}>
+                    DOBRADIÇA — todos os fios cruzam por aqui
+                  </text>
+                )}
+              </g>
+            );
+          })}
+
+          {/* ⭐ a passagem flexível: onde os fios saltam da placa para a porta */}
+          <path d={`M ${PLACA.x + PLACA.largura - 14} 240
+                    C ${PORTA_X - 40} 200, ${PORTA_X - 30} 280, ${PORTA_X + 16} 240`}
+                fill="none" stroke="#e8590c" strokeWidth={4} strokeLinecap="round"
+                opacity={0.75} />
+          <text x={(PLACA.x + PLACA.largura + PORTA_X) / 2} y={196} textAnchor="middle"
+                fontSize={6} fontWeight="700" fill="#e8590c">passagem flexível</text>
+          <text x={(PLACA.x + PLACA.largura + PORTA_X) / 2} y={205} textAnchor="middle"
+                fontSize={5} fill="#e8590c">espiral + folga de 60 mm</text>
+
+          {/* ── a lateral direita, com a antena ── */}
+          <rect x={LAT_X} y={0} width={LAT_W} height={CAIXA.altura} rx={4}
+                fill="#f1f3f5" stroke="#868e96" strokeWidth={2} />
+          <text x={LAT_X + LAT_W / 2} y={-4} textAnchor="middle" fontSize={8}
+                fontWeight="700" fill="#495057">
+            LATERAL DIREITA — {CAIXA.profundidade} × {CAIXA.altura} mm
+          </text>
+          <text x={LAT_X + 6} y={CAIXA.altura - 8} fontSize={5} fill="#868e96">
+            ← traseira · frente →
+          </text>
+          {LATERAIS.map(a => {
+            const cx = LAT_X + a.x, cy = CAIXA.altura - a.y;
+            const on = sel?.id === a.id;
+            return (
+              <g key={a.id} onClick={() => { setSel(a); setPino(null); }}
+                 style={{ cursor: 'pointer' }}>
+                {/* a antena, articulada para cima */}
+                <line x1={cx} y1={cy} x2={cx + 40} y2={cy - 58} stroke={a.cor}
+                      strokeWidth={on ? 5 : 3.4} strokeLinecap="round" />
+                <circle cx={cx + 40} cy={cy - 58} r={3} fill={a.cor} />
+                <circle cx={cx} cy={cy} r={on ? 8 : 6.5} fill="#495057"
+                        stroke={on ? '#ffd43b' : a.cor} strokeWidth={on ? 2.2 : 1.4} />
+                <circle cx={cx} cy={cy} r={2.4} fill="#e9ecef" />
+                <text x={cx} y={cy + 15} textAnchor="middle" fontSize={5.5}
+                      fontWeight="700" fill={a.cor}>SMA Ø{a.furo} mm</text>
+                <text x={cx} y={cy + 22} textAnchor="middle" fontSize={4.6} fill="#868e96">
+                  X={a.x} · Y={a.y} mm
+                </text>
+                {/* o pigtail entrando e descendo até o DNLCB30 */}
+                <path d={`M ${cx} ${cy} L ${cx - 60} ${cy} L ${cx - 60} ${CAIXA.altura - 150}`}
+                      fill="none" stroke={a.cor} strokeWidth={1.6}
+                      strokeDasharray="4 3" opacity={0.8} />
+                <text x={cx - 58} y={cy - 6} fontSize={4.6} fill={a.cor}>
+                  pigtail IPEX→SMA 30 cm
+                </text>
+              </g>
+            );
+          })}
 
           {/* componentes */}
           {comps.map(c => {
@@ -351,9 +438,11 @@ export default function VistaPainelInterno() {
                   width: 25, height: 25, cursor: 'pointer' }}>×</button>
               </div>
               <div style={{ fontSize: 11, opacity: 0.9, marginTop: 3 }}>
-                {sel.largura} × {sel.altura} mm ·{' '}
-                {sel.grupos.flatMap(g => g.pinos).filter(p => p.usa).length} de{' '}
-                {sel.grupos.flatMap(g => g.pinos).length} terminais em uso
+                {sel.grupos
+                  ? <>{sel.largura} × {sel.altura} mm ·{' '}
+                      {sel.grupos.flatMap(g => g.pinos).filter(p => p.usa).length} de{' '}
+                      {sel.grupos.flatMap(g => g.pinos).length} terminais em uso</>
+                  : `lateral ${sel.face} · furo Ø ${sel.furo} mm`}
               </div>
             </div>
             <div style={{ padding: '12px 16px' }}>
@@ -392,7 +481,18 @@ export default function VistaPainelInterno() {
                   </div>
                 </button>
               )}
-              {sel.grupos.map(g => (
+              {sel.onde && (
+                <div style={{ fontSize: 12, color: '#495057', lineHeight: 1.55,
+                              marginBottom: 10 }}>
+                  <b>Onde:</b> {sel.onde}
+                </div>
+              )}
+              {sel.porque && (
+                <div style={{ fontSize: 12, background: '#fff5f5', border: '1px solid #ffc9c9',
+                              borderRadius: 6, padding: '9px 11px', marginBottom: 12,
+                              lineHeight: 1.55, color: '#c92a2a' }}>{sel.porque}</div>
+              )}
+              {(sel.grupos ?? []).map(g => (
                 <div key={g.ref} style={{ marginBottom: 13 }}>
                   <div style={{ fontSize: 11, color: '#868e96', marginBottom: 5 }}>
                     <b style={{ color: '#212529' }}>{g.ref}</b> · {g.legenda} ·{' '}

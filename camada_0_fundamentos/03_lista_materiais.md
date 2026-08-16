@@ -393,7 +393,9 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 | Caixa de comando ou MDF | 1 | **400 × 500 × 200 mm** — comprada pronta ou feita em MDF 15 mm | |
 | Porta do painel | 1 | MDF 12 mm ou acrílico fumê 5 mm (fica bonito ver os LEDs) | |
 | **Trilho DIN 35 mm** | 1,5 m | Aço galvanizado — 3 trilhos de ~360 mm | |
-| **Canaleta perfurada 30 × 30 mm** | 2 m | Com tampa — organização profissional dos cabos | |
+| **Canaleta perfurada 30 × 30 mm** | 3 m | Com tampa. **Placa de montagem:** 4 horizontais + 2 verticais ≈ 2,8 m | |
+| ⭐ **Canaleta perfurada 25 × 25 mm** | 2 m | **PORTA** — 5 horizontais + 1 vertical na dobradiça ≈ 1,5 m. Mais estreita que a da placa porque a porta tem menos fio e não pode ficar pesada | |
+| ⭐ **Espiral organizador Ø 12 mm** | 40 cm | A **passagem flexível** entre a placa e a porta. Protege o chicote nos ciclos de abertura | |
 | **Bloco de distribuição DIN** — 1 entrada 4 mm² + **4 saídas** | 1 | **BD-POT** — 24 V de potência comutados pelo KA2 → BTS #1, BTS #2, medição do D25 e 1 reserva. ⚠️ Cai com a emergência | |
 | **Bloco de distribuição DIN** — 1 entrada 2,5 mm² + **4 saídas** | 1 | **BD-AUX** — 12 V auxiliar (do T3): cooler dos BTS + 2 coolers das Peltier + 1 reserva | |
 | **Bloco de distribuição DIN** — 1 entrada 2,5 mm² + **6 saídas** ⬆ | 1 | **BD-24V** — 24 V permanentes. ⚠️ **Subiu de 4 para 6:** são **5 cargas** (DNLCB30/ESP32, cadeia de comando, positivo comum dos sinaleiros, COM do ULN2803 na PI-1, e a alimentação das 2 posições de ensaio) + 1 reserva. **Não confundir com o BD-POT** — este não cai com a emergência | |

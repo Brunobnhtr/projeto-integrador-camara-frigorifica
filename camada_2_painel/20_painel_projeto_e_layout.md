@@ -153,6 +153,47 @@ A porta tem só o que a pessoa precisa **tocar ou ver**:
 
 > ⚠️ **Cada tensão entra pelo seu próprio prensa-cabo.** São três cabos vindos de três postes diferentes — juntá-los num furo só significa perder a rastreabilidade, apertar demais o prensa-cabo (o que amassa a capa) e colocar o cabo de **6,0 A** encostado nos de sinal.
 
+### 🚪 A porta também tem canaletas
+
+A porta carrega **11 componentes**: a tela, o conversor de nível, 4 sinaleiros, 3 botões, a seletora e o cogumelo. São dezenas de fios — e sem canaleta eles viram um chumaço solto que **fica preso na dobradiça** na primeira vez que alguém fecha o painel com pressa.
+
+| Canaleta | Onde | Tipo |
+|---|---|---|
+| `CP-topo` | acima da tela | sinal |
+| `CP-1x2` | entre a tela e os sinaleiros | sinal |
+| `CP-2x3` | entre os sinaleiros e os comandos | sinal |
+| `CP-3x4` | entre os comandos e a emergência | **potência** |
+| `CP-base` | abaixo da emergência | **potência** |
+| ⭐ `CP-vert` | **vertical, na borda da DOBRADIÇA** | sinal |
+
+📐 Na porta a canaleta é de **25 × 25 mm**, e não de 30 × 30 como na placa: passa menos fio e a porta não pode ficar pesada — peso na porta força a dobradiça e ela desalinha.
+
+### ⭐ A passagem flexível — o ponto que mais falha em painel de verdade
+
+Todos os fios da porta cruzam para a placa de montagem **num ponto só: a borda da dobradiça**. E esse trecho é o único do painel inteiro que **se move**.
+
+```
+   PLACA DE MONTAGEM              PORTA
+   ┌──────────────┐         ┌──────────────┐
+   │              │  ∿∿∿∿∿  │ CP-vert      │
+   │       CV-dir ├─────────┤ (dobradiça)  │
+   │      (sinal) │ espiral │              │
+   └──────────────┘         └──────────────┘
+                   ▲
+             folga de 60 mm
+```
+
+| Regra | Por quê |
+|---|---|
+| **Espiral organizador** Ø 12 mm | mantém o chicote junto e protege o isolamento do atrito |
+| **Folga de 60 mm** além da distância reta | com a porta aberta a 120°, o caminho é mais longo que com ela fechada. Sem folga, o fio traciona e arranca do borne |
+| **Laço em U**, nunca esticado | o fio tem que dobrar sempre no mesmo sentido; um laço frouxo distribui a flexão por vários centímetros em vez de concentrar num ponto |
+| Cruzar pela **CV-dir (sinal)** | a porta leva quase só sinal — tela, botões, sinaleiros. A potência da porta é o cogumelo, que vai pela `CP-3x4` |
+
+> 🔥 **É por isso que a antena NÃO pode ficar na porta.** Fio comum aguenta milhares de ciclos de flexão se tiver folga. **Coaxial não.** O dielétrico do pigtail IPEX de 1,13 mm racha, a impedância deixa de ser 50 Ω, e o alcance cai — de forma intermitente, que é o pior modo de falhar.
+
+---
+
 ### 📡 Posição da antena Wi-Fi — LATERAL DIREITA, PARTE ALTA
 
 ```
@@ -168,13 +209,13 @@ A porta tem só o que a pessoa precisa **tocar ou ver**:
      │      │ (30 cm)       │  │
      │      ▼               │  │
      │   [DNLCB30+ESP32]    │  │
-     │   trilho 3           │  │
+     │   trilho 2           │  │
      └──────────────────────┘  ▼ Y=0
 ```
 
 | Parâmetro | Especificação |
 |---|---|
-| **Face** | **Lateral DIREITA** (o ESP32 está no lado direito do trilho 3) |
+| **Face** | **Lateral DIREITA** (o DNLCB30 está no lado direito do trilho 2) |
 | **Posição** | X = 100 mm da traseira · **Y = 430 mm** (parte alta) |
 | **Furo** | **Ø 6,5 mm** |
 | **Fixação** | **Conector SMA fêmea de painel (bulkhead)** — atravessa a chapa e é preso por porca e arruela de pressão, com anel de vedação |
