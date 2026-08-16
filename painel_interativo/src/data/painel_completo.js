@@ -81,21 +81,19 @@ export const COMPONENTES = [
              + 'cima. Meça a placa quando ela chegar.',
     grupos: [
       { ref: 'TOPO', lado: 'cima', legenda: 'Borda de cima — 35 bornes', pinos: [
-        via('D30'), via('D29', 1, '⭐ MV-1 canal 3 → ventoinhas de CIRCULAÇÃO'), via('D28', 1, '⭐ MV-1 canal 2 → ventoinha do PTC'), via('D27', 1, '⭐ MV-1 canal 1 → ventoinhas do RADIADOR'),
+        via('D30', 1, '⭐ MB-1 · DE/RE — controle de sentido do RS-485'), via('D29', 1, '⭐ MV-1 canal 3 → ventoinhas de CIRCULAÇÃO'), via('D28', 1, '⭐ MV-1 canal 2 → ventoinha do PTC'), via('D27', 1, '⭐ MV-1 canal 1 → ventoinhas do RADIADOR'),
         via('D26', 1, 'Seletora LOCAL / REMOTO'), via('D25', 1, 'PI-1 J2-8 — vigia se os 24 V caíram'), via('D24', 1, 'Emergência — bloco NF de 5 V'), via('D23', 1, 'Botão STOP (NA, 5 V)'),
         via('D22', 1, 'Botão START (NA, 5 V)'), via('+5V', 1, 'BD-5V saída 1'), via('D21', 1, 'I²C SCL — o mesmo barramento'), via('D20', 1, 'I²C SDA — AM2315C (câmara), DS3231 e 2× INA219'),
         via('D19', 1, 'Serial1 RX ← DNLCB30/ESP32'), via('D18', 1, 'Serial1 TX → DNLCB30/ESP32'), via('D17', 1, 'Serial2 RX ← conversor ← tela'), via('D16', 1, 'Serial2 TX → conversor → tela'),
-        via('D15'), via('D14'), via('D0'), via('D1'),
+        via('D15', 1, '⭐ Serial3 RX3 ← MB-1 · RO'),
+        via('D14', 1, '⭐ Serial3 TX3 → MB-1 · DI'), via('D0'), via('D1'),
         via('D2', 1, 'PI-1 J2-3 — 1-Wire do DS18B20 do RADIADOR'), via('D3', 1, 'RPM da ventoinha do radiador #1'), via('D4', 1, 'BTS #1 · R_EN e L_EN juntos'), via('D5', 1, 'BTS #1 · RPWM (frio)'),
         via('D6', 1, 'BTS #2 · RPWM (quente)'), via('D7', 1, 'BTS #2 · R_EN e L_EN juntos'), via('D8'), via('D9', 1, 'PI-1 J1-5 → sinaleiro ENERGIZADO'),
         via('D10', 1, 'PI-1 J1-6 → sinaleiro RESFRIANDO'), via('D11', 1, 'PI-1 J1-7 → sinaleiro AQUECENDO'), via('D12', 1, 'PI-1 J1-8 → sinaleiro FALHA'), via('D13'),
         via('GND'), via('D21/SCL'), via('D20/SDA'),
       ]},
       { ref: 'ESQ', lado: 'esquerda', legenda: 'Borda esquerda — 13 bornes (D31–D43)', pinos: [
-        via('D31', 1, 'PI-2 · S0 — seleção do canal do mux'),
-        via('D32', 1, 'PI-2 · S1'),
-        via('D33', 1, 'PI-2 · S2'),
-        via('D34', 1, 'PI-2 · S3'),
+        via('D31'), via('D32'), via('D33'), via('D34'),
         via('D35'), via('D36'), via('D37'), via('D38'),
         via('D39'), via('D40'), via('D41'), via('D42'),
         via('D43'),
@@ -106,7 +104,7 @@ export const COMPONENTES = [
         via('D52'), via('D53'), via('A15'), via('A14'),
         via('A13'), via('A12'), via('A11'), via('A10'),
         via('A9'), via('A8', 1, 'RPM da ventoinha do radiador #2'), via('A7'), via('A6'),
-        via('A5'), via('A4'), via('A3'), via('A2', 1, '⭐ PI-2 · SIG — os 16 canais entram por aqui'),
+        via('A5'), via('A4'), via('A3'), via('A2'),
         via('A1', 1, 'PI-1 J2-2 — corrente do BTS #2'), via('A0', 1, 'PI-1 J2-1 — corrente do BTS #1'), via('GND'), via('IOREF'),
         via('AREF'), via('RESET'), via('+3V3'), via('GND'),
         via('+5V', 1, 'BD-5V saída 1'), via('VIN'),
@@ -209,6 +207,44 @@ export const COMPONENTES = [
     ],
   },
 
+  {
+    id: 'MB-1', nome: 'MB-1 — mestre RS-485 (Modbus RTU)', trilho: 3,
+    x: 347, largura: 35, altura: 40, cor: '#e8590c',
+    nota: 'Módulo MAX485 em caixa DIN de 2 módulos. É por estes dois fios que o painel '
+        + 'conversa com TODOS os módulos de ensaio — 16 posições ou 64, o cabo é o mesmo.',
+    interno: 'Módulo MAX485 · resistor de terminação de 120 Ω (só porque o painel é uma '
+           + 'das PONTAS do barramento)',
+    grupos: [
+      { ref: 'BUS', lado: 'cima', legenda: 'Barramento RS-485 (3 vias)', pinos: [
+        { nome: 'A', usa: true, para: 'linha A — vai para o MPE-1 e segue em cadeia' },
+        { nome: 'B', usa: true, para: 'linha B — o par trançado da linha A' },
+        { nome: '0V', usa: true, para: 'BD-0V — referência comum dos nós' },
+      ]},
+      { ref: 'MCU', lado: 'baixo', legenda: 'Para o Arduino (5 vias)', pinos: [
+        { nome: '+5V', usa: true, para: 'BD-5V saída 8' },
+        { nome: 'GND', usa: true, para: 'BD-0V' },
+        { nome: 'DI', usa: true, para: 'Mega D14 (TX3) — o que o painel fala' },
+        { nome: 'RO', usa: true, para: 'Mega D15 (RX3) — o que o painel ouve' },
+        { nome: 'DE/RE', usa: true, para: 'Mega D30 — chaveia entre falar e ouvir' },
+      ]},
+    ],
+    avisos: [
+      '⭐ QUATRO FIOS SAEM DO PAINEL para todo o sistema de ensaio: 24 V, 0 V, A e B. '
+      + 'Não importa se são 16 posições ou 64 — os módulos se ligam em CADEIA, um '
+      + 'puxando do outro.',
+      '⚠️ O PAR A/B TEM QUE SER TRANÇADO. O RS-485 é imune a ruído porque o ruído entra '
+      + 'igual nos dois fios e se cancela na subtração. Fio paralelo não trançado perde '
+      + 'esse cancelamento — e aí ele deixa de valer mais que um fio comum.',
+      '⚠️ RESISTOR DE 120 Ω SÓ NAS DUAS PONTAS do barramento: aqui no painel e no ÚLTIMO '
+      + 'módulo. Nos do meio, não. Terminação sobrando carrega a linha; faltando, o '
+      + 'sinal reflete e corrompe.',
+      '📌 Ligação em CADEIA, nunca em estrela. Barramento é uma linha só; ramificação '
+      + 'cria reflexão.',
+      '🔌 O DE/RE existe porque o RS-485 é meio-duplex: os mesmos dois fios servem para '
+      + 'falar e para ouvir, e alguém precisa dizer de quem é a vez.',
+    ],
+  },
+
   /* ════════════ TRILHO 2 — POTÊNCIA ════════════ */
   {
     id: 'BTS1', nome: 'BTS7960 (IBT-2) #1 — Peltier', trilho: 2,
@@ -274,54 +310,6 @@ export const COMPONENTES = [
 
 
   {
-    id: 'PI-2', nome: 'PI-2 — medição de corrente das posições', trilho: 3,
-    x: 347, largura: 70, altura: 62, cor: '#ae3ec9',
-    nota: 'Caixa DIN de 4 módulos. Dentro dela ficam soldados o módulo multiplexador, '
-        + 'os resistores shunt e o INA219 de referência. Os bornes abaixo são os FIOS '
-        + 'que chegam e saem da placa — não os pinos dos componentes.',
-    interno: 'CD74HC4067 (módulo) · 2 × shunt 4,7 Ω 1% · 1 × INA219 (referência) · '
-           + 'o pino EN do mux vai soldado ao 0 V dentro da placa',
-    grupos: [
-      { ref: 'J1', lado: 'cima', legenda: 'RETORNOS que voltam da câmara (4 vias)', pinos: [
-        { nome: 'RET-1', usa: true, para: 'volta do DUT da posição 1 — passa pelo shunt aqui dentro' },
-        { nome: 'RET-2', usa: true, para: 'volta do DUT da posição 2' },
-        { nome: 'RET-3' }, { nome: 'RET-4' },
-      ]},
-      { ref: 'J2', lado: 'baixo', legenda: 'Painel — alimentação e retorno (2 vias)', pinos: [
-        { nome: '0V', usa: true, para: 'BD-0V — o comum, DEPOIS dos shunts' },
-        { nome: '+5V', usa: true, para: 'BD-5V saída 8 — alimenta o mux e o INA219' },
-      ]},
-      { ref: 'J3', lado: 'direita', legenda: 'Sinais para o Arduino (7 vias)', pinos: [
-        { nome: 'S0', usa: true, para: 'Mega D31 — seleção de canal, bit 0' },
-        { nome: 'S1', usa: true, para: 'Mega D32 — bit 1' },
-        { nome: 'S2', usa: true, para: 'Mega D33 — bit 2' },
-        { nome: 'S3', usa: true, para: 'Mega D34 — bit 3' },
-        { nome: 'SIG', usa: true, para: 'Mega A2 — a leitura dos 16 canais sai por aqui' },
-        { nome: 'SDA', usa: true, para: 'Mega D20 — só do INA219 de referência' },
-        { nome: 'SCL', usa: true, para: 'Mega D21' },
-      ]},
-    ],
-    avisos: [
-      '🔥 O QUE CHEGA AQUI É O RETORNO, NÃO O POSITIVO. O shunt fica no lado de baixo '
-      + '(entre o retorno do DUT e o 0 V), porque só assim a tensão sobre ele fica '
-      + 'referenciada ao 0 V e o mux consegue lê-la. O positivo vai do fusível direto '
-      + 'para a câmara e NUNCA passa por esta placa.',
-      '🔌 SÃO 4 FIOS PARA A CÂMARA, não 3: 2 positivos (dos fusíveis) e 2 retornos '
-      + 'INDIVIDUAIS (para cá). Os retornos não podem ser comuns — se fossem, as duas '
-      + 'correntes se somariam antes do shunt e não daria para separar quem é quem.',
-      '📌 O pino EN do multiplexador NÃO tem borne. Ele vai soldado ao 0 V dentro da '
-      + 'placa, porque é ligação interna e permanente — o datasheet confirma que o '
-      + 'enable é ativo em nível BAIXO ("when high, disables all switches").',
-      '📐 O mux tem 70 Ω de resistência quando ligado. Isso não atrapalha: a entrada '
-      + 'analógica do Arduino praticamente não puxa corrente, então não há queda sobre '
-      + 'esses 70 Ω. O manual do ATmega pede fonte abaixo de 10 kΩ — estamos 140 vezes '
-      + 'abaixo disso.',
-      '🔬 O INA219 de referência fica em série com o retorno da posição 1, ANTES do '
-      + 'shunt dela. Os dois medem a mesma corrente, e é assim que se prova que o mux '
-      + 'está certo.',
-    ],
-  },
-  {
     id: 'MV-1', nome: 'MV-1 — módulo MOSFET 4 canais, isolado', trilho: 2,
     x: 232, largura: 66, altura: 51, cor: '#0ca678',
     nota: 'Comanda os três grupos de ventoinha e ainda sobra um canal. Optoacoplador '
@@ -369,29 +357,6 @@ export const COMPONENTES = [
       + 'confie no componente, não no anúncio.)',
       '📌 60 W por canal, e o maior grupo daqui puxa uns 7 W. O módulo trabalha frio.',
       '🎁 O canal 4 fica livre, com borne e jumper próprios.',
-    ],
-  },
-  {
-    id: 'F-P', nome: 'F-P1 e F-P2 — fusíveis das posições de ensaio', trilho: 2,
-    x: 303, largura: 36, altura: 46, cor: '#fab005',
-    nota: '1 porta-fusível de 2 vias COM INTERRUPTOR. O interruptor é proposital: é '
-        + 'com ele que você desliga um dispositivo na frente da banca e mostra o '
-        + 'sistema detectando a falha.',
-    grupos: [
-      { ref: 'IN', lado: 'cima', legenda: 'Entrada comum (1)', pinos: [
-        { nome: 'V+', usa: true, para: 'BD-24V saída 4' },
-      ]},
-      { ref: 'OUT', lado: 'baixo', legenda: 'Saídas com fusível de 500 mA (2)', pinos: [
-        { nome: 'F-P1', usa: true, para: 'DUT da posição 1, na câmara — direto, sem passar pela PI-2' },
-        { nome: 'F-P2', usa: true, para: 'DUT da posição 2, na câmara' },
-      ]},
-    ],
-    avisos: [
-      '⭐ O INTERRUPTOR É A DEMONSTRAÇÃO. Sem ele você teria que arrancar um fio para '
-      + 'simular a falha. Com ele, basta desligar a chave: o INA219 vê a corrente cair '
-      + 'a zero, o outro dispositivo continua normal, e o sistema aponta QUAL parou.',
-      '📌 Fusível de 500 mA para uma carga de ~130 mA. Ele existe para curto, não para '
-      + 'sobrecarga leve.',
     ],
   },
 
@@ -443,7 +408,7 @@ export const COMPONENTES = [
         via('O3', 1, 'RTC DS3231'), via('O4', 1, 'BTS #1 · VCC'),
         via('O5', 1, 'BTS #2 · VCC'), via('O6', 1, 'PI-1 J1-4'),
         via('O7', 1, '4 LEDs da maquete'),
-        via('O8', 1, 'PI-2 — VCC dos 2 INA219'),
+        via('O8', 1, 'MB-1 — alimentação do MAX485'),
         via('O9', 1, 'MV-1 · VCC do lado do comando'), via('O10'),
       ]},
     ],
@@ -465,7 +430,7 @@ export const COMPONENTES = [
         via('R13', 1, 'MV-1 · GND da carga (lado VIN)'),
         via('R14', 1, 'MV-1 · GND do comando (lado isolado)'),
         via('R15'), via('R16', 1, 'LEDs da maquete −'),
-        via('R17', 1, 'PI-2 · 0V — retorno das posições, depois dos shunts'),
+        via('R17', 1, 'MB-1 · GND + referência do barramento RS-485'),
         via('R18', 1, 'seletora LOCAL/REMOTO — contato para o 0 V'),
         via('R19'), via('R20'),
       ]},

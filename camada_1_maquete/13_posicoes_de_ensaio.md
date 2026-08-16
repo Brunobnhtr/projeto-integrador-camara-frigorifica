@@ -267,7 +267,7 @@ Existe o caminho do **CLP**, com cartões de entrada analógica de 8 ou 16 canai
 
 > 🏭 **Mas neste caso específico ele não é a melhor resposta:** a empresa **já usa Arduino como padrão de fábrica**. Propor CLP significaria trocar de plataforma, de ferramenta de programação e de peça de reposição — e treinar de novo quem faz manutenção. O ganho técnico não paga esse custo.
 >
-> **A solução para 50 posições cabe no Arduino**, e está detalhada no [Doc 14](14_escala_prototipo_x_fabrica.md): multiplexadores CD74HC4067 e shunts, ~R$ 100 no total.
+> **A solução para 50 posições cabe no Arduino**, e está detalhada no [Doc 14](14_arquitetura_distribuida.md): multiplexadores CD74HC4067 e shunts, ~R$ 100 no total.
 
 | Escala | Solução | Observação |
 |---|---:|---|
