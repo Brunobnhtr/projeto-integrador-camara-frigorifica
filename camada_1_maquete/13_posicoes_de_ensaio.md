@@ -45,7 +45,7 @@ Uma analogia: é a diferença entre um disjuntor e um monitor cardíaco. **O dis
 **4 é o número certo por três motivos:**
 
 1. **Demonstra o problema.** Com 1 posição, "qual delas falhou?" não faz sentido — a pergunta só existe quando há várias.
-2. **O INA219 tem exatamente 4 endereços I²C selecionáveis** (0x40 e 0x41). Quatro sensores no mesmo barramento de dois fios, sem nenhum multiplexador. É a solução mais limpa possível.
+2. **O INA219 tem 16 endereços I²C possíveis**, de 0x40 a 0x4F — os módulos prontos expõem 4 deles por jumper de solda. As duas posições usam **0x40 e 0x41**, no mesmo par de fios, sem multiplexador nenhum. É a solução mais limpa possível nessa escala. ⭐ Como isso escala para as 50 placas da empresa está em [§13.9](#139--e-na-empresa-com-50-placas--a-pergunta-da-escala).
 3. **Cabe no espaço e no orçamento** — ~R$ 120 no total.
 
 > 📌 **Como defender o número na banca:** *"a bancada reproduz o princípio com 2 posições porque a arquitetura é idêntica para 50 — muda a quantidade de canais, não o método. Com 50 posições usaríamos multiplexadores I²C ou módulos de aquisição em rede, que é o passo natural de escala."*
@@ -205,3 +205,92 @@ Cada linha traz **o instante, a temperatura da câmara e a corrente de cada posi
 ---
 
 📄 **Anterior:** [Doc 12 — Câmara Térmica](12_camara_termica.md) · **Próximo:** [Doc 20 — Painel de Comando](../camada_2_painel/20_painel_projeto_e_layout.md)
+
+---
+
+## 13.9 ⭐ E na empresa, com 50 placas? — a pergunta da escala
+
+Esta seção existe porque a banca vai perguntar, e porque a resposta é o que separa um protótipo escolar de um projeto de engenharia: **a bancada tem 2 posições, mas a empresa tem 50.** Ninguém coloca 50 módulos INA219 dentro de um painel.
+
+### Primeiro, um acerto: o INA219 tem 16 endereços, não 4
+
+Os módulos prontos trazem **dois jumpers** de solda, que dão 4 combinações — daí vem a ideia de que são 4 endereços. Mas o **chip** tem dois pinos de endereço (A0 e A1) e cada um aceita **quatro** ligações diferentes: GND, V+, SDA ou SCL.
+
+`4 × 4 = 16 endereços`, de **0x40 a 0x4F**.
+
+Então, no barramento, o limite não são 4 sensores — são **16**. Para chegar a 50, ainda falta, mas o problema real aparece antes disso.
+
+### O problema não é o endereço. É o módulo.
+
+Mesmo que houvesse 50 endereços, **50 plaquinhas dentro de um painel** seriam:
+
+- 50 × 4 fios de I²C para derivar
+- 50 pontos de solda de jumper de endereço, todos diferentes
+- um barramento I²C com capacitância alta demais para funcionar
+- e um painel impossível de manter
+
+**Pensar em "um módulo por canal" é pensar como maker.** A indústria não faz isso — e não porque seja cara, mas porque existe um jeito melhor.
+
+### Como a indústria resolve: multiplexação
+
+A ideia central é separar duas coisas que o módulo pronto junta:
+
+| | O que é | Quantos precisam |
+|---|---|---|
+| **Ponto de medição** | um resistor *shunt* em série com a carga | **um por canal** — 50 |
+| **Circuito de medição** | o amplificador e o conversor A/D | **um só**, que visita os 50 |
+
+Um **multiplexador analógico** é uma chave eletrônica que conecta um de vários pontos à mesma entrada. Um CD74HC4067 tem 16 canais e custa alguns reais; quatro deles dão 64 canais.
+
+```
+   shunt 1 ──┐
+   shunt 2 ──┤
+   shunt 3 ──┤──►[ MULTIPLEXADOR ]──►[ amplificador ]──►[ ADC ]──► leitura
+      ...    ┤          ▲
+   shunt 50 ─┘     o firmware escolhe
+                    qual canal ler
+```
+
+### ⭐ Por que isso funciona aqui: a falha não tem pressa
+
+Multiplexar significa **não medir todos ao mesmo tempo** — você lê um, depois o outro. Em muitos sistemas isso seria inaceitável. Aqui, não:
+
+> **Um dispositivo morto continua morto.** Ele não volta a funcionar enquanto você olha para o vizinho.
+
+O ensaio dura **4 horas**. Detectar a falha em 5 segundos ou em 5 milissegundos dá exatamente no mesmo. Com um ADC lendo 100 canais por segundo, cada uma das 50 posições é visitada **duas vezes por segundo** — folgado.
+
+**É a natureza da falha que autoriza a simplificação.** Se o problema fosse detectar um pico de corrente de microssegundos, a multiplexação não serviria e cada canal precisaria do seu circuito.
+
+### E na prática, numa fábrica?
+
+Aí nem se monta isso: **compra-se pronto**. O equivalente industrial de um "INA219 multiplexado" é o **cartão de entrada analógica de CLP** — tipicamente 8 ou 16 canais por cartão, encaixado num bastidor.
+
+| Escala | Solução | Observação |
+|---|---:|---|
+| 2 posições | **2 × INA219** no I²C | é o nosso protótipo |
+| até 16 | INA219 direto | usando os 16 endereços do chip |
+| até 64 | shunt + multiplexador + 1 ADC | ~R$ 150 em componentes |
+| 50+ industrial | **4 cartões analógicos de 16 canais em CLP** | ou I/O remoto em Modbus RTU |
+
+Um bastidor de CLP com quatro cartões de entrada analógica é **absolutamente banal** numa fábrica. O que parecia um problema insolúvel — "50 sensores!" — é, na verdade, o caso de uso normal de um equipamento que existe há décadas.
+
+📌 **I/O remoto merece nota.** Em vez de puxar 50 pares de fios analógicos até o painel, colocam-se módulos **junto das câmaras**, e eles conversam com o CLP por **Modbus RTU sobre RS-485** — dois fios para todos. Sinal analógico longo é sinal ruim; digitalizar perto da fonte é a regra.
+
+### 🤔 E a alternativa mais barata de todas: perguntar à placa
+
+Existe um caminho que dispensa medir corrente: **a própria placa avisar que está viva.**
+
+As placas sob ensaio são eletrônicas — muitas têm porta serial ou um pino livre. Um *heartbeat* — um pulso a cada segundo — detecta a falha sem nenhum sensor.
+
+| | Medir corrente | Heartbeat da placa |
+|---|---|---|
+| Custo por canal | shunt + canal de ADC | um fio |
+| Funciona com **qualquer** dispositivo | ✅ | ❌ só se ele cooperar |
+| Detecta placa **travada mas consumindo** | ❌ | ✅ |
+| Detecta placa **morta** | ✅ | ✅ |
+| Exige mudar o firmware do DUT | ❌ | ✅ |
+
+**Os dois se complementam, e é assim que se faz quando o ensaio é sério:** a corrente diz se há vida elétrica, o heartbeat diz se há vida lógica. Uma placa pode consumir corrente normal e estar com o firmware travado — só o heartbeat pega isso.
+
+🎓 **Para a defesa:** medir corrente é a escolha certa **para o protótipo**, porque funciona com qualquer dispositivo, sem exigir nada dele. Numa implantação real, valeria propor os dois — e saber explicar por quê é o que mostra domínio do problema.
+
