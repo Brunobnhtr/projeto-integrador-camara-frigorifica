@@ -47,8 +47,29 @@ export const REGRA_SEGREGACAO = {
     'Entrada de 24 V dos BTS: a corrente vem em pulsos, não contínua',
     'Bobinas dos relés KA1 e KA2: dão um pico ao desligar',
   ],
+  /* ⭐ TRÊS CLASSES, NÃO DUAS. A divisão binária não sabe onde pôr um
+     trilho de 5 V: ele não POLUI (não chaveia nada) e não SOFRE (é de
+     baixa impedância, com capacitor de desacoplamento em cada ponta).
+     Forçá-lo numa das duas caixas gera rota impossível — foi o que o
+     validador da fiação mostrou ao tentar levar 5 V do trilho 1 ao 3. */
+  classes: [
+    { id: 'potencia', nome: 'POLUI', cor: 'vermelha',
+      quem: 'saída dos BTS, entrada de 24 V deles, bobinas dos relés',
+      onde: 'só canaleta de potência' },
+    { id: 'sinal', nome: 'SOFRE', cor: 'azul',
+      quem: 'IS analógico, 1-Wire, I²C, SIG do mux, retornos das posições',
+      onde: 'só canaleta de sinal' },
+    { id: 'alim', nome: 'NEM UM NEM OUTRO', cor: 'qualquer',
+      quem: 'trilhos de 5 V e 12 V, amostras de 24 V para divisor, COM do ULN',
+      onde: 'a canaleta que der o caminho mais curto — cruzando a 90° quando '
+          + 'precisar trocar de lado' },
+    { id: 'comum', nome: 'O 0 V', cor: 'qualquer',
+      quem: 'todos os retornos', onde: 'por onde for mais curto — ele é único' },
+  ],
   regras: [
-    'Canaleta VERMELHA só potência, canaleta AZUL só sinal. Nunca misture.',
+    'Canaleta VERMELHA só o que POLUI, canaleta AZUL só o que SOFRE.',
+    'Alimentação limpa e o 0 V andam por qualquer uma — o que importa é '
+    + 'não deixar o que polui ao lado do que sofre.',
     'Se um cabo de sinal precisar cruzar um de potência, cruze a 90°. Cruzamento '
     + 'perpendicular quase não acopla; paralelo lado a lado é o pior caso.',
     'Cabo de sinal longo e solto vira antena. Prenda-o na canaleta em vez de deixar '
@@ -138,13 +159,13 @@ export const COMPONENTES = [
       { ref: 'TOPO', lado: 'cima', legenda: 'Borda de cima — 35 bornes', pinos: [
         via('D30'), via('D29', 1, '⭐ MV-1 canal 3 → ventoinhas de CIRCULAÇÃO'), via('D28', 1, '⭐ MV-1 canal 2 → ventoinha do PTC'), via('D27', 1, '⭐ MV-1 canal 1 → ventoinhas do RADIADOR'),
         via('D26', 1, 'Seletora LOCAL / REMOTO'), via('D25', 1, 'PI-1 J2-8 — vigia se os 24 V caíram'), via('D24', 1, 'Emergência — bloco NF de 5 V'), via('D23', 1, 'Botão STOP (NA, 5 V)'),
-        via('D22', 1, 'Botão START (NA, 5 V)'), via('+5V', 1, 'BD-5V saída 1'), via('D21', 1, 'I²C SCL — o mesmo barramento'), via('D20', 1, 'I²C SDA — AM2315C (câmara), DS3231 e 2× INA219'),
+        via('D22', 1, 'Botão START S1-14 — NA para o 0 V'), via('+5V', 1, 'BD-5V saída 1'), via('D21', 1, 'I²C SCL — o mesmo barramento'), via('D20', 1, 'I²C SDA — AM2315C (câmara), DS3231 e 2× INA219'),
         via('D19', 1, 'Serial1 RX ← DNLCB30/ESP32'), via('D18', 1, 'Serial1 TX → DNLCB30/ESP32'), via('D17', 1, 'Serial2 RX ← conversor ← tela'), via('D16', 1, 'Serial2 TX → conversor → tela'),
         via('D15'), via('D14'), via('D0'), via('D1'),
         via('D2', 1, 'PI-1 J2-3 — 1-Wire do DS18B20 do RADIADOR'), via('D3', 1, 'RPM da ventoinha do radiador #1'), via('D4', 1, 'BTS #1 · R_EN e L_EN juntos'), via('D5', 1, 'BTS #1 · RPWM (frio)'),
         via('D6', 1, 'BTS #2 · RPWM (quente)'), via('D7', 1, 'BTS #2 · R_EN e L_EN juntos'), via('D8'), via('D9', 1, 'PI-1 J1-5 → sinaleiro ENERGIZADO'),
         via('D10', 1, 'PI-1 J1-6 → sinaleiro RESFRIANDO'), via('D11', 1, 'PI-1 J1-7 → sinaleiro AQUECENDO'), via('D12', 1, 'PI-1 J1-8 → sinaleiro FALHA'), via('D13'),
-        via('GND'), via('D21/SCL'), via('D20/SDA'),
+        via('GND1'), via('D21/SCL'), via('D20/SDA'),
       ]},
       { ref: 'ESQ', lado: 'esquerda', legenda: 'Borda esquerda — 13 bornes (D31–D43)', pinos: [
         via('D31', 1, 'PI-2 · S0 — seleção do canal do mux'),
@@ -163,8 +184,9 @@ export const COMPONENTES = [
         via('A9'), via('A8', 1, 'RPM da ventoinha do radiador #2'), via('A7'), via('A6'),
         via('A5'), via('A4'), via('A3'),
         via('A2', 1, '⭐ PI-2 · SIG — os 16 canais entram por aqui'),
-        via('A1', 1, 'PI-1 J2-2 — corrente do BTS #2'), via('A0', 1, 'PI-1 J2-1 — corrente do BTS #1'), via('GND'), via('IOREF'),
-        via('AREF'), via('RESET'), via('+3V3'), via('GND'),
+        via('A1', 1, 'PI-1 J2-2 — corrente do BTS #2'), via('A0', 1, 'PI-1 J2-1 — corrente do BTS #1'), via('GND2'), via('IOREF'),
+        via('AREF'), via('RESET'), via('+3V3'),
+        via('GND3', 1, '⭐ BD-0V · R5 — o retorno da alimentação, no bloco POWER'),
         via('+5V', 1, 'BD-5V saída 1'), via('VIN'),
       ]},
     ],
@@ -172,7 +194,7 @@ export const COMPONENTES = [
       '✅ Pinagem conferida na foto do adaptador: 35 bornes em cima, 13 à esquerda e '
       + '34 embaixo. O D21/SCL e o D20/SDA aparecem DUAS vezes na borda de cima — é o '
       + 'mesmo pino, espelhado, como no Mega original. Use um dos dois, não os dois.',
-      '⚠️ Há 3 bornes GND (um em cima, dois embaixo) e 2 de +5V. O projeto usa 1 de '
+      '⚠️ Há 3 bornes GND — GND1 no topo, GND2 junto do A0 e GND3 no bloco POWER — e 2 de +5V. Use o GND3, que fica ao lado do +5V: ida e volta no mesmo bloco. O projeto usa 1 de '
       + 'cada. Os outros servem para sensores, sem precisar de régua extra.',
       '📌 D50–D53 ficaram LIVRES quando o cartão SD mudou para a tela ES3C28P.',
     ],
@@ -611,9 +633,11 @@ export const COMPONENTES = [
   })),
   {
     id: 'S1', nome: 'Botão START (verde)', porta: true,
+    aConferir: '🔥 O bloco chaveia para o 0 V, NÃO para o 5 V. Com INPUT_PULLUP o Arduino já segura o pino em 5 V por dentro — ligar o botão no 5 V faz o pino ler HIGH apertado ou não, e o START nunca acontece.',
     x: 51, y: 250, largura: 30, altura: 30, cor: '#2f9e44',
     grupos: [{ ref: 'NA', lado: 'baixo', legenda: 'Bloco NA de 5 V — contatos 13-14', pinos: [
-      via('13', 1, 'BD-5V saída 4'), via('14', 1, 'Mega D22'),
+      via('13', 1, '⚡ 0 V comum dos comandos (vem do SA1-13)'),
+      via('14', 1, 'Mega D22 — INPUT_PULLUP, LOW = apertado'),
     ]}],
   },
   {
@@ -623,8 +647,8 @@ export const COMPONENTES = [
     grupos: [{ ref: 'BLK', lado: 'baixo', legenda: '1 bloco NF (24 V) + 1 bloco NA (5 V) — 4 vias', pinos: [
       via('11', 1, '⚡ HARDWARE: KA1 · 24 (contato de saída)'),
       via('12', 1, '⚡ HARDWARE: KA2 · A1 — corta a bobina enquanto apertado'),
-      via('13', 1, 'BD-5V saída 3 — bloco de leitura'),
-      via('14', 1, 'Mega D23 — o software também sabe que apertaram'),
+      via('13', 1, '⚡ 0 V comum dos comandos (ponte a partir do S1-13)'),
+      via('14', 1, 'Mega D23 — INPUT_PULLUP, LOW = apertado'),
     ]}],
   },
   {
@@ -653,7 +677,8 @@ export const COMPONENTES = [
         + 'Arduino.',
     grupos: [{ ref: 'NF', lado: 'baixo', legenda: '2 blocos NF (4)', pinos: [
       via('11', 1, 'BD-24V saída 2'), via('12', 1, 'cadeia → KA1 · A1'),
-      via('21', 1, 'BD-5V'), via('22', 1, 'Mega D24'),
+      via('21', 1, '⚡ 0 V comum dos comandos (ponte a partir do S2-13)'),
+      via('22', 1, 'Mega D24 — INPUT_PULLUP, HIGH = EMERGÊNCIA (o NF abriu)'),
     ]}],
   },
 ];

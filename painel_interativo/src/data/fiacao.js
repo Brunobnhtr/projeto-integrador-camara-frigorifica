@@ -10,6 +10,7 @@
  * ⭐ ETAPA 1 — AS ENTRADAS. O que vem dos postes e entra pela base.
  */
 import { FIOS_ETAPA2 } from './fiacao_etapa2.js';
+import { FIOS_ETAPA3 } from './fiacao_etapa3.js';
 
 /* ── prensa-cabos na FACE INFERIOR da caixa ───────────────────────────
  * X medido da esquerda da caixa. Todos na base, porque é lá que chega o
@@ -103,11 +104,13 @@ export const ETAPAS = [
           + '24 V de serviços. Todos pela canaleta de potência.' },
   { n: 2, nome: 'Comando e emergência', feito: true,
     resumo: 'KA1, KA2, o cogumelo e a seletora LOCAL/REMOTO.' },
-  { n: 3, nome: 'Distribuição — dos barramentos aos consumidores', feito: false },
+  { n: 3, nome: 'Distribuição — dos barramentos aos consumidores', feito: true,
+    resumo: '24 fios saindo dos quatro barramentos para quem consome, dentro '
+          + 'da placa de montagem. A porta fica para a etapa 5.' },
   { n: 4, nome: 'Sinais — Arduino, PI-1, PI-2 e sensores', feito: false },
   { n: 5, nome: 'Porta — tela, botões e sinaleiros', feito: false },
   { n: 6, nome: 'Saídas — o que vai para a câmara', feito: false },
 ];
 
 /* a lista única que o resto do app consome */
-export const FIOS = [...FIOS_ETAPA1, ...FIOS_ETAPA2];
+export const FIOS = [...FIOS_ETAPA1, ...FIOS_ETAPA2, ...FIOS_ETAPA3];

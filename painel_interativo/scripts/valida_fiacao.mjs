@@ -3,7 +3,9 @@
  *
  * Três coisas que só um script pega:
  *   1. a rota existe de verdade — canaletas seguidas têm que se TOCAR;
- *   2. nenhum fio de sinal entra em canaleta de potência (e vice-versa);
+ *   2. nada que POLUI corre ao lado do que SOFRE — mas alimentação
+ *      limpa e o 0 V passam por qualquer canaleta, porque não fazem
+ *      nem uma coisa nem outra;
  *   3. o destino de cada fio é um borne que existe e está marcado como
  *      usado no inventário.
  */
@@ -45,8 +47,10 @@ for (const f of FIOS) {
       erros.push(`${f.n} (${f.nome}): ${ks[i - 1].id} e ${ks[i].id} não se tocam — `
         + 'o fio teria que atravessar o vazio entre elas');
 
-  /* ── 2. segregação ────────────────────────────────────────────────── */
-  if (f.classe !== 'comum')
+  /* ── 2. segregação ─────────────────────────────────────────────────
+     'alim' e 'comum' andam em qualquer canaleta: não poluem nem sofrem.
+     Só 'potencia' e 'sinal' ficam presas à sua. */
+  if (f.classe === 'potencia' || f.classe === 'sinal')
     for (const { id, k } of ks)
       if (k.tipo !== f.classe)
         erros.push(`${f.n} é ${f.classe} e passa pela ${id}, que é ${k.tipo}`);
@@ -151,5 +155,5 @@ if (erros.length) {
   erros.forEach(e => console.log('  X ' + e));
   process.exit(1);
 }
-console.log('OK - toda rota existe, nada de sinal em canaleta de potência');
+console.log('OK - toda rota existe e a segregação está respeitada');
 void PLACA; void TRILHOS;

@@ -528,10 +528,11 @@ export default function VistaPainelInterno() {
                           marginBottom: 5 }}>
               🔌 FIAÇÃO — {FIOS.length} FIOS
             </div>
-            <div style={{ fontSize: 11, color: '#495057', lineHeight: 1.5,
+            <div style={{ fontSize: 11, color: '#495057', lineHeight: 1.55,
                           marginBottom: 7 }}>
-              Cinco condutores entram pela <b>base</b>, todos pela canaleta de
-              potência: <code>CH-base → CV-esq → CH-2x1</code>.
+              <b>Três classes, não duas:</b> 🔴 o que <b>polui</b> (BTS e bobinas) só na
+              canaleta vermelha · 🔵 o que <b>sofre</b> (IS, 1-Wire, I²C) só na azul ·
+              🟠 <b>alimentação limpa</b> e o <b>0 V</b> passam por qualquer uma.
             </div>
             {FIOS.filter(f => !etapa || f.etapa === etapa).map(f => {
               const on = fio === f.n;
