@@ -308,7 +308,30 @@ Para esse canal ser confiável, dois reforços de R$ 0,20:
 
 ---
 
-## 31.3 🔩 A numeração dos contatos — e três erros que ela evita
+## 31.3 🔌 As duas fileiras da base PTF08A
+
+Os 8 terminais de um relé de base não ficam todos de um lado: são **duas fileiras de 4**.
+
+No projeto a divisão não é estética — ela segue por onde o fio precisa sair:
+
+| | KA1 | KA2 |
+|---|---|---|
+| **Fileira de BAIXO**<br>(de frente para a CH-2x1, potência) | `A1` `A2` `11` `24` | `A1` `A2` `11` `14` |
+| **Fileira de CIMA** | `12` `14` `21` `22` | `12` `21` `22` `24` |
+
+> ⭐ **Na fileira de baixo ficam os terminais que recebem FIO EXTERNO.** O trilho 2 tem a canaleta de potência embaixo (CH-2x1) e a de sinal em cima (CH-3x2) — e a cadeia de comando é potência. Se um terminal com fio externo estivesse em cima, o fio teria que atravessar o corpo do relé para chegar na canaleta certa.
+
+**Em cima ficam os que só levam ponte curta na própria base:**
+
+- `KA1-14 → KA1-A1` — **o selo**, atravessando o soquete de uma fileira à outra
+- `KA1-11 → KA1-21` — a ponte que leva o nó CMD aos dois contatos
+- `12` e `22` — os NF que o projeto não usa
+
+📌 **Confira a serigrafia da sua base.** A distribuição dos números nas duas fileiras varia de fabricante; o que não varia é a lógica: `A1`/`A2` são a bobina, o dígito **1** é o comum, o **2** é o NF e o **4** é o NA.
+
+---
+
+## 31.4 🔩 A numeração dos contatos — e três erros que ela evita
 
 Todo bloco de contato de botoeira industrial vem com o número **gravado no próprio corpo**. A convenção é a mesma no mundo inteiro:
 
@@ -349,7 +372,7 @@ Faça **com o barramento BD-POT desligado**. Só a cadeia de comando alimentada.
 
 ---
 
-## 31.4 As botoeiras
+## 31.5 As botoeiras
 
 | Botão | Cor | Blocos | Ligação |
 |---|---|---|---|
@@ -395,7 +418,7 @@ Com isso o firmware **sabe** quando a energia foi cortada por hardware — e reg
 ---
 
 
-## 31.5 Tabela de proteções e seletividade
+## 31.6 Tabela de proteções e seletividade
 
 | Nível | Dispositivo | Ajuste | Protege contra | Tempo de atuação |
 |---:|---|---|---|---|
@@ -437,7 +460,7 @@ Com isso o firmware **sabe** quando a energia foi cortada por hardware — e reg
 
 ---
 
-## 31.6 ⚡ Pode pendurar um 0 V no outro? — a conta que decide
+## 31.7 ⚡ Pode pendurar um 0 V no outro? — a conta que decide
 
 **Depende de duas coisas: quanta corrente passa e se aquele fio é referência de alguma medição.** E nas duas o projeto tem casos dos dois tipos.
 
@@ -489,7 +512,7 @@ A barra **BD-0V tem 20 pontos** e hoje chegam **13 retornos** declarados. O scri
 
 ---
 
-## 31.7 Aterramento
+## 31.8 Aterramento
 
 ### Os três "terras" do projeto (não confundir)
 
@@ -570,7 +593,7 @@ Se o 0 V for ligado ao PE em dois lugares, cria-se um **laço de terra**: uma es
 
 ---
 
-## 31.8 Tabela de estados do sistema
+## 31.9 Tabela de estados do sistema
 
 | Evento | KA1 | KA2 | 24 V nos BTS | `R_EN` | Tela | LED |
 |---|---|---|---|---|---|---|
@@ -594,7 +617,7 @@ Se o 0 V for ligado ao PE em dois lugares, cria-se um **laço de terra**: uma es
 
 ---
 
-## 31.9 Ensaios de segurança (obrigatórios antes da apresentação)
+## 31.10 Ensaios de segurança (obrigatórios antes da apresentação)
 
 | # | Ensaio | Procedimento | Resultado esperado |
 |---:|---|---|---|
@@ -618,7 +641,7 @@ Se o 0 V for ligado ao PE em dois lugares, cria-se um **laço de terra**: uma es
 
 ---
 
-## 31.10 ✅ Checklist de aceitação
+## 31.11 ✅ Checklist de aceitação
 
 - [ ] **KA1 · relé de interface 24 Vcc, 2 contatos** instalado (selo + saída)
 - [ ] **KA2 · relé de interface 24 Vcc, contato de ≥ 10 A** instalado

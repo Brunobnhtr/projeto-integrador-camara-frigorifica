@@ -125,6 +125,34 @@ if (!classes.has('potencia') || !classes.has('sinal'))
 else if (dob.length !== 2)
   erros.push(`a dobradiça tem ${dob.length} canaletas — deve ter 2, uma por classe`);
 
+/* ── ⭐ DOIS BLOCOS NA MESMA BORDA NÃO PODEM SE SOBREPOR ─────────────
+   A PI-2 tem o J2 e o J3 os dois na borda de baixo. Se cada um for
+   centrado na largura inteira, os bornes de um caem em cima dos do
+   outro — e no desenho fica impossível saber qual fio entra onde. */
+console.log('\n=== blocos que dividem a mesma borda ===');
+const PASSO_V = 5.4, GAP_V = 4;
+for (const c of COMPONENTES) {
+  const porLado = new Map();
+  for (const g of c.grupos)
+    porLado.set(g.lado, [...(porLado.get(g.lado) ?? []), g]);
+  for (const [lado, gs] of porLado) {
+    if (gs.length < 2) continue;
+    const vert = lado === 'esquerda' || lado === 'direita';
+    const compr = vert ? c.altura : c.largura;
+    const linhasDe = g => Math.ceil(g.pinos.length / (g.linhas ?? 1));
+    const tot = gs.reduce((a, g) => a + linhasDe(g), 0);
+    const util = compr - 3 - GAP_V * (gs.length - 1);
+    const precisa = tot * 2.6 + GAP_V * (gs.length - 1) + 3;
+    if (compr < precisa)
+      erros.push(`${c.id}: ${gs.map(g => g.ref).join(' e ')} dividem a borda `
+        + `${lado} e precisam de ${precisa.toFixed(0)} mm, mas há ${compr}`);
+    else
+      console.log(`  . ${c.id}: ${gs.map(g => g.ref + '(' + g.pinos.length + ')').join(' + ')} `
+        + `na borda ${lado} — ${compr} mm, precisa de ${precisa.toFixed(0)}`);
+    void util; void PASSO_V;
+  }
+}
+
 /* ── ⭐ FOLGA PARA OS BORNES LATERAIS ────────────────────────────────
    Componente com borne na lateral precisa de espaço vazio daquele lado:
    o fio contorna a peça por fora antes de entrar no parafuso. Sem

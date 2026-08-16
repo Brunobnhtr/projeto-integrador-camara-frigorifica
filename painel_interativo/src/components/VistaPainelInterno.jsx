@@ -32,8 +32,9 @@ import {
    Cada terminal é um quadrado com o ID dentro, na borda onde ele fica
    de verdade no componente. Tudo em milímetros.                        */
 
-const PASSO_MIN = 4.6;   // mm entre centros de terminais
-const LADO_T = 4.0;      // mm do lado estreito do terminal
+const PASSO_MIN = 5.4;   // mm entre centros de terminais
+const LADO_T = 4.6;      // mm do lado estreito do terminal
+const GAP_GRUPO = 4;     // mm entre dois blocos de borne da MESMA borda
 const COMP_T = 11.0;     // mm do lado comprido — é nele que a legenda cabe
 
 /* ⭐ A geometria do terminal em UM lugar só. O desenho do retângulo e o
@@ -62,8 +63,22 @@ function posicoes(c, g) {
   const porLinha = Math.ceil(n / linhas);
   const vert = g.lado === 'esquerda' || g.lado === 'direita';
   const compr = vert ? c.altura : c.largura;
-  const passo = Math.max(2.6, Math.min(PASSO_MIN, (compr - 3) / porLinha));
-  const inicio = (compr - (porLinha - 1) * passo) / 2;
+
+  /* ⭐ DOIS BLOCOS PODEM DIVIDIR A MESMA BORDA. A PI-2 tem o J2 e o J3
+     os dois embaixo. Calculando cada grupo centrado na largura inteira,
+     eles se sobrepunham — os bornes do J2 caíam em cima dos do J3. Aqui
+     a borda é REPARTIDA entre os blocos, proporcional ao nº de vias. */
+  const irmaos = c.grupos.filter(x => x.lado === g.lado);
+  const idx = irmaos.indexOf(g);
+  const totalPinos = irmaos.reduce((a, x) => a + Math.ceil(x.pinos.length / (x.linhas ?? 1)), 0);
+  const antes = irmaos.slice(0, idx)
+    .reduce((a, x) => a + Math.ceil(x.pinos.length / (x.linhas ?? 1)), 0);
+  const util = compr - 3 - GAP_GRUPO * (irmaos.length - 1);
+  const meu = util * (porLinha / totalPinos);
+  const base = 1.5 + util * (antes / totalPinos) + GAP_GRUPO * idx;
+
+  const passo = Math.max(2.6, Math.min(PASSO_MIN, meu / porLinha));
+  const inicio = base + (meu - (porLinha - 1) * passo) / 2;
 
   return g.pinos.map((p, i) => {
     /* Os dados vêm INTERCALADOS — [5V, sinal, 5V, sinal, ...] — porque é

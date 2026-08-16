@@ -235,7 +235,7 @@ export const COMPONENTES = [
   },
   {
     id: 'ESP32', nome: 'DNLCB30 + ESP32 30 pinos', trilho: 2,
-    x: 344, largura: 96, altura: 84, cor: '#1971c2',
+    x: 350, largura: 96, altura: 84, cor: '#1971c2',
     nota: 'Os nomes são os da serigrafia da borda externa, exatamente como estão '
         + 'impressos na placa. Cada bloco tem 15 bornes em FILEIRA ÚNICA — o "5V" é o '
         + 'primeiro borne de cada um, não uma coluna à parte.',
@@ -346,7 +346,7 @@ export const COMPONENTES = [
   },
   {
     id: 'F-P', nome: 'F-P1 e F-P2 — fusíveis das posições de ensaio', trilho: 2,
-    x: 300, largura: 36, altura: 46, cor: '#fab005',
+    x: 306, largura: 36, altura: 46, cor: '#fab005',
     nota: '1 porta-fusível de 2 vias COM INTERRUPTOR — um fusível e uma chave por posição.',
     grupos: [
       { ref: 'IN', lado: 'cima', legenda: 'Entrada comum (1)', pinos: [
@@ -403,30 +403,40 @@ export const COMPONENTES = [
   },
   {
     id: 'KA1', nome: 'KA1 — relé de selo', trilho: 2,
-    x: 150, largura: 30, altura: 50, cor: '#7048e8',
+    x: 150, largura: 34, altura: 50, cor: '#7048e8',
     nota: 'Relé de 8 pinos com 2 contatos reversíveis, em base PTF08A.',
     grupos: [
-      { ref: 'REL', lado: 'baixo', legenda: 'Base PTF08A (8 terminais)', pinos: [
-        via('A1', 1, '⭐ do REARME (S3-2) OU do próprio selo (14) — os dois em paralelo'),
+      /* ⭐ A base PTF08A tem os 8 terminais em DUAS fileiras de 4.
+         Aqui os que recebem FIO EXTERNO ficam na fileira de baixo, de
+         frente para a CH-2x1 (potência), que é por onde a cadeia de
+         comando anda. Em cima ficam os que só levam ponte curta na
+         própria base, e os NF que o projeto não usa. */
+      { ref: 'CIMA', lado: 'cima', legenda: 'Fileira de cima (4)', pinos: [
+        via('12'),
+        via('14', 1, '⭐ ponte curta até o A1: é ISTO que faz o relé se segurar'),
+        via('21', 1, 'ponte curta do 11 — comum do contato de SAÍDA'), via('22'),
+      ]},
+      { ref: 'BAIXO', lado: 'baixo', legenda: 'Fileira de baixo — os fios externos (4)', pinos: [
+        via('A1', 1, '⭐ do REARME (S3-14) OU do próprio selo (14) — os dois em paralelo'),
         via('A2', 1, 'BD-0V · R11'),
-        via('11', 1, 'nó CMD — comum do contato de SELO'), via('12'),
-        via('14', 1, '⭐ volta para A1: é ISTO que faz o relé se segurar'),
-        via('21', 1, 'nó CMD — comum do contato de SAÍDA'), via('22'),
+        via('11', 1, 'nó CMD — comum do contato de SELO'),
         via('24', 1, 'S2-11 (bloco NF do STOP) → daí para o KA2 · A1'),
       ]},
     ],
   },
   {
     id: 'KA2', nome: 'KA2 — relé de potência', trilho: 2,
-    x: 188, largura: 30, altura: 50, cor: '#7048e8',
+    x: 190, largura: 34, altura: 50, cor: '#7048e8',
     nota: '⚠️ Contato declarado em CORRENTE CONTÍNUA, mínimo 10 A.',
     grupos: [
-      { ref: 'REL', lado: 'baixo', legenda: 'Base PTF08A (8 terminais)', pinos: [
+      { ref: 'CIMA', lado: 'cima', legenda: 'Fileira de cima (4)', pinos: [
+        via('12'), via('21'), via('22'), via('24'),
+      ]},
+      { ref: 'BAIXO', lado: 'baixo', legenda: 'Fileira de baixo — os fios externos (4)', pinos: [
         via('A1', 1, 'S2-12 — vem pelo bloco NF do STOP, que vem do KA1 · 24'),
         via('A2', 1, 'BD-0V · R12'),
-        via('11', 1, 'entrada dos 24 V do prensa-cabo'), via('12'),
-        via('14', 1, 'BD-POT entrada'),
-        via('21'), via('22'), via('24'),
+        via('11', 1, '⚡ entrada dos 24 V do prensa-cabo PG9-1'),
+        via('14', 1, '⚡ saída para o BD-POT — é este contato que corta a potência'),
       ]},
     ],
     avisos: ['📌 Sobra um contato reversível inteiro (21-22-24) sem uso. Serve de '
@@ -436,7 +446,7 @@ export const COMPONENTES = [
 
   {
     id: 'MV-1', nome: 'MV-1 — módulo MOSFET 4 canais, isolado', trilho: 2,
-    x: 226, largura: 66, altura: 51, cor: '#0ca678',
+    x: 232, largura: 66, altura: 51, cor: '#0ca678',
     nota: 'Comanda os três grupos de ventoinha e ainda sobra um canal. Optoacoplador '
         + 'em cada entrada, jumper H/L por canal e 66 × 50,5 mm.',
     grupos: [
