@@ -5,8 +5,8 @@
  * para o que o projeto liga nele? É o tipo de erro que só aparece na
  * bancada, quando falta um lugar para o fio.
  */
-import { COMPONENTES, TRILHOS, CAIXA, PLACA, CANALETAS, CANALETAS_PORTA, LATERAIS }
-  from '../src/data/painel_completo.js';
+import { COMPONENTES, TRILHOS, CAIXA, PLACA, CANALETAS, CANALETAS_PORTA,
+         LATERAIS, FOLGA_LATERAL } from '../src/data/painel_completo.js';
 
 /* largura util = placa menos as canaletas verticais */
 const cv = CANALETAS.filter(k => k.vertical);
@@ -124,6 +124,32 @@ if (!classes.has('potencia') || !classes.has('sinal'))
     + 'não podem dividir a mesma passagem flexível');
 else if (dob.length !== 2)
   erros.push(`a dobradiça tem ${dob.length} canaletas — deve ter 2, uma por classe`);
+
+/* ── ⭐ FOLGA PARA OS BORNES LATERAIS ────────────────────────────────
+   Componente com borne na lateral precisa de espaço vazio daquele lado:
+   o fio contorna a peça por fora antes de entrar no parafuso. Sem
+   folga ele sobe rente à borda e some atrás do componente. */
+console.log('\n=== folga dos bornes laterais ===');
+for (const t of TRILHOS) {
+  const fila = COMPONENTES.filter(c => c.trilho === t.n).sort((a, b) => a.x - b.x);
+  for (let i = 0; i < fila.length; i++) {
+    const c = fila[i];
+    const lados = new Set(c.grupos.map(g => g.lado));
+    for (const [lado, viz, folga] of [
+      ['esquerda', fila[i - 1], fila[i - 1] ? c.x - (fila[i - 1].x + fila[i - 1].largura) : 99],
+      ['direita', fila[i + 1], fila[i + 1] ? fila[i + 1].x - (c.x + c.largura) : 99],
+    ]) {
+      if (!lados.has(lado) || !viz) continue;
+      if (folga < FOLGA_LATERAL)
+        erros.push(`${c.id} tem bornes na ${lado} e só ${folga} mm até o ${viz.id} — `
+          + `precisa de ${FOLGA_LATERAL} mm para o fio contornar`);
+    }
+  }
+}
+const comLat = COMPONENTES.filter(c =>
+  c.grupos.some(g => g.lado === 'esquerda' || g.lado === 'direita'));
+console.log(`  . ${comLat.length} componentes com borne lateral: `
+  + comLat.map(c => c.id).join(', '));
 
 /* ── a antena TEM que estar fora, e fora da porta ────────────────────── */
 console.log('=== a antena ===');

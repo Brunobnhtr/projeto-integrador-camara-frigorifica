@@ -153,6 +153,33 @@ A porta tem só o que a pessoa precisa **tocar ou ver**:
 
 > ⚠️ **Cada tensão entra pelo seu próprio prensa-cabo.** São três cabos vindos de três postes diferentes — juntá-los num furo só significa perder a rastreabilidade, apertar demais o prensa-cabo (o que amassa a capa) e colocar o cabo de **6,0 A** encostado nos de sinal.
 
+### ↔️ Folga lateral: os componentes que têm borne nos lados
+
+Nem todo componente recebe fio só por cima e por baixo. **Seis deles têm borne na lateral:**
+
+| Componente | Lados | O que entra por ali |
+|---|---|---|
+| **BTS7960 #1 e #2** | esquerda **e** direita | potência (B+, B−, M+, M−) de um lado, lógica do outro |
+| **MV-1** | esquerda e direita | jumpers H/L de um lado, VIN de 12 V do outro |
+| **DNLCB30** | esquerda e direita | os dois blocos de 15 bornes do ESP32 |
+| Arduino Mega | esquerda | D31–D43 |
+| Tela ES3C28P | lateral | conectores |
+
+> ⭐ **O fio de um borne lateral contorna o componente por fora antes de entrar no parafuso.** Ele não pode subir rente à borda — sumiria atrás da peça, e na bancada ficaria prensado entre dois componentes.
+
+**Folga adotada: 8 mm entre vizinhos no trilho 2**, que é onde estão os BTS, o MV-1 e o DNLCB30. Com 358 mm de componentes e 6 folgas, o trilho fecha em 406 dos 420 mm úteis.
+
+```
+   34    84  92   142 150  180 188  218 226      292 300  336 344       440
+   ├─BTS1─┤ 8 ├─BTS2─┤ 8 ├KA1┤ 8 ├KA2┤ 8 ├──MV-1──┤ 8 ├F-P┤ 8 ├─DNLCB30─┤
+      ↕        ↕                        ↕                      ↕
+   laterais  laterais                laterais              laterais
+```
+
+📐 O script `npm run valida:painel` reprova se um componente com borne lateral ficar a menos de 8 mm do vizinho daquele lado.
+
+---
+
 ### 🚪 A porta também tem canaletas
 
 A porta carrega **11 componentes**: a tela, o conversor de nível, 4 sinaleiros, 3 botões, a seletora e o cogumelo. São dezenas de fios — e sem canaleta eles viram um chumaço solto que **fica preso na dobradiça** na primeira vez que alguém fecha o painel com pressa.

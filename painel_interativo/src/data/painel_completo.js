@@ -133,6 +133,13 @@ export const LATERAIS = [
   },
 ];
 
+/* ⭐ FOLGA LATERAL ENTRE COMPONENTES.
+   Os BTS, o MV-1 e o DNLCB30 têm bornes nas LATERAIS, e o fio precisa
+   contornar o componente por fora para entrar neles. Sem folga o fio
+   sobe rente à borda e some atrás da peça — no desenho e na bancada.
+   8 mm entre vizinhos no trilho 2, que é onde estão esses três. */
+export const FOLGA_LATERAL = 8;
+
 export const TRILHOS = [
   { n: 3, y: 125, nome: 'TRILHO 3 — Controle' },
   { n: 2, y: 255, nome: 'TRILHO 2 — Potência' },
@@ -228,7 +235,7 @@ export const COMPONENTES = [
   },
   {
     id: 'ESP32', nome: 'DNLCB30 + ESP32 30 pinos', trilho: 2,
-    x: 345, largura: 96, altura: 84, cor: '#1971c2',
+    x: 344, largura: 96, altura: 84, cor: '#1971c2',
     nota: 'Os nomes são os da serigrafia da borda externa, exatamente como estão '
         + 'impressos na placa. Cada bloco tem 15 bornes em FILEIRA ÚNICA — o "5V" é o '
         + 'primeiro borne de cada um, não uma coluna à parte.',
@@ -339,7 +346,7 @@ export const COMPONENTES = [
   },
   {
     id: 'F-P', nome: 'F-P1 e F-P2 — fusíveis das posições de ensaio', trilho: 2,
-    x: 303, largura: 36, altura: 46, cor: '#fab005',
+    x: 300, largura: 36, altura: 46, cor: '#fab005',
     nota: '1 porta-fusível de 2 vias COM INTERRUPTOR — um fusível e uma chave por posição.',
     grupos: [
       { ref: 'IN', lado: 'cima', legenda: 'Entrada comum (1)', pinos: [
@@ -362,7 +369,7 @@ export const COMPONENTES = [
   /* ════════════ TRILHO 2 — POTÊNCIA ════════════ */
   {
     id: 'BTS1', nome: 'BTS7960 (IBT-2) #1 — Peltier', trilho: 2,
-    x: 32, largura: 50, altura: 50, cor: '#c92a2a',
+    x: 34, largura: 50, altura: 50, cor: '#c92a2a',
     grupos: [
       { ref: 'P1', lado: 'esquerda', legenda: 'Borne verde de potência (4 parafusos)', pinos: [
         via('M−', 1, 'Peltier — negativo'), via('M+', 1, 'Peltier — positivo'),
@@ -380,7 +387,7 @@ export const COMPONENTES = [
   },
   {
     id: 'BTS2', nome: 'BTS7960 (IBT-2) #2 — PTC', trilho: 2,
-    x: 87, largura: 50, altura: 50, cor: '#c92a2a',
+    x: 92, largura: 50, altura: 50, cor: '#c92a2a',
     grupos: [
       { ref: 'P1', lado: 'esquerda', legenda: 'Borne verde de potência (4 parafusos)', pinos: [
         via('M−', 1, 'PTC — negativo'), via('M+', 1, 'PTC — positivo'),
@@ -396,7 +403,7 @@ export const COMPONENTES = [
   },
   {
     id: 'KA1', nome: 'KA1 — relé de selo', trilho: 2,
-    x: 142, largura: 30, altura: 50, cor: '#7048e8',
+    x: 150, largura: 30, altura: 50, cor: '#7048e8',
     nota: 'Relé de 8 pinos com 2 contatos reversíveis, em base PTF08A.',
     grupos: [
       { ref: 'REL', lado: 'baixo', legenda: 'Base PTF08A (8 terminais)', pinos: [
@@ -411,7 +418,7 @@ export const COMPONENTES = [
   },
   {
     id: 'KA2', nome: 'KA2 — relé de potência', trilho: 2,
-    x: 177, largura: 30, altura: 50, cor: '#7048e8',
+    x: 188, largura: 30, altura: 50, cor: '#7048e8',
     nota: '⚠️ Contato declarado em CORRENTE CONTÍNUA, mínimo 10 A.',
     grupos: [
       { ref: 'REL', lado: 'baixo', legenda: 'Base PTF08A (8 terminais)', pinos: [
@@ -429,7 +436,7 @@ export const COMPONENTES = [
 
   {
     id: 'MV-1', nome: 'MV-1 — módulo MOSFET 4 canais, isolado', trilho: 2,
-    x: 232, largura: 66, altura: 51, cor: '#0ca678',
+    x: 226, largura: 66, altura: 51, cor: '#0ca678',
     nota: 'Comanda os três grupos de ventoinha e ainda sobra um canal. Optoacoplador '
         + 'em cada entrada, jumper H/L por canal e 66 × 50,5 mm.',
     grupos: [

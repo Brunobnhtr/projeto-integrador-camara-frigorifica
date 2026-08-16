@@ -7,7 +7,7 @@ import { PINAGENS } from '../data/pinagens';
 import { PRENSAS_PAINEL, FIOS, ETAPAS, CORES } from '../data/fiacao';
 
 /* onde a passagem flexível cruza da placa para a porta, por classe */
-const PASSAGEM = { potencia: 311, sinal: 194 };
+const PASSAGEM = { potencia: 311, sinal: 194, alim: 311, comum: 311 };
 
 /* Quais componentes do painel têm desenho de placa, e qual.
    'ilhada' = placa que VOCÊ monta furo por furo.
@@ -150,16 +150,19 @@ export default function VistaPainelInterno() {
       const fora = t.dentro
         ? [t.cx, t.cy - t.dentro * t.comp / 2]
         : [t.cx + (g.lado === 'esquerda' ? -t.comp / 2 : t.comp / 2), t.cy];
-      return { p: fora };
+      return { p: fora, lateral: !t.dentro, lado: g.lado };
     };
 
     return FIOS.map((f, idx) => {
       const desvio = ((idx % 7) - 3) * 3.0;
       const a = ponta(f.de, 0), b = ponta(f.para, 1);
       if (!a.p || !b.p) return { ...f, pts: [], prensa: a.pr };
+      /* a saída de um borne lateral também sai contornando */
+      const saiLat = a.lateral ? [a.p[0] + (a.lado === 'esquerda' ? -7 : 7), a.p[1]] : null;
 
       const pts = [a.p.slice()];
-      let cur = a.p.slice();
+      if (saiLat) pts.push(saiLat);
+      let cur = (saiLat ?? a.p).slice();
       let planoAnt = null;
       for (const id of f.rota) {
         const k = rect(id);
@@ -177,7 +180,17 @@ export default function VistaPainelInterno() {
         pts.push([...cur]);
         planoAnt = plano;
       }
-      pts.push([b.p[0], cur[1]]);
+      /* ⭐ A ÚLTIMA PERNA DEPENDE DA BORDA DO BORNE.
+         Borne de cima/baixo se aproxima na vertical. Borne de LATERAL
+         se aproxima na horizontal, contornando o componente por fora —
+         senão o fio sobe rente à borda e some atrás dele. */
+      if (b.lateral) {
+        const foraX = b.p[0] + (b.lado === 'esquerda' ? -7 : 7);
+        pts.push([foraX, cur[1]]);
+        pts.push([foraX, b.p[1]]);
+      } else {
+        pts.push([b.p[0], cur[1]]);
+      }
       pts.push(b.p.slice());
       return { ...f, pts, prensa: a.pr };
     });
@@ -270,45 +283,6 @@ export default function VistaPainelInterno() {
               </g>
             );
           })}
-
-          {/* ⭐ ETAPA 1 DA FIAÇÃO — o que entra pela base */}
-          {verFiacao && tracados.filter(t => t.pts.length &&
-                                       (!etapa || t.etapa === etapa)).map(t => {
-            const on = !fio || fio === t.n;
-            return (
-              <g key={t.n} onClick={() => setFio(fio === t.n ? null : t.n)}
-                 style={{ cursor: 'pointer' }} opacity={on ? 1 : 0.12}>
-                <polyline points={t.pts.map(p => p.join(',')).join(' ')} fill="none"
-                          stroke="transparent" strokeWidth={6} />
-                <polyline points={t.pts.map(p => p.join(',')).join(' ')} fill="none"
-                          stroke="#fff" strokeWidth={fio === t.n ? 3.4 : 2.2}
-                          strokeLinejoin="round" strokeLinecap="round" opacity={0.85} />
-                <polyline points={t.pts.map(p => p.join(',')).join(' ')} fill="none"
-                          stroke={t.cor} strokeWidth={fio === t.n ? 2.0 : 1.1}
-                          strokeLinejoin="round" strokeLinecap="round" />
-                {t.prensa && (<>
-                  <circle cx={t.prensa.x} cy={CAIXA.altura + 2} r={6.5} fill="#495057" />
-                  <circle cx={t.prensa.x} cy={CAIXA.altura + 2} r={3} fill={t.cor} />
-                </>)}
-                {/* a anilha, no meio do percurso */}
-                {(() => {
-                  const m = t.pts[Math.floor(t.pts.length / 2)];
-                  return (
-                    <g>
-                      <rect x={m[0] - 6.5} y={m[1] - 4} width={13} height={8} rx={1.5}
-                            fill="#fff" stroke={t.cor} strokeWidth={1} />
-                      <text x={m[0]} y={m[1] + 2.7} textAnchor="middle" fontSize={5.4}
-                            fontWeight="700" fill={t.cor}>{t.n}</text>
-                    </g>
-                  );
-                })()}
-              </g>
-            );
-          })}
-          {verFiacao && PRENSAS_PAINEL.map(pr => (
-            <text key={pr.id} x={pr.x} y={CAIXA.altura + 26} textAnchor="middle"
-                  fontSize={5.5} fontWeight="700" fill="#495057">{pr.id}</text>
-          ))}
 
           {/* trilhos DIN */}
           {TRILHOS.map(t => (
@@ -414,6 +388,45 @@ export default function VistaPainelInterno() {
               </g>
             );
           })}
+
+          {/* ⭐ ETAPA 1 DA FIAÇÃO — o que entra pela base */}
+          {verFiacao && tracados.filter(t => t.pts.length &&
+                                       (!etapa || t.etapa === etapa)).map(t => {
+            const on = !fio || fio === t.n;
+            return (
+              <g key={t.n} onClick={() => setFio(fio === t.n ? null : t.n)}
+                 style={{ cursor: 'pointer' }} opacity={on ? 1 : 0.12}>
+                <polyline points={t.pts.map(p => p.join(',')).join(' ')} fill="none"
+                          stroke="transparent" strokeWidth={6} />
+                <polyline points={t.pts.map(p => p.join(',')).join(' ')} fill="none"
+                          stroke="#fff" strokeWidth={fio === t.n ? 3.4 : 2.2}
+                          strokeLinejoin="round" strokeLinecap="round" opacity={0.85} />
+                <polyline points={t.pts.map(p => p.join(',')).join(' ')} fill="none"
+                          stroke={t.cor} strokeWidth={fio === t.n ? 2.0 : 1.1}
+                          strokeLinejoin="round" strokeLinecap="round" />
+                {t.prensa && (<>
+                  <circle cx={t.prensa.x} cy={CAIXA.altura + 2} r={6.5} fill="#495057" />
+                  <circle cx={t.prensa.x} cy={CAIXA.altura + 2} r={3} fill={t.cor} />
+                </>)}
+                {/* a anilha, no meio do percurso */}
+                {(() => {
+                  const m = t.pts[Math.floor(t.pts.length / 2)];
+                  return (
+                    <g>
+                      <rect x={m[0] - 6.5} y={m[1] - 4} width={13} height={8} rx={1.5}
+                            fill="#fff" stroke={t.cor} strokeWidth={1} />
+                      <text x={m[0]} y={m[1] + 2.7} textAnchor="middle" fontSize={5.4}
+                            fontWeight="700" fill={t.cor}>{t.n}</text>
+                    </g>
+                  );
+                })()}
+              </g>
+            );
+          })}
+          {verFiacao && PRENSAS_PAINEL.map(pr => (
+            <text key={pr.id} x={pr.x} y={CAIXA.altura + 26} textAnchor="middle"
+                  fontSize={5.5} fontWeight="700" fill="#495057">{pr.id}</text>
+          ))}
 
           {/* componentes */}
           {comps.map(c => {
