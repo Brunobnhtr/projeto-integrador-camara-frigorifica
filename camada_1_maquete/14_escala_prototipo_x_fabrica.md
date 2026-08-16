@@ -69,6 +69,31 @@ Um multiplexador é uma **chave rotativa eletrônica**: ele conecta **um** de 16
                    escolhem o canal (0000 a 1111)
 ```
 
+### ⭐ Como o sistema sabe QUAL parou
+
+Esta é a dúvida natural: se os 16 canais entram numa entrada só, como distinguir um do outro?
+
+**Porque o multiplexador não mistura — ele escolhe.** Ele é uma chave, não um somador. Num instante só existe um canal ligado à saída.
+
+```
+   S0 S1 S2 S3 = 0 0 0 0   →  SIG traz a corrente da POSIÇÃO 1
+   S0 S1 S2 S3 = 1 0 0 0   →  SIG traz a corrente da POSIÇÃO 2
+   S0 S1 S2 S3 = 0 1 0 0   →  SIG traz a corrente da POSIÇÃO 3
+```
+
+**Quem escolheu foi o Arduino.** Então, quando ele lê 0 V na entrada, ele sabe exatamente de quem é aquele zero — porque foi ele que acabou de selecionar o canal.
+
+```cpp
+for (uint8_t canal = 0; canal < 16; canal++) {
+    selecionarCanal(canal);          // escreve os 4 bits em S0–S3
+    delayMicroseconds(50);           // deixa acomodar
+    corrente[canal] = analogRead(A2) * FATOR_mA;
+    // se corrente[canal] cair a zero, o dispositivo do canal `canal` morreu
+}
+```
+
+💡 **A analogia:** é um multímetro com uma chave seletora. Você não precisa de 16 multímetros — precisa de um e girar o botão. O Arduino gira o botão 16 vezes por varredura, e sabe em que posição ele estava a cada leitura.
+
 ### Como medir a corrente sem amplificador
 
 Aqui há um truque que simplifica muito: **use um shunt grande**.

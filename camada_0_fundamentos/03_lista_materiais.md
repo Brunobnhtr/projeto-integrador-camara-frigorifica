@@ -833,7 +833,27 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 
 | Item | Qtd | Especificação | Link |
 |---|---:|---|---|
-| ⭐ **Módulo multiplexador analógico 16 canais — CD74HC4067** | 1 | **O coração da detecção de falha.** Varre até 16 posições de ensaio com uma única entrada analógica do Arduino. É a mesma arquitetura que a empresa usará com 50 posições. Buscar `modulo multiplexador analogico 16 canais CD74HC4067` | |
+| ⭐ **Módulo multiplexador 16 canais CD74HC4067** — ⚠️ **a versão em PLACA, com pinos** | 1 (vem em pacote de 5) | **O coração da detecção de falha.** Varre até 16 posições com uma única entrada analógica do Arduino. Buscar `modulo multiplexador analogico 16 canais CD74HC4067` | |
+
+> ### ✅ Placa com pinos, não o CI avulso
+>
+> O CD74HC4067 é vendido de duas formas, e a diferença de preço é o contrário do que parece:
+>
+> | | CI avulso DIP-24 | **Placa com pinos** |
+> |---|---:|---:|
+> | Preço | R$ 15,62 por **1** | **R$ 16,97 por 5** |
+> | Por unidade | R$ 15,62 | **R$ 3,40** |
+> | Capacitor de desacoplamento | você solda | **já tem** |
+> | Barra de pinos | você solda | **já tem** |
+> | Furos de fixação | não tem | **tem** |
+>
+> **A placa é 4,6 vezes mais barata por unidade e já vem pronta.** O CI avulso ainda exigiria soquete, capacitor e uma placa ilhada para montar — mais trabalho, mais risco de erro e mais caro no fim.
+>
+> 🎁 **E vir em pacote de 5 é bom:** um para montar, um de reserva, e se um dia a empresa escalar para 64 canais são exatamente **4 módulos** que ela vai precisar.
+>
+> ⚠️ **Confira o pino `EN` (enable) na montagem.** O multiplexador só conduz com o EN em nível baixo. A maioria das placas já traz um resistor puxando para o GND, mas algumas deixam o pino solto — e aí nenhum canal funciona, o que parece defeito da placa.
+
+
 | ⭐ **Resistor 4,7 Ω · 1% · 1/4 W** (shunt de medição) | 4 | 2 em uso + 2 reserva. Com 127 mA dá 0,60 V, lido direto pelo ADC do Arduino — sem amplificador | |
 | **Sensor INA219** (módulo I²C) | **1** ⬇ | 🔬 **Passou a ser o instrumento de REFERÊNCIA**, não o sensor de produção. Mede a mesma posição 1 que o multiplexador mede, para provar que as duas leituras batem. Sem referência, "funcionou" é opinião | |
 | **Porta-fusível DIN 2 vias COM INTERRUPTOR** | 1 | **F-P1 e F-P2** — proteção individual de cada posição, com fusível tubular de 500 mA. ⭐ O interruptor é o que permite simular a falha ao vivo | |

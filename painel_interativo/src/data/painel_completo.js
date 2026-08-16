@@ -290,7 +290,7 @@ export const COMPONENTES = [
         { nome: 'P2', usa: true, para: 'DUT da posição 2' },
         { nome: '0V', usa: true, para: 'BD-0V — retorno depois dos shunts' },
       ]},
-      { ref: 'CTRL', lado: 'direita', legenda: 'Comando e leitura (9)', pinos: [
+      { ref: 'CTRL', lado: 'direita', legenda: 'Comando e leitura (10)', pinos: [
         { nome: '+5V', usa: true, para: 'BD-5V saída 8' },
         { nome: 'GND', usa: true, para: 'BD-0V' },
         { nome: 'S0', usa: true, para: 'Mega D31 — seleção de canal, bit 0' },
@@ -298,6 +298,7 @@ export const COMPONENTES = [
         { nome: 'S2', usa: true, para: 'Mega D33 — bit 2' },
         { nome: 'S3', usa: true, para: 'Mega D34 — bit 3' },
         { nome: 'SIG', usa: true, para: 'Mega A2 — ⭐ a ÚNICA entrada analógica dos 16 canais' },
+        { nome: 'EN', usa: true, para: 'BD-0V — o mux só conduz com o EN em nível baixo' },
         { nome: 'SDA', usa: true, para: 'Mega D20 — só do INA219 de referência' },
         { nome: 'SCL', usa: true, para: 'Mega D21' },
       ]},
