@@ -145,17 +145,17 @@ export const COMPONENTES = [
   },
   {
     id: 'ESP32', nome: 'DNLCB30 + ESP32 30 pinos', trilho: 3,
-    x: 246, largura: 96, altura: 84, cor: '#1971c2',
-    nota: 'O que aparece aqui são SÓ os bornes de parafuso da DNLCB30. O soquete de '
-        + '30 pinos onde o ESP32 encaixa fica no meio da placa, coberto por ele — não '
-        + 'há nada para ligar ali.',
+    x: 246, largura: 96, altura: 90, cor: '#1971c2',
+    nota: 'Só os bornes de parafuso. O soquete de 30 pinos onde o ESP32 encaixa fica '
+        + 'no meio da placa, coberto por ele — não há nada para ligar ali. '
+        + 'Esquerda com 14 linhas (H1), direita com 15 (H2).',
     grupos: [
-      { ref: 'ESQ', lado: 'esquerda', linhas: 2,
-        legenda: 'Borne esquerdo — 14 pares (5 V fora · sinal dentro)', pinos: [
+      { ref: 'H1', lado: 'esquerda', linhas: 2,
+        legenda: 'Borne esquerdo H1 — 14 pares (5 V fora · sinal dentro)', pinos: [
         { nome: '5V' },
         { nome: 'GPIO15' },
         { nome: '5V' },
-        { nome: 'GPIO4 ?' },
+        { nome: 'GPIO4' },
         { nome: '5V' },
         { nome: 'GPIO16' },
         { nome: '5V' },
@@ -181,12 +181,14 @@ export const COMPONENTES = [
         { nome: '5V' },
         { nome: 'GND' },
       ]},
-      { ref: 'DIR', lado: 'direita', linhas: 2,
-        legenda: 'Borne direito — 14 pares (5 V fora · sinal dentro)', pinos: [
+      { ref: 'H2', lado: 'direita', linhas: 2,
+        legenda: 'Borne direito H2 — 15 pares (5 V fora · sinal dentro)', pinos: [
         { nome: '5V' },
         { nome: 'GND' },
         { nome: '5V' },
         { nome: 'GPIO13' },
+        { nome: '5V' },
+        { nome: 'GPIO12' },
         { nome: '5V' },
         { nome: 'GPIO14' },
         { nome: '5V' },
@@ -217,18 +219,23 @@ export const COMPONENTES = [
       ]},
     ],
     avisos: [
-      '⭐ CADA SINAL VEM COM UM 5 V AO LADO. É o que a serigrafia chama de "5V IO '
-      + 'Level Converter": a coluna de fora entrega 5 V e a de dentro é o sinal, já '
-      + 'convertido dos 3,3 V do ESP32. Sensor de 5 V liga direto, sem régua extra.',
-      '⚠️ Os 5 V dos bornes somam no máximo 0,5 A. Serve para sensor, não para carga.',
-      '⚠️ GPI3 (RX0), 34, 35, 36(VP) e 39(VN) são SÓ ENTRADA. E quando o RX0 for usado '
-      + 'como entrada, tem que ser com pull-up — está na nota 3 do fabricante.',
-      '⚠️ Os pinos 2 e 12 NÃO são trazidos para borne (nota 1 do fabricante).',
-      '🔎 O diagrama do vendedor mostra "GPIO 14" nos DOIS lados, o que não pode estar '
-      + 'certo. A serigrafia da placa parece dizer D4 no lado esquerdo, e todos os '
-      + 'outros 11 bornes daquele lado batem exatamente. Marquei como "GPIO4 ?" — '
-      + 'confira com a placa em mãos. Não afeta o projeto: nenhum dos dois é usado.',
-      '📌 O projeto usa 4 bornes de 58: o RX0, o TX0 e os dois de alimentação.',
+      '✅ O ESQUEMÁTICO RESOLVEU AS DUAS DÚVIDAS. No conector H1 o segundo borne é '
+      + '**D4**, não D14 — o diagrama do vendedor tinha um erro de digitação. E o H2 '
+      + 'tem **D12 E D14**, os dois: o diagrama simplesmente esqueceu de listar o D12.',
+      '⚠️ Isso derruba a nota 1 do fabricante ("2/12PIN didn\'t lead out"). O D12 ESTÁ '
+      + 'no borne, e está no esquemático como D12_O. Quem não sai é só o D2. Se for '
+      + 'usar o D12, confirme com multímetro antes.',
+      '⭐ CADA SINAL VEM COM UM 5 V AO LADO. A coluna de fora entrega 5 V e a de dentro '
+      + 'é o sinal, já convertido. O esquemático mostra três TXS0108E — conversores '
+      + 'bidirecionais de 8 bits, 24 canais ao todo.',
+      '🚨 SÃO CONVERSORES DIGITAIS. É a nota 4 do fabricante, e ela tem consequência '
+      + 'prática: um sinal ANALÓGICO que passe por esses bornes sai deformado. Se um '
+      + 'dia precisar ler um sensor analógico no ESP32, ligue direto no pino dele, '
+      + 'não pelo borne.',
+      '⚠️ GPI3 (RX0), 34, 35, 36(VP) e 39(VN) são SÓ ENTRADA. E o RX0 usado como '
+      + 'entrada precisa de pull-up (nota 3 do fabricante).',
+      '📌 Os 5 V dos bornes somam no máximo 0,5 A. Serve para sensor, não para carga.',
+      '📌 O projeto usa 4 bornes de 60: RX0, TX0 e os dois de alimentação.',
     ],
   },
 
