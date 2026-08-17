@@ -11,6 +11,7 @@
  */
 import { COMPONENTES, CANALETAS, CANALETAS_PORTA, CAIXA, PLACA, TRILHOS,
          canaletaDoGrupo, CALHAS } from '../src/data/painel_completo.js';
+import { conferePrensa } from '../src/lib/prensas.js';
 import { PRENSAS_PAINEL, FIOS, ETAPAS } from '../src/data/fiacao.js';
 
 const erros = [], avisos = [];
@@ -145,10 +146,16 @@ for (const p of PRENSAS_PAINEL) {
      (campo `prensa`) — os dois ocupam o mesmo furo */
   const fs = FIOS.filter(f => f.de.prensa === p.id || f.prensa === p.id);
   const secao = fs.reduce((a, f) => a + f.mm2, 0);
-  const ok = fs.length <= p.capacidade;
-  if (!ok) erros.push(`${p.id} leva ${fs.length} condutores e comporta ${p.capacidade}`);
-  console.log(`  ${ok ? '.' : 'X'} ${p.id} (${p.tipo}, X=${p.x}): `
-    + `${fs.length}/${p.capacidade} condutores · ${secao.toFixed(2)} mm² somados`);
+  /* ⭐ ERA `capacidade`, um número escrito à mão. Quem decide quantos
+     condutores cabem não é a contagem, é o DIÂMETRO DO FEIXE contra a
+     faixa de aperto da rosca. O PG13-2 estava declarado com 14 e é um
+     furo por onde passam quatro cabos de 1,5 mm². */
+  const c = conferePrensa(p.tipo, fs);
+  if (!c.ok && !c.fino) erros.push(`${p.id}: ${c.motivo} — use ${c.sugere ?? 'rosca maior'}`);
+  else if (c.fino) avisos.push(`${p.id}: ${c.motivo}; precisa da vedação redutora`);
+  console.log(`  ${c.ok ? '.' : c.fino ? '!' : 'X'} ${p.id} (${p.tipo}, X=${p.x}): `
+    + `${fs.length} condutores · feixe ${c.d.toFixed(1)} mm de ${c.faixa?.join('–') ?? '?'} `
+    + `· ${secao.toFixed(2)} mm² de cobre`);
   for (const f of fs)
     console.log(`      ${f.n} ${f.nome} — ${f.mm2} mm² ${f.corNome}`);
   if (!fs.length) avisos.push(`${p.id} está sem nenhum fio declarado`);

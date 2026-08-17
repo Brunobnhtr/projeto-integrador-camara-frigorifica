@@ -8,11 +8,11 @@ import { PRENSAS_PAINEL, FIOS, ETAPAS, CORES } from '../data/fiacao';
 import CamaraNoPainel from './CamaraNoPainel';
 import { PRENSAS3D, ROTAS_CAMARA } from '../data/camara';
 import { pxCamara, naTampa } from '../lib/rota_camara';
-
-/* ⭐ A travessia acontece DENTRO de uma calha, e a altura sai dela.
-   'alim' e 'comum' pegam carona na de potência, que é a mais baixa. */
-const calhaDe = classe => CALHAS.find(k =>
-  k.tipo === (classe === 'sinal' ? 'sinal' : 'potencia'));
+import {
+  geoTerminal, posicoes, comporPainel, foraDoPainel, tracarFio, setaEm,
+  LADO_T, COMP_T,
+} from '../lib/geometria_painel';
+import { conferePrensa } from '../lib/prensas';
 
 /* Quais componentes do painel têm desenho de placa, e qual.
    'ilhada' = placa que VOCÊ monta furo por furo.
@@ -37,69 +37,9 @@ import {
    Cada terminal é um quadrado com o ID dentro, na borda onde ele fica
    de verdade no componente. Tudo em milímetros.                        */
 
-const PASSO_MIN = 5.4;   // mm entre centros de terminais
-const LADO_T = 4.6;      // mm do lado estreito do terminal
-const GAP_GRUPO = 4;     // mm entre dois blocos de borne da MESMA borda
-const COMP_T = 11.0;     // mm do lado comprido — é nele que a legenda cabe
-
-/* ⭐ A geometria do terminal em UM lugar só. O desenho do retângulo e o
-   fim do fio precisam dar exatamente o mesmo ponto — quando cada um
-   calculava o seu, o fio parava a milímetros do borne. */
-function geoTerminal(c, g, p) {
-  const vert = g.lado === 'esquerda' || g.lado === 'direita';
-  const curto = Math.min(LADO_T, p.passo - 0.6);
-  const teto = (vert ? c.largura : c.altura) / 2 - 2;
-  const comp = Math.max(curto, Math.min(COMP_T, teto));
-  const dentro = g.lado === 'cima' ? 1 : g.lado === 'baixo' ? -1 : 0;
-  const dx = vert ? (g.lado === 'esquerda' ? comp / 2 - curto / 2 : curto / 2 - comp / 2) : 0;
-  return {
-    vert, curto, comp, dentro,
-    cx: p.x + dx,
-    cy: p.y + dentro * (comp - curto) / 2,
-    rw: vert ? comp : curto,
-    rh: vert ? curto : comp,
-  };
-}
-
-/* Distribui os terminais de um grupo ao longo da borda que ele ocupa. */
-function posicoes(c, g) {
-  const n = g.pinos.length;
-  const linhas = g.linhas ?? 1;
-  const porLinha = Math.ceil(n / linhas);
-  const vert = g.lado === 'esquerda' || g.lado === 'direita';
-  const compr = vert ? c.altura : c.largura;
-
-  /* ⭐ DOIS BLOCOS PODEM DIVIDIR A MESMA BORDA. A PI-2 tem o J2 e o J3
-     os dois embaixo. Calculando cada grupo centrado na largura inteira,
-     eles se sobrepunham — os bornes do J2 caíam em cima dos do J3. Aqui
-     a borda é REPARTIDA entre os blocos, proporcional ao nº de vias. */
-  const irmaos = c.grupos.filter(x => x.lado === g.lado);
-  const idx = irmaos.indexOf(g);
-  const totalPinos = irmaos.reduce((a, x) => a + Math.ceil(x.pinos.length / (x.linhas ?? 1)), 0);
-  const antes = irmaos.slice(0, idx)
-    .reduce((a, x) => a + Math.ceil(x.pinos.length / (x.linhas ?? 1)), 0);
-  const util = compr - 3 - GAP_GRUPO * (irmaos.length - 1);
-  const meu = util * (porLinha / totalPinos);
-  const base = 1.5 + util * (antes / totalPinos) + GAP_GRUPO * idx;
-
-  const passo = Math.max(2.6, Math.min(PASSO_MIN, meu / porLinha));
-  const inicio = base + (meu - (porLinha - 1) * passo) / 2;
-
-  return g.pinos.map((p, i) => {
-    /* Os dados vêm INTERCALADOS — [5V, sinal, 5V, sinal, ...] — porque é
-       assim que o borne é: um par por linha. Então a coluna avança a cada
-       `linhas` pinos, e não na metade da lista. Dividir a lista ao meio
-       colocaria metade dos pares numa coluna e metade na outra. */
-    const lin = linhas > 1 ? i % linhas : 0;
-    const col = linhas > 1 ? Math.floor(i / linhas) : i;
-    const desl = inicio + col * passo;
-    const rec = 3.0 + lin * 11.0;          // recuo, para dentro da placa
-    if (g.lado === 'cima')     return { ...p, x: c.x + desl, y: c.y + rec, passo };
-    if (g.lado === 'baixo')    return { ...p, x: c.x + desl, y: c.y + c.altura - rec, passo };
-    if (g.lado === 'esquerda') return { ...p, x: c.x + rec, y: c.y + desl, passo };
-    return { ...p, x: c.x + c.largura - rec, y: c.y + desl, passo };
-  });
-}
+/* ⭐ A geometria saiu daqui para src/lib/geometria_painel.js — o
+   desenho e os validadores precisam responder a mesma coisa quando
+   perguntados "onde termina este fio?". */
 
 export default function VistaPainelInterno() {
   const [sel, setSel] = useState(null);      // componente
@@ -133,14 +73,7 @@ export default function VistaPainelInterno() {
   };
 
   /* posiciona cada componente no seu trilho */
-  const comps = useMemo(() => {
-    return COMPONENTES.map(c => {
-      const t = TRILHOS.find(x => x.n === c.trilho);
-      const y = c.porta ? c.y : t.y - c.altura / 2;
-      const x = c.porta ? CAIXA.largura + 40 + c.x : PLACA.x + c.x;
-      return { ...c, x, y };
-    });
-  }, []);
+  const comps = useMemo(() => comporPainel(CAIXA.largura + 40), []);
 
   /* ⭐ O caminho de cada fio, andando pela LINHA DE CENTRO das canaletas
      da rota. Horizontal manda no Y, vertical manda no X.
@@ -149,75 +82,8 @@ export default function VistaPainelInterno() {
      e o pulo de um plano para o outro é a PASSAGEM FLEXÍVEL — desenhada
      como um laço, que é como o chicote fica de verdade. */
   const PORTA_X0 = CAIXA.largura + 40;
-  const tracados = useMemo(() => {
-    const rect = id => {
-      const k = [...CANALETAS, ...CANALETAS_PORTA].find(x => x.id === id);
-      if (!k) return null;
-      return k.id.startsWith('CP-') ? { ...k, x: k.x + PORTA_X0 } : k;
-    };
-    const ponta = (alvo, i) => {
-      if (alvo.prensa) {
-        const pr = PRENSAS_PAINEL.find(x => x.id === alvo.prensa);
-        return { p: [pr.x, CAIXA.altura + 2], pr };
-      }
-      const c = comps.find(x => x.id === alvo.comp);
-      if (!c) return { p: null };
-      const g = c.grupos.find(gg => gg.pinos.some(pp => pp.nome === alvo.via));
-      const pino = g && posicoes(c, g).find(pp => pp.nome === alvo.via);
-      void i;
-      if (!pino) return { p: null };
-      const t = geoTerminal(c, g, pino);
-      /* encosta na PONTA do terminal virada para fora do componente,
-         que é onde o parafuso fica */
-      const fora = t.dentro
-        ? [t.cx, t.cy - t.dentro * t.comp / 2]
-        : [t.cx + (g.lado === 'esquerda' ? -t.comp / 2 : t.comp / 2), t.cy];
-      return { p: fora, lateral: !t.dentro, lado: g.lado };
-    };
-
-    return FIOS.map((f, idx) => {
-      const desvio = ((idx % 7) - 3) * 3.0;
-      const a = ponta(f.de, 0), b = ponta(f.para, 1);
-      if (!a.p || !b.p) return { ...f, pts: [], prensa: a.pr };
-      /* a saída de um borne lateral também sai contornando */
-      const saiLat = a.lateral ? [a.p[0] + (a.lado === 'esquerda' ? -7 : 7), a.p[1]] : null;
-
-      const pts = [a.p.slice()];
-      if (saiLat) pts.push(saiLat);
-      let cur = (saiLat ?? a.p).slice();
-      let planoAnt = null;
-      for (const id of f.rota) {
-        const k = rect(id);
-        if (!k) continue;
-        const plano = id.startsWith('CP-') ? 'porta' : 'placa';
-        if (planoAnt && plano !== planoAnt) {
-          /* o laço da passagem flexível, na altura da classe do fio */
-          const cl = calhaDe(f.classe);
-          const yP = cl.y + cl.h / 2;
-          pts.push([cur[0], yP]);
-          pts.push([plano === 'porta' ? PORTA_X0 + 30 : PLACA.x + PLACA.largura - 8, yP]);
-          cur = [pts[pts.length - 1][0], yP];
-        }
-        if (k.vertical) cur = [k.x + k.w / 2 + desvio, cur[1]];
-        else cur = [cur[0], k.y + k.h / 2 + desvio];
-        pts.push([...cur]);
-        planoAnt = plano;
-      }
-      /* ⭐ A ÚLTIMA PERNA DEPENDE DA BORDA DO BORNE.
-         Borne de cima/baixo se aproxima na vertical. Borne de LATERAL
-         se aproxima na horizontal, contornando o componente por fora —
-         senão o fio sobe rente à borda e some atrás dele. */
-      if (b.lateral) {
-        const foraX = b.p[0] + (b.lado === 'esquerda' ? -7 : 7);
-        pts.push([foraX, cur[1]]);
-        pts.push([foraX, b.p[1]]);
-      } else {
-        pts.push([b.p[0], cur[1]]);
-      }
-      pts.push(b.p.slice());
-      return { ...f, pts, prensa: a.pr };
-    });
-  }, [comps]);
+  const tracados = useMemo(
+    () => FIOS.map((f, i) => tracarFio(f, comps, i, PORTA_X0)), [comps, PORTA_X0]);
 
   const PORTA_X = CAIXA.largura + 40, PORTA_W = 250;
   /* ⭐ Com a tampa FECHADA a porta some do desenho e a câmara encosta
@@ -239,13 +105,23 @@ export default function VistaPainelInterno() {
                    onChange={e => setSoUsados(e.target.checked)} />
             só os terminais usados
           </label>
-          {verFiacao && ETAPAS.filter(e => e.feito).map(e => (
-            <button key={e.n} onClick={() => setEtapa(etapa === e.n ? 0 : e.n)} style={{
-              background: etapa === e.n ? '#f59f00' : '#fff',
-              color: etapa === e.n ? '#fff' : '#8a5a00', border: '2px solid #f59f00',
-              borderRadius: 6, padding: '5px 9px', cursor: 'pointer',
-              fontSize: 11, fontWeight: 700 }}>etapa {e.n}</button>
-          ))}
+          {/* ⭐ "etapa 6" não dizia nada. O nome da etapa está no dado —
+              é só usá-lo, e aí o botão vira uma pergunta que o aluno
+              tem: "o que vai para a câmara?" */}
+          {verFiacao && ETAPAS.filter(e => e.feito).map(e => {
+            const n = FIOS.filter(f => f.etapa === e.n).length;
+            return (
+              <button key={e.n} title={`${e.nome} · ${n} fios`}
+                onClick={() => setEtapa(etapa === e.n ? 0 : e.n)} style={{
+                  background: etapa === e.n ? '#f59f00' : '#fff',
+                  color: etapa === e.n ? '#fff' : '#8a5a00', border: '2px solid #f59f00',
+                  borderRadius: 6, padding: '5px 9px', cursor: 'pointer',
+                  fontSize: 11, fontWeight: 700 }}>
+                {e.n === 6 ? '❄️ câmara' : `${e.n}. ${e.nome.split(' —')[0].toLowerCase()}`}
+                <span style={{ opacity: 0.6, marginLeft: 4 }}>{n}</span>
+              </button>
+            );
+          })}
           <button onClick={() => setTampa(!tampaFechada)} style={{
             background: tampaFechada ? '#212529' : '#fff',
             color: tampaFechada ? '#fff' : '#212529', border: '2px solid #212529',
@@ -437,7 +313,9 @@ export default function VistaPainelInterno() {
 
           {/* ── ⭐ A CÂMARA FRIA, e os cabos indo até ela por BAIXO ── */}
           <CamaraNoPainel x0={CAM_X} y0={CAM_Y} largura={CAM_W} altura={CAM_H}
-                          sel={pecaCam} onSel={setPecaCam} />
+                          sel={pecaCam} onSel={setPecaCam}
+                          fio={fio} onFio={n => { setFio(n); setSel(null); }}
+                          apagado={!!etapa && etapa !== 6} />
           {/* ⭐ O FEIXE AGORA MIRA NO FURO, e não mais na borda da câmara.
               O trecho tracejado é o que passa POR TRÁS dela: o prensa-cabo
               fica na parede do fundo, então o cabo some atrás do acrílico
@@ -446,12 +324,12 @@ export default function VistaPainelInterno() {
             const { cx: kx, cy: ky } = pxCamara(CAM_X, CAM_Y, CAM_H);
             const seis = FIOS.filter(f => f.etapa === 6);
             const feixes = [
-              { pid: 'PG9-2', pc: 'PC-1', cor: '#c92a2a', desce: 26, sobe: CAM_X - 14 },
+              { pid: 'PG13-2', pc: 'PC-1', cor: '#c92a2a', desce: 26, sobe: CAM_X - 14 },
               { pid: 'PG9-3', pc: 'PC-2', cor: '#1971c2', desce: 46,
                 sobe: CAM_X + CAM_W + 14 },
             ];
             const paraTampa = [
-              { pid: 'PG9-2', cor: '#e8590c', desce: 66 },
+              { pid: 'PG13-2', cor: '#e8590c', desce: 66 },
               { pid: 'PG9-3', cor: '#f76707', desce: 84 },
             ];
             const CANTO = { x: CAM_X - 10, y: CAM_Y + CAM_H - 6 };
@@ -557,10 +435,18 @@ export default function VistaPainelInterno() {
                 <polyline points={pts} fill="none" stroke={t.cor}
                           strokeWidth={fio === t.n ? 2.0 : 1.1}
                           strokeLinejoin="round" strokeLinecap="round" />
-                {t.prensa && (<>
-                  <circle cx={t.prensa.x} cy={CAIXA.altura + 2} r={6.5} fill="#495057" />
-                  <circle cx={t.prensa.x} cy={CAIXA.altura + 2} r={3} fill={t.cor} />
-                </>)}
+                {/* ⭐ SETA SÓ NO QUE ATRAVESSA A PAREDE: é aí que "ida" e
+                    "volta" querem dizer alguma coisa. Ela aponta no
+                    sentido em que o fio anda, do painel para a câmara ou
+                    da câmara para o painel. */}
+                {(t.saiDoPainel || t.entraNoPainel) && [0.35, 0.72].map(fr => {
+                  const a = setaEm(t.pts, fr);
+                  return a && (
+                    <polygon key={fr} points="-2.6,-1.9 2.8,0 -2.6,1.9" fill={t.cor}
+                             stroke="#fff" strokeWidth={0.35}
+                             transform={`translate(${a.x} ${a.y}) rotate(${a.ang})`} />
+                  );
+                })}
                 {fio === t.n ? (
                   <g>
                     <rect x={m[0] - 9} y={m[1] - 5.5} width={18} height={11} rx={2}
@@ -575,12 +461,45 @@ export default function VistaPainelInterno() {
               </g>
             );
           })}
-          {verFiacao && PRENSAS_PAINEL.filter(p => p.face === 'base').map(pr => (
-            <text key={pr.id} x={pr.x} y={CAIXA.altura + 26} textAnchor="middle"
-                  fontSize={5.5} fontWeight="700" fill="#495057">{pr.id}</text>
-          ))}
+          {/* ── ⭐ OS PRENSA-CABOS, que é por onde o painel conversa com o
+                 mundo. Antes eram só uma bolinha por fio, empilhada no mesmo
+                 ponto: não dava para contar quantos passavam nem para ver
+                 quem sai e quem volta. Agora cada furo é uma porta, com o
+                 leque de fios entrando nela e a conta do feixe. ── */}
+          {verFiacao && PRENSAS_PAINEL.filter(p => p.face === 'base').map(pr => {
+            const fs = FIOS.filter(f => f.prensa === pr.id
+              || f.de.prensa === pr.id || f.para.prensa === pr.id);
+            const sai = fs.filter(f => foraDoPainel(f.para)).length;
+            const entra = fs.filter(f => foraDoPainel(f.de)).length;
+            const c = conferePrensa(pr.tipo, fs);
+            const larg = Math.max(14, (fs.length - 1) * 2.4 + 7);
+            const cor = pr.classe === 'sinal' ? '#1971c2' : '#c92a2a';
+            const seta = sai && entra ? '↕' : entra ? '↑' : '↓';
+            return (
+              <g key={pr.id}>
+                {/* a porca sextavada vista de frente, na chapa da base */}
+                <rect x={pr.x - larg / 2 - 2.5} y={CAIXA.altura - 1.5}
+                      width={larg + 5} height={5} rx={1} fill="#adb5bd" />
+                <rect x={pr.x - larg / 2} y={CAIXA.altura + 1} width={larg} height={7}
+                      rx={2} fill="#495057" stroke={cor} strokeWidth={1.2} />
+                <text x={pr.x} y={CAIXA.altura + 6.4} textAnchor="middle" fontSize={4.6}
+                      fontWeight="700" fill="#fff">{seta} {fs.length}</text>
+                <text x={pr.x} y={CAIXA.altura + 15} textAnchor="middle" fontSize={5.6}
+                      fontWeight="700" fill={cor}>{pr.id}</text>
+                <text x={pr.x} y={CAIXA.altura + 21} textAnchor="middle" fontSize={4.4}
+                      fill="#868e96">{pr.tipo} · feixe {c.d.toFixed(1)} mm</text>
+                <text x={pr.x} y={CAIXA.altura + 26.5} textAnchor="middle" fontSize={4.4}
+                      fill={c.ok ? '#2f9e44' : '#e8590c'}>
+                  {sai ? `${sai} saem` : ''}{sai && entra ? ' · ' : ''}
+                  {entra ? `${entra} voltam` : ''}
+                </text>
+                <text x={pr.x} y={CAIXA.altura + 32.5} textAnchor="middle" fontSize={4.6}
+                      fontWeight="700" fill={cor}>{pr.liga}</text>
+              </g>
+            );
+          })}
 
-          {/* componentes */}          {/* componentes */}
+          {/* componentes */}
           {comps.filter(c => !(tampaFechada && c.porta)).map(c => {
             const ativo = sel?.id === c.id;
             return (
@@ -644,10 +563,15 @@ export default function VistaPainelInterno() {
           })}
         </svg>
 
-        <p style={{ fontSize: 11.5, color: '#868e96', marginTop: 9 }}>
+        <p style={{ fontSize: 11.5, color: '#868e96', marginTop: 9, lineHeight: 1.6 }}>
           Quadrado <b style={{ color: '#c9a227' }}>amarelo</b> = terminal usado pelo
           projeto · <b style={{ color: '#5c6268' }}>cinza</b> = existe no componente e
           está livre. Clique num quadrado para ver onde ele vai.
+          <br />
+          ▶ <b>A setinha só aparece no fio que atravessa a parede</b>, e aponta no
+          sentido em que ele anda: do borne do componente até o prensa-cabo e a câmara
+          na <b>ida</b>, e da peça de volta ao componente no <b>retorno</b>. Clique no
+          fio em qualquer ponto — ele acende inteiro, dos dois lados da parede.
         </p>
       </div>
 

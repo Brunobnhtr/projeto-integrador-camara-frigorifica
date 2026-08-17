@@ -26,64 +26,64 @@ export const FIOS_ETAPA6 = [
   { ...kabo('X1', { comp: 'BTS1', via: 'M+' }, naCamara('PELT', '+'), 1.5,
       'pot24', 'potencia',
       'Positivo do par de Peltier, saindo da ponte H do BTS #1.'),
-    nome: 'Peltier +', prensa: 'PG9-2', rota: ['CH-2x1', 'CV-esq', 'CH-base'],
+    nome: 'Peltier +', prensa: 'PG13-2', rota: ['CH-2x1', 'CV-esq', 'CH-base'],
     porque: '⭐ Sai de M+ e não do B+. O B+ é a alimentação do módulo; o M+ é a SAÍDA '
           + 'da ponte, que é o que o PWM comanda.' },
   { ...kabo('X2', { comp: 'BTS1', via: 'M−' }, naCamara('PELT', '−'), 1.5,
       'pot24', 'potencia', 'Retorno do par de Peltier, pela outra metade da ponte.'),
-    nome: 'Peltier −', prensa: 'PG9-2', rota: ['CH-2x1', 'CV-esq', 'CH-base'],
+    nome: 'Peltier −', prensa: 'PG13-2', rota: ['CH-2x1', 'CV-esq', 'CH-base'],
     aviso: '🔥 O RETORNO DA PELTIER NÃO VAI AO BD-0V. Ele volta ao M− do BTS, porque a '
          + 'ponte H precisa dos dois lados para poder inverter. Ligar o M− no 0 V '
          + 'curto-circuita metade da ponte.' },
   { ...kabo('X3', { comp: 'BTS2', via: 'M+' }, naCamara('PTC', '+'), 1.5,
       'pot24', 'potencia', 'Positivo do PTC.'),
-    nome: 'PTC +', prensa: 'PG9-2', rota: ['CH-2x1', 'CV-esq', 'CH-base'] },
+    nome: 'PTC +', prensa: 'PG13-2', rota: ['CH-2x1', 'CV-esq', 'CH-base'] },
   { ...kabo('X4', { comp: 'BTS2', via: 'M−' }, naCamara('PTC', '−'), 1.5,
       'pot24', 'potencia', 'Retorno do PTC, também pela ponte.'),
-    nome: 'PTC −', prensa: 'PG9-2', rota: ['CH-2x1', 'CV-esq', 'CH-base'] },
+    nome: 'PTC −', prensa: 'PG13-2', rota: ['CH-2x1', 'CV-esq', 'CH-base'] },
 
   /* ── VENTILAÇÃO ───────────────────────────────────────────────────── */
   { ...kabo('X5', { comp: 'MV-1', via: 'O1+' }, naTampa('RAD', '+'), 0.5,
       'aux12', 'alim', 'As 2 ventoinhas do radiador, no lado QUENTE.'),
-    nome: 'ventoinhas do radiador +', prensa: 'PG9-2', rota: ['CH-2x1', 'CV-esq', 'CH-base'],
+    nome: 'ventoinhas do radiador +', prensa: 'PG13-2', rota: ['CH-2x1', 'CV-esq', 'CH-base'],
     porque: '⭐ Elas NÃO atravessam a parede: ficam na tampa, do lado de fora, soprando '
           + 'nos dissipadores. É o calor que a Peltier tirou de dentro.' },
   { ...kabo('X6', { comp: 'MV-1', via: 'O1−' }, naTampa('RAD', '−'), 0.5,
       'aux12', 'alim', 'Retorno das ventoinhas do radiador.'),
-    nome: 'ventoinhas do radiador −', prensa: 'PG9-2', rota: ['CH-2x1', 'CV-esq', 'CH-base'] },
+    nome: 'ventoinhas do radiador −', prensa: 'PG13-2', rota: ['CH-2x1', 'CV-esq', 'CH-base'] },
   { ...kabo('X7', { comp: 'MV-1', via: 'O2+' }, naCamara('VP', '+'), 0.5,
       'aux12', 'alim', 'A ventoinha do PTC, dentro da câmara.'),
-    nome: 'ventoinha do PTC +', prensa: 'PG9-2', rota: ['CH-2x1', 'CV-esq', 'CH-base'],
+    nome: 'ventoinha do PTC +', prensa: 'PG13-2', rota: ['CH-2x1', 'CV-esq', 'CH-base'],
     aviso: '⚠️ CANAL SEPARADO DO AQUECEDOR, de propósito. O PTC é comandado pelo BTS #2 '
          + 'e a ventoinha dele pelo MV-1 canal 2 — são dois circuitos independentes. É '
          + 'isso que permite o intertravamento: o firmware não liga o PTC sem ela, e a '
          + 'mantém girando depois que ele desliga.' },
   { ...kabo('X8', { comp: 'MV-1', via: 'O2−' }, naCamara('VP', '−'), 0.5,
       'aux12', 'alim', 'Retorno da ventoinha do PTC.'),
-    nome: 'ventoinha do PTC −', prensa: 'PG9-2', rota: ['CH-2x1', 'CV-esq', 'CH-base'] },
+    nome: 'ventoinha do PTC −', prensa: 'PG13-2', rota: ['CH-2x1', 'CV-esq', 'CH-base'] },
   { ...kabo('X9', { comp: 'MV-1', via: 'O3+' }, naCamara('VF', '+'), 0.5,
       'aux12', 'alim', 'As 4 ventoinhas de circulação: 2 frias e 2 dos dutos.'),
-    nome: 'circulação +', prensa: 'PG9-2', rota: ['CH-2x1', 'CV-esq', 'CH-base'],
+    nome: 'circulação +', prensa: 'PG13-2', rota: ['CH-2x1', 'CV-esq', 'CH-base'],
     porque: '⭐ QUATRO VENTOINHAS EM DOIS FIOS. Elas ligam em paralelo dentro da câmara, '
           + 'porque formam um circuito de ar só — ligar uma sem as outras não faria '
           + 'sentido. Só 2 condutores atravessam a parede.' },
   { ...kabo('X10', { comp: 'MV-1', via: 'O3−' }, naCamara('VF', '−'), 0.5,
       'aux12', 'alim', 'Retorno das 4 de circulação.'),
-    nome: 'circulação −', prensa: 'PG9-2', rota: ['CH-2x1', 'CV-esq', 'CH-base'] },
+    nome: 'circulação −', prensa: 'PG13-2', rota: ['CH-2x1', 'CV-esq', 'CH-base'] },
 
   /* ── AS DUAS POSIÇÕES DE ENSAIO ───────────────────────────────────── */
   { ...kabo('X11', { comp: 'F-P', via: 'F-P1' }, naCamara('DUT1', '+24 V'), 0.5,
       'srv24', 'alim', 'Positivo da posição 1, já depois do fusível e da chave.'),
-    nome: 'posição 1 +', prensa: 'PG9-2', rota: ['CH-2x1', 'CV-esq', 'CH-base'] },
+    nome: 'posição 1 +', prensa: 'PG13-2', rota: ['CH-2x1', 'CV-esq', 'CH-base'] },
   { ...kabo('X12', { comp: 'F-P', via: 'F-P2' }, naCamara('DUT2', '+24 V'), 0.5,
       'srv24', 'alim', 'Positivo da posição 2.'),
-    nome: 'posição 2 +', prensa: 'PG9-2', rota: ['CH-2x1', 'CV-esq', 'CH-base'] },
+    nome: 'posição 2 +', prensa: 'PG13-2', rota: ['CH-2x1', 'CV-esq', 'CH-base'] },
   { ...kabo('X13', naCamara('DUT1', 'retorno'), { comp: 'PI-2', via: 'RET-1' }, 0.5,
       'medida', 'sinal', 'A volta da posição 1, que vai atravessar o shunt na PI-2.'),
     nome: 'posição 1 · retorno', prensa: 'PG9-3', rota: ['CV-dir', 'CH-topo'],
     aviso: '🔥 ESTE FIO É A MEDIÇÃO. Ele carrega os 17,6 mA que o sistema está medindo, e '
          + 'só vira 0 V depois do shunt. Ele NÃO pode dividir prensa-cabo com a saída '
-         + 'dos BTS — por isso sai pelo PG9-3, e não pelo PG9-2.' },
+         + 'dos BTS — por isso sai pelo PG9-3, e não pelo PG13-2.' },
   { ...kabo('X14', naCamara('DUT2', 'retorno'), { comp: 'PI-2', via: 'RET-2' }, 0.5,
       'medida', 'sinal', 'A volta da posição 2, individual.'),
     nome: 'posição 2 · retorno', prensa: 'PG9-3', rota: ['CV-dir', 'CH-topo'],

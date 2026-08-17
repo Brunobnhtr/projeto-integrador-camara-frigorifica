@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import {
   PECAS3D, TAMPA3D, PRENSAS3D, UTIL3D, ROTAS_CAMARA, EMENDAS_CAMARA,
 } from '../data/camara';
@@ -7,6 +6,7 @@ import {
   caminhoCamara, cruzamentos, pontoBorne, BORNES_CAMARA, pxCamara,
   E_CAM, MARG_CAM, naCamara, naTampa, eRetorno,
 } from '../lib/rota_camara';
+import { setaEm } from '../lib/geometria_painel';
 
 /* A câmara desenhada ao lado do painel, em elevação frontal.
    Aqui o fio não morre na parede: ele entra pelo furo, corre pelo piso,
@@ -25,8 +25,16 @@ const R_HOP = 3.4;                    // raio do pulinho, em px
 const acha = n => FIOS.find(f => f.n === n);
 const bornesDe = p => p.bornes ?? [];
 
-export default function CamaraNoPainel({ x0, y0, largura, altura, sel, onSel }) {
-  const [fioSel, setFioSel] = useState(null);
+/* ⭐ A SELEÇÃO DO FIO É A MESMA DO PAINEL. Enquanto cada vista guardava
+   a sua, clicar no X9 dentro da câmara não acendia o mesmo X9 saindo do
+   MV-1 — e era justamente esse pedaço, o meio do caminho, que ninguém
+   conseguia enxergar. Agora um clique acende o fio inteiro: do borne do
+   componente, pela canaleta, pelo prensa-cabo, até a peça lá dentro. */
+export default function CamaraNoPainel({
+  x0, y0, largura, altura, sel, onSel, fio, onFio, apagado,
+}) {
+  const fioSel = fio;
+  const setFioSel = onFio;
   const { cx, cy } = pxCamara(x0, y0, altura);
 
   const daCamara = FIOS.filter(f => f.etapa === 6 && naCamara(f));
@@ -85,15 +93,27 @@ export default function CamaraNoPainel({ x0, y0, largura, altura, sel, onSel }) 
   }
 
   /* ── um risco de fio, com área de clique folgada ───────────────────── */
-  const Fio = ({ f, d }) => {
+  const Fio = ({ f, d, pontos }) => {
     const on = fioSel === f.n;
+    const volta = eRetorno(f);
     return (
       <g onClick={e => { e.stopPropagation(); setFioSel(on ? null : f.n); }}
-         style={{ cursor: 'pointer' }}>
+         style={{ cursor: 'pointer' }}
+         opacity={apagado ? 0.12 : fioSel && !on ? 0.2 : 1}>
         <path d={d} fill="none" stroke="transparent" strokeWidth={7} />
         <path d={d} fill="none" stroke={f.cor} strokeWidth={on ? 2.4 : 1.1}
-              strokeLinejoin="round" strokeLinecap="round"
-              opacity={fioSel && !on ? 0.2 : 1} />
+              strokeLinejoin="round" strokeLinecap="round" />
+        {/* a seta anda no sentido do fio: para a peça na ida, para o
+            furo na volta */}
+        {pontos && [0.45, 0.8].map(fr => {
+          const px = pontos.map(([X, Z]) => [cx(X), cy(Z)]);
+          const a = setaEm(volta ? [...px].reverse() : px, fr);
+          return a && (
+            <polygon key={fr} points="-2.2,-1.6 2.4,0 -2.2,1.6" fill={f.cor}
+                     stroke="#fff" strokeWidth={0.3}
+                     transform={`translate(${a.x} ${a.y}) rotate(${a.ang})`} />
+          );
+        })}
       </g>
     );
   };
@@ -146,7 +166,8 @@ export default function CamaraNoPainel({ x0, y0, largura, altura, sel, onSel }) 
         return d && <Fio key={f.n} f={f} d={d} />;
       })}
       {[...caminhos].map(([n, c]) => (
-        <Fio key={n} f={acha(n)} d={paraD(c.pontos, hops.get(n) ?? [])} />
+        <Fio key={n} f={acha(n)} d={paraD(c.pontos, hops.get(n) ?? [])}
+             pontos={c.pontos} />
       ))}
       {/* as emendas feitas ali dentro, que não vêm do painel */}
       {EMENDAS_CAMARA.map((e, i) => {

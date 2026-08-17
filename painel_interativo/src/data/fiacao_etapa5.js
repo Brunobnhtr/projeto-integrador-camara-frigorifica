@@ -155,12 +155,12 @@ export const FIOS_ETAPA5 = [
   /* ── os 4 LEDs da iluminação da maquete, que ficam FORA ──────────── */
   { n: 'P28', etapa: 5, classe: 'alim', func: 'log5', mm2: 0.25,
     de: { comp: 'BD-5V', via: 'O7' }, para: { maquete: 'LEDS', borne: '+' },
-    prensa: 'PG9-2', nome: 'LEDs da maquete +', rota: ['CH-base'],
+    prensa: 'PG7-3', nome: 'LEDs da maquete +', rota: ['CH-base'],
     diz: 'Alimenta os 4 LEDs brancos da iluminação da rua, sempre acesos.',
     porque: '📌 Cada LED tem o SEU resistor de 220 Ω, montado dentro da base do poste '
           + 'e não aqui. Do painel sai só o par de alimentação.' },
   { n: 'P29', etapa: 5, classe: 'comum', func: 'zero', mm2: 0.25,
     de: { maquete: 'LEDS', borne: '−' }, para: { comp: 'BD-0V', via: 'R16' },
-    prensa: 'PG9-2', nome: 'LEDs da maquete −', rota: ['CH-base'],
+    prensa: 'PG7-3', nome: 'LEDs da maquete −', rota: ['CH-base'],
     diz: 'Retorno comum dos quatro.' },
 ];

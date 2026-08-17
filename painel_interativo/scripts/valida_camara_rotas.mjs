@@ -146,7 +146,7 @@ let trocou = 0;
 for (const f of seis) {
   const r = ROTAS_CAMARA[f.n];
   if (!r) continue;
-  const par = { 'PG9-2': 'PC-1', 'PG9-3': 'PC-2' }[f.prensa];
+  const par = { 'PG13-2': 'PC-1', 'PG9-3': 'PC-2' }[f.prensa];
   if (par !== r.pc) {
     err(`${f.n} sai do painel pelo ${f.prensa} mas entra na câmara pelo ${r.pc} — `
       + 'potência e medição trocariam de duto no meio do caminho'); trocou++;

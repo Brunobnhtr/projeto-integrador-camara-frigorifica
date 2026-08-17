@@ -321,6 +321,16 @@ Num painel de verdade **não existem 24 cores de fio**. A cor diz **que circuito
 | **PG7-1** | 110 mm | 5 V |
 | **PG7-2** | 170 mm | 12 V auxiliar + 24 V de serviços |
 
+### Saídas — 23 condutores em 3 prensa-cabos
+
+| Prensa-cabo | Rosca | X | O que sai | Feixe |
+|---|---|---:|---|---:|
+| **PG13-2** | PG13,5 | 230 mm | 12 fios de potência para a câmara | 9,9 mm |
+| **PG9-3** | PG9 | 470 mm | 9 fios de sinal e medição — **6 deles são RETORNO**, entrando no painel | 6,5 mm |
+| **PG7-3** | PG7 | 300 mm | 2 fios de 5 V para os LEDs da maquete | 2,9 mm |
+
+> ⭐ **O PG9-3 é o único furo de mão dupla.** Três fios saem (5 V do sensor, SDA, SCL) e seis voltam (os dois retornos das posições, o GND do sensor, o DS18B20 do radiador e os dois RPM). É o que faz dele o furo mais sensível do painel: o retorno das posições carrega a corrente que está sendo medida.
+
 ⭐ **Todos entram pela BASE e sobem pela mesma rota:** `CH-base → CV-esq → CH-2x1`. As três são canaletas de **potência**, então não há mistura com sinal em nenhum trecho. O script `npm run valida:fiacao` confere isso — inclusive que as canaletas da rota realmente se tocam.
 
 

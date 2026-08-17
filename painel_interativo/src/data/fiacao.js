@@ -42,37 +42,54 @@ export const CORES = {
  */
 export const PRENSAS_PAINEL = [
   {
-    id: 'PG9-1', tipo: 'PG9', face: 'base', x: 50, classe: 'potencia',
-    nome: 'ENTRADA DE POTÊNCIA', capacidade: 4,
+    id: 'PG9-1', tipo: 'PG9', liga: '◄ do poste 4', face: 'base', x: 50, classe: 'potencia',
+    nome: 'ENTRADA DE POTÊNCIA',
     diz: 'Os dois condutores mais grossos: o 24 V de potência e o 0 V comum. '
        + 'Ambos de 1,5 mm², ambos vindos do poste 4.',
   },
   {
-    id: 'PG7-1', tipo: 'PG7', face: 'base', x: 110, classe: 'potencia',
-    nome: 'ENTRADA 5 V', capacidade: 2,
+    id: 'PG7-1', tipo: 'PG7', liga: '◄ do poste 2 · T2', face: 'base', x: 110, classe: 'potencia',
+    nome: 'ENTRADA 5 V',
     diz: 'Só o positivo de 5 V, que desce do transformador T2 no poste 2.',
   },
   {
-    id: 'PG7-2', tipo: 'PG7', face: 'base', x: 170, classe: 'potencia',
-    nome: 'ENTRADA 12 V + 24 V SERVIÇOS', capacidade: 3,
+    id: 'PG7-2', tipo: 'PG7', liga: '◄ do poste 3 · T3 e R2', face: 'base', x: 170, classe: 'potencia',
+    nome: 'ENTRADA 12 V + 24 V SERVIÇOS',
     diz: 'Dois positivos: o 12 V do T3 (poste 3) e o 24 V de serviços do ramal R2.',
   },
   /* ⭐ AS DUAS SAÍDAS PARA A CÂMARA. Separadas pelo mesmo motivo das
-     entradas: o PG9-2 leva a saída dos BTS, que é o que polui, e o
+     entradas: o PG13-2 leva a saída dos BTS, que é o que polui, e o
      PG9-3 leva os retornos das posições, o I²C e os RPM, que é o que
-     sofre. Ficam nos cantos opostos da base. */
+     sofre. Ficam nos cantos opostos da base.
+
+     ⚠️ O PG13-2 ERA UM PG9, com "capacidade: 14" escrito à mão. Doze
+     condutores, quatro deles de 1,5 mm², dão 9,9 mm de feixe — um PG9
+     aperta até 8 mm. Não é apertado: não fecha, a vedação não morde e
+     o furo vira entrada de poeira. Virou PG13,5, que vai até 12 mm.
+     Agora quem confere é o script, com a conta, e não um número que
+     alguém digitou. */
   {
-    id: 'PG9-2', tipo: 'PG9', face: 'base', x: 230, classe: 'potencia',
-    nome: 'SAÍDA DE POTÊNCIA → CÂMARA', capacidade: 14,
+    id: 'PG13-2', tipo: 'PG13,5', liga: '► câmara · PC-1', face: 'base', x: 230, classe: 'potencia',
+    nome: 'SAÍDA DE POTÊNCIA → CÂMARA',
     diz: 'Peltier, PTC e as três saídas de ventoinha — os 6 A chaveados. Fica à '
        + 'ESQUERDA, longe do canto onde desce a canaleta de sinal.',
   },
   {
-    id: 'PG9-3', tipo: 'PG9', face: 'base', x: 470, classe: 'sinal',
-    nome: 'SAÍDA DE SINAL E MEDIÇÃO → CÂMARA', capacidade: 10,
+    id: 'PG9-3', tipo: 'PG9', liga: '► câmara · PC-2', face: 'base', x: 470, classe: 'sinal',
+    nome: 'SAÍDA DE SINAL E MEDIÇÃO → CÂMARA',
     diz: 'Os retornos das duas posições, o I²C do AM2315C, o DS18B20 do radiador e '
        + 'os dois RPM. Fica embaixo da CV-dir, para os fios subirem direto pela '
        + 'canaleta de sinal sem passar pela de potência.',
+  },
+  /* ⭐ A MAQUETE NÃO É A CÂMARA. Os LEDs dos postes estavam saindo pelo
+     mesmo furo da potência da câmara — 0,25 mm² de 5 V no meio dos 6 A
+     chaveados dos BTS, e num destino que nem é o mesmo lugar. Saem por
+     aqui, sozinhos. */
+  {
+    id: 'PG7-3', tipo: 'PG7', liga: '► maquete · postes', face: 'base', x: 300, classe: 'potencia',
+    nome: 'SAÍDA PARA A MAQUETE · 5 V DOS LEDS',
+    diz: 'O par que acende os 4 LEDs brancos dos postes. ⚠️ Feixe fino para um PG7: '
+       + 'use a vedação redutora que vem na embalagem, senão a rosca não morde.',
   },
 ];
 

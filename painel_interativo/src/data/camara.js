@@ -249,12 +249,14 @@ export const UTIL3D = { w: 200, d: 100, h: 250 };
 
 export const PRENSAS3D = [
   {
-    id: 'PC-1', nome: 'POTÊNCIA', cor: '#c92a2a', x: 45, z: 22,
+    id: 'PC-1', nome: 'POTÊNCIA', tipo: 'PG13,5', cor: '#c92a2a', x: 45, z: 22,
     diz: 'Peltier, PTC e as ventoinhas. Os BTS chaveiam 6 A por aqui — '
        + 'é a fonte de ruído do projeto.',
+    porque: '⭐ PG13,5 e não PG9: os dez condutores que entram aqui, quatro deles de '
+          + '1,5 mm², dão 9,3 mm de feixe. Um PG9 vai até 8 mm e não fecharia.',
   },
   {
-    id: 'PC-2', nome: 'SINAL E MEDIÇÃO', cor: '#1971c2', x: 155, z: 228,
+    id: 'PC-2', nome: 'SINAL E MEDIÇÃO', tipo: 'PG9', cor: '#1971c2', x: 155, z: 228,
     diz: 'As duas posições de ensaio e o AM2315C. Carrega os 17,6 mA que '
        + 'estão sendo medidos e os pulsos do I²C.',
   },

@@ -257,14 +257,35 @@ Os fios da porta cruzam para a placa **num ponto só de cada classe**, e esse tr
 
 ---
 
-### 🕳️ Por onde os cabos saem para a câmara — dois furos no FUNDO
+### 🕳️ Por onde os cabos saem — três furos no FUNDO
 
-Os cabos que alimentam a câmara **descem pelo fundo do painel** e correm por baixo da bancada até ela. São dois furos, e a posição de cada um não é arbitrária:
+Os cabos que alimentam a câmara **descem pelo fundo do painel** e correm por baixo da bancada até ela. A posição de cada furo não é arbitrária:
 
-| Furo | X | O que sai | Por que ali |
-|---|---:|---|---|
-| **PG9-2** | **230 mm** | 12 fios de POTÊNCIA — Peltier, PTC, ventoinhas | **À esquerda**, longe do canto de sinal. É por aqui que passam os 6 A chaveados |
-| **PG9-3** | **470 mm** | 9 fios de SINAL — retornos das posições, I²C, DS18B20, RPM | **No canto direito**, bem embaixo da `CV-dir`. Os fios descem pela canaleta de sinal e caem direto no furo, sem nunca passar perto dos de potência |
+| Furo | Rosca | X | O que sai | Por que ali |
+|---|---|---:|---|---|
+| **PG13-2** | **PG13,5** | **230 mm** | 12 fios de POTÊNCIA — Peltier, PTC, ventoinhas | **À esquerda**, longe do canto de sinal. É por aqui que passam os 6 A chaveados |
+| **PG9-3** | PG9 | **470 mm** | 9 fios de SINAL — retornos das posições, I²C, DS18B20, RPM | **No canto direito**, bem embaixo da `CV-dir`. Os fios descem pela canaleta de sinal e caem direto no furo, sem nunca passar perto dos de potência |
+| **PG7-3** | PG7 | **300 mm** | 2 fios de 5 V para os **LEDs dos postes** | Não vai para a câmara: vai para a maquete. Sai sozinho porque 0,25 mm² de 5 V não tem o que fazer dentro do feixe dos 6 A chaveados |
+
+#### ⚠️ Por que o furo da potência é PG13,5 e não PG9
+
+O projeto declarava um **PG9** ali, com "capacidade: 14 fios" escrito à mão. Refeita a conta, não fecha:
+
+| | |
+|---|---|
+| 4 condutores de 1,5 mm² | Ø externo ≈ **3,0 mm** cada |
+| 8 condutores de 0,5 mm² | Ø externo ≈ **2,2 mm** cada |
+| **Diâmetro do feixe** | `1,15 × √(4×3,0² + 8×2,2²)` = **9,9 mm** |
+| **PG9 aperta** | 4 a **8 mm** |
+| **PG13,5 aperta** | 6 a **12 mm** ✅ |
+
+🔥 **Não é "apertado": não fecha.** Com o feixe maior que a faixa de aperto, a vedação de borracha não morde o cabo. O furo fica aberto — e um furo aberto no fundo de um painel é por onde entram poeira e umidade, exatamente onde estão os 6 A chaveados.
+
+> ⭐ **A regra vale para os dois lados da parede.** O `PC-1`, o furo correspondente na câmara, recebe 10 condutores (9,3 mm de feixe) e também é PG13,5. O `PC-2` recebe 6 e continua PG9.
+
+> 📌 **Os dois PG7 ficam abaixo da faixa mínima** (2,5 e 2,9 mm contra os 3,0 mm da rosca). Nesse sentido a correção é a fácil: use a **vedação redutora** que vem na embalagem do prensa-cabo. O script avisa, mas não reprova.
+
+**Quem confere isso agora é o `npm run valida`**, com a conta do feixe, e não um número digitado.
 
 ```
    ┌──────────────────────── PAINEL ────────────────────────┐
@@ -273,7 +294,7 @@ Os cabos que alimentam a câmara **descem pelo fundo do painel** e correm por ba
    │                                                   ║║║  │    de sinal
    │            CH-base (potência)                     ║║║  │
    └──────────────●─────────────────────────────────────●───┘
-                PG9-2                                 PG9-3
+               PG13-2                                 PG9-3
               (potência)                          (sinal/medição)
                   │                                    │
                   └──────── por baixo da bancada ──────┴──► CÂMARA

@@ -203,9 +203,6 @@ const PINO_BASE = { A1: 13, A2: 14, 11: 9, 12: 1, 14: 5, 21: 12, 22: 4, 24: 8 };
 const rele = (nome, usa, para) => ({
   ...via(nome, usa, para), pino: PINO_BASE[nome],
 });
-const bloco = (n, prefixo = 'O') =>
-  Array.from({ length: n }, (_, i) => ({ nome: `${prefixo}${i + 1}` }));
-
 export const COMPONENTES = [
 
   /* ════════════ TRILHO 3 — CONTROLE ════════════ */
