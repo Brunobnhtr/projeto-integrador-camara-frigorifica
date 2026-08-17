@@ -32,7 +32,7 @@ function instantaneo(sim) {
     consumo: consumo(sim),
     botoes: { ...sim.botoes },
     falhas: { ...sim.falhas },
-    setpoint: sim.setpoint,
+    faixa: { ...sim.faixa },
     duty: sim.firmware.duty,
     t: sim.t,
   };
@@ -100,8 +100,8 @@ export default function VistaSimulador() {
   }), [mexer]);
 
   const reiniciar = useCallback(() => {
-    const alvo = simRef.current?.setpoint ?? 5;
-    simRef.current = criarSimulador({ tCamara: 25, setpoint: alvo });
+    const faixa = simRef.current?.faixa ?? { min: 4, max: 6 };
+    simRef.current = criarSimulador({ tCamara: 25, faixa });
     ultimo.current = {}; setLog([]);
     setS(instantaneo(simRef.current));
   }, []);
@@ -116,9 +116,11 @@ export default function VistaSimulador() {
         <Guia s={s} />
         <Cadeia s={s} />
         <Barramentos s={s} />
-        <Processo s={s} onSetpoint={v => mexer(sim => { sim.setpoint = v; })} />
+        <Camara s={s} />
+        <Processo s={s} onFaixa={(min, max) => mexer(sim => { sim.faixa = { min, max }; })} />
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <Vigilancia s={s} />
         <Relogio {...{ s, rodando, setRodando, veloc, setVeloc, reiniciar }} />
         <Botoeiras s={s} pulso={pulso} alternar={alternar} />
         <Comandos s={s} mexer={mexer} />
@@ -174,6 +176,50 @@ function Guia({ s }) {
                   padding: '11px 13px' }}>
       <div style={{ fontSize: 14, fontWeight: 700, color: cor }}>{passo}</div>
       <div style={{ fontSize: 11.5, color: CX.texto, marginTop: 4, lineHeight: 1.5 }}>{porque}</div>
+    </div>
+  );
+}
+
+
+/* ═══ VIGILÂNCIA MÚTUA ═════════════════════════════════════════════
+   ⭐ Os dois ESP32 escutam o JSON que o Mega publica a 1 Hz. Silêncio
+     por 3 s = o Mega morreu, e os dois acusam INDEPENDENTEMENTE.
+
+     O ponto sutil: eles CONTAM, não ATUAM. Quando o Mega morre, quem
+     corta a potência é o pull-down no gate do KA3 — hardware, sem
+     software nenhum no caminho. Dar poder de atuação aos ESP faria a
+     história de segurança PIOR, não melhor: seriam três atores no
+     mesmo circuito em vez de um.                                    */
+function Vigilancia({ s }) {
+  const cai = s.megaSumido;
+  return (
+    <Cartao titulo="Vigilância mútua" sub="os 3 processadores se escutam">
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 7 }}>
+        <Vigia nome="Arduino Mega" papel="controla" ok={!cai} />
+        <Vigia nome="ESP32 · IHM" papel="mostra" ok={s.bd5v > 0} />
+        <Vigia nome="ESP32 · IoT" papel="publica" ok={s.bd5v > 0} />
+      </div>
+      {cai && (
+        <Aviso cor={ALERTA}>
+          🔴 <b>ARDUINO SEM RESPOSTA há {s.silencioMega} s.</b> Os dois ESP32 pararam de
+          receber o JSON de 1 Hz e concluíram isso sozinhos — sem fio novo e sem pino:
+          basta cronometrar o silêncio. A IHM mostra e o dashboard publica.
+          <br /><br />
+          ⭐ <b>E repare que a potência já estava cortada.</b> Quem cortou foi o pull-down
+          no gate do KA3, em hardware. Os ESP não agiram — eles <b>contaram</b>. É essa
+          divisão que faz a vigilância não enfraquecer a segurança.
+        </Aviso>
+      )}
+    </Cartao>
+  );
+}
+
+function Vigia({ nome, papel, ok }) {
+  return (
+    <div style={{ border: `1px solid ${ok ? '#8ce99a' : ALERTA}`, borderRadius: 6,
+                  padding: '7px 8px', background: ok ? '#ebfbee' : '#fff5f5' }}>
+      <div style={{ fontSize: 10.5, fontWeight: 700 }}>{ok ? '🟢' : '🔴'} {nome}</div>
+      <div style={{ fontSize: 9.5, color: CX.fraco }}>{papel}</div>
     </div>
   );
 }
@@ -288,27 +334,222 @@ function Barramentos({ s: f }) {
   );
 }
 
-/* ═══ PROCESSO ═════════════════════════════════════════════════════ */
-function Processo({ s: f, onSetpoint }) {
-  const cores = { RESFRIAMENTO: '#1971c2', AQUECIMENTO: '#e8590c', PARADO: CX.fraco, DEGELO: '#7048e8' };
+/* ═══ A CÂMARA, DESENHADA — quem está girando e quem está trabalhando ═══
+   ⭐ Um corte frontal com os componentes reais. Ventoinha girando gira
+     mesmo (animação CSS), a Peltier fica azul quando bombeia e o PTC
+     fica laranja quando aquece. A intensidade acompanha o duty.        */
+function Camara({ s: f }) {
+  const frio = f.renPeltier && f.duty > 0;
+  const quente = f.renPtc && f.duty > 0;
+  const i = Math.min(1, f.duty / 100);          // intensidade
+
   return (
-    <Cartao titulo="Processo" sub={`${f.estado}${f.alerta ? ` · ${f.alerta}` : ''}`}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 10 }}>
-        <Numero rot="câmara" val={`${f.tCamara.toFixed(1)} °C`} cor={cores[f.modo]} />
-        <Numero rot="setpoint" val={`${f.setpoint.toFixed(0)} °C`} />
+    <Cartao titulo="A câmara por dentro"
+            sub={frio ? `❄ resfriando · ${f.qcPeltier} W bombeados`
+               : quente ? `🔥 aquecendo · ${f.duty} %` : 'parada'}>
+      <svg viewBox="0 0 330 250" style={{ width: '100%' }}>
+        <defs>
+          <linearGradient id="gFrio" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#4dabf7" stopOpacity={0.15 + 0.55 * i} />
+            <stop offset="100%" stopColor="#4dabf7" stopOpacity="0" />
+          </linearGradient>
+          <linearGradient id="gQuente" x1="0" y1="1" x2="0" y2="0">
+            <stop offset="0%" stopColor="#ff922b" stopOpacity={0.15 + 0.55 * i} />
+            <stop offset="100%" stopColor="#ff922b" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+
+        {/* caixa */}
+        <rect x="55" y="30" width="220" height="190" rx="3"
+              fill="#f8f9fa" stroke="#adb5bd" strokeWidth="2" />
+        {frio && <rect x="57" y="32" width="216" height="186" fill="url(#gFrio)" />}
+        {quente && <rect x="57" y="32" width="216" height="186" fill="url(#gQuente)" />}
+
+        {/* dutos laterais 40 mm */}
+        {[[30, 'esq'], [275, 'dir']].map(([dx, id]) => (
+          <rect key={id} x={dx} y="30" width="25" height="190" fill="#e9ecef"
+                stroke="#adb5bd" strokeWidth="1.5" />
+        ))}
+
+        {/* ── PELTIER no topo, atravessando a tampa ─────────────── */}
+        <rect x="105" y="14" width="120" height="16" rx="2"
+              fill={frio ? '#1971c2' : '#ced4da'} />
+        <text x="165" y="26" fontSize="9" fill="#fff" textAnchor="middle" fontWeight="700">
+          {frio ? `PELTIER · GELANDO` : 'PELTIER'}
+        </text>
+        <Helice cx={128} cy={6} r={9} on={f.ventRadiador} cor="#495057" rapido />
+        <Helice cx={202} cy={6} r={9} on={f.ventRadiador} cor="#495057" rapido />
+        <text x="165" y="9" fontSize="7" fill={CX.fraco} textAnchor="middle">
+          {f.ventRadiador ? 'radiador ↑' : 'radiador off'}
+        </text>
+
+        {/* blocos frios + ventoinhas internas soprando para baixo */}
+        <rect x="118" y="30" width="40" height="12" fill={frio ? '#a5d8ff' : '#e9ecef'}
+              stroke="#adb5bd" strokeWidth="0.8" />
+        <rect x="172" y="30" width="40" height="12" fill={frio ? '#a5d8ff' : '#e9ecef'}
+              stroke="#adb5bd" strokeWidth="0.8" />
+        <Helice cx={138} cy={52} r={11} on={f.ventInternas} cor="#1971c2" />
+        <Helice cx={192} cy={52} r={11} on={f.ventInternas} cor="#1971c2" />
+
+        {/* setas do ar descendo pelo centro */}
+        {f.ventInternas && [150, 165, 180].map(x => (
+          <Fluxo key={x} x1={x} y1={70} x2={x} y2={150} />
+        ))}
+
+        {/* ── PTC na base ────────────────────────────────────────── */}
+        <rect x="115" y="182" width="100" height="14" rx="2"
+              fill={quente ? '#e8590c' : '#ced4da'} />
+        <text x="165" y="192" fontSize="8.5" fill="#fff" textAnchor="middle" fontWeight="700">
+          {quente ? 'PTC · AQUECENDO' : 'PTC'}
+        </text>
+        <Helice cx={165} cy={170} r={10} on={f.ventPtc ?? f.ventInternas} cor="#e8590c" />
+        <text x="165" y="205" fontSize="7" fill={CX.fraco} textAnchor="middle">
+          vent. do PTC
+        </text>
+
+        {/* ── VENTOINHAS DOS DUTOS, abaixo do PTC, soprando p/ as bocas ── */}
+        <Helice cx={92} cy={205} r={10} on={f.ventInternas} cor="#0ca678" />
+        <Helice cx={238} cy={205} r={10} on={f.ventInternas} cor="#0ca678" />
+        {f.ventInternas && (
+          <>
+            <Fluxo x1={80} y1={205} x2={50} y2={205} horiz />
+            <Fluxo x1={250} y1={205} x2={280} y2={205} horiz />
+            <Fluxo x1={42} y1={195} x2={42} y2={60} />
+            <Fluxo x1={288} y1={195} x2={288} y2={60} />
+          </>
+        )}
+        <text x="165" y="228" fontSize="7" fill={CX.fraco} textAnchor="middle">
+          as 2 dos dutos ficam AQUI, na boca — não dentro deles
+        </text>
+
+        {/* bandeja */}
+        <rect x="118" y="212" width="94" height="6" fill="#dee2e6" stroke="#adb5bd"
+              strokeWidth="0.8" />
+        <text x="165" y="240" fontSize="7" fill={CX.fraco} textAnchor="middle">
+          bandeja removível
+        </text>
+      </svg>
+    </Cartao>
+  );
+}
+
+/** Hélice que gira de verdade quando ligada. */
+function Helice({ cx, cy, r, on, cor, rapido }) {
+  const pas = [0, 60, 120, 180, 240, 300];
+  return (
+    <g opacity={on ? 1 : 0.32}>
+      <circle cx={cx} cy={cy} r={r} fill="none" stroke={cor} strokeWidth="1.2" />
+      <g>
+        {on && (
+          <animateTransform attributeName="transform" type="rotate"
+            from={`0 ${cx} ${cy}`} to={`360 ${cx} ${cy}`}
+            dur={rapido ? '0.35s' : '0.6s'} repeatCount="indefinite" />
+        )}
+        {pas.map(a => (
+          <line key={a} x1={cx} y1={cy}
+                x2={cx + r * 0.82 * Math.cos(a * Math.PI / 180)}
+                y2={cy + r * 0.82 * Math.sin(a * Math.PI / 180)}
+                stroke={cor} strokeWidth="1.6" strokeLinecap="round" />
+        ))}
+      </g>
+      <circle cx={cx} cy={cy} r="1.8" fill={cor} />
+    </g>
+  );
+}
+
+/** Seta de fluxo de ar, com o tracejado andando. */
+function Fluxo({ x1, y1, x2, y2, horiz }) {
+  return (
+    <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#74c0fc" strokeWidth="1.6"
+          strokeDasharray="4 4" opacity="0.85"
+          markerEnd={undefined}>
+      <animate attributeName="stroke-dashoffset" from="8" to="0"
+               dur={horiz ? '0.5s' : '0.7s'} repeatCount="indefinite" />
+    </line>
+  );
+}
+
+/* ═══ PROCESSO — a faixa, e não mais um ponto ══════════════════════ */
+function Processo({ s: f, onFaixa }) {
+  const cores = { RESFRIAMENTO: '#1971c2', AQUECIMENTO: '#e8590c',
+                  PARADO: CX.fraco, DEGELO: '#7048e8' };
+  const zonaCor = { URGENTE: ALERTA, AJUSTE: '#1971c2', PRONTO: VIVO };
+  return (
+    <Cartao titulo="Processo"
+            sub={`${f.estado}${f.alerta ? ` · ${f.alerta}` : ''}`}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr 1fr', gap: 8,
+                    marginBottom: 10 }}>
+        <Numero rot="câmara" val={`${f.tCamara.toFixed(1)} °C`}
+                cor={f.naFaixa ? VIVO : cores[f.modo]} />
+        <Numero rot="faixa pedida" val={`${f.faixa.min} a ${f.faixa.max}`} />
         <Numero rot="dissipador" val={`${f.tDissipador.toFixed(0)} °C`}
                 cor={f.tDissipador > 55 ? ALERTA : undefined} />
       </div>
-      <input type="range" min="-5" max="60" value={f.setpoint} style={{ width: '100%' }}
-             onChange={e => onSetpoint(+e.target.value)} />
+
+      {/* a régua da faixa */}
+      <Regua f={f} />
+
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center', margin: '10px 0 4px' }}>
+        <span style={{ fontSize: 10.5, color: CX.fraco, width: 26 }}>mín</span>
+        <input type="range" min="-15" max="55" value={f.faixa.min} style={{ flex: 1 }}
+               onChange={e => onFaixa(+e.target.value, Math.max(+e.target.value + 1, f.faixa.max))} />
+        <b style={{ fontSize: 11, width: 34, textAlign: 'right' }}>{f.faixa.min} °C</b>
+      </div>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <span style={{ fontSize: 10.5, color: CX.fraco, width: 26 }}>máx</span>
+        <input type="range" min="-14" max="60" value={f.faixa.max} style={{ flex: 1 }}
+               onChange={e => onFaixa(Math.min(f.faixa.min, +e.target.value - 1), +e.target.value)} />
+        <b style={{ fontSize: 11, width: 34, textAlign: 'right' }}>{f.faixa.max} °C</b>
+      </div>
+
+      {f.inalcancavel && (
+        <Aviso cor={ATENCAO}>
+          ⚠️ <b>Faixa inalcançável neste ambiente.</b> O firmware parou de forçar e
+          recuou para <b>{f.duty} %</b> — na Peltier, insistir daria <i>menos</i> frio,
+          porque o dissipador esquenta e o ΔT come o bombeamento. Ele está segurando o
+          melhor ponto real. <b>Não é falha</b>, e o ensaio continua com o número verdadeiro.
+        </Aviso>
+      )}
+
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 10 }}>
+        <span style={{ fontSize: 10.5, padding: '3px 8px', borderRadius: 11,
+                       fontWeight: 700, background: `${zonaCor[f.zona] ?? CX.fraco}22`,
+                       color: zonaCor[f.zona] ?? CX.fraco }}>{f.zona}</span>
         <Selo on={f.renPeltier} txt="R_EN Peltier" />
         <Selo on={f.renPtc} txt="R_EN PTC" />
         <Selo on={f.ventRadiador} txt="🌀 radiador" />
         <Selo on={f.ventInternas} txt="🌀 5 internas" />
-        <Selo on={f.modo !== 'PARADO'} txt={`duty ${f.duty.toFixed(0)} %`} />
+        <Selo on={f.duty > 0} txt={`duty ${f.duty} % de ${f.dutyTeto} %`} />
       </div>
+      {f.dutyTeto < 90 && f.renPeltier && (
+        <Aviso cor="#1971c2">
+          🌡️ <b>Limitador térmico atuando.</b> O dissipador está a {f.tDissipador.toFixed(0)} °C,
+          então o teto de duty caiu para <b>{f.dutyTeto} %</b>. Isso <b>aumenta</b> o frio
+          entregue: a Peltier bombeia menos quanto maior o ΔT dela.
+        </Aviso>
+      )}
     </Cartao>
+  );
+}
+
+/** Régua com a faixa marcada e a temperatura atual em cima. */
+function Regua({ f }) {
+  const min = -15, max = 60, L = x => ((x - min) / (max - min)) * 100;
+  return (
+    <div style={{ position: 'relative', height: 26, marginTop: 2 }}>
+      <div style={{ position: 'absolute', top: 10, left: 0, right: 0, height: 6,
+                    background: 'linear-gradient(90deg,#4dabf7,#e9ecef 45%,#ff922b)',
+                    borderRadius: 3 }} />
+      <div style={{ position: 'absolute', top: 8, height: 10, borderRadius: 2,
+                    left: `${L(f.faixa.min)}%`, width: `${L(f.faixa.max) - L(f.faixa.min)}%`,
+                    background: '#40c05755', border: `1.5px solid ${VIVO}` }} />
+      <div style={{ position: 'absolute', top: 3, left: `calc(${L(f.tCamara)}% - 1px)`,
+                    width: 2, height: 20, background: f.naFaixa ? VIVO : ALERTA }} />
+      <div style={{ position: 'absolute', top: -1, fontSize: 8.5, color: CX.fraco,
+                    left: `calc(${L(f.tCamara)}% - 12px)` }}>
+        {f.tCamara.toFixed(1)}
+      </div>
+    </div>
   );
 }
 

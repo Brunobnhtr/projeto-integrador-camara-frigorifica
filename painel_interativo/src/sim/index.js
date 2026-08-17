@@ -30,20 +30,55 @@ const TERMICO = {
   UA_CAMARA: 0.555,     // W/K — fita de alumínio direto no acrílico + porta dupla
   UA_DISSIP_COM_FAN: 4.0,   // W/K
   UA_DISSIP_SEM_FAN: 0.8,   // W/K — convecção natural
-  P_PELTIER_FRIO: 40,   // W bombeados para fora da câmara, a 100 %
-  P_PELTIER_QUENTE: 184, // W despejados no dissipador, a 100 %
+  // ⭐ A PELTIER NÃO BOMBEIA UMA POTÊNCIA FIXA — ela depende do ΔT que
+  //   ela própria está sustentando, e é ISSO que faz um sistema Peltier
+  //   se comportar diferente de um compressor:
+  //
+  //        Qc = Qc_max · duty · (1 − ΔT / ΔT_max)
+  //
+  //   Quanto mais quente o dissipador, MENOS ela consegue bombear. E o
+  //   dissipador esquenta porque ela está trabalhando. É realimentação
+  //   positiva no sentido errado — a razão pela qual "botar mais duty"
+  //   pode dar MENOS frio. Ver §12.7 do Doc 12 e o cenário 27.
+  QC_MAX: 114,          // W a ΔT = 0 (2× TEC1-12706 em série)
+  DT_MAX: 65,           // K — ΔT máximo teórico, com Qc = 0
+  P_ELETRICA: 144,      // W consumidos a 100 % de duty (24 V × 6,0 A)
   P_PTC: 80,            // W
   FUGA_PELTIER_OFF: 0.5, // W/K — o calor volta ATRAVÉS da pastilha desligada
 };
+
+/** ⭐ Quanto silêncio conta como "o Mega morreu". Três segundos: o JSON
+ *  vem a 1 Hz, então isso tolera duas perdas antes de acusar. Curto
+ *  demais dá alarme falso a cada travadinha da serial; longo demais e a
+ *  tela mente por meio minuto. */
+export const TIMEOUT_MEGA_MS = 3000;
 
 export function criarSimulador(opts = {}) {
   return {
     t: 0,                                   // ms desde o boot
     tAmbiente: opts.tAmbiente ?? 25,
-    setpoint: opts.setpoint ?? 5,
+    // ⭐ O alvo é uma FAIXA, não um ponto. `setpoint` continua aceito e
+    //   vira uma faixa de ±1 °C em volta dele, para não quebrar chamadas
+    //   antigas — mas a IHM trabalha com min e max.
+    faixa: opts.faixa ?? { min: (opts.setpoint ?? 5) - 1, max: (opts.setpoint ?? 5) + 1 },
     tCamara: opts.tCamara ?? 25,
     tDissipador: opts.tDissipador ?? 25,
     uaCamara: opts.uaCamara ?? TERMICO.UA_CAMARA,   // W/K — permite comparar isolamentos
+    qcPeltier: 0,                                   // W bombeados agora
+    // ⭐ VIGILÂNCIA MÚTUA — os dois ESP32 escutam o Mega e acusam a
+    //   ausência dele. Nenhum deles ATUA: quem corta a potência quando
+    //   o Mega morre já é o pull-down no gate do KA3, em hardware.
+    //   O papel dos ESP é CONTAR, e é por isso que a vigilância não
+    //   enfraquece a segurança: ninguém novo ganhou poder sobre nada.
+    ultimoJson: 0,          // ms — quando o Mega falou pela última vez
+    ihmOnline: true,        // o ESP32-S3 da porta está respondendo?
+    iotOnline: true,        // o DNLCB30 está respondendo?
+    megaSumido: false,      // ⭐ os ESP concluíram que o Mega morreu
+    // ⭐ Caracterização: trava o duty num valor e ignora o controlador.
+    //   Serve para levantar a curva Qc × duty, que é o que prova que
+    //   "mais duty" nem sempre é "mais frio". null = controle normal.
+    dutyForcado: opts.dutyForcado ?? null,
+    tCamaraFixa: opts.tCamaraFixa ?? null,   // segura a câmara p/ medir o regime
     botoes: { s0Emergencia: false, s1Verde: false, s2Stop: false, s3Rearme: false },
     falhas: {
       arduinoMorto: false,     // chip queimado ou removido
@@ -86,7 +121,7 @@ export function passo(sim, dt = 50) {
     tDissipador: sim.falhas.ds18Solto ? -127 : sim.tDissipador,
     tAmbiente: sim.tAmbiente,
     tCamara: sim.tCamara,
-    setpoint: sim.setpoint,
+    faixa: sim.faixa,
     rpm1: radiadorGirando ? 1850 : 0,
     rpm2: radiadorGirando ? 1820 : 0,
   };
@@ -100,6 +135,13 @@ export function passo(sim, dt = 50) {
   if (vivoAgora && !f.vivo) Object.assign(f, firmwareInicial());
   f.vivo = vivoAgora;
   passoFirmware(f, entradas, dt);
+
+  // ── 3b. A VIGILÂNCIA MÚTUA ───────────────────────────────────────
+  //   O Mega publica um JSON por segundo nas duas seriais. Os ESP não
+  //   precisam de fio novo nem de pino: basta CRONOMETRAR o silêncio.
+  if (f.vivo) sim.ultimoJson = sim.t;
+  const silencio = sim.t - sim.ultimoJson;
+  sim.megaSumido = silencio > TIMEOUT_MEGA_MS && barras['BD-5V'] > 0;
 
   // ── 4. O MUNDO FÍSICO RESPONDE ───────────────────────────────────
   termico(sim, barras, dt);
@@ -115,26 +157,47 @@ function termico(sim, barras, dt) {
   const s = dt / 1000;
   const haPotencia = barras['BD-POT'] > 0;
 
+  // caracterização: trava o duty antes de qualquer decisão deste passo
+  if (sim.dutyForcado !== null) {
+    f.duty = sim.dutyForcado; f.renPeltier = true; f.renPtc = false;
+  }
+
   // ⚠ O BTS em curto conduz mesmo com o R_EN baixo — é justamente o
   //   modo de falha que o KA3 existe para cobrir.
   const peltierConduz = haPotencia &&
     (sim.falhas.btsPeltierEmCurto || (f.renPeltier && f.duty > 0));
   const ptcConduz = haPotencia && f.renPtc && f.duty > 0;
-  const dutyP = sim.falhas.btsPeltierEmCurto ? 100 : f.duty;
+  const d = (sim.falhas.btsPeltierEmCurto ? 100 : f.duty) / 100;
+
+  // ── A Peltier, com a dependência do ΔT ───────────────────────────
+  //   ⭐ É AQUI QUE O MODELO FICOU HONESTO. A versão anterior tinha um
+  //     "P_PELTIER_FRIO = 40 W" fixo, e com ele mais duty SEMPRE dava
+  //     mais frio — o que é falso e escondia o problema que o controle
+  //     de faixa existe para resolver.
+  const dtPastilha = sim.tDissipador - sim.tCamara;
+  let qc = 0, qh = 0;
+  if (peltierConduz) {
+    const rendimento = Math.max(0, 1 - dtPastilha / TERMICO.DT_MAX);
+    qc = TERMICO.QC_MAX * d * rendimento;      // bombeado para FORA da câmara
+    qh = qc + TERMICO.P_ELETRICA * d;          // despejado no dissipador
+  }
+  sim.qcPeltier = qc;                          // exposto para a tela
 
   // ── Câmara ───────────────────────────────────────────────────────
   let qCamara = (sim.tAmbiente - sim.tCamara) * sim.uaCamara;
-  if (peltierConduz) qCamara -= TERMICO.P_PELTIER_FRIO * dutyP / 100;
+  if (peltierConduz) qCamara -= qc;
   else qCamara += (sim.tDissipador - sim.tCamara) * TERMICO.FUGA_PELTIER_OFF;
   if (ptcConduz) qCamara += TERMICO.P_PTC * f.duty / 100;
+  // ⭐ As 5 ventoinhas internas: todo watt elétrico vira calor AQUI DENTRO.
+  if (f.ventInternas && barras['BD-AUX'] > 0) qCamara += 6.0;
   sim.tCamara += (qCamara / TERMICO.C_CAMARA) * s;
+  if (sim.tCamaraFixa !== null) sim.tCamara = sim.tCamaraFixa;
 
   // ── Dissipador do lado quente ────────────────────────────────────
   const ventilando = (sim.falhas.ka3Colado || f.ventRadiador) &&
     barras['BD-AUX'] > 0 && !sim.falhas.fanTravada;
   const ua = ventilando ? TERMICO.UA_DISSIP_COM_FAN : TERMICO.UA_DISSIP_SEM_FAN;
-  let qDissip = (sim.tAmbiente - sim.tDissipador) * ua;
-  if (peltierConduz) qDissip += TERMICO.P_PELTIER_QUENTE * dutyP / 100;
+  const qDissip = (sim.tAmbiente - sim.tDissipador) * ua + qh;
   sim.tDissipador += (qDissip / TERMICO.C_DISSIPADOR) * s;
 }
 
@@ -181,10 +244,20 @@ export function foto(sim) {
     ka3: f.habPotencia,
     ventRadiador: f.ventRadiador,
     ventInternas: f.ventInternas,
+    ventPtc: f.ventInternas,   // no canal 3, junto com as outras internas
     renPeltier: f.renPeltier,
     renPtc: f.renPtc,
     tCamara: +sim.tCamara.toFixed(1),
     tDissipador: +sim.tDissipador.toFixed(1),
+    faixa: sim.faixa,
+    duty: +f.duty.toFixed(0),
+    dutyTeto: +f.dutyTeto.toFixed(0),
+    inalcancavel: f.inalcancavel,
+    qcPeltier: +sim.qcPeltier.toFixed(1),
+    naFaixa: sim.tCamara >= sim.faixa.min && sim.tCamara <= sim.faixa.max,
+    zona: f.zona,
+    megaSumido: sim.megaSumido,
+    silencioMega: sim.megaSumido ? Math.round((sim.t - sim.ultimoJson) / 1000) : 0,
   };
 }
 

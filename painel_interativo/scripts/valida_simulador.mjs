@@ -266,7 +266,7 @@ cenario('15 · 🌀 Ventoinha do radiador — as quatro linhas da regra única')
   iniciarPelaIHM(sim); avancar(sim, 1000);
   conferir('resfriando → ligada', foto(sim).ventRadiador, true);
 
-  sim.setpoint = 40; avancar(sim, 2000);      // vira aquecimento
+  sim.faixa = { min: 44, max: 46 }; avancar(sim, 2000);      // vira aquecimento
   sim.tDissipador = 25;                        // dissipador na ambiente
   avancar(sim, 200);
   conferir('aquecendo e dissipador frio → DESLIGADA', foto(sim).ventRadiador, false);
@@ -317,7 +317,7 @@ cenario('19 · Intertravamento: NUNCA os dois atuadores juntos');
   for (let i = 0; i < 400; i++) {
     passo(sim, 50);
     if (sim.firmware.renPeltier && sim.firmware.renPtc) juntos = true;
-    if (i === 150) sim.setpoint = 45;    // força a inversão de modo
+    if (i === 150) sim.faixa = { min: 44, max: 46 };    // força a inversão de modo
   }
   conferir('Peltier e PTC habilitados ao mesmo tempo', juntos, false);
 }
@@ -334,17 +334,62 @@ cenario('20 · Chave geral corta tudo, inclusive a eletrônica');
   conferir('os dois selos caíram', f.ka1 || f.ka2, false);
 }
 
-cenario('21 · E o processo realmente funciona: a câmara esfria');
+cenario('21 · O processo funciona, e ele mira a MÍNIMA da faixa');
 {
-  const sim = armar(ligarPainel({ tCamara: 25, setpoint: 5 }));
+  const sim = armar(ligarPainel({ tCamara: 25, faixa: { min: 4, max: 6 } }));
   iniciarPelaIHM(sim);
-  avancar(sim, 25 * 60 * 1000, 100);      // 25 minutos
-  console.log(`  ${D}câmara ${sim.tCamara.toFixed(1)} °C · dissipador ${sim.tDissipador.toFixed(1)} °C${R}`);
-  conferir('chegou perto do setpoint', Math.abs(sim.tCamara - 5) < 2.5, true);
-  conferir('o dissipador esquentou', sim.tDissipador > 35, true);
+  avancar(sim, 60 * 60 * 1000, 200);
+  const f = foto(sim);
+  console.log(`  ${D}camara ${f.tCamara} C · dissipador ${f.tDissipador} C · duty ${f.duty} %${R}`);
+  conferir('entrou na faixa', f.naFaixa, true);
+  conferir('e parou perto da MINIMA, nao da maxima', f.tCamara < 5.2, true);
+  conferir('o dissipador esquentou', f.tDissipador > 35, true);
+  conferir('nao declarou inalcancavel', f.inalcancavel, false);
 }
 
-cenario('22 · Contato do KA3 SOLDADO — o veto do firmware some');
+cenario('22 · ⭐ Faixa alta: menos esforco, mesmo resultado');
+{
+  const sim = armar(ligarPainel({ tCamara: 25, faixa: { min: 10, max: 12 } }));
+  iniciarPelaIHM(sim);
+  avancar(sim, 60 * 60 * 1000, 200);
+  const f = foto(sim);
+  console.log(`  ${D}camara ${f.tCamara} C · duty ${f.duty} % · dissipador ${f.tDissipador} C${R}`);
+  conferir('entrou na faixa', f.naFaixa, true);
+  conferir('mirou a minima', f.tCamara < 11, true);
+  conferir('⭐ e com duty baixo — nao fica armado a toa', f.duty < 30, true);
+}
+
+cenario('23 · 🔥 FAIXA IMPOSSIVEL — o ar-condicionado que nunca chega');
+{
+  const sim = armar(ligarPainel({ tCamara: 25, faixa: { min: -10, max: -8 } }));
+  iniciarPelaIHM(sim);
+  avancar(sim, 60 * 60 * 1000, 200);
+  const f = foto(sim);
+  console.log(`  ${D}camara ${f.tCamara} C · duty ${f.duty} % · dissipador ${f.tDissipador} C${R}`);
+  conferir('⭐ o firmware DECLAROU inalcancavel', f.inalcancavel, true);
+  conferir('⭐ e RECUOU em vez de forcar o teto', f.duty <= 60, true);
+  conferir('nao caiu em FALHA — nao e defeito, e o ambiente', f.estado, ESTADO.RODANDO);
+  conferir('e estabilizou num ponto real', f.tCamara < 12, true);
+}
+
+cenario('24 · 🔥 A PROVA: mais duty da MENOS frio');
+{
+  const medir = (duty) => {
+    const s = criarSimulador({ tCamara: 5, tCamaraFixa: 5, dutyForcado: duty, tDissipador: 25 });
+    avancar(s, 200); apertar(s, 's3Rearme'); apertar(s, 's1Verde'); avancar(s, 200);
+    iniciarPelaIHM(s); avancar(s, 40 * 60 * 1000, 200);
+    return { qc: s.qcPeltier, td: s.tDissipador };
+  };
+  const cheio = medir(100), otimo = medir(60);
+  console.log(`  ${D}100 %: ${cheio.qc.toFixed(1)} W de frio, dissipador ${cheio.td.toFixed(1)} C${R}`);
+  console.log(`  ${D} 60 %: ${otimo.qc.toFixed(1)} W de frio, dissipador ${otimo.td.toFixed(1)} C${R}`);
+  conferir('⭐ 60 % esfria MAIS que 100 %', otimo.qc > cheio.qc, true);
+  conferir('e por muito — mais de 50 %', otimo.qc > cheio.qc * 1.5, true);
+  conferir('porque o dissipador fica bem mais frio', cheio.td - otimo.td > 8, true);
+  console.log('  [2m→ e por isso que o limitador olha o DISSIPADOR, e nao a corrente.[0m');
+}
+
+cenario('25 · Contato do KA3 SOLDADO — o veto do firmware some');
 {
   const sim = armar(ligarPainel({ tCamara: 25, setpoint: 5 }));
   sim.falhas.ka3Colado = true;
@@ -359,7 +404,7 @@ cenario('22 · Contato do KA3 SOLDADO — o veto do firmware some');
   conferir('e a emergencia tambem', foto(sim).ka1, false);
 }
 
-cenario('23 · 🔥 Contato do KA2 SOLDADO — o unico defeito que o painel NAO cobre');
+cenario('26 · 🔥 Contato do KA2 SOLDADO — o unico defeito que o painel NAO cobre');
 {
   const sim = armar(ligarPainel());
   sim.falhas.ka2Colado = true;
@@ -377,7 +422,7 @@ cenario('23 · 🔥 Contato do KA2 SOLDADO — o unico defeito que o painel NAO 
   conferir('⭐ so a chave geral resolve', foto(sim).bdPot, 0);
 }
 
-cenario('24 · O caminho do AQUECIMENTO tambem funciona');
+cenario('27 · O caminho do AQUECIMENTO tambem funciona');
 {
   const sim = armar(ligarPainel({ tCamara: 20, setpoint: 45 }));
   iniciarPelaIHM(sim); avancar(sim, 2000);
@@ -392,13 +437,13 @@ cenario('24 · O caminho do AQUECIMENTO tambem funciona');
   conferir('a camara aqueceu ate perto do setpoint', Math.abs(sim.tCamara - 45) < 2.5, true);
 }
 
-cenario('25 · ENERGIA — o pior caso REAL, medido em vez de estimado');
+cenario('28 · ENERGIA — o pior caso REAL, medido em vez de estimado');
 {
   const med = criarMedidor();
   const sim = armar(ligarPainel({ tCamara: 30, setpoint: 5 }));
   iniciarPelaIHM(sim);
   for (let i = 0; i < 12000; i++) { passo(sim, 100); medir(med, sim); }
-  sim.setpoint = 50;
+  sim.faixa = { min: 49, max: 51 };
   for (let i = 0; i < 12000; i++) { passo(sim, 100); medir(med, sim); }
 
   const p = med.picos;
@@ -419,7 +464,7 @@ cenario('25 · ENERGIA — o pior caso REAL, medido em vez de estimado');
   conferir('o cabo do 12 V aguenta as 5 internas juntas', p['BD-AUX'] <= LIMITES.caboT3, true);
 }
 
-cenario('26 · O pior caso de corrente e uma FALHA, nao a operacao normal');
+cenario('29 · O pior caso de corrente e uma FALHA, nao a operacao normal');
 {
   const sim = armar(ligarPainel({ tCamara: 6, setpoint: 5 }));
   iniciarPelaIHM(sim); avancar(sim, 2000);
@@ -429,6 +474,29 @@ cenario('26 · O pior caso de corrente e uma FALHA, nao a operacao normal');
   console.log(`  ${D}duty de regime: ${normal.toFixed(2)} A · BTS em curto: ${emCurto.toFixed(2)} A${R}`);
   conferir('o curto puxa muito mais que a operacao', emCurto > normal * 2, true);
   conferir('e mesmo assim o F1 de 10 A NAO abre', emCurto < LIMITES.F1, true);
+}
+
+cenario('30 · ⭐ VIGILANCIA MUTUA — os ESP32 acusam a morte do Mega');
+{
+  const sim = armar(ligarPainel({ tCamara: 25 }));
+  iniciarPelaIHM(sim); avancar(sim, 2000);
+  conferir('rodando, ninguem sumiu', foto(sim).megaSumido, false);
+
+  sim.falhas.arduinoMorto = true;
+  avancar(sim, 1000);
+  conferir('1 s de silencio: ainda dentro da tolerancia', foto(sim).megaSumido, false);
+
+  avancar(sim, 3000);
+  const f = foto(sim);
+  conferir('⭐ 4 s: os ESP concluem que o Mega morreu', f.megaSumido, true);
+  conferir('e a potencia JA estava cortada, por hardware', f.bdPot, 0);
+  conferir('o BD-5V segue vivo — e por isso eles podem avisar', f.bd5v, 5.1);
+  console.log('  [2m→ os ESP CONTAM, nao ATUAM. Quem cortou foi o pull-down no');
+  console.log('    gate do KA3. A vigilancia nao da poder novo a ninguem.[0m');
+
+  sim.falhas.arduinoMorto = false; avancar(sim, 1000);
+  conferir('Mega voltou: o alarme limpa sozinho', foto(sim).megaSumido, false);
+  conferir('mas a potencia NAO volta sozinha', foto(sim).bdPot, 0);
 }
 
 // ════════════════════════════════════════════════════════════════════

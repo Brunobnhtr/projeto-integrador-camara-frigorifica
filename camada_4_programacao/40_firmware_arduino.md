@@ -768,6 +768,101 @@ void maquinaDeEstados() {
 >
 > **A regra geral:** um efeito colateral previsto do comando que o operador acabou de dar **não é falha**. O teste do comando vem sempre antes do teste do sintoma.
 
+### ⭐ O alvo é uma FAIXA, e o duty é limitado pelo DISSIPADOR
+
+> Isto substituiu o setpoint de ponto único, e resolve o defeito que todo mundo já viu num ar-condicionado: **a máquina que não chega na temperatura e fica ligada direto.**
+
+```cpp
+struct Faixa { float min; float max; };     // o operador pede "entre 10 e 12"
+
+// As três zonas
+//   T > faixa.max      URGENTE   esfria com o teto cheio
+//   dentro da faixa    AJUSTE    esfria devagar, buscando a MÍNIMA
+//   T <= faixa.min     PRONTO    desliga e deixa a inércia trabalhar
+const float HISTERESE = 0.4;                // impede o liga-desliga picotado
+```
+
+**Trabalha para a mínima, mas a máxima já conta como sucesso.** É a segunda metade que importa: é ela que impede a máquina de perseguir um número exato que talvez não exista naquele ambiente.
+
+#### 🔥 E o duty NÃO é limitado por corrente — é pela temperatura do dissipador
+
+Esta é a parte que surpreende, e o simulador mediu:
+
+```
+   Câmara segura em 5 °C, ambiente 25 °C, regime permanente:
+
+   duty    Qc (frio)   dissipador
+   100 %    11,0 W      63,7 °C
+    70 %    18,6 W      54,8 °C
+    60 %    19,5 W      51,5 °C   ⭐ 77 % MAIS FRIO que a 100 %
+    40 %    18,3 W      44,0 °C
+```
+
+**A 60 % ela esfria quase o dobro do que a 100 %.** A razão é a equação da pastilha:
+
+```
+   Qc = Qc_max · duty · (1 − ΔT / ΔT_max)
+```
+
+Mais duty joga mais calor no dissipador; dissipador mais quente aumenta o ΔT; ΔT maior derruba o Qc. **É realimentação positiva no sentido errado.** Passado o ponto ótimo, insistir dá menos frio — exatamente o que o ar-condicionado que "não dá conta" está fazendo.
+
+```cpp
+// ⭐ O limitador. O DS18B20 do dissipador já existia para a
+//    pós-ventilação; agora ele também decide o teto de duty.
+const float DISSIPADOR_ALVO = 52;   // °C — onde o Qc é máximo
+const float DISSIPADOR_TETO = 62;   // °C — aqui o duty já caiu ao mínimo
+
+float tetoPorDissipador(float tDis) {
+    if (tDis <= DISSIPADOR_ALVO) return DUTY_MAXIMO;
+    if (tDis >= DISSIPADOR_TETO) return 35;
+    float f = (tDis - DISSIPADOR_ALVO) / (DISSIPADOR_TETO - DISSIPADOR_ALVO);
+    return DUTY_MAXIMO - f * (DUTY_MAXIMO - 35);
+}
+```
+
+> 🎯 **Repare que o sensor que já estava lá passou a ganhar o salário.** Ele foi instalado no dissipador só para saber quando parar a pós-ventilação. Agora ele fecha a malha de eficiência da Peltier — sem componente novo, sem fio novo, sem pino novo.
+
+#### ⭐ E desistir com honestidade
+
+```cpp
+const unsigned long AVAL_MS = 5UL * 60 * 1000;   // observa por 5 min
+const float MELHORA_MINIMA = 0.4;                // °C de ganho que vale a pena
+```
+
+Se em 5 minutos no teto o ganho for menor que 0,4 °C, **a faixa é inalcançável naquele ambiente**. O firmware então:
+
+1. **Para de forçar** e recua para o duty de maior Qc (60 %)
+2. **Estabiliza** no melhor ponto real
+3. **Avisa na tela**: *"FAIXA INALCANÇÁVEL — segurando 8,3 °C"*
+
+> ⚠️ **E não dispara trip.** Não é defeito do equipamento: é o ambiente. Um dia quente, uma porta aberta demais, uma carga maior que a prevista. **Transformar isso em FALHA obrigaria o operador a reconhecer um alarme que não é alarme** — e ensinaria a ignorar alarmes, que é o pior hábito que uma máquina pode ensinar.
+>
+> 📌 O ensaio continua, com o número **verdadeiro** na tela e no log.
+
+### ⭐ Vigilância mútua entre os três processadores
+
+O Mega publica um JSON por segundo nas duas seriais. **Os dois ESP32 podem detectar a morte dele só cronometrando o silêncio** — sem fio novo, sem pino, sem hardware:
+
+```cpp
+// Nos DOIS ESP32, independentemente:
+const unsigned long TIMEOUT_MEGA = 3000;   // tolera 2 perdas do JSON de 1 Hz
+
+if (millis() - ultimoJson > TIMEOUT_MEGA) {
+    // IHM:       mostra "ARDUINO SEM RESPOSTA"
+    // Dashboard: publica camara/alarme {"mega":"offline"}
+}
+```
+
+> ### 🎯 Eles CONTAM. Eles não ATUAM — e essa distinção é o projeto inteiro
+>
+> Seria tentador dar ao ESP32 o poder de cortar a potência quando o Mega morre. **Seria pior.** Quando o Mega morre, quem corta já é o **pull-down no gate do KA3** — hardware, sem software nenhum no caminho, sem depender de o ESP estar vivo ou de a rede estar de pé.
+>
+> Dar poder de atuação ao ESP colocaria **três atores de software** no mesmo circuito de segurança em vez de um. Mais caminhos, mais modos de falha, e a pergunta *"quem desligou?"* deixaria de ter resposta única.
+>
+> ✅ **O que faltava não era um atuador a mais: era alguém para CONTAR.** Antes, um Mega morto derrubava a potência em silêncio e o operador ficava olhando uma tela congelada sem entender. Agora a tela diz, e o dashboard avisa quem está longe.
+>
+> 📌 **Custo total: zero.** É um `millis()` e um `if` em cada ESP.
+
 ### ⭐ A parada — uma função, três origens
 
 ```cpp
