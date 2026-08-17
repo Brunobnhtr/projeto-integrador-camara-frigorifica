@@ -257,6 +257,34 @@ Os fios da porta cruzam para a placa **num ponto só de cada classe**, e esse tr
 
 ---
 
+### 🕳️ Por onde os cabos saem para a câmara — dois furos no FUNDO
+
+Os cabos que alimentam a câmara **descem pelo fundo do painel** e correm por baixo da bancada até ela. São dois furos, e a posição de cada um não é arbitrária:
+
+| Furo | X | O que sai | Por que ali |
+|---|---:|---|---|
+| **PG9-2** | **230 mm** | 12 fios de POTÊNCIA — Peltier, PTC, ventoinhas | **À esquerda**, longe do canto de sinal. É por aqui que passam os 6 A chaveados |
+| **PG9-3** | **470 mm** | 9 fios de SINAL — retornos das posições, I²C, DS18B20, RPM | **No canto direito**, bem embaixo da `CV-dir`. Os fios descem pela canaleta de sinal e caem direto no furo, sem nunca passar perto dos de potência |
+
+```
+   ┌──────────────────────── PAINEL ────────────────────────┐
+   │                                                   CV-  │
+   │                                                   dir  │  ← canaleta
+   │                                                   ║║║  │    de sinal
+   │            CH-base (potência)                     ║║║  │
+   └──────────────●─────────────────────────────────────●───┘
+                PG9-2                                 PG9-3
+              (potência)                          (sinal/medição)
+                  │                                    │
+                  └──────── por baixo da bancada ──────┴──► CÂMARA
+```
+
+> ⭐ **O PG9-3 está embaixo da canaleta vertical de sinal de propósito.** O retorno das posições carrega os 17,6 mA que estão sendo medidos: ele desce pela `CV-dir`, atravessa o furo e vai embora — **sem entrar em nenhuma canaleta de potência em momento algum**. A segregação vale do borne da PI-2 até dentro da câmara.
+
+📐 **Veja no aplicativo:** aba "Dentro do painel". Botão **"🚪 Fechar a tampa"** encosta a câmara no painel e mostra os dois chicotes saindo pelo fundo e correndo por baixo até ela.
+
+---
+
 ### 📡 Posição da antena Wi-Fi — LATERAL DIREITA, PARTE ALTA
 
 ```

@@ -61,10 +61,10 @@ export const PRENSAS_PAINEL = [
      PG9-3 leva os retornos das posições, o I²C e os RPM, que é o que
      sofre. Ficam nos cantos opostos da base. */
   {
-    id: 'PG9-2', tipo: 'PG9', face: 'base', x: 300, classe: 'potencia',
+    id: 'PG9-2', tipo: 'PG9', face: 'base', x: 230, classe: 'potencia',
     nome: 'SAÍDA DE POTÊNCIA → CÂMARA', capacidade: 14,
-    diz: 'Peltier, PTC e as três saídas de ventoinha. É por aqui que passam os 6 A '
-       + 'chaveados.',
+    diz: 'Peltier, PTC e as três saídas de ventoinha — os 6 A chaveados. Fica à '
+       + 'ESQUERDA, longe do canto onde desce a canaleta de sinal.',
   },
   {
     id: 'PG9-3', tipo: 'PG9', face: 'base', x: 470, classe: 'sinal',

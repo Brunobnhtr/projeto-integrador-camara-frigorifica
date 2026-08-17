@@ -5,6 +5,7 @@ import * as PI1 from '../data/pi1_fisico';
 import * as PI2 from '../data/pi2_fisico';
 import { PINAGENS } from '../data/pinagens';
 import { PRENSAS_PAINEL, FIOS, ETAPAS, CORES } from '../data/fiacao';
+import CamaraNoPainel from './CamaraNoPainel';
 
 /* ⭐ A travessia acontece DENTRO de uma calha, e a altura sai dela.
    'alim' e 'comum' pegam carona na de potência, que é a mais baixa. */
@@ -105,6 +106,8 @@ export default function VistaPainelInterno() {
   const [soUsados, setSoUsados] = useState(false);
   const [placa, setPlaca] = useState(null);   // desenho da placa em tela cheia
   const [verFiacao, setVerFiacao] = useState(true);
+  const [tampaFechada, setTampa] = useState(false);
+  const [pecaCam, setPecaCam] = useState(null);
   const [fio, setFio] = useState(null);
   const [etapa, setEtapa] = useState(0);   // 0 = todas
   const rolagem = useRef(null);
@@ -215,8 +218,11 @@ export default function VistaPainelInterno() {
   }, [comps]);
 
   const PORTA_X = CAIXA.largura + 40, PORTA_W = 250;
-  const LAT_X = PORTA_X + PORTA_W + 40, LAT_W = 200;
-  const larguraTotal = LAT_X + LAT_W;
+  /* ⭐ Com a tampa FECHADA a porta some do desenho e a câmara encosta
+     no painel — que é como a bancada fica de verdade. */
+  const CAM_X = tampaFechada ? CAIXA.largura + 90 : PORTA_X + PORTA_W + 60;
+  const CAM_W = 330, CAM_Y = 26, CAM_H = 420;
+  const larguraTotal = CAM_X + CAM_W + 16;
 
   return (
     <div style={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
@@ -238,6 +244,13 @@ export default function VistaPainelInterno() {
               borderRadius: 6, padding: '5px 9px', cursor: 'pointer',
               fontSize: 11, fontWeight: 700 }}>etapa {e.n}</button>
           ))}
+          <button onClick={() => setTampa(!tampaFechada)} style={{
+            background: tampaFechada ? '#212529' : '#fff',
+            color: tampaFechada ? '#fff' : '#212529', border: '2px solid #212529',
+            borderRadius: 6, padding: '5px 11px', cursor: 'pointer',
+            fontSize: 11.5, fontWeight: 700 }}>
+            {tampaFechada ? '🚪 Abrir a tampa' : '🚪 Fechar a tampa'}
+          </button>
           <button onClick={() => { setVerFiacao(!verFiacao); setFio(null); }} style={{
             background: verFiacao ? '#1971c2' : '#fff',
             color: verFiacao ? '#fff' : '#1971c2', border: '2px solid #1971c2',
@@ -388,91 +401,136 @@ export default function VistaPainelInterno() {
             );
           })}
 
-          {/* ── a lateral direita, com a antena ── */}
-          <rect x={LAT_X} y={0} width={LAT_W} height={CAIXA.altura} rx={4}
-                fill="#f1f3f5" stroke="#868e96" strokeWidth={2} />
-          <text x={LAT_X + LAT_W / 2} y={-4} textAnchor="middle" fontSize={8}
-                fontWeight="700" fill="#495057">
-            LATERAL DIREITA — {CAIXA.profundidade} × {CAIXA.altura} mm
-          </text>
-          <text x={LAT_X + 6} y={CAIXA.altura - 8} fontSize={5} fill="#868e96">
-            ← traseira · frente →
-          </text>
+          {/* ⭐ A ANTENA, colada no ALTO da lateral direita do próprio
+              painel — não numa faixa separada. É onde ela fica de verdade. */}
           {LATERAIS.map(a => {
-            const cx = LAT_X + a.x, cy = CAIXA.altura - a.y;
+            const ax = CAIXA.largura, ay = CAIXA.altura - a.y;
             const on = sel?.id === a.id;
             return (
               <g key={a.id} onClick={() => { setSel(a); setPino(null); }}
                  style={{ cursor: 'pointer' }}>
-                {/* a antena, articulada para cima */}
-                <line x1={cx} y1={cy} x2={cx + 40} y2={cy - 58} stroke={a.cor}
-                      strokeWidth={on ? 5 : 3.4} strokeLinecap="round" />
-                <circle cx={cx + 40} cy={cy - 58} r={3} fill={a.cor} />
-                <circle cx={cx} cy={cy} r={on ? 8 : 6.5} fill="#495057"
-                        stroke={on ? '#ffd43b' : a.cor} strokeWidth={on ? 2.2 : 1.4} />
-                <circle cx={cx} cy={cy} r={2.4} fill="#e9ecef" />
-                <text x={cx} y={cy + 15} textAnchor="middle" fontSize={5.5}
-                      fontWeight="700" fill={a.cor}>SMA Ø{a.furo} mm</text>
-                <text x={cx} y={cy + 22} textAnchor="middle" fontSize={4.6} fill="#868e96">
-                  X={a.x} · Y={a.y} mm
+                <line x1={ax} y1={ay} x2={ax + 44} y2={ay - 60} stroke={a.cor}
+                      strokeWidth={on ? 5.5 : 3.6} strokeLinecap="round" />
+                <circle cx={ax + 44} cy={ay - 60} r={3.4} fill={a.cor} />
+                <circle cx={ax} cy={ay} r={on ? 8 : 6.5} fill="#495057"
+                        stroke={on ? '#ffd43b' : a.cor} strokeWidth={on ? 2.4 : 1.5} />
+                <circle cx={ax} cy={ay} r={2.4} fill="#e9ecef" />
+                <text x={ax + 50} y={ay - 62} fontSize={6.5} fontWeight="700"
+                      fill={a.cor}>ANTENA 3 dBi</text>
+                <text x={ax + 50} y={ay - 53} fontSize={5.4} fill="#868e96">
+                  SMA de painel Ø {a.furo} mm · Y = {a.y} mm
                 </text>
-                {/* o pigtail entrando e descendo até o DNLCB30 */}
-                <path d={`M ${cx} ${cy} L ${cx - 60} ${cy} L ${cx - 60} ${CAIXA.altura - 150}`}
-                      fill="none" stroke={a.cor} strokeWidth={1.6}
+                <text x={ax + 50} y={ay - 45} fontSize={5.4} fill="#e8590c">
+                  do lado de FORA da gaiola de Faraday
+                </text>
+                <path d={`M ${ax} ${ay} L ${ax - 24} ${ay} L ${ax - 24} 258`}
+                      fill="none" stroke={a.cor} strokeWidth={1.5}
                       strokeDasharray="4 3" opacity={0.8} />
-                <text x={cx - 58} y={cy - 6} fontSize={4.6} fill={a.cor}>
-                  pigtail IPEX→SMA 30 cm
+                <text x={ax - 22} y={ay - 5} fontSize={5} fill={a.cor}>
+                  pigtail IPEX→SMA 30 cm, por dentro
                 </text>
               </g>
             );
           })}
 
-          {/* ⭐ ETAPA 1 DA FIAÇÃO — o que entra pela base */}
-          {verFiacao && tracados.filter(t => t.pts.length &&
-                                       (!etapa || t.etapa === etapa)).map(t => {
+          {/* ── ⭐ A CÂMARA FRIA, e os cabos indo até ela por BAIXO ── */}
+          <CamaraNoPainel x0={CAM_X} y0={CAM_Y} largura={CAM_W} altura={CAM_H}
+                          sel={pecaCam} onSel={setPecaCam} />
+          {[['PG9-2', 'CL-cam-pot', '#c92a2a', CAM_Y + 60, 26],
+            ['PG9-3', 'CL-cam-sin', '#1971c2', CAM_Y + 210, 46]].map(
+            ([pid, , cor, yAlvo, desce]) => {
+            const pr = PRENSAS_PAINEL.find(p => p.id === pid);
+            const yBaixo = CAIXA.altura + desce;
+            const d = `M ${pr.x} ${CAIXA.altura + 2} L ${pr.x} ${yBaixo} `
+                    + `L ${CAM_X - 18} ${yBaixo} L ${CAM_X - 18} ${yAlvo} L ${CAM_X} ${yAlvo}`;
+            const fs = FIOS.filter(f => f.prensa === pid);
+            return (
+              <g key={pid}>
+                <path d={d} fill="none" stroke="#fff" strokeWidth={7}
+                      strokeLinejoin="round" strokeLinecap="round" opacity={0.9} />
+                <path d={d} fill="none" stroke={cor} strokeWidth={4}
+                      strokeLinejoin="round" strokeLinecap="round" />
+                <circle cx={pr.x} cy={CAIXA.altura + 2} r={7} fill="#495057" />
+                <circle cx={pr.x} cy={CAIXA.altura + 2} r={3.2} fill={cor} />
+                <text x={pr.x} y={CAIXA.altura + 18} textAnchor="middle" fontSize={6}
+                      fontWeight="700" fill={cor}>{pid}</text>
+                <text x={(pr.x + CAM_X) / 2} y={yBaixo - 4} textAnchor="middle"
+                      fontSize={6.5} fontWeight="700" fill={cor}>
+                  {fs.length} fios · por BAIXO da bancada
+                </text>
+              </g>
+            );
+          })}
+
+          {/* ── a tampa fechada, vista de fora ── */}
+          {tampaFechada && (
+            <g>
+              <rect x={-3} y={-3} width={CAIXA.largura + 6} height={CAIXA.altura + 6}
+                    rx={5} fill="#dee2e6" stroke="#495057" strokeWidth={3} />
+              {COMPONENTES.filter(c => c.porta).map(c => (
+                <g key={c.id}>
+                  <rect x={CAIXA.largura - c.x - c.largura} y={c.y} width={c.largura}
+                        height={c.altura} rx={c.id === 'S0' ? 22 : 4}
+                        fill={c.cor} stroke="#212529" strokeWidth={1.2} opacity={0.9} />
+                  <text x={CAIXA.largura - c.x - c.largura / 2} y={c.y + c.altura + 8}
+                        textAnchor="middle" fontSize={6} fill="#212529">{c.id}</text>
+                </g>
+              ))}
+              <text x={CAIXA.largura / 2} y={20} textAnchor="middle" fontSize={11}
+                    fontWeight="700" fill="#212529">TAMPA FECHADA — vista de fora</text>
+              <text x={CAIXA.largura / 2} y={CAIXA.altura - 8} textAnchor="middle"
+                    fontSize={6.5} fill="#495057">
+                espelhada em relação à vista de dentro: a dobradiça continua à direita
+              </text>
+            </g>
+          )}
+
+          {/* ⭐ A FIAÇÃO, por etapas. Fica depois da porta e da câmara para
+              não ser encoberta por elas, e antes dos componentes para
+              morrer atrás deles, nos terminais. */}
+          {verFiacao && tracados
+            .filter(t => t.pts.length && (!etapa || t.etapa === etapa))
+            .filter(t => !tampaFechada || ![t.de.comp, t.para.comp]
+              .some(c => COMPONENTES.find(x => x.id === c)?.porta))
+            .map(t => {
             const on = !fio || fio === t.n;
+            const pts = t.pts.map(p => p.join(',')).join(' ');
+            const m = t.pts[Math.floor(t.pts.length / 2)];
             return (
               <g key={t.n} onClick={() => { setFio(fio === t.n ? null : t.n); setSel(null); }}
-                 style={{ cursor: 'pointer' }} opacity={on ? 1 : 0.12}>
-                <polyline points={t.pts.map(p => p.join(',')).join(' ')} fill="none"
-                          stroke="transparent" strokeWidth={6} />
-                <polyline points={t.pts.map(p => p.join(',')).join(' ')} fill="none"
-                          stroke="#fff" strokeWidth={fio === t.n ? 3.4 : 2.2}
+                 style={{ cursor: 'pointer' }} opacity={on ? 1 : 0.1}>
+                <polyline points={pts} fill="none" stroke="transparent" strokeWidth={6} />
+                <polyline points={pts} fill="none" stroke="#fff"
+                          strokeWidth={fio === t.n ? 3.4 : 2.2}
                           strokeLinejoin="round" strokeLinecap="round" opacity={0.85} />
-                <polyline points={t.pts.map(p => p.join(',')).join(' ')} fill="none"
-                          stroke={t.cor} strokeWidth={fio === t.n ? 2.0 : 1.1}
+                <polyline points={pts} fill="none" stroke={t.cor}
+                          strokeWidth={fio === t.n ? 2.0 : 1.1}
                           strokeLinejoin="round" strokeLinecap="round" />
                 {t.prensa && (<>
                   <circle cx={t.prensa.x} cy={CAIXA.altura + 2} r={6.5} fill="#495057" />
                   <circle cx={t.prensa.x} cy={CAIXA.altura + 2} r={3} fill={t.cor} />
                 </>)}
-                {/* ⭐ A ANILHA SÓ NO FIO ESCOLHIDO. Desenhadas todas de uma
-                    vez, elas se empilhavam embaixo dos componentes e viravam
-                    um borrão colorido que parecia um fio a mais. */}
-                {(() => {
-                  const m = t.pts[Math.floor(t.pts.length / 2)];
-                  if (fio !== t.n)
-                    return <circle cx={m[0]} cy={m[1]} r={1.6} fill={t.cor}
-                                   stroke="#fff" strokeWidth={0.6} />;
-                  return (
-                    <g>
-                      <rect x={m[0] - 9} y={m[1] - 5.5} width={18} height={11} rx={2}
-                            fill="#fff" stroke={t.cor} strokeWidth={1.2} />
-                      <text x={m[0]} y={m[1] + 3.2} textAnchor="middle" fontSize={7}
-                            fontWeight="700" fill={t.cor}>{t.n}</text>
-                    </g>
-                  );
-                })()}
+                {fio === t.n ? (
+                  <g>
+                    <rect x={m[0] - 9} y={m[1] - 5.5} width={18} height={11} rx={2}
+                          fill="#fff" stroke={t.cor} strokeWidth={1.2} />
+                    <text x={m[0]} y={m[1] + 3.2} textAnchor="middle" fontSize={7}
+                          fontWeight="700" fill={t.cor}>{t.n}</text>
+                  </g>
+                ) : (
+                  <circle cx={m[0]} cy={m[1]} r={1.6} fill={t.cor}
+                          stroke="#fff" strokeWidth={0.6} />
+                )}
               </g>
             );
           })}
-          {verFiacao && PRENSAS_PAINEL.map(pr => (
+          {verFiacao && PRENSAS_PAINEL.filter(p => p.face === 'base').map(pr => (
             <text key={pr.id} x={pr.x} y={CAIXA.altura + 26} textAnchor="middle"
                   fontSize={5.5} fontWeight="700" fill="#495057">{pr.id}</text>
           ))}
 
-          {/* componentes */}
-          {comps.map(c => {
+          {/* componentes */}          {/* componentes */}
+          {comps.filter(c => !(tampaFechada && c.porta)).map(c => {
             const ativo = sel?.id === c.id;
             return (
               <g key={c.id}>
