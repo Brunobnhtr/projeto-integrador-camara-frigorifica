@@ -144,7 +144,48 @@ for (const t of tracados) {
 if (!invade) ok('nenhum fio passa por dentro de componente — nem do seu próprio');
 if (!cortaTrilho) ok('nenhum fio atravessa trilho onde não tem borne');
 
-/* ── 6. quem vai para a câmara volta de lá? ────────────────────────── */
+/* ── 6. o retorno de quem manda sinal é 0 V DE VERDADE? ────────────────
+   ⭐ A REGRA QUE FALTAVA, e ela pegou um erro que ia queimar o Mega.
+
+   As ventoinhas do radiador estavam no canal 1 do MV-1, que chaveia o
+   NEGATIVO. O tacômetro delas — o terceiro fio — tem o emissor
+   referenciado nesse mesmo negativo. Com o canal desligado, o negativo
+   sobe para perto de 12 V e empurra corrente pelo diodo de proteção do
+   pino do Arduino. E antes mesmo de estragar, a leitura já mentia:
+   canal desligado = "ventoinha parada", que é justamente o alarme que
+   deveria salvar a pastilha.
+
+   Quem manda sinal precisa de uma referência que NUNCA se mexe.      */
+console.log('\n=== quem manda sinal tem 0 V firme como referência? ===');
+const chaveado = a => (a.comp === 'MV-1' && /^O\d[+−]$/.test(a.via))
+  || (/^BTS/.test(a.comp ?? '') && /^M[+−]$/.test(a.via));
+const pecaDe = a => a.camara ?? a.tampa ?? null;
+const porPeca = new Map();
+for (const f of FIOS)
+  for (const alvo of [f.de, f.para]) {
+    const pe = pecaDe(alvo);
+    if (pe) porPeca.set(pe, [...(porPeca.get(pe) ?? []), f]);
+  }
+let refRuim = 0;
+for (const [pe, fs] of porPeca) {
+  if (!fs.some(f => f.classe === 'sinal')) continue;
+  const ruins = fs.filter(f => [f.de, f.para].some(chaveado));
+  if (ruins.length) {
+    err(`${pe} manda sinal para o painel mas o retorno dele (${ruins.map(f => f.n)
+      .join(', ')}) vai num negativo CHAVEADO — a referência sobe junto e o sinal mente`);
+    refRuim++;
+  } else {
+    const ancora = fs.filter(f => [f.de, f.para]
+      .some(a => a.comp === 'BD-0V' || (a.comp === 'PI-2' && /RET/.test(a.via ?? ''))));
+    if (!ancora.length)
+      err(`${pe} manda sinal mas nenhum fio dele chega no BD-0V nem num shunt — `
+        + 'não existe referência para o sinal');
+    else ok(`${pe}: referência em ${ancora.map(f => f.n).join(', ')}`);
+  }
+}
+if (!refRuim) ok('nenhum sinal referenciado em negativo chaveado');
+
+/* ── 7. quem vai para a câmara volta de lá? ────────────────────────── */
 console.log('\n=== ida e volta da câmara fecham? ===');
 const seis = FIOS.filter(f => f.etapa === 6);
 const idas = seis.filter(f => foraDoPainel(f.para));

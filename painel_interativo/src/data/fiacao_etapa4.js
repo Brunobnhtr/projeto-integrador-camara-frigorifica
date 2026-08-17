@@ -81,8 +81,13 @@ export const FIOS_ETAPA4 = [
   { ...sig('S16', { comp: 'BTS2', via: 'R_EN' }, { comp: 'BTS2', via: 'L_EN' },
       'Ponte curta no módulo.'), rota: [], nome: 'ponte R_EN–L_EN do BTS #2' },
 
-  /* ── comando das ventoinhas ───────────────────────────────────────── */
-  ...[['S17', 'D27', 'IN1', 'RADIADOR'], ['S18', 'D28', 'IN2', 'PTC'],
+  /* ── comando das ventoinhas ───────────────────────────────────────────
+     ⭐ ERAM TRÊS, E SOBRARAM DUAS. O canal do RADIADOR (S17, D27→IN1) foi
+     removido: as ventoinhas do lado quente ficaram permanentemente
+     ligadas no BD-AUX, porque o MV-1 chaveia o NEGATIVO e o tacômetro
+     delas tem o emissor referenciado nesse mesmo negativo. Ver X5/X6 na
+     etapa 6. O D27 do Mega e o canal 1 do MV-1 ficaram livres. */
+  ...[['S18', 'D28', 'IN2', 'PTC'],
       ['S19', 'D29', 'IN3', 'CIRCULAÇÃO']]
     .map(([n, d, i, g]) => sig(n, meg(d), { comp: 'MV-1', via: i },
       `Liga o grupo de ventoinhas ${g}.`,

@@ -16,21 +16,33 @@ export const BLOCOS_LIGACAO = [
     diz: 'Fica em cima da tampa, no ar ambiente. Nada aqui atravessa parede — os fios '
        + 'sobem pela lateral e entram direto nos componentes.',
     externo: [
-      { fio: 'X5', o: 'MV-1 · O1+', para: 'os DOIS positivos das ventoinhas, em paralelo' },
-      { fio: 'X6', o: 'MV-1 · O1−', para: 'os dois negativos' },
-      { fio: 'X19', o: 'DS18B20 · DATA', para: 'PI-1 · J1-3 — o pull-up de 4,7 kΩ está lá dentro' },
+      { fio: 'X5', o: 'BD-AUX · O2 (12 V direto)', para: 'os DOIS positivos, em paralelo' },
+      { fio: 'X6', o: 'os dois negativos', para: 'BD-0V · R20 — 0 V de verdade' },
+      { fio: 'X22', o: 'BD-5V · O11', para: 'DS18B20 · VCC (vermelho)' },
+      { fio: 'X23', o: 'DS18B20 · GND (preto)', para: 'BD-0V · R19' },
+      { fio: 'X19', o: 'DS18B20 · DATA (amarelo)', para: 'PI-1 · J1-3 — o pull-up de 4,7 kΩ está lá dentro' },
       { fio: 'X20', o: 'RPM da ventoinha #1', para: 'Mega D3' },
       { fio: 'X21', o: 'RPM da ventoinha #2', para: 'Mega A8' },
     ],
     interno: [
       'As duas ventoinhas em PARALELO: os dois vermelhos juntos no X5, os dois pretos no X6.',
+      '⭐ O DS18B20 É DE TRÊS FIOS, e os três chegam no painel: vermelho no 5 V, preto no '
+      + '0 V, amarelo (às vezes branco) no DATA. Não existe versão de dois fios aqui — a '
+      + 'de dois é a alimentação parasita, que este projeto não usa.',
       'O DS18B20 vai COLADO no dissipador, com pasta térmica e abraçadeira. Colado no '
       + 'acrílico ou solto no ar ele não mede o que interessa.',
       '⭐ O RPM é o TERCEIRO fio da ventoinha, normalmente amarelo. Ventoinha de 2 fios '
       + 'não serve aqui — sem RPM não há como proteger a pastilha.',
     ],
-    aviso: '🔥 SE UM COOLER PARAR, A PASTILHA DAQUELE LADO MORRE EM MENOS DE UM MINUTO. É '
-         + 'por isso que são dois sinais de RPM separados, e não a média dos dois.',
+    aviso: '🔥 ESTAS DUAS NÃO PASSAM PELO MV-1 — FICAM SEMPRE LIGADAS. O MV-1 chaveia o '
+         + 'NEGATIVO, e o tacômetro da ventoinha tem o emissor referenciado nesse mesmo '
+         + 'negativo. Com o canal desligado o preto sobe para perto de 12 V e empurra '
+         + 'corrente para dentro do pino do Arduino. E antes de estragar nada, o RPM já '
+         + 'leria "parada" sempre — justo o alarme que deveria salvar a pastilha. Ligadas '
+         + 'direto no BD-AUX, elas continuam girando até depois da emergência, que é '
+         + 'quando o dissipador ainda está quente. SE UM COOLER PARAR, A PASTILHA DAQUELE '
+         + 'LADO MORRE EM MENOS DE UM MINUTO — por isso são dois RPM separados, e não a '
+         + 'média dos dois.',
   },
   {
     id: 'B2', zona: 'TAMPA · a Peltier, atravessando',

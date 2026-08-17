@@ -156,11 +156,13 @@ E existe uma regra que atravessa tudo:
 #define POTENCIA_OK  25    // divisor 22k/4k7 do BD-POT -> HIGH = 24 V presente
 #define SEL_REMOTO   26    // seletora LOCAL/REMOTO -> LOW = REMOTO (ver nota)
 
-// ── VENTOINHAS: 3 grupos, no modulo MOSFET MV-1 ─────────────────────
-#define VENT_RADIADOR 27   // 2 do radiador (lado quente, fora)
+// ── VENTOINHAS: 2 grupos comandados, no modulo MOSFET MV-1 ──────────
+// As 2 do RADIADOR nao tem pino: ficam SEMPRE ligadas, direto no
+// BD-AUX. O MV-1 chaveia o negativo, e o tacometro delas e
+// referenciado nesse mesmo negativo -- ver Doc 32.
 #define VENT_PTC      28   // ventoinha do aquecedor
 #define VENT_CIRCUL   29   // 2 frias da Peltier + 2 do duto
-// D26 ficou LIVRE (era o comando do antigo relé K0)
+// D26 e D27 ficaram LIVRES (D26 era o rele K0; D27 era o radiador)
 
 // ⚠ R_EN e L_EN de cada modulo vao JUNTOS no mesmo pino do Arduino.
 //   O IBT-2 e UMA ponte H: a corrente sai por M+ e VOLTA por M-, entao
@@ -221,11 +223,21 @@ const double        DEGELO_DUTY         = 20.0;            // PTC em 20 %
 >
 > | Grupo | Liga quando | Desliga quando |
 > |---|---|---|
-> | **RADIADOR** (2, lado quente) | está **resfriando** | o dissipador voltar perto da ambiente |
+> | ~~**RADIADOR**~~ (2, lado quente) | 🔧 **nunca desliga** — ver a correção abaixo | — |
 > | **PTC** (1, no aquecedor) | está **aquecendo** | as aletas voltarem perto da ambiente |
 > | **CIRCULAÇÃO** (2 frias + 2 do duto) | ensaio rodando, **frio ou quente** | fim do ensaio, na hora |
 >
-> **Por que o radiador fica DESLIGADO ao aquecer.** Com a Peltier desligada, o dissipador externo não tem calor para jogar fora — ele só vira um ralo por onde o calor da câmara escapa. Ventilá-lo naquele momento **atrapalha o aquecimento** e gasta energia.
+> ### 🔧 Correção — o radiador perdeu o comando, e por um motivo elétrico
+>
+> Este documento dizia: *"com a Peltier desligada, o dissipador externo não tem calor para jogar fora — ele só vira um ralo por onde o calor da câmara escapa. Ventilá-lo naquele momento atrapalha o aquecimento e gasta energia."* O raciocínio térmico continua certo. **O problema é que a ventoinha não podia ser comandada por aquele canal.**
+>
+> O MV-1 é um módulo de MOSFET canal N: ele chaveia o **negativo**. E o terceiro fio da ventoinha — o tacômetro — é um transistor em coletor aberto cujo emissor está ligado a esse mesmo negativo. Com o canal desligado, o preto da ventoinha sobe para perto de 12 V e empurra corrente pelo diodo de proteção do pino `D3` do Mega. E antes disso, a leitura já mentia: **canal desligado = "ventoinha parada"**, que é exatamente o alarme que existe para salvar a pastilha.
+>
+> **Elas ficaram permanentemente ligadas, direto no BD-AUX.** O custo é o que este documento apontava: uns 5 W a mais e um pouco de fuga térmica enquanto o PTC trabalha. A conta: a pastilha desligada conduz ~0,5 W/K, e ventilar o dissipador muda a diferença de temperatura em uns 5 K — **uns 2,5 W de fuga a mais, contra um PTC de dezenas de watts.** Atrasa o aquecimento em alguma coisa; não impede.
+>
+> Em troca: os dois tacômetros passam a ter uma referência que nunca se mexe, o lado quente continua ventilado **até depois da emergência** (o BD-AUX não passa pelo KA2), e o firmware tem um modo de falha a menos.
+>
+> 🎁 **Se um dia quiser o comando de volta:** ventoinha de **4 fios (PWM)**. Nela o preto é 0 V de verdade, o tacômetro tem referência fixa, e o controle entra por um quarto fio — aí sim de um pino PWM do Mega, sem tocar no circuito de potência.
 >
 > **⭐ Por que a ventoinha não desliga junto com a carga: a PÓS-VENTILAÇÃO.** Quando o ensaio acaba, o dissipador ainda está cheio de calor armazenado. Cortar a ventoinha ali deixa esse calor voltar por condução — no caso da Peltier, atravessando a própria pastilha no sentido errado, que é o que mais encurta a vida dela. Então a ventoinha continua girando até o dissipador esfriar.
 >

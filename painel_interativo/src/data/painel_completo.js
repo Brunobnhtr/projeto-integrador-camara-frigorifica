@@ -216,7 +216,7 @@ export const COMPONENTES = [
              + 'cima. Meça a placa quando ela chegar.',
     grupos: [
       { ref: 'TOPO', lado: 'cima', legenda: 'Borda de cima — 35 bornes', pinos: [
-        via('D30'), via('D29', 1, '⭐ MV-1 canal 3 → ventoinhas de CIRCULAÇÃO'), via('D28', 1, '⭐ MV-1 canal 2 → ventoinha do PTC'), via('D27', 1, '⭐ MV-1 canal 1 → ventoinhas do RADIADOR'),
+        via('D30'), via('D29', 1, '⭐ MV-1 canal 3 → ventoinhas de CIRCULAÇÃO'), via('D28', 1, '⭐ MV-1 canal 2 → ventoinha do PTC'), via('D27'),
         via('D26', 1, 'Seletora LOCAL / REMOTO'), via('D25', 1, 'PI-1 J2-8 — vigia se os 24 V caíram'), via('D24', 1, 'Emergência — bloco NF de 5 V'), via('D23', 1, 'Botão STOP (NA, 5 V)'),
         via('D22', 1, 'Botão START S1-14 — NA para o 0 V'), via('+5V', 1, 'BD-5V saída 1'), via('D21', 1, 'I²C SCL — o mesmo barramento'), via('D20', 1, 'I²C SDA — AM2315C (câmara), DS3231 e 2× INA219'),
         via('D19', 1, 'Serial1 RX ← DNLCB30/ESP32'), via('D18', 1, 'Serial1 TX → DNLCB30/ESP32'), via('D17', 1, 'Serial2 RX ← conversor ← tela'), via('D16', 1, 'Serial2 TX → conversor → tela'),
@@ -516,7 +516,7 @@ export const COMPONENTES = [
       { ref: 'CTRL', lado: 'cima', legenda: 'Comando — vem do Arduino (6)', pinos: [
         { nome: 'VCC', usa: true, para: 'BD-5V saída 9 — alimenta o lado do comando' },
         { nome: 'GND-C', usa: true, para: 'BD-0V · R14 — retorno do COMANDO' },
-        { nome: 'IN1', usa: true, para: 'Mega D27 — grupo RADIADOR' },
+        { nome: 'IN1' },
         { nome: 'IN2', usa: true, para: 'Mega D28 — grupo PTC' },
         { nome: 'IN3', usa: true, para: 'Mega D29 — grupo CIRCULAÇÃO' },
         { nome: 'IN4' },
@@ -526,8 +526,8 @@ export const COMPONENTES = [
         { nome: 'GND-P', usa: true, para: 'BD-0V · R13 — retorno das CARGAS' },
       ]},
       { ref: 'OUT', lado: 'baixo', legenda: 'Saídas — 4 pares independentes (8)', pinos: [
-        { nome: 'O1+', usa: true, para: '2 ventoinhas do radiador +' },
-        { nome: 'O1−', usa: true, para: '2 ventoinhas do radiador −' },
+        { nome: 'O1+' },
+        { nome: 'O1−' },
         { nome: 'O2+', usa: true, para: 'ventoinha do PTC +' },
         { nome: 'O2−', usa: true, para: 'ventoinha do PTC −' },
         { nome: 'O3+', usa: true, para: '2 frias + 2 do duto  +' },
@@ -535,7 +535,7 @@ export const COMPONENTES = [
         { nome: 'O4+' }, { nome: 'O4−' },
       ]},
       { ref: 'JMP', lado: 'esquerda', legenda: 'Jumpers H/L, um por canal (4)', pinos: [
-        { nome: 'J1', usa: true, semFio: true, para: 'deixar em H — liga com nível alto (é POSIÇÃO de jumper, não fio)' },
+        { nome: 'J1' },
         { nome: 'J2', usa: true, semFio: true, para: 'deixar em H (é POSIÇÃO de jumper, não fio)' },
         { nome: 'J3', usa: true, semFio: true, para: 'deixar em H (é POSIÇÃO de jumper, não fio)' },
         { nome: 'J4' },
@@ -579,7 +579,7 @@ export const COMPONENTES = [
       { ref: 'IN', lado: 'cima', legenda: 'Entrada 2,5 mm² (1)', pinos: [via('IN', 1, 'prensa-cabo do 12 V')] },
       { ref: 'OUT', lado: 'baixo', legenda: 'Saídas (4)', pinos: [
         via('O1', 1, 'MV-1 · VIN — alimenta os 4 canais'),
-        via('O2'), via('O3'), via('O4'),
+        via('O2', 1, 'ventoinhas do radiador · 12 V PERMANENTE'), via('O3'), via('O4'),
       ]},
     ],
   },
@@ -610,7 +610,7 @@ export const COMPONENTES = [
         via('O8', 1, 'PI-2 — alimenta o mux e o INA219'),
         via('O9', 1, 'MV-1 · VCC do lado do comando'),
         via('O10', 1, '⭐ AM2315C · VCC — o sensor DENTRO da câmara'),
-        via('O11'), via('O12'),
+        via('O11', 1, 'DS18B20 do radiador · VCC'), via('O12'),
       ]},
     ],
     avisos: ['📌 Cresceu de 10 para 12 pontos quando o AM2315C ganhou saída própria. '
@@ -636,7 +636,8 @@ export const COMPONENTES = [
         via('R16', 1, 'LEDs da maquete −'),
         via('R17', 1, 'PI-2 · 0V — retorno das posições, depois dos shunts'),
         via('R18', 1, 'seletora LOCAL/REMOTO — contato para o 0 V'),
-        via('R19'), via('R20'),
+        via('R19', 1, 'DS18B20 do radiador · GND'),
+        via('R20', 1, '⭐ retorno das ventoinhas do radiador — referência dos 2 RPM'),
       ]},
     ],
     avisos: ['🔥 É o componente mais fácil de subdimensionar. Chegam 18 retornos + a '

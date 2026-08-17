@@ -429,12 +429,19 @@ Esta seção descrevia uma placa com três diodos Zener (5V6 / 13 V / 15 V) que 
 | 60 | BTS #1 M− | Preto | 1,5 mm² | BTS #1 saída → borne `0V-FRIO` |
 | 61 | BTS #2 M+ | Laranja | 1,5 mm² | BTS #2 saída → borne `24V-QUENTE` |
 | 62 | BTS #2 M− | Preto | 1,5 mm² | BTS #2 saída → borne `0V-QUENTE` |
-| 63 | Cooler externo **#1** + | Vermelho | 0,5 mm² | **BD-AUX** saída 2 → cooler do dissipador da **Peltier #1** |
-| 64 | Cooler externo **#1** − | Preto | 0,5 mm² | **BD-0V** → cooler do dissipador #1 |
-| **64b** | Cooler externo **#2** + | Vermelho | 0,5 mm² | **BD-AUX** saída 3 → cooler do dissipador da **Peltier #2** |
-| **64c** | Cooler externo **#2** − | Preto | 0,5 mm² | **BD-0V** → cooler do dissipador #2 |
-| **64d** | RPM cooler #1 | Amarelo | 0,25 mm² | Fio de tacômetro do cooler #1 → **Arduino D3** (INT1) |
-| **64e** | RPM cooler #2 | Amarelo | 0,25 mm² | Fio de tacômetro do cooler #2 → **Arduino D2… ⚠️ ver nota** |
+| 63 (X5) | Coolers do radiador **+** | Amarelo | 0,5 mm² | **BD-AUX** saída 2 → **os DOIS positivos**, em paralelo |
+| 64 (X6) | Coolers do radiador **−** | Azul escuro | 0,5 mm² | os dois negativos → **BD-0V · R20** |
+| **64d** (X20) | RPM cooler #1 | Cinza | 0,25 mm² | Tacômetro do cooler #1 → **Arduino D3** (INT1) |
+| **64e** (X21) | RPM cooler #2 | Cinza | 0,25 mm² | Tacômetro do cooler #2 → **Arduino A8** (PCINT16) |
+| **64f** (X22) | DS18B20 do radiador · **VCC** | Violeta | 0,25 mm² | **BD-5V** saída 11 → fio vermelho do sensor |
+| **64g** (X23) | DS18B20 do radiador · **GND** | Azul escuro | 0,25 mm² | fio preto do sensor → **BD-0V · R19** |
+| **64h** (X19) | DS18B20 do radiador · **DATA** | Cinza | 0,25 mm² | fio amarelo → **PI-1 · J1-3** (pull-up de 4,7 kΩ na placa) |
+
+> 🔧 **Correção — os itens 64b e 64c foram removidos.** A tabela dava um par de alimentação para cada cooler. Um par só, com os dois em paralelo, faz o mesmo serviço: **quem identifica qual dos dois parou é o RPM, que já é individual.** É a mesma lógica dos retornos das posições de ensaio — lá o retorno é a medição, então ele é individual; aqui a medição é o tacômetro, então é ele que precisa ser. Dois condutores a menos atravessando o prensa-cabo.
+
+> 🔥 **Correção — o DS18B20 é de TRÊS fios, e a tabela listava um.** Faltavam o VCC e o GND (itens 64f e 64g). Sem o VCC o sensor não liga; sem o GND o barramento 1-Wire não tem referência e a leitura sai lixo — quando sai. A versão de dois fios existe (alimentação parasita) mas **não é a usada aqui**.
+
+> 🔥 **Correção — os coolers do radiador NÃO passam pelo MV-1.** Este documento já dizia que eles ficam sempre ligados (ver a nota logo abaixo), mas o [Doc 32](32_sinais_e_sensores.md) os tinha posto no canal 1 do MV-1, e a fiação seguiu o Doc 32. O canal 1 chaveia o **negativo** — e o tacômetro da ventoinha tem o emissor referenciado nesse mesmo negativo. Com o canal desligado o preto sobe para perto de 12 V e empurra corrente pelo diodo de proteção do pino D3. **O canal 1 do MV-1 e o D27 do Mega ficaram livres.**
 
 > ⚠️ **Duas Peltier significam dois coolers e dois sinais de RPM.** O pino D2 já é do 1-Wire, então o **segundo tacômetro precisa de outro pino de interrupção**. No Mega, as interrupções externas ficam em D2, D3, D18, D19, D20 e D21 — e D18–D21 já estão ocupados por Serial1 e I²C. **Use D3 (INT1) para o cooler #1 e uma interrupção por mudança de pino (PCINT) para o cooler #2**, ou realoque a Serial1. 📌 **Definir em [Doc 32](32_sinais_e_sensores.md) e [Doc 40](../camada_4_programacao/40_firmware_arduino.md) antes de fechar a fiação.**
 

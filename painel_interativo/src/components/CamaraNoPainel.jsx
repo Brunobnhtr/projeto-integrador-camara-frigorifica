@@ -88,11 +88,13 @@ export default function CamaraNoPainel({
   const sub = SUBIDAS(x0, y0, largura, altura);
   /* quanto mais longe o borne, mais alta a faixa e mais externa a coluna */
   const PISTA = {
-    X5:  { col: 0, faixa: 0, lado: 'esq' },   // radiador +
-    X6:  { col: 1, faixa: 1, lado: 'esq' },   // radiador −
+    X5:  { col: 0, faixa: 0, lado: 'esq' },   // radiador +12 V
+    X6:  { col: 1, faixa: 1, lado: 'esq' },   // radiador 0 V
     X19: { col: 0, faixa: 0, lado: 'dir' },   // DS18B20 · DATA
-    X21: { col: 1, faixa: 1, lado: 'dir' },   // RPM 2
-    X20: { col: 2, faixa: 2, lado: 'dir' },   // RPM 1
+    X23: { col: 1, faixa: 1, lado: 'dir' },   // DS18B20 · GND
+    X22: { col: 2, faixa: 2, lado: 'dir' },   // DS18B20 · VCC
+    X21: { col: 3, faixa: 3, lado: 'dir' },   // RPM 2
+    X20: { col: 4, faixa: 4, lado: 'dir' },   // RPM 1
   };
   function dTampa(f) {
     const d = naTampa(f);
@@ -102,7 +104,7 @@ export default function CamaraNoPainel({
     if (!bo || !pi) return null;
     const [a, b] = TAMPA_CX[pe.id];
     const bx = cx(a + bo.t * (b - a));
-    const yb = y0 - 11 - pi.faixa * 6.5;               // faixa acima da tampa
+    const yb = y0 - 10 - pi.faixa * 5.6;               // faixa acima da tampa
     const base = pi.lado === 'esq' ? sub.tampaE : sub.tampaD;
     const xv = base.x + (pi.lado === 'esq' ? -1 : 1) * pi.col * 6;
     return `M ${xv},${base.y + 6} L ${xv},${yb} L ${bx},${yb} L ${bx},${y0 - 2}`;
@@ -166,8 +168,12 @@ export default function CamaraNoPainel({
           </g>
         );
       })}
-      <text x={cx(100)} y={y0 - 26} textAnchor="middle" fontSize={5.6} fill="#e8590c">
-        ▲ lado quente, do lado de FORA — estes {daTampa.length} fios sobem por fora e não furam parede
+      <text x={cx(100)} y={y0 - 42} textAnchor="middle" fontSize={6} fontWeight="700"
+            fill="#e8590c">
+        ▲ LADO QUENTE, em cima da tampa — estes {daTampa.length} fios sobem POR FORA e não furam parede
+      </text>
+      <text x={cx(100)} y={y0 - 35} textAnchor="middle" fontSize={5} fill="#868e96">
+        alimentação pela esquerda (vem do lado da potência) · sinal pela direita
       </text>
 
       {/* os dutos laterais, onde ficam as ventoinhas de retorno */}

@@ -145,7 +145,7 @@ export default function VistaPainelInterno() {
         </div>
 
         <svg width={larguraTotal * zoom}
-             viewBox={`-14 -14 ${larguraTotal + 34} ${CAIXA.altura + 152}`}
+             viewBox={`-14 -52 ${larguraTotal + 34} ${CAIXA.altura + 190}`}
              style={{ background: '#fff', borderRadius: 8, boxShadow: '0 1px 6px #0002' }}>
 
           {/* caixa e placa de montagem */}

@@ -199,8 +199,16 @@ export const TAMPA3D = [
     bornes: [{ b:'+', lado:'base', t:0.12 }, { b:'−', lado:'base', t:0.30 },
               { b:'RPM1', lado:'base', t:0.72 }, { b:'RPM2', lado:'base', t:0.90 }],
     diz: 'Em paralelo nos dois primeiros; cada uma com o seu fio de RPM.' },
-  { id: 'DS18', nome: 'DS18B20 do radiador', cor: '#f76707', bornes: [{ b:'DATA', lado:'base', t:0.5 }],
-    diz: 'Colado no dissipador com pasta térmica. VCC e GND vêm no próprio cabo dele.' },
+  /* ⭐ SÃO TRÊS FIOS, e o modelo declarava um. O DS18B20 vem com rabicho
+     de 3 vias — VCC, GND e DATA — e não existe "o resto vem no cabo
+     dele": as três pontas soltas chegam TODAS no painel. Sem o VCC ele
+     não liga; sem o GND o barramento 1-Wire não tem referência e a
+     leitura sai lixo, quando sai. */
+  { id: 'DS18', nome: 'DS18B20 do radiador', cor: '#f76707',
+    bornes: [{ b:'VCC', lado:'base', t:0.20 }, { b:'GND', lado:'base', t:0.50 },
+             { b:'DATA', lado:'base', t:0.80 }],
+    diz: 'Colado no dissipador com pasta térmica. Rabicho de 3 vias: '
+       + 'vermelho +5 V, preto 0 V, amarelo (ou branco) DATA.' },
 ];
 
 /* o que fica FORA, na tampa — o lado quente */

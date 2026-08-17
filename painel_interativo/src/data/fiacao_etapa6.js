@@ -43,14 +43,42 @@ export const FIOS_ETAPA6 = [
     nome: 'PTC −', prensa: 'PG13-2', rota: ['CH-2x1', 'CV-esq', 'CH-base'] },
 
   /* ── VENTILAÇÃO ───────────────────────────────────────────────────── */
-  { ...kabo('X5', { comp: 'MV-1', via: 'O1+' }, naTampa('RAD', '+'), 0.5,
-      'aux12', 'alim', 'As 2 ventoinhas do radiador, no lado QUENTE.'),
-    nome: 'ventoinhas do radiador +', prensa: 'PG13-2', rota: ['CH-2x1', 'CV-esq', 'CH-base'],
+  /* ⭐ AS VENTOINHAS DO RADIADOR NÃO PASSAM PELO MV-1. Elas iam para o
+     canal 1, e o canal 1 chaveia o NEGATIVO. Com o negativo chaveado, o
+     preto da ventoinha não é 0 V: é o dreno do MOSFET. E o tacômetro
+     dela — o terceiro fio, o RPM — tem o emissor referenciado nesse
+     mesmo preto.
+
+     🔥 COM O CANAL DESLIGADO O PRETO SOBE PARA PERTO DE 12 V, levando
+     junto a eletrônica da ventoinha. O fio de RPM sai dali e entra no
+     D3 do Mega, que está em INPUT_PULLUP para 5 V. Os 12 V empurram
+     corrente para dentro do pino, pelo diodo de proteção. E mesmo antes
+     de queimar nada, a leitura já não presta: com o canal desligado o
+     firmware leria "ventoinha parada" sempre — que é justamente o
+     alarme que deveria salvar a pastilha.
+
+     ⭐ POR ISSO ELAS FICAM PERMANENTEMENTE LIGADAS, direto no BD-AUX.
+     Não é só conserto de erro, é o comportamento certo: o lado quente
+     precisa continuar sendo resfriado DEPOIS que tudo desliga, porque o
+     calor que já está no dissipador não some junto com o comando. O
+     BD-AUX vem direto do prensa-cabo e não passa pelo KA2 — então elas
+     sobrevivem até à emergência.
+
+     📌 Se um dia quiser controlar a rotação delas, o caminho é ventoinha
+     de 4 fios (PWM): ali o preto é 0 V de verdade, o tacômetro tem
+     referência fixa e o controle vai por um fio só de comando. */
+  { ...kabo('X5', { comp: 'BD-AUX', via: 'O2' }, naTampa('RAD', '+'), 0.5,
+      'aux12', 'alim', 'As 2 ventoinhas do radiador, em paralelo, direto no 12 V.'),
+    nome: 'ventoinhas do radiador · +12 V permanente', prensa: 'PG13-2',
+    rota: ['CH-base'],
     porque: '⭐ Elas NÃO atravessam a parede: ficam na tampa, do lado de fora, soprando '
           + 'nos dissipadores. É o calor que a Peltier tirou de dentro.' },
-  { ...kabo('X6', { comp: 'MV-1', via: 'O1−' }, naTampa('RAD', '−'), 0.5,
-      'aux12', 'alim', 'Retorno das ventoinhas do radiador.'),
-    nome: 'ventoinhas do radiador −', prensa: 'PG13-2', rota: ['CH-2x1', 'CV-esq', 'CH-base'] },
+  { ...kabo('X6', naTampa('RAD', '−'), { comp: 'BD-0V', via: 'R20' }, 0.5,
+      'zero', 'comum', 'Retorno das ventoinhas do radiador, no 0 V de verdade.'),
+    nome: 'ventoinhas do radiador · 0 V', prensa: 'PG13-2', rota: ['CH-base'],
+    aviso: '🔥 ESTE FIO É A REFERÊNCIA DOS DOIS TACÔMETROS. Ligado num negativo '
+         + 'chaveado, os sinais de RPM viram lixo e podem danificar o Mega. Ele vai '
+         + 'na barra de 0 V, e em ponto próprio — não encadeado.' },
   { ...kabo('X7', { comp: 'MV-1', via: 'O2+' }, naCamara('VP', '+'), 0.5,
       'aux12', 'alim', 'A ventoinha do PTC, dentro da câmara.'),
     nome: 'ventoinha do PTC +', prensa: 'PG13-2', rota: ['CH-2x1', 'CV-esq', 'CH-base'],
@@ -121,4 +149,21 @@ export const FIOS_ETAPA6 = [
     nome: 'RPM do radiador #2', prensa: 'PG9-3', rota: ['CV-dir', 'CH-3x2'],
     porque: '⭐ Dois sinais e não um. Uma ventoinha travada com a outra girando ainda '
           + 'mata a pastilha do lado dela — a média das duas esconderia isso.' },
+
+  /* ── ⭐ OS DOIS FIOS QUE FALTAVAM NO DS18B20 ───────────────────────
+     O sensor é de TRÊS fios. O modelo declarava só o DATA, e assim o
+     desenho mostrava um sensor de um fio só — que não existe. */
+  { ...kabo('X22', { comp: 'BD-5V', via: 'O11' }, naTampa('DS18', 'VCC'), 0.25,
+      'log5', 'alim', 'Alimentação do DS18B20 do radiador.'),
+    nome: 'DS18B20 · VCC', prensa: 'PG9-3', rota: ['CH-base', 'CV-dir'],
+    porque: '⭐ 5 V, e não 3,3: o pull-up de 4,7 kΩ do 1-Wire está na PI-1 puxando '
+          + 'para +5 V. Sensor alimentado em 3,3 com a linha puxada para 5 leria, mas '
+          + 'com o pino de dados acima da própria alimentação — que é o jeito de '
+          + 'estragar um sensor devagar.' },
+  { ...kabo('X23', naTampa('DS18', 'GND'), { comp: 'BD-0V', via: 'R19' }, 0.25,
+      'zero', 'comum', 'Retorno do DS18B20.'),
+    nome: 'DS18B20 · GND', prensa: 'PG9-3', rota: ['CV-dir', 'CH-base'],
+    aviso: '⚠️ SEM ESTE FIO NÃO EXISTE 1-WIRE. O protocolo mede o tempo em que a linha '
+         + 'fica baixa, e "baixa" é em relação a este 0 V. Sem ele o sensor não '
+         + 'responde — ou pior, responde errado de vez em quando.' },
 ];

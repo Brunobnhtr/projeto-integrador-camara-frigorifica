@@ -175,11 +175,48 @@ Duas armadilhas do Arduino Mega estão documentadas aqui, e as duas eram silenci
 | **D24** | Emergência — bloco **NF** de 5 V | `INPUT_PULLUP` | `HIGH` = **acionada** |
 | **D25** | Presença dos **24 V** no BD-POT (divisor **22 k / 4,7 k** + 100 nF) | `INPUT` (**sem** pull-up) | `HIGH` = **potência disponível** |
 | **D26** | ⭐ **Seletora LOCAL / REMOTO (SA1)** — bloco NA de 5 V na porta | `INPUT_PULLUP` | `LOW` = **REMOTO** · `HIGH` = LOCAL |
-| **D27** | ⭐ MV-1 canal 1 → **2 ventoinhas do RADIADOR** | `OUTPUT` | `HIGH` = ligadas |
+| ~~D27~~ | 🔧 **LIVRE** — era o canal 1 do MV-1, para as ventoinhas do radiador. Ver a correção abaixo | — | — |
 | **D28** | ⭐ MV-1 canal 2 → **ventoinha do PTC** | `OUTPUT` | `HIGH` = ligada |
 | **D29** | ⭐ MV-1 canal 3 → **circulação** (2 frias + 2 do duto) | `OUTPUT` | `HIGH` = ligadas |
 | **D31–D34** | ⭐ **PI-2 · S0–S3** — seleção de canal do multiplexador | `OUTPUT` | 4 bits = 16 canais |
 | **A2** | ⭐ **PI-2 · SIG** — a **única** entrada analógica dos 16 canais | `INPUT` | shunt 47 Ω · ~1 mA por contagem |
+
+#### 🔥 Correção — as ventoinhas do radiador saíram do MV-1
+
+Este documento colocava as duas no **canal 1 do MV-1** (`D27`). Estava errado, e o erro tinha duas caras.
+
+**O MV-1 chaveia o NEGATIVO.** É um módulo de MOSFET canal N: o `O1+` é só o 12 V passando, e quem abre e fecha é o `O1−`. Então o fio preto da ventoinha **não é 0 V** — é o dreno do MOSFET.
+
+**E o tacômetro dela é referenciado nesse mesmo preto.** O terceiro fio de uma ventoinha é a saída de um transistor em coletor aberto, cujo emissor está ligado ao negativo da própria ventoinha.
+
+```
+        +12 V ───────────────► vermelho
+                                          ┌── amarelo (RPM) ──► D3 do Mega
+        ventoinha                         │        (INPUT_PULLUP para 5 V)
+                                     ────┴────  transistor do tacômetro
+        preto ──────────────────────────┬───
+                                        │
+                              O1− do MV-1 (o MOSFET)
+                                        │
+                                       0 V
+```
+
+| Canal 1 | O que acontece |
+|---|---|
+| **Ligado** | preto ≈ 0 V, o tacômetro pulsa, o D3 lê certo |
+| **Desligado** | preto sobe para perto de **12 V**. 🔥 Os 12 V empurram corrente pelo diodo de proteção do D3 para dentro do trilho de 5 V |
+
+⚠️ **E mesmo antes de estragar alguma coisa, a leitura já mentia:** com o canal desligado o firmware leria "ventoinha parada" — que é exatamente o alarme que deveria salvar a pastilha. O sinal que existe para detectar falha passaria a *inventar* falha.
+
+**Correção adotada: as duas ficam permanentemente ligadas, direto no BD-AUX.** Não é só conserto — é o comportamento certo, e é o que o [Doc 30](30_forca_e_distribuicao.md) já mandava:
+
+- o lado quente precisa continuar sendo resfriado **depois** que tudo desliga, porque o calor que já está no dissipador não some junto com o comando;
+- o BD-AUX vem direto do prensa-cabo e não passa pelo KA2, então elas **sobrevivem até à emergência**;
+- o preto vai à barra de 0 V, em ponto próprio (`R20`), e aí os dois tacômetros passam a ter uma referência que nunca se mexe.
+
+📌 **O `D27` do Mega e o canal 1 do MV-1 ficaram livres.** O módulo agora tem dois canais sobrando (1 e 4).
+
+> 🎁 **Se um dia quiser controlar a rotação delas:** o caminho é **ventoinha de 4 fios (PWM)**. Nela o preto é 0 V de verdade, o tacômetro tem referência fixa, e o controle entra por um quarto fio de comando — que aí sim pode sair de um pino PWM do Mega, sem mexer no circuito de potência.
 
 > ⭐ **Cinco pinos para dezesseis canais.** É essa a economia que o multiplexador traz — e ela não muda quando o número de posições cresce. Quatro placas de multiplexador atendem 64 canais com 8 pinos, porque os S0–S3 são compartilhados entre elas.
 >
