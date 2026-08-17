@@ -10,7 +10,7 @@
  *      usado no inventário.
  */
 import { COMPONENTES, CANALETAS, CANALETAS_PORTA, CAIXA, PLACA, TRILHOS,
-         canaletaDoGrupo } from '../src/data/painel_completo.js';
+         canaletaDoGrupo, CALHAS } from '../src/data/painel_completo.js';
 import { PRENSAS_PAINEL, FIOS, ETAPAS } from '../src/data/fiacao.js';
 
 const erros = [], avisos = [];
@@ -105,6 +105,34 @@ for (const f of FIOS) {
     if (pr?.face === 'base' && !ks.some(x => x.k.y + x.k.h > CAIXA.altura - 70))
       erros.push(`${f.n} entra por baixo mas a rota não começa numa canaleta da base`);
   }
+}
+
+/* ── ⭐ A TRAVESSIA SÓ ACONTECE DENTRO DE UMA CALHA ──────────────────
+   Placa e porta são dois planos, e o único ponto onde um fio passa de
+   um para o outro é uma calha. Cada calha declara de qual canaleta da
+   placa ela sai e em qual da porta ela chega — e o fio tem que usar
+   exatamente esse par, senão o chicote estaria atravessando o vazio. */
+console.log('\n=== as calhas de travessia ===');
+for (const k of CALHAS) {
+  const usam = FIOS.filter(f =>
+    f.rota.includes(k.daPlaca) && f.rota.includes(k.naPorta));
+  console.log(`  . ${k.id} (${k.tipo}): ${k.daPlaca} ↔ ${k.naPorta} — `
+    + `${usam.length} fio(s): ${usam.map(f => f.n).join(', ') || '—'}`);
+}
+for (const f of FIOS) {
+  const planos = f.rota.map(id => id.startsWith('CP-') ? 'porta' : 'placa');
+  const trocas = planos.filter((p, i) => i && p !== planos[i - 1]).length;
+  if (!trocas) continue;
+  if (trocas > 1)
+    erros.push(`${f.n} atravessa entre placa e porta ${trocas} vezes — a travessia `
+      + 'é um ponto só');
+  const i = planos.findIndex((p, j) => j && p !== planos[j - 1]);
+  const [a, b] = [f.rota[i - 1], f.rota[i]];
+  const ok = CALHAS.some(k =>
+    (k.daPlaca === a && k.naPorta === b) || (k.daPlaca === b && k.naPorta === a));
+  if (!ok)
+    erros.push(`${f.n} cruza de ${a} para ${b}, e não existe calha ligando as duas. `
+      + 'As calhas são: ' + CALHAS.map(k => `${k.daPlaca}↔${k.naPorta}`).join(', '));
 }
 
 /* ── quantos condutores por prensa-cabo ─────────────────────────────── */

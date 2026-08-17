@@ -57,7 +57,7 @@ export const FIOS_ETAPA2 = [
   },
   {
     n: 'C6', etapa: 2, func: 'srv24', nome: '⭐ O SELO', classe: 'potencia',
-    de: { comp: 'KA1', via: '14' }, para: { comp: 'KA1', via: 'A1' },
+    de: { comp: 'KA1', via: '24' }, para: { comp: 'KA1', via: 'A1' },
     mm2: 0.5, rota: [],
     diz: 'O contato do próprio KA1 realimentando a própria bobina.',
     porque: '🔥 É ESTE FIO QUE FAZ A MÁQUINA LEMBRAR. Solta o rearme e o KA1 continua '
@@ -69,9 +69,9 @@ export const FIOS_ETAPA2 = [
   },
   {
     n: 'C7', etapa: 2, func: 'srv24', nome: 'KA1 habilita → STOP', classe: 'potencia',
-    de: { comp: 'KA1', via: '24' }, para: { comp: 'S2', via: '11' },
+    de: { comp: 'KA1', via: '14' }, para: { comp: 'S2', via: '11' },
     mm2: 0.5,
-    rota: ['CH-2x1', 'CP-vpot', 'CP-3x4'],
+    rota: ['CH-base', 'CP-vpot', 'CP-3x4'],
     diz: 'O KA1 só entrega tensão daqui se estiver selado.',
   },
   {
@@ -91,14 +91,14 @@ export const FIOS_ETAPA2 = [
     n: 'C9', etapa: 2, func: 'zero', nome: 'retorno da bobina do KA1', classe: 'comum',
     de: { comp: 'KA1', via: 'A2' }, para: { comp: 'BD-0V', via: 'R11' },
     mm2: 0.5,
-    rota: ['CH-2x1', 'CV-esq', 'CH-base'],
+    rota: ['CH-2x1', 'CV-dir', 'CH-base'],
     diz: 'A bobina fecha no 0 V comum, ponto R11 da barra.',
   },
   {
     n: 'C10', etapa: 2, func: 'zero', nome: 'retorno da bobina do KA2', classe: 'comum',
     de: { comp: 'KA2', via: 'A2' }, para: { comp: 'BD-0V', via: 'R12' },
     mm2: 0.5,
-    rota: ['CH-2x1', 'CV-esq', 'CH-base'],
+    rota: ['CH-2x1', 'CV-dir', 'CH-base'],
     diz: 'Idem, no ponto R12.',
   },
   {

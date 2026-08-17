@@ -212,20 +212,32 @@ A porta carrega **11 componentes**: a tela, o conversor de nível, 4 sinaleiros,
 
 📐 Na porta a canaleta é de **25 × 25 mm**, e não de 30 × 30 como na placa: passa menos fio e a porta não pode ficar pesada — peso na porta força a dobradiça e ela desalinha.
 
-### ⭐ A passagem flexível — o ponto que mais falha em painel de verdade
+### ⭐ As DUAS calhas de travessia — o ponto que mais falha em painel
 
-Todos os fios da porta cruzam para a placa de montagem **num ponto só: a borda da dobradiça**. E esse trecho é o único do painel inteiro que **se move**.
+Os fios da porta cruzam para a placa **num ponto só de cada classe**, e esse trecho é o único do painel inteiro que **se move**. As duas calhas ficam no **canto inferior direito**, uma acima da outra:
 
 ```
-   PLACA DE MONTAGEM              PORTA
-   ┌──────────────┐         ┌──────────────┐
-   │              │  ∿∿∿∿∿  │ CP-vert      │
-   │       CV-dir ├─────────┤ (dobradiça)  │
-   │      (sinal) │ espiral │              │
-   └──────────────┘         └──────────────┘
-                   ▲
-             folga de 60 mm
+   PLACA DE MONTAGEM                          PORTA
+   ┌───────────────────────┐            ┌──────────────────┐
+   │                       │            │                  │
+   │              CV-dir ══╪══ CL-sin ══╪══ CP-vsin        │  y = 398
+   │              (sinal)  │  ∿∿∿∿∿∿∿   │   (sinal)        │
+   │                       │            │                  │
+   │             CH-base ══╪══ CL-pot ══╪══ CP-vpot        │  y = 444
+   │            (potência) │  ∿∿∿∿∿∿∿   │  (potência)      │
+   └───────────────────────┘            └──────────────────┘
+                              ▲
+                     espiral · folga de 60 mm
 ```
+
+| Calha | Sai da placa por | Chega na porta em | Leva |
+|---|---|---|---|
+| **CL-pot** | `CH-base` | `CP-vpot` | a cadeia de comando de 24 V — 5 fios |
+| **CL-sin** | `CV-dir` | `CP-vsin` | tela, botões de 5 V e seletora — etapa 5 |
+
+📌 **46 mm entre as duas.** Elas partem de canaletas diferentes da placa e chegam em canaletas diferentes da porta — a segregação se mantém do começo ao fim, inclusive no único trecho que flexiona.
+
+> ⭐ **E foi a calha que decidiu um detalhe do relé.** Como a `CL-pot` sai da `CH-base`, todos os fios externos da cadeia precisam estar na **fileira de baixo** do KA1. Por isso o **selo usa o contato 2** (`21`→`24`, fileira de cima, só pontes curtas) e a **saída usa o contato 1** (`11`→`14`, fileira de baixo, onde saem os fios). Os dois contatos são NA e eletricamente idênticos — o que decidiu foi a fileira.
 
 | Regra | Por quê |
 |---|---|

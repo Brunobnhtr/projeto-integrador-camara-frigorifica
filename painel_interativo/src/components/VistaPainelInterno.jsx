@@ -6,8 +6,10 @@ import * as PI2 from '../data/pi2_fisico';
 import { PINAGENS } from '../data/pinagens';
 import { PRENSAS_PAINEL, FIOS, ETAPAS, CORES } from '../data/fiacao';
 
-/* onde a passagem flexível cruza da placa para a porta, por classe */
-const PASSAGEM = { potencia: 311, sinal: 194, alim: 311, comum: 311 };
+/* ⭐ A travessia acontece DENTRO de uma calha, e a altura sai dela.
+   'alim' e 'comum' pegam carona na de potência, que é a mais baixa. */
+const calhaDe = classe => CALHAS.find(k =>
+  k.tipo === (classe === 'sinal' ? 'sinal' : 'potencia'));
 
 /* Quais componentes do painel têm desenho de placa, e qual.
    'ilhada' = placa que VOCÊ monta furo por furo.
@@ -25,7 +27,7 @@ const PLACAS = {
 };
 import {
   CAIXA, PLACA, TRILHOS, COMPONENTES, CANALETAS, CANALETAS_PORTA, LATERAIS,
-  REGRA_SEGREGACAO, TRILHO_X0, TRILHO_X1,
+  REGRA_SEGREGACAO, TRILHO_X0, TRILHO_X1, CALHAS,
 } from '../data/painel_completo';
 
 /* O painel visto de frente, com a porta aberta ao lado.
@@ -185,7 +187,8 @@ export default function VistaPainelInterno() {
         const plano = id.startsWith('CP-') ? 'porta' : 'placa';
         if (planoAnt && plano !== planoAnt) {
           /* o laço da passagem flexível, na altura da classe do fio */
-          const yP = PASSAGEM[f.classe === 'comum' ? 'potencia' : f.classe];
+          const cl = calhaDe(f.classe);
+          const yP = cl.y + cl.h / 2;
           pts.push([cur[0], yP]);
           pts.push([plano === 'porta' ? PORTA_X0 + 30 : PLACA.x + PLACA.largura - 8, yP]);
           cur = [pts[pts.length - 1][0], yP];
@@ -355,15 +358,33 @@ export default function VistaPainelInterno() {
             );
           })}
 
-          {/* ⭐ a passagem flexível: onde os fios saltam da placa para a porta */}
-          <path d={`M ${PLACA.x + PLACA.largura - 14} 240
-                    C ${PORTA_X - 40} 200, ${PORTA_X - 30} 280, ${PORTA_X + 16} 240`}
-                fill="none" stroke="#e8590c" strokeWidth={4} strokeLinecap="round"
-                opacity={0.75} />
-          <text x={(PLACA.x + PLACA.largura + PORTA_X) / 2} y={196} textAnchor="middle"
-                fontSize={6} fontWeight="700" fill="#e8590c">passagem flexível</text>
-          <text x={(PLACA.x + PLACA.largura + PORTA_X) / 2} y={205} textAnchor="middle"
-                fontSize={5} fill="#e8590c">espiral + folga de 60 mm</text>
+
+          {/* ⭐ AS CALHAS DE TRAVESSIA, entre a placa e a porta */}
+          {CALHAS.map(k => {
+            const pot = k.tipo === 'potencia';
+            const x0 = CAIXA.largura - 14, x1 = PORTA_X + 44;
+            return (
+              <g key={k.id}>
+                <rect x={x0} y={k.y} width={x1 - x0} height={k.h} rx={5}
+                      fill={pot ? '#ffe3e3' : '#e7f5ff'}
+                      stroke={pot ? '#e03131' : '#1971c2'} strokeWidth={1.4} />
+                {Array.from({ length: Math.floor((x1 - x0) / 8) }, (_, i) => (
+                  <path key={i} d={`M ${x0 + 5 + i * 8} ${k.y + 2}
+                                    q 3 ${k.h / 2} 0 ${k.h - 4}`}
+                        fill="none" stroke={pot ? '#ffa8a8' : '#a5d8ff'}
+                        strokeWidth={1} />
+                ))}
+                <text x={(x0 + x1) / 2} y={k.y - 3} textAnchor="middle" fontSize={6}
+                      fontWeight="700" fill={pot ? '#e03131' : '#1971c2'}>
+                  {k.id} · {k.nome}
+                </text>
+                <text x={(x0 + x1) / 2} y={k.y + k.h + 7} textAnchor="middle"
+                      fontSize={5} fill="#868e96">
+                  espiral · folga de 60 mm · {k.daPlaca} ↔ {k.naPorta}
+                </text>
+              </g>
+            );
+          })}
 
           {/* ── a lateral direita, com a antena ── */}
           <rect x={LAT_X} y={0} width={LAT_W} height={CAIXA.altura} rx={4}

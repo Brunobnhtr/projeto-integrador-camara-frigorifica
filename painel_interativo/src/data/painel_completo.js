@@ -145,6 +145,24 @@ export const FOLGA_LATERAL = 8;
    verticais. Trilho por cima de canaleta é o que faz o fio parecer
    passar por baixo dele — e na bancada seria pior, porque a tampa da
    canaleta não fecharia. */
+/* ⭐ AS CALHAS DE TRAVESSIA — onde o chicote pula da placa para a porta.
+   As duas ficam no CANTO INFERIOR DIREITO, uma acima da outra e bem
+   separadas: a de potência rente à CH-base e a de sinal 46 mm acima,
+   alimentada pela CV-dir.
+
+   Cada uma é um trecho de calha flexível de verdade — espiral por dentro
+   e folga de 60 mm — e é o ÚNICO ponto do painel onde os fios passam de
+   uma parte para a outra. */
+export const CALHAS = [
+  { id: 'CL-pot', tipo: 'potencia', y: 444, h: 24, nome: 'calha de POTÊNCIA',
+    daPlaca: 'CH-base', naPorta: 'CP-vpot',
+    diz: 'Rente à CH-base, no canto de baixo. Leva a cadeia de comando de 24 V.' },
+  { id: 'CL-sin', tipo: 'sinal', y: 398, h: 24, nome: 'calha de SINAL E MEDIÇÃO',
+    daPlaca: 'CV-dir', naPorta: 'CP-vsin',
+    diz: '46 mm acima da de potência, alimentada pela vertical de sinal. Leva a '
+       + 'tela, os botões de 5 V e a seletora.' },
+];
+
 export const TRILHO_X0 = 42;    // logo depois da CV-esq (14..40)
 export const TRILHO_X1 = 458;   // logo antes da CV-dir (460..486)
 
@@ -443,17 +461,22 @@ export const COMPONENTES = [
          frente para a CH-2x1 (potência), que é por onde a cadeia de
          comando anda. Em cima ficam os que só levam ponte curta na
          própria base, e os NF que o projeto não usa. */
+      /* ⭐ O SELO USA O CONTATO 2 E A SAÍDA USA O CONTATO 1, e não o
+         contrário. Os dois são NA e eletricamente idênticos — o que
+         decide é a FILEIRA: assim todos os fios EXTERNOS da cadeia
+         (11, 14, A1) caem na fileira de baixo, que enxerga a CH-base,
+         que é de potência e é quem alimenta a calha da porta. */
       { ref: 'CIMA', lado: 'cima', legenda: 'Fileira de cima · pinos 4 · 8 · 12 · 14', pinos: [
         rele('22'),
-        rele('24', 1, 'S2-11 (bloco NF do STOP) → daí para o KA2 · A1'),
-        rele('21', 1, 'ponte curta do 11 — comum do contato de SAÍDA'),
+        rele('24', 1, '⭐ ponte curta até o A1: é ISTO que faz o relé se segurar'),
+        rele('21', 1, 'ponte curta do 11 — comum do contato de SELO'),
         rele('A2', 1, 'BD-0V · R11'),
       ]},
       { ref: 'BAIXO', lado: 'baixo', legenda: 'Fileira de baixo · pinos 1 · 5 · 9 · 13', pinos: [
         rele('12'),
-        rele('14', 1, '⭐ ponte curta até o A1: é ISTO que faz o relé se segurar'),
-        rele('11', 1, 'nó CMD — comum do contato de SELO'),
-        rele('A1', 1, '⭐ do REARME (S3-14) OU do próprio selo (14) — os dois em paralelo'),
+        rele('14', 1, 'S2-11 (bloco NF do STOP) → daí para o KA2 · A1'),
+        rele('11', 1, 'nó CMD — comum dos DOIS contatos'),
+        rele('A1', 1, '⭐ do REARME (S3-14) OU do próprio selo (24) — os dois em paralelo'),
       ]},
     ],
   },
