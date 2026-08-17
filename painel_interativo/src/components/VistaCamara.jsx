@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { CAIXA, UTIL, BASE_INT, COMPONENTES, EXTERNOS, TRAVESSIA, PRENSAS }
   from '../data/camara';
 import Camara3D from './Camara3D';
+import LigacoesCamara from './LigacoesCamara';
 
 /* Corte frontal da câmara. Mostra ONDE cada componente fica, POR QUE
    fica ali, e de qual borne do painel vem cada fio dele.
@@ -42,7 +43,8 @@ export default function VistaCamara() {
   const seletor = (
     <div style={{ display: 'flex', gap: 7, padding: '10px 16px 0',
                   background: '#eef1f5' }}>
-      {[['3d', '🧊 3D girável'], ['corte', '📐 Corte com medidas']].map(([id, txt]) => (
+      {[['3d', '🧊 3D girável'], ['ligacoes', '🔗 Ligações por parte'],
+        ['corte', '📐 Corte com medidas']].map(([id, txt]) => (
         <button key={id} onClick={() => setVista(id)} style={{
           background: vista === id ? '#1971c2' : '#fff',
           color: vista === id ? '#fff' : '#1971c2',
@@ -51,6 +53,15 @@ export default function VistaCamara() {
       ))}
     </div>
   );
+
+  if (vista === 'ligacoes')
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%',
+                    overflow: 'hidden' }}>
+        {seletor}
+        <div style={{ flex: 1, minHeight: 0 }}><LigacoesCamara /></div>
+      </div>
+    );
 
   if (vista === '3d')
     return (
