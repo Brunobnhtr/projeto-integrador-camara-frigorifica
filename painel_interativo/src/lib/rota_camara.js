@@ -17,6 +17,26 @@ export const pxCamara = (x0, y0, altura) => ({
   cy: v => y0 + altura - MARG_CAM - v * E_CAM,
 });
 
+/* ⭐ ONDE O FEIXE DO PAINEL ENCONTRA O DESENHO DA CÂMARA.
+   São quatro subidas, e é isto que separa o que estava embolado num
+   canto só: cada uma sobe pelo seu lado, na sua altura.
+
+     PC-1  · potência  — sobe rente à ESQUERDA e entra pela parede
+     PC-2  · medição   — sobe rente à DIREITA e entra pela parede
+     tampaE · os 2 fios das ventoinhas do radiador, por FORA, à esquerda
+     tampaD · os 3 fios de sinal do lado quente, por FORA, à direita   */
+export const SUBIDAS = (x0, y0, largura, altura) => {
+  const { cy } = pxCamara(x0, y0, altura);
+  const g = id => PRENSAS3D.find(p => p.id === id);
+  return {
+    'PC-1':  { x: x0 - 16, y: cy(g('PC-1').z), borda: x0, lado: 'esq' },
+    'PC-2':  { x: x0 + largura + 16, y: cy(g('PC-2').z),
+               borda: x0 + largura, lado: 'dir' },
+    tampaE:  { x: x0 - 33, y: y0 + altura, lado: 'esq' },
+    tampaD:  { x: x0 + largura + 36, y: y0 + altura, lado: 'dir' },
+  };
+};
+
 /* onde o borne encosta na peça, e para que lado ele aponta */
 export function pontoBorne(caixa, bo) {
   const [x0, , z0, x1, , z1] = caixa;

@@ -160,6 +160,51 @@ export function pontaDoFio(fio, alvo, comps) {
 export const calhaDe = classe =>
   CALHAS.find(k => k.tipo === (classe === 'sinal' ? 'sinal' : 'potencia'));
 
+/* ── a ponte entre dois bornes do MESMO componente ─────────────────────
+   ⭐ ESTAS SUMIAM. Eram desenhadas como um L de um borne ao outro, em
+   linha reta pelo meio do componente — e como os componentes são
+   desenhados POR CIMA da fiação, a ponte ficava escondida atrás do
+   corpo do relé. No KA1 isso deixava DOIS bornes amarelos
+   aparentemente soltos: o 21 e o 24. E o do 24 é o SELO, que é o fio
+   que segura o relé ligado depois que você solta o rearme.
+
+   Ponte de verdade contorna o componente por fora, que é onde a chave
+   de fenda alcança o parafuso. É assim que ela se desenha agora.     */
+export const ORDEM_PONTE = (() => {
+  const m = new Map(), conta = new Map();
+  for (const f of FIOS) {
+    if (!f.de.comp || f.de.comp !== f.para.comp) continue;
+    const k = conta.get(f.de.comp) ?? 0;
+    m.set(f.n, k); conta.set(f.de.comp, k + 1);
+  }
+  return m;
+})();
+
+const paraFora = (pt, lado, d) =>
+  lado === 'cima' ? [pt[0], pt[1] - d]
+  : lado === 'baixo' ? [pt[0], pt[1] + d]
+  : lado === 'esquerda' ? [pt[0] - d, pt[1]]
+  : [pt[0] + d, pt[1]];
+
+function tracarPonte(f, a, b) {
+  const c = a.comp;
+  const folga = 5 + (ORDEM_PONTE.get(f.n) ?? 0) * 2.8;
+  const sa = paraFora(a.p, a.lado ?? a.grupo.lado, folga);
+  const sb = paraFora(b.p, b.lado ?? b.grupo.lado, folga);
+  const pts = [a.p.slice(), sa];
+  /* ⭐ BORDAS DIFERENTES: dá a volta pelo lado. Comparar as COORDENADAS
+     não bastava — o 11 e o 21 do KA1 estão um em cada fileira mas no
+     mesmo x, e a ponte saía como um risco reto de cima a baixo,
+     atravessando o relé por dentro. Quem manda é a BORDA. */
+  if ((a.lado ?? a.grupo.lado) !== (b.lado ?? b.grupo.lado)) {
+    const dir = (a.p[0] + b.p[0]) / 2 > c.x + c.largura / 2;
+    const xl = dir ? c.x + c.largura + folga : c.x - folga;
+    pts.push([xl, sa[1]], [xl, sb[1]]);
+  }
+  pts.push(sb, b.p.slice());
+  return { ...f, pts, a, b, ponte: true };
+}
+
 export function tracarFio(f, comps, idx, portaX0 = CAIXA.largura + 40) {
   const rect = id => {
     const k = [...CANALETAS, ...CANALETAS_PORTA].find(x => x.id === id);
@@ -169,6 +214,7 @@ export function tracarFio(f, comps, idx, portaX0 = CAIXA.largura + 40) {
   const desvio = ((idx % 7) - 3) * 3.0;
   const a = pontaDoFio(f, f.de, comps), b = pontaDoFio(f, f.para, comps);
   if (!a.p || !b.p) return { ...f, pts: [], a, b };
+  if (a.comp && a.comp === b.comp) return tracarPonte(f, a, b);
 
   /* a saída de um borne lateral também sai contornando */
   const saiLat = a.lateral ? [a.p[0] + (a.lado === 'esquerda' ? -7 : 7), a.p[1]] : null;

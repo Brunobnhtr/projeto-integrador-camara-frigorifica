@@ -3,7 +3,7 @@ import {
 } from '../data/camara';
 import { FIOS } from '../data/fiacao';
 import {
-  caminhoCamara, cruzamentos, pontoBorne, BORNES_CAMARA, pxCamara,
+  caminhoCamara, cruzamentos, pontoBorne, BORNES_CAMARA, pxCamara, SUBIDAS,
   E_CAM, MARG_CAM, naCamara, naTampa, eRetorno,
 } from '../lib/rota_camara';
 import { setaEm } from '../lib/geometria_painel';
@@ -78,18 +78,34 @@ export default function CamaraNoPainel({
     return d;
   }
 
-  /* ── o lado quente: sobe por fora, não fura parede ─────────────────── */
+  /* ── o lado quente: sobe POR FORA, não fura parede ─────────────────────
+     ⭐ Os cinco subiam colados num feixe só, na quina esquerda, em 1,9 px
+     de distância um do outro — viravam um borrão. Agora cada um sobe
+     pelo lado do prensa-cabo de onde veio (potência à esquerda, sinal à
+     direita), em colunas separadas, e atravessa a faixa acima da tampa
+     numa altura só dele. Assim NENHUM dos cinco cruza outro.          */
   const TAMPA_CX = { RAD: [18, 116], DS18: [128, 182] };   // mm, dentro da tampa
-  function dTampa(f, k) {
+  const sub = SUBIDAS(x0, y0, largura, altura);
+  /* quanto mais longe o borne, mais alta a faixa e mais externa a coluna */
+  const PISTA = {
+    X5:  { col: 0, faixa: 0, lado: 'esq' },   // radiador +
+    X6:  { col: 1, faixa: 1, lado: 'esq' },   // radiador −
+    X19: { col: 0, faixa: 0, lado: 'dir' },   // DS18B20 · DATA
+    X21: { col: 1, faixa: 1, lado: 'dir' },   // RPM 2
+    X20: { col: 2, faixa: 2, lado: 'dir' },   // RPM 1
+  };
+  function dTampa(f) {
     const d = naTampa(f);
     const pe = TAMPA3D.find(p => p.id === d.tampa);
     const bo = bornesDe(pe).find(x => x.b === d.borne);
-    if (!bo) return null;
+    const pi = PISTA[f.n];
+    if (!bo || !pi) return null;
     const [a, b] = TAMPA_CX[pe.id];
     const bx = cx(a + bo.t * (b - a));
-    const yb = y0 - 21 + k * 1.7;                    // faixa acima da câmara
-    const xv = x0 - 4 - k * 1.9;                     // subida rente à lateral
-    return `M ${xv},${y0 + altura - 6} L ${xv},${yb} L ${bx},${yb} L ${bx},${y0 - 2}`;
+    const yb = y0 - 11 - pi.faixa * 6.5;               // faixa acima da tampa
+    const base = pi.lado === 'esq' ? sub.tampaE : sub.tampaD;
+    const xv = base.x + (pi.lado === 'esq' ? -1 : 1) * pi.col * 6;
+    return `M ${xv},${base.y + 6} L ${xv},${yb} L ${bx},${yb} L ${bx},${y0 - 2}`;
   }
 
   /* ── um risco de fio, com área de clique folgada ───────────────────── */
@@ -161,8 +177,8 @@ export default function CamaraNoPainel({
       ))}
 
       {/* ⭐ os fios ANTES das peças: o borne fica por cima e sempre visível */}
-      {daTampa.map((f, k) => {
-        const d = dTampa(f, k);
+      {daTampa.map(f => {
+        const d = dTampa(f);
         return d && <Fio key={f.n} f={f} d={d} />;
       })}
       {[...caminhos].map(([n, c]) => (
@@ -211,12 +227,21 @@ export default function CamaraNoPainel({
         );
       })}
 
-      {/* os dois furos da parede do fundo */}
+      {/* ── os dois furos da parede do fundo, cada um com o seu toco ──
+             ⭐ Antes o feixe atravessava a câmara inteira em tracejado
+             para chegar no furo, e ninguém entendia o que era aquilo.
+             Agora ele sobe rente à lateral, pelo LADO do próprio furo, e
+             o tracejado é só o pedacinho que passa por trás do acrílico. */}
       {PRENSAS3D.map(pr => {
         const n = Object.values(ROTAS_CAMARA).filter(r => r.pc === pr.id).length;
         const X = cx(pr.x), Y = cy(pr.z);
+        const su = sub[pr.id];
         return (
           <g key={pr.id}>
+            <path d={`M ${su.borda} ${su.y} L ${X} ${Y}`} fill="none" stroke={pr.cor}
+                  strokeWidth={3} strokeDasharray="5 3.5" opacity={0.5} />
+            <text x={(su.borda + X) / 2} y={Y - 12.5} textAnchor="middle" fontSize={4.6}
+                  fill={pr.cor} opacity={0.9}>─ ─ por TRÁS do acrílico</text>
             <circle cx={X} cy={Y} r={9} fill="none" stroke={pr.cor}
                     strokeWidth={0.8} strokeDasharray="2 2" />
             <circle cx={X} cy={Y} r={5} fill="#fff" stroke={pr.cor} strokeWidth={1.8} />

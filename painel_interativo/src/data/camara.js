@@ -192,8 +192,12 @@ export const COMPONENTES = [
    ambiente, em cima dos dissipadores. */
 export const TAMPA3D = [
   { id: 'RAD', nome: '2 coolers do radiador', cor: '#e8590c',
-    bornes: [{ b:'+', lado:'base', t:0.12 }, { b:'−', lado:'base', t:0.34 },
-              { b:'RPM1', lado:'base', t:0.60 }, { b:'RPM2', lado:'base', t:0.85 }],
+    /* ⭐ ALIMENTAÇÃO À ESQUERDA, TACÔMETRO À DIREITA. Não é capricho de
+       desenho: os 12 V vêm do MV-1 e sobem pelo lado da POTÊNCIA; os
+       dois RPM vão para o Mega e sobem pelo lado do SINAL. Postos na
+       ordem em que chegam, nenhum dos cinco precisa cruzar o outro. */
+    bornes: [{ b:'+', lado:'base', t:0.12 }, { b:'−', lado:'base', t:0.30 },
+              { b:'RPM1', lado:'base', t:0.72 }, { b:'RPM2', lado:'base', t:0.90 }],
     diz: 'Em paralelo nos dois primeiros; cada uma com o seu fio de RPM.' },
   { id: 'DS18', nome: 'DS18B20 do radiador', cor: '#f76707', bornes: [{ b:'DATA', lado:'base', t:0.5 }],
     diz: 'Colado no dissipador com pasta térmica. VCC e GND vêm no próprio cabo dele.' },
@@ -282,10 +286,10 @@ export const PECAS3D = [
     caixa: [64, 30, 26, 136, 70, 44],
     diz: 'Na base, sobre o plenum de 30 mm.' },
   { id: 'DUT1', bornes: [{ b:'+24 V', lado:'base', t:0.35 }, { b:'retorno', lado:'topo', t:0.75 }], nome: 'Posição 1', cor: '#c92a2a', pc: 'PC-2',
-    caixa: [14, 25, 24, 58, 75, 58],
+    caixa: [22, 25, 24, 62, 75, 58],
     diz: 'LED vermelho + 1,2 kΩ — 17,6 mA.' },
   { id: 'DUT2', bornes: [{ b:'+24 V', lado:'base', t:0.35 }, { b:'retorno', lado:'topo', t:0.75 }], nome: 'Posição 2', cor: '#2f9e44', pc: 'PC-2',
-    caixa: [142, 25, 24, 186, 75, 58],
+    caixa: [138, 25, 24, 178, 75, 58],
     diz: 'LED verde + 2,2 kΩ — 9,8 mA.' },
   { id: 'VD1', bornes: [{ b:'+', lado:'topo', t:0.35 }, { b:'−', lado:'topo', t:0.70 }], nome: 'vent. duto esq.', cor: '#74c0fc', pc: 'PC-1', fora: true,
     caixa: [-32, 35, 108, -6, 65, 138],
@@ -309,6 +313,11 @@ export const PECAS3D = [
      sobe = coluna vertical rente à PAREDE, por onde ele ganha altura
      crz  = altura em que ele deixa a coluna e atravessa até a peça
 
+   ⭐ A COLUNA ABRE 2,6 mm ENTRE FIOS, e não 1,6. Com o espaçamento
+   antigo os seis fios que sobem até a Peltier viravam um borrão de
+   2 px de largura — dava para ver que subia alguma coisa, não O QUÊ.
+   Para caber a folga, as duas posições de ensaio recuaram 8 mm.
+
    ⭐ POR QUE CADA FIO TEM UM CORREDOR SÓ DELE: dois fios no mesmo
    corredor viram um risco só no desenho, e aí não dá para conferir na
    montagem. As alturas foram escolhidas numa ordem que faz o feixe se
@@ -321,11 +330,11 @@ export const PECAS3D = [
 export const ROTAS_CAMARA = {
   /* ── PC-1 · potência, entra no piso à esquerda ───────────────────── */
   X2:  { alvo:'PELT.−', pc:'PC-1', gx:44.1, lane: 8.3, sobe: 4.0 },   // Peltier −
-  X1:  { alvo:'PELT.+', pc:'PC-1', gx:43.2, lane: 9.6, sobe: 5.6 },   // Peltier +
-  X9:  { alvo:'VF.+', pc:'PC-1', gx:42.3, lane:10.9, sobe: 7.2, crz:202 },  // circulação +
-  X10: { alvo:'VF.−', pc:'PC-1', gx:41.4, lane:12.2, sobe: 8.8, crz:198 },  // circulação −
-  X8:  { alvo:'VP.−', pc:'PC-1', gx:40.5, lane:13.5, sobe:10.4, crz:102 },  // vent. PTC −
-  X7:  { alvo:'VP.+', pc:'PC-1', gx:39.6, lane:14.8, sobe:12.0, crz: 98 },  // vent. PTC +
+  X1:  { alvo:'PELT.+', pc:'PC-1', gx:43.2, lane: 9.6, sobe: 6.6 },   // Peltier +
+  X9:  { alvo:'VF.+', pc:'PC-1', gx:42.3, lane:10.9, sobe: 9.2, crz:202 },  // circulação +
+  X10: { alvo:'VF.−', pc:'PC-1', gx:41.4, lane:12.2, sobe:11.8, crz:198 },  // circulação −
+  X8:  { alvo:'VP.−', pc:'PC-1', gx:40.5, lane:13.5, sobe:14.4, crz:102 },  // vent. PTC −
+  X7:  { alvo:'VP.+', pc:'PC-1', gx:39.6, lane:14.8, sobe:17.0, crz: 98 },  // vent. PTC +
   X11: { alvo:'DUT1.+24 V', pc:'PC-1', gx:38.7, lane:16.1 },              // posição 1 +
   X12: { alvo:'DUT2.+24 V', pc:'PC-1', gx:45.9, lane:17.4 },              // posição 2 +
   X4:  { alvo:'PTC.−', pc:'PC-1', gx:46.8, lane:18.7 },              // PTC −

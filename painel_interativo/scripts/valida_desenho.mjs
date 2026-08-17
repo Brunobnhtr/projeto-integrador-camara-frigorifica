@@ -113,13 +113,14 @@ let invade = 0, cortaTrilho = 0;
 const tracados = FIOS.map((f, i) => tracarFio(f, comps, i));
 for (const t of tracados) {
   if (!t.pts.length) continue;
-  const meus = new Set([t.a?.comp?.id, t.b?.comp?.id].filter(Boolean));
   for (let i = 1; i < t.pts.length; i++) {
     const [ax, ay] = t.pts[i - 1], [bx, by] = t.pts[i];
     const sx0 = Math.min(ax, bx), sx1 = Math.max(ax, bx);
     const sy0 = Math.min(ay, by), sy1 = Math.max(ay, by);
+    /* ⭐ INCLUSIVE O PRÓPRIO COMPONENTE DO FIO. Era a exceção que
+       escondia as pontes: C5, C6, S13 e S16 ligam dois bornes da mesma
+       peça e cortavam reto pelo meio dela, atrás do desenho. */
     for (const c of comps) {
-      if (meus.has(c.id)) continue;
       const x0 = c.x + RECUO, x1 = c.x + c.largura - RECUO;
       const y0 = c.y + RECUO, y1 = c.y + c.altura - RECUO;
       if (x1 <= x0 || y1 <= y0) continue;
@@ -140,7 +141,7 @@ for (const t of tracados) {
     }
   }
 }
-if (!invade) ok('nenhum fio passa por dentro de componente que não é dele');
+if (!invade) ok('nenhum fio passa por dentro de componente — nem do seu próprio');
 if (!cortaTrilho) ok('nenhum fio atravessa trilho onde não tem borne');
 
 /* ── 6. quem vai para a câmara volta de lá? ────────────────────────── */

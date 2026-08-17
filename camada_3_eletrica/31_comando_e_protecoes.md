@@ -50,6 +50,19 @@ A solução: **o relé segura a si mesmo.**
 
 E o melhor: **basta abrir a corrente em qualquer ponto do circuito** (emergência, STOP, falta de energia) que o relé solta, o contato abre, e o selo se perde. **Só um novo START religa.** Memória sem uma linha de código.
 
+### 🔧 Na prática, o selo é um pedacinho de fio de 4 cm
+
+No esquema o selo é uma linha bonita. Na base do relé ele é a coisa mais simples que existe: **um jumper entre dois parafusos do próprio KA1.**
+
+| Fio | De | Para | O que é |
+|---|---|---|---|
+| **C6** ⭐ | KA1 · **24** (fileira de cima, pino 8) | KA1 · **A1** (fileira de baixo, pino 13) | **o selo** — o contato NA realimentando a própria bobina |
+| C5 | KA1 · **11** (baixo, pino 9) | KA1 · **21** (cima, pino 12) | ponte do nó CMD, o comum dos dois contatos |
+
+⚠️ **Os dois vão de uma fileira à outra, então o jumper contorna o relé por fora.** Não passe o fio por baixo do corpo dele nem por trás da base: além de não caber, você não consegue mais conferir se está no parafuso certo. Corte uns 4 cm, faça as duas pontas com terminal ilhós, e deixe a barriga do fio para fora do lado direito.
+
+> 📐 **No aplicativo** as pontes são desenhadas contornando o componente, e não em linha reta pelo meio dele. Isso não é enfeite: **desenhadas retas, elas ficavam escondidas atrás do relé**, e o KA1 aparecia com os bornes 21 e 24 amarelos e aparentemente soltos — inclusive o 24, que é justamente o selo. Hoje o `npm run valida` reprova qualquer fio que passe por dentro de um componente, incluindo o próprio.
+
 ### Por que dois relés
 
 Porque depois de um STOP normal eles precisam estar em **estados diferentes ao mesmo tempo**:
