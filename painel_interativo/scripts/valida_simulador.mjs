@@ -20,7 +20,7 @@ import {
   criarSimulador, passo, apertar, avancar, foto,
   socarCogumelo, destravarCogumelo,
   iniciarPelaIHM, pararPelaIHM, pararPeloMQTT, iniciarPeloMQTT,
-  ESTADO, MODO,
+  ESTADO, MODO, FASE, RECEITA_PADRAO,
 } from '../src/sim/index.js';
 import { consumo, criarMedidor, medir, LIMITES } from '../src/sim/energia.js';
 
@@ -497,6 +497,56 @@ cenario('30 · ⭐ VIGILANCIA MUTUA — os ESP32 acusam a morte do Mega');
   sim.falhas.arduinoMorto = false; avancar(sim, 1000);
   conferir('Mega voltou: o alarme limpa sozinho', foto(sim).megaSumido, false);
   conferir('mas a potencia NAO volta sozinha', foto(sim).bdPot, 0);
+}
+
+cenario('31 · ⭐ CICLO TERMICO — frio, patamar, cooldown, quente, repete');
+{
+  const receita = {
+    tipo: 'CICLO', faixaFria: { min: 8, max: 11 }, faixaQuente: { min: 38, max: 42 },
+    patamarMs: 5 * 60 * 1000, cooldownMs: 2 * 60 * 1000,
+    cooldownDissipador: 35, ciclos: 4,
+  };
+  const sim = armar(ligarPainel({ tCamara: 25, receita }));
+  iniciarPelaIHM(sim);
+
+  const visto = [];
+  let dissipNoDisparoDoPTC = null, ambosLigados = false, ant = '';
+  for (let i = 0; i < 120 * 60 * 10; i++) {
+    passo(sim, 100);
+    const f = sim.firmware;
+    if (f.fase !== ant) { visto.push(f.fase); ant = f.fase; }
+    if (f.renPeltier && f.renPtc) ambosLigados = true;
+    if (f.renPtc && dissipNoDisparoDoPTC === null) dissipNoDisparoDoPTC = sim.tDissipador;
+  }
+  console.log(`  ${D}${visto.length} transicoes em ${(sim.t / 60000).toFixed(0)} min · ` +
+              `dissipador ao disparar o PTC: ${dissipNoDisparoDoPTC.toFixed(0)} C${R}`);
+
+  conferir('passou pelo patamar frio', visto.includes(FASE.PATAMAR_FRIO), true);
+  conferir('fez cooldown entre as fases', visto.includes(FASE.COOLDOWN), true);
+  conferir('passou pelo patamar quente', visto.includes(FASE.PATAMAR_QUENTE), true);
+  conferir('terminou os 4 ciclos', sim.firmware.fase, FASE.CONCLUIDO);
+  conferir('⭐ o PTC so disparou com o dissipador ja frio',
+    dissipNoDisparoDoPTC < 40, true);
+  conferir('e NUNCA os dois atuadores juntos', ambosLigados, false);
+  console.log('  [2m→ sem o cooldown, o PTC dispararia com o dissipador a ~52 C e o');
+  console.log('    calor atravessaria a pastilha no sentido errado.[0m');
+}
+
+cenario('32 · Receita SO FRIO e SO QUENTE nao alternam');
+{
+  const so = (tipo, faixa) => {
+    const r = { ...RECEITA_PADRAO, tipo, faixaFria: faixa, faixaQuente: faixa, ciclos: 1 };
+    const sim = armar(ligarPainel({ tCamara: 25, receita: r }));
+    iniciarPelaIHM(sim); avancar(sim, 50 * 60 * 1000, 200);
+    return foto(sim);
+  };
+  const frio = so('FRIO', { min: 8, max: 11 });
+  conferir('SO FRIO fica na fase de frio', frio.fase, FASE.INDO_FRIO);
+  conferir('e entrou na faixa', frio.naFaixa, true);
+
+  const quente = so('QUENTE', { min: 38, max: 42 });
+  conferir('SO QUENTE fica na fase de quente', quente.fase, FASE.INDO_QUENTE);
+  conferir('e o PTC e quem trabalha', quente.renPtc || quente.naFaixa, true);
 }
 
 // ════════════════════════════════════════════════════════════════════

@@ -39,6 +39,36 @@ export const DUTY_MAXIMO = 95;            // %
 //   sistema de caçar um número que ele nunca alcança exatamente.
 export const FAIXA_PADRAO = { min: 4, max: 6 };
 
+/* ⭐ AS RECEITAS DE ENSAIO ─────────────────────────────────────────
+   Três tipos, e o terceiro é o que vale nota:
+
+     FRIO    resfria até a faixa e segura, indefinidamente
+     QUENTE  aquece até a faixa e segura
+     CICLO   alterna frio ↔ quente N vezes, com PATAMAR em cada
+             extremo e COOLDOWN entre eles
+
+   O cooldown não é enfeite. Trocar direto de resfriar para aquecer
+   significa disparar o PTC com o dissipador da Peltier a ~52 °C e a
+   placa fria ainda gelada: o calor atravessa a pastilha no sentido
+   errado, que é o que mais encurta a vida dela. E o choque térmico
+   fadiga as soldas internas. Então entre as fases tudo desliga, as
+   ventoinhas continuam, e só se avança quando o dissipador cair. */
+export const FASE = {
+  INDO_FRIO: 'INDO_FRIO', PATAMAR_FRIO: 'PATAMAR_FRIO',
+  INDO_QUENTE: 'INDO_QUENTE', PATAMAR_QUENTE: 'PATAMAR_QUENTE',
+  COOLDOWN: 'COOLDOWN', CONCLUIDO: 'CONCLUIDO',
+};
+
+export const RECEITA_PADRAO = {
+  tipo: 'FRIO',
+  faixaFria: { min: 4, max: 6 },
+  faixaQuente: { min: 38, max: 42 },
+  patamarMs: 10 * 60 * 1000,       // 10 min segurando em cada extremo
+  cooldownMs: 3 * 60 * 1000,       // tempo morto MÍNIMO entre fases
+  cooldownDissipador: 35,          // °C — e o dissipador tem de cair até aqui
+  ciclos: 3,
+};
+
 // ⭐ O LIMITADOR TÉRMICO — a peça que faltava.
 //   A Peltier bombeia Qc = Qc_max·duty·(1 − ΔT/ΔT_max). Quanto mais duty,
 //   mais calor no dissipador; quanto mais quente o dissipador, MENOS ela
@@ -82,6 +112,12 @@ export function firmwareInicial() {
     tAval: 0,                   // quando a janela de avaliação começou
     tAvalRef: null,
     zona: 'PRONTO',
+    sentido: 'FRIO',
+    faixaAtiva: null,
+    fase: FASE.INDO_FRIO,       // onde o ciclo está
+    tFase: 0,                   // ms dentro da fase atual
+    cicloAtual: 0,
+    tPatamar: 0,                // ms acumulados DENTRO da faixa
     dissipadorQuente: true,     // "não sei" vale como "pode estar quente"
     radiadorLigado: true,
   };
@@ -184,6 +220,18 @@ export function passoFirmware(f, ent, dt = 50) {
         f.alerta = '';
         f.modo = MODO.PARADO;
         f.tEmModo = 0;
+        // ⭐ O SENTIDO DO ENSAIO É DECIDIDO AQUI, no START, e não muda
+        //   mais. Com receita, quem manda é ela; sem receita, vem de onde
+        //   a câmara está em relação à faixa pedida.
+        if (ent.receita) {
+          f.sentido = ent.receita.tipo === 'QUENTE' ? 'QUENTE' : 'FRIO';
+        } else {
+          const fx = ent.faixa ?? FAIXA_PADRAO;
+          if (ent.tCamara > fx.max) f.sentido = 'FRIO';
+          else if (ent.tCamara < fx.min) f.sentido = 'QUENTE';
+        }
+        f.fase = f.sentido === 'FRIO' ? FASE.INDO_FRIO : FASE.INDO_QUENTE;
+        f.cicloAtual = 0; f.tFase = 0; f.tPatamar = 0; f.integral = 0;
         f.estado = ESTADO.RODANDO;
       }
       break;
@@ -251,26 +299,85 @@ const KP = 20;    // % de duty por °C de erro
 const KI = 0.6;   // % de duty por °C por segundo
 
 /**
- * ⭐ AS TRÊS ZONAS. É isto que substitui o setpoint de ponto único.
+ * ⭐ O CICLO DE ENSAIO. Decide QUAL faixa vale agora — ou se ninguém
+ *   deve trabalhar, no caso do cooldown.
  *
- *      T > faixa.max     URGENTE   esfria com o teto cheio
- *      dentro da faixa   AJUSTE    esfria devagar, buscando a MÍNIMA
- *      T <= faixa.min    PRONTO    desliga e deixa subir
- *
- *   O operador pede "entre 10 e 12". O sistema trabalha para os 10, mas
- *   **os 12 já contam como sucesso** — e é essa segunda parte que impede
- *   a máquina de ficar armada perseguindo um número exato, que é o que
- *   um ar-condicionado mal ajustado faz.
+ *   Devolve a faixa ativa, ou `null` quando é para tudo ficar desligado.
  */
-const HISTERESE = 0.4;   // °C — impede o liga-desliga picotado na mínima
+function gerenciarCiclo(f, ent, dt) {
+  const r = ent.receita;
+  f.tFase += dt;
 
-function zona(t, faixa, estavaParado) {
-  if (t > faixa.max) return 'URGENTE';
-  // histerese: só volta a trabalhar depois de subir 0,4 °C acima da mínima
-  if (estavaParado && t < faixa.min + HISTERESE) return 'PRONTO';
-  if (t <= faixa.min) return 'PRONTO';
-  return 'AJUSTE';
+  // Sem receita: faixa fixa, e o sentido foi decidido no START (ver
+  // maquinaDeEstados). Não muda no meio do ensaio.
+  if (!ent.receita) return { faixa: ent.faixa ?? FAIXA_PADRAO, sentido: f.sentido };
+
+  // Receitas simples: uma faixa só, um sentido só, para sempre.
+  if (r.tipo === 'FRIO') { f.fase = FASE.INDO_FRIO; return { faixa: r.faixaFria, sentido: 'FRIO' }; }
+  if (r.tipo === 'QUENTE') { f.fase = FASE.INDO_QUENTE; return { faixa: r.faixaQuente, sentido: 'QUENTE' }; }
+
+  const dentro = (fx) => ent.tCamara >= fx.min && ent.tCamara <= fx.max;
+  const trocaFase = (nova) => { f.fase = nova; f.tFase = 0; f.tPatamar = 0; };
+
+  switch (f.fase) {
+    case FASE.INDO_FRIO:
+      // ⭐ Chegar não basta: o patamar só conta com a câmara DENTRO da
+      //   faixa. E se o firmware declarou inalcançável, o ensaio segue
+      //   assim mesmo — com o número real, em vez de travar para sempre.
+      if (dentro(r.faixaFria) || f.inalcancavel) trocaFase(FASE.PATAMAR_FRIO);
+      return { faixa: r.faixaFria, sentido: 'FRIO' };
+
+    case FASE.PATAMAR_FRIO:
+      if (dentro(r.faixaFria)) f.tPatamar += dt;
+      if (f.tPatamar >= r.patamarMs) {
+        f.cicloAtual++;
+        trocaFase(f.cicloAtual >= r.ciclos ? FASE.CONCLUIDO : FASE.COOLDOWN);
+        f.proxima = FASE.INDO_QUENTE;
+      }
+      return { faixa: r.faixaFria, sentido: 'FRIO' };
+
+    case FASE.COOLDOWN: {
+      // ⚠ TUDO DESLIGADO, ventoinhas girando. Duas condições, e as duas
+      //   têm de valer: o tempo mínimo E o dissipador ter esfriado.
+      const tempoOk = f.tFase >= r.cooldownMs;
+      const dissipOk = ent.tDissipador <= r.cooldownDissipador ||
+                       f.proxima === FASE.INDO_FRIO;   // p/ o frio, só tempo
+      if (tempoOk && dissipOk) trocaFase(f.proxima);
+      return null;                                     // ninguém trabalha
+    }
+
+    case FASE.INDO_QUENTE:
+      if (dentro(r.faixaQuente) || f.inalcancavel) trocaFase(FASE.PATAMAR_QUENTE);
+      return { faixa: r.faixaQuente, sentido: 'QUENTE' };
+
+    case FASE.PATAMAR_QUENTE:
+      if (dentro(r.faixaQuente)) f.tPatamar += dt;
+      if (f.tPatamar >= r.patamarMs) {
+        f.cicloAtual++;
+        trocaFase(f.cicloAtual >= r.ciclos ? FASE.CONCLUIDO : FASE.COOLDOWN);
+        f.proxima = FASE.INDO_FRIO;
+      }
+      return { faixa: r.faixaQuente, sentido: 'QUENTE' };
+
+    case FASE.CONCLUIDO:
+    default:
+      return null;
+  }
 }
+
+/**
+ * ⭐ A FAIXA, E O SENTIDO DE APROXIMAÇÃO.
+ *
+ *   O operador pede "entre 10 e 12". Mas 10 e 12 não são simétricos:
+ *   num ensaio de FRIO você quer o mais perto de 10 que conseguir; num
+ *   de QUENTE, o mais perto de 12. **O alvo é sempre a borda no sentido
+ *   do esforço** — e a borda oposta já conta como sucesso.
+ *
+ *   É a segunda metade que importa: é ela que impede a máquina de
+ *   perseguir um número exato que talvez não exista naquele ambiente,
+ *   que é o que um ar-condicionado mal ajustado faz.
+ */
+const HISTERESE = 0.4;   // °C — impede o liga-desliga picotado na borda
 
 /**
  * ⭐ O limitador térmico. Desce o teto de duty conforme o dissipador
@@ -279,36 +386,63 @@ function zona(t, faixa, estavaParado) {
 function tetoPorDissipador(tDissipador) {
   if (tDissipador <= DISSIPADOR_ALVO) return DUTY_MAXIMO;
   if (tDissipador >= DISSIPADOR_TETO) return DUTY_MINIMO_LIM;
-  const f = (tDissipador - DISSIPADOR_ALVO) / (DISSIPADOR_TETO - DISSIPADOR_ALVO);
-  return DUTY_MAXIMO - f * (DUTY_MAXIMO - DUTY_MINIMO_LIM);
+  const k = (tDissipador - DISSIPADOR_ALVO) / (DISSIPADOR_TETO - DISSIPADOR_ALVO);
+  return DUTY_MAXIMO - k * (DUTY_MAXIMO - DUTY_MINIMO_LIM);
 }
 
 function controlar(f, ent, dt) {
-  const faixa = ent.faixa ?? FAIXA_PADRAO;
-  const inverso = faixa.min > 25;                 // faixa quente: PTC manda
-  const z = zona(ent.tCamara, faixa, f.modo === MODO.PARADO);
-  f.zona = z;
+  const plano = gerenciarCiclo(f, ent, dt);
+  const faixa = plano === null ? null : plano.faixa;
 
-  // ── PRONTO: chegou onde queria. Desliga e deixa a inércia trabalhar ──
-  if ((z === 'PRONTO' && !inverso) || (inverso && ent.tCamara >= faixa.max)) {
+  // ⭐ COOLDOWN ou ensaio CONCLUÍDO: os dois drivers ficam fora, mas as
+  //   ventoinhas continuam (elas dependem do estado, não do modo). É o
+  //   tempo morto que evita o choque térmico na pastilha.
+  if (faixa === null) {
     if (f.modo !== MODO.PARADO) { f.modo = MODO.PARADO; f.tEmModo = 0; }
+    f.renPeltier = false; f.renPtc = false; f.duty = 0;
+    f.integral = 0;
+    f.zona = f.fase === FASE.CONCLUIDO ? 'CONCLUIDO' : 'COOLDOWN';
+    f.faixaAtiva = faixa;
+    return;
+  }
+  f.faixaAtiva = faixa;
+
+  // ⭐ O SENTIDO VEM DA RECEITA, NUNCA DA TEMPERATURA DO MOMENTO.
+  //   Foi um defeito real: com o sentido tirado da leitura instantânea,
+  //   passar 0,07 °C abaixo da mínima fazia o firmware concluir "estou
+  //   frio demais" e LIGAR O PTC para voltar à máxima. Num ensaio de
+  //   frio, o aquecedor não deve disparar nunca — e agora não dispara,
+  //   porque quem decide é a receita.
+  f.sentido = plano.sentido;
+
+  const resfriando = f.sentido === 'FRIO';
+  const alvo = resfriando ? faixa.min : faixa.max;   // a borda do esforço
+  const chegou = resfriando ? ent.tCamara <= alvo : ent.tCamara >= alvo;
+  const dentro = ent.tCamara >= faixa.min && ent.tCamara <= faixa.max;
+
+  // ── PRONTO: chegou na borda de esforço. Desliga e deixa a inércia ──
+  //   A histerese impede o picote: só volta a trabalhar depois de o
+  //   ambiente empurrar 0,4 °C de volta.
+  const parado = f.modo === MODO.PARADO;
+  const soltou = resfriando ? ent.tCamara > alvo + HISTERESE
+                            : ent.tCamara < alvo - HISTERESE;
+  if (chegou || (parado && !soltou)) {
+    if (!parado) { f.modo = MODO.PARADO; f.tEmModo = 0; }
     f.renPeltier = false; f.renPtc = false; f.duty = 0;
     f.integral *= 0.98;
     f.inalcancavel = false;
     f.tAvalRef = null;
+    f.zona = 'PRONTO';
     return;
   }
 
-  // ── Quem trabalha, e com que urgência ─────────────────────────────
-  const aquecer = inverso ? ent.tCamara < faixa.min
-                          : ent.tCamara < faixa.min - HISTERESE;
-  const alvo = aquecer ? faixa.max : faixa.min;   // sempre mira a borda oposta
-  const erro = alvo - ent.tCamara;
+  f.zona = dentro ? 'AJUSTE' : 'URGENTE';
+  const erro = alvo - ent.tCamara;                   // + = aquecer, − = esfriar
 
-  // ⭐ O TETO. Cheio na urgência; na faixa, metade — não há pressa, e
-  //   duty menor mantém o dissipador frio, o que dá MAIS Qc.
-  const tetoTermico = aquecer ? DUTY_MAXIMO : tetoPorDissipador(ent.tDissipador);
-  const lim = z === 'AJUSTE' ? Math.min(tetoTermico, 55) : tetoTermico;
+  // ⭐ O TETO. Cheio na urgência; dentro da faixa, metade — não há pressa,
+  //   e duty menor mantém o dissipador frio, o que dá MAIS Qc.
+  const tetoTermico = resfriando ? tetoPorDissipador(ent.tDissipador) : DUTY_MAXIMO;
+  const lim = f.zona === 'AJUSTE' ? Math.min(tetoTermico, 55) : tetoTermico;
   f.dutyTeto = lim;
 
   const bruto = KP * erro + f.integral;
@@ -316,27 +450,25 @@ function controlar(f, ent, dt) {
   if (saida === bruto) f.integral += KI * erro * (dt / 1000);
 
   // ── ⭐ AINDA ESTÁ INDO A ALGUM LUGAR? ─────────────────────────────
-  //   Só avalia na zona URGENTE: dentro da faixa não há o que alcançar.
-  if (z === 'URGENTE' && Math.abs(saida) >= lim - 0.5) {
+  //   Só avalia FORA da faixa: dentro dela não há o que alcançar.
+  if (f.zona === 'URGENTE' && Math.abs(saida) >= lim - 0.5) {
     if (f.tAvalRef === null) { f.tAvalRef = ent.tCamara; f.tAval = f.tEmModo; }
     else if (f.tEmModo - f.tAval > AVAL_MS) {
-      const ganho = Math.abs(f.tAvalRef - ent.tCamara);
-      f.inalcancavel = ganho < MELHORA_MINIMA;
+      f.inalcancavel = Math.abs(f.tAvalRef - ent.tCamara) < MELHORA_MINIMA;
       f.tAvalRef = ent.tCamara; f.tAval = f.tEmModo;
     }
-  } else { f.tAvalRef = null; if (z !== 'URGENTE') f.inalcancavel = false; }
+  } else { f.tAvalRef = null; if (f.zona !== 'URGENTE') f.inalcancavel = false; }
 
   // ⭐ Desistiu: recua para o ponto de MAIOR Qc em vez de forçar o teto.
-  //   Não é falha, é o ambiente — e forçar daria menos frio, não mais.
   f.duty = f.inalcancavel ? Math.min(Math.abs(saida), DUTY_SUSTENTACAO)
                           : Math.abs(saida);
 
-  const novoModo = aquecer ? MODO.AQUECIMENTO : MODO.RESFRIAMENTO;
+  const novoModo = resfriando ? MODO.RESFRIAMENTO : MODO.AQUECIMENTO;
   if (novoModo !== f.modo) { f.modo = novoModo; f.tEmModo = 0; }
 
   // ⚠ A ORDEM É A GARANTIA DO INTERTRAVAMENTO: o driver que vai
   //   desligar é desabilitado ANTES de o outro ser habilitado.
-  if (f.modo === MODO.RESFRIAMENTO) { f.renPtc = false; f.renPeltier = true; }
+  if (resfriando) { f.renPtc = false; f.renPeltier = true; }
   else { f.renPeltier = false; f.renPtc = true; }
 }
 

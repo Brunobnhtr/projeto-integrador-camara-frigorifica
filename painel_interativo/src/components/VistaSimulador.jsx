@@ -4,6 +4,7 @@ import {
   iniciarPelaIHM, pararPelaIHM, pararPeloMQTT, iniciarPeloMQTT,
 } from '../sim/index.js';
 import { consumo, LIMITES } from '../sim/energia.js';
+import { RECEITA_PADRAO } from '../sim/firmware.js';
 
 /* ═══════════════════════════════════════════════════════════════════
    O PAINEL OPERÁVEL
@@ -33,6 +34,7 @@ function instantaneo(sim) {
     botoes: { ...sim.botoes },
     falhas: { ...sim.falhas },
     faixa: { ...sim.faixa },
+    receita: sim.receita,
     duty: sim.firmware.duty,
     t: sim.t,
   };
@@ -116,6 +118,7 @@ export default function VistaSimulador() {
         <Guia s={s} />
         <Cadeia s={s} />
         <Barramentos s={s} />
+        <Receita s={s} onReceita={r => mexer(sim => { sim.receita = r; })} />
         <Camara s={s} />
         <Processo s={s} onFaixa={(min, max) => mexer(sim => { sim.faixa = { min, max }; })} />
       </div>
@@ -330,6 +333,82 @@ function Barramentos({ s: f }) {
           </div>
         );
       })}
+    </Cartao>
+  );
+}
+
+
+/* ═══ A RECEITA DE ENSAIO ══════════════════════════════════════════
+   ⭐ Três tipos, e o terceiro é o que vale nota. O ciclo alterna frio
+     e quente com PATAMAR em cada extremo e COOLDOWN entre eles — e o
+     cooldown não é enfeite: trocar direto significa disparar o PTC com
+     o dissipador da Peltier a ~52 °C, jogando calor pela pastilha no
+     sentido errado.                                                  */
+const RECEITAS = [
+  { tipo: 'FRIO', nome: '❄ Só resfriar', diz: 'busca a faixa fria e segura lá' },
+  { tipo: 'QUENTE', nome: '🔥 Só aquecer', diz: 'busca a faixa quente e segura' },
+  { tipo: 'CICLO', nome: '🔄 Ciclo térmico', diz: 'alterna frio ↔ quente N vezes' },
+];
+
+const FASE_NOME = {
+  INDO_FRIO: 'descendo para a faixa fria', PATAMAR_FRIO: 'patamar frio',
+  INDO_QUENTE: 'subindo para a faixa quente', PATAMAR_QUENTE: 'patamar quente',
+  COOLDOWN: 'cooldown — tudo desligado', CONCLUIDO: 'ensaio concluído',
+};
+
+function Receita({ s, onReceita }) {
+  const r = s.receita;
+  const tipo = r?.tipo ?? 'LIVRE';
+  const usar = (t) => onReceita(t === 'LIVRE' ? null : {
+    ...RECEITA_PADRAO, tipo,
+    faixaFria: { min: 8, max: 11 }, faixaQuente: { min: 38, max: 42 },
+    patamarMs: 5 * 60 * 1000, cooldownMs: 2 * 60 * 1000, ciclos: 4,
+    ...(t === 'LIVRE' ? {} : { tipo: t }),
+  });
+  return (
+    <Cartao titulo="Receita de ensaio"
+            sub={r ? `${tipo} · ciclo ${s.cicloAtual + 1} de ${r.ciclos}` : 'faixa livre'}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+        <Botao cor={tipo === 'LIVRE' ? '#1971c2' : '#adb5bd'} onClick={() => usar('LIVRE')}>
+          🎚 Faixa livre
+        </Botao>
+        {RECEITAS.map(x => (
+          <Botao key={x.tipo} cor={tipo === x.tipo ? '#1971c2' : '#adb5bd'}
+                 onClick={() => usar(x.tipo)}>{x.nome}</Botao>
+        ))}
+      </div>
+      {r && (
+        <>
+          <div style={{ marginTop: 10, fontSize: 12, fontWeight: 700 }}>
+            {FASE_NOME[s.fase] ?? s.fase}
+          </div>
+          <div style={{ display: 'flex', gap: 4, marginTop: 6 }}>
+            {Array.from({ length: r.ciclos }).map((_, i) => (
+              <div key={i} style={{ flex: 1, height: 6, borderRadius: 3,
+                background: i < s.cicloAtual ? VIVO
+                          : i === s.cicloAtual ? '#ffd43b' : '#e9ecef' }} />
+            ))}
+          </div>
+          {s.fase === 'PATAMAR_FRIO' || s.fase === 'PATAMAR_QUENTE' ? (
+            <Aviso cor={VIVO}>
+              ⏱ Segurando na faixa há <b>{(s.tPatamar / 60000).toFixed(1)} min</b> de{' '}
+              {(r.patamarMs / 60000).toFixed(0)} min. O patamar só conta com a câmara
+              <b> dentro</b> da faixa.
+            </Aviso>
+          ) : null}
+          {s.fase === 'COOLDOWN' && (
+            <Aviso cor={ATENCAO}>
+              ⏸ <b>Cooldown.</b> Os dois drivers estão fora e só as ventoinhas giram.
+              Só avança quando o dissipador cair a <b>{r.cooldownDissipador} °C</b> —
+              está em <b>{s.tDissipador.toFixed(0)} °C</b>. Sem isso, o PTC dispararia com
+              a Peltier ainda a ~52 °C e o calor atravessaria a pastilha no sentido errado.
+            </Aviso>
+          )}
+          {s.fase === 'CONCLUIDO' && (
+            <Aviso cor={VIVO}>✅ <b>Ensaio concluído</b> — {r.ciclos} ciclos completos.</Aviso>
+          )}
+        </>
+      )}
     </Cartao>
   );
 }

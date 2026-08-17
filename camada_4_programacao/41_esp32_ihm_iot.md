@@ -91,6 +91,51 @@ O nosso sistema é igual:
 
 > 🎓 **Frase para a defesa:** *"A restrição de continuidade operacional nos impediu de substituir o controlador. Implementamos o ESP32 em paralelo, e a arbitragem entre local e remoto é feita pela **classe do comando**: o que leva ao estado seguro pode vir de qualquer lugar, o que leva ao estado energizado só da IHM, na frente da máquina."*
 
+### ❓ Os dois ESP32 conversam entre si? **Não. E é de propósito.**
+
+A topologia é uma **estrela com o Mega no centro**, e não existe fio nenhum entre os dois ESP32:
+
+```
+                 ┌──────────────────┐
+   Serial1  ─────┤  ESP32 · DNLCB30 │  Wi-Fi, MQTT, dashboard
+   (D18/D19)     └──────────────────┘
+        │
+   ARDUINO MEGA  ◄── o centro de tudo
+        │
+   Serial2  ─────┬──[ conversor 5↔3,3 V ]──┐
+   (D16/D17)     │                          │
+                 │   ┌──────────────────────▼──┐
+                 └───┤  ESP32-S3 · IHM na porta │  tela, SD, INICIAR
+                     └──────────────────────────┘
+
+   ⭐ Entre os dois ESP32: NADA. Nenhum fio, nenhum rádio.
+```
+
+**E a vigilância mútua funciona mesmo assim** — é o que torna a estrela elegante. Os dois ESP recebem o mesmo JSON de 1 Hz do Mega, então **cada um detecta a morte dele sozinho**, cronometrando o próprio silêncio. Nenhum precisa perguntar nada ao outro.
+
+| Quem morre | Quem descobre, e como |
+|---|---|
+| **Mega** | ⭐ **os dois ESP**, independentemente — o JSON parou de chegar |
+| **IHM** | o **Mega**, pela ausência do `PING` na Serial2 |
+| **ESP de IoT** | o **Mega**, pela ausência do `PING` na Serial1 |
+
+> 🎯 **A estrela já cobre todos os casos.** Um enlace ESP↔ESP não descobriria nada que o Mega não descubra — ele só acrescentaria um caminho a mais para falhar.
+
+### ⚠️ E se trocássemos os fios por Bluetooth ou ESP-NOW?
+
+Pergunta justa, e a resposta é **não** — por quatro razões que valem mais que a economia de dois fios:
+
+| # | Motivo |
+|---|---|
+| 1 | **O Mega não tem rádio.** Ele é o centro da estrela, e sem-fio nele exigiria um terceiro módulo — hardware novo para substituir dois fios que já funcionam |
+| 2 | **A IHM fica a 30 cm do Arduino**, na porta do mesmo painel. Rádio para 30 cm é encenação |
+| 3 | 🔥 **A IHM é o ÚNICO caminho para dar START.** Tornar esse enlace sem fio significa que o comando de partida pode se perder. **Fio não perde pacote** |
+| 4 | A telemetria é de **1 Hz e poucos bytes**. Não há problema de banda para resolver |
+
+> 📌 **O nome do que se usaria, se um dia fizesse sentido, é ESP-NOW** — protocolo da Espressif para ESP32 falar com ESP32 direto, sem roteador, com latência de ~1 ms. É bem melhor que Bluetooth para isto. **Guarde o nome, mas não o use aqui:** ele resolveria um problema que a estrela não tem.
+>
+> ⭐ **E note que já existe sem-fio no projeto, onde ele é a resposta certa:** o Wi-Fi do DNLCB30 levando o MQTT para fora do painel. Rádio para atravessar o prédio, fio para atravessar a dobradiça. Cada um onde ganha.
+
 ### O que é MQTT, e por que não é "só mandar pela internet"
 
 MQTT é um jeito de trocar mensagens pensado para equipamentos, não para sites. Ele funciona como um **mural de avisos**:

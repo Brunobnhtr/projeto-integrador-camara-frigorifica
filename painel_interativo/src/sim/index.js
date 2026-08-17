@@ -19,9 +19,10 @@
  */
 
 import { eletricaInicial, passoEletrica, barramentos, tensaoD25 } from './eletrica.js';
-import { firmwareInicial, passoFirmware, ESTADO, MODO, RPM_MINIMA } from './firmware.js';
+import { firmwareInicial, passoFirmware, ESTADO, MODO, RPM_MINIMA,
+         FASE, RECEITA_PADRAO } from './firmware.js';
 
-export { ESTADO, MODO };
+export { ESTADO, MODO, FASE, RECEITA_PADRAO };
 
 /** Constantes térmicas — grandes o bastante para o comportamento ser real. */
 const TERMICO = {
@@ -61,6 +62,7 @@ export function criarSimulador(opts = {}) {
     //   vira uma faixa de ±1 °C em volta dele, para não quebrar chamadas
     //   antigas — mas a IHM trabalha com min e max.
     faixa: opts.faixa ?? { min: (opts.setpoint ?? 5) - 1, max: (opts.setpoint ?? 5) + 1 },
+    receita: opts.receita ?? null,   // null = faixa fixa, sem ciclo
     tCamara: opts.tCamara ?? 25,
     tDissipador: opts.tDissipador ?? 25,
     uaCamara: opts.uaCamara ?? TERMICO.UA_CAMARA,   // W/K — permite comparar isolamentos
@@ -122,6 +124,7 @@ export function passo(sim, dt = 50) {
     tAmbiente: sim.tAmbiente,
     tCamara: sim.tCamara,
     faixa: sim.faixa,
+    receita: sim.receita,   // null = faixa fixa, sem ciclo
     rpm1: radiadorGirando ? 1850 : 0,
     rpm2: radiadorGirando ? 1820 : 0,
   };
@@ -249,13 +252,18 @@ export function foto(sim) {
     renPtc: f.renPtc,
     tCamara: +sim.tCamara.toFixed(1),
     tDissipador: +sim.tDissipador.toFixed(1),
-    faixa: sim.faixa,
+    faixa: f.faixaAtiva ?? sim.faixa,   // ⭐ a faixa ATIVA, que o ciclo escolheu
+    sentido: f.sentido,
     duty: +f.duty.toFixed(0),
     dutyTeto: +f.dutyTeto.toFixed(0),
     inalcancavel: f.inalcancavel,
     qcPeltier: +sim.qcPeltier.toFixed(1),
-    naFaixa: sim.tCamara >= sim.faixa.min && sim.tCamara <= sim.faixa.max,
+    naFaixa: (() => { const fx = f.faixaAtiva ?? sim.faixa;
+      return sim.tCamara >= fx.min && sim.tCamara <= fx.max; })(),
     zona: f.zona,
+    fase: f.fase,
+    cicloAtual: f.cicloAtual,
+    tPatamar: f.tPatamar,
     megaSumido: sim.megaSumido,
     silencioMega: sim.megaSumido ? Math.round((sim.t - sim.ultimoJson) / 1000) : 0,
   };
