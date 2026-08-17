@@ -171,12 +171,24 @@ export const calhaDe = classe =>
    Ponte de verdade contorna o componente por fora, que é onde a chave
    de fenda alcança o parafuso. É assim que ela se desenha agora.     */
 export const ORDEM_PONTE = (() => {
-  const m = new Map(), conta = new Map();
+  /* ⭐ A MAIS LARGA FICA POR FORA. O BTS tem duas pontes no mesmo bloco
+     de bornes: a do LPWM–GND abraça seis vias, a do R_EN–L_EN abraça
+     uma. Numeradas na ordem em que foram escritas, a curta caía por
+     fora e a longa por dentro — e aí os toquinhos da curta cruzavam a
+     barriga da longa. Ordenadas pelo VÃO, uma aninha na outra sem
+     encostar, que é como se faz na régua de bornes de verdade. */
+  const vao = f => {
+    const c = COMPONENTES.find(x => x.id === f.de.comp);
+    const nomes = (c?.grupos ?? []).flatMap(g => g.pinos.map(p => p.nome));
+    return Math.abs(nomes.indexOf(f.de.via) - nomes.indexOf(f.para.via));
+  };
+  const m = new Map(), porComp = new Map();
   for (const f of FIOS) {
     if (!f.de.comp || f.de.comp !== f.para.comp) continue;
-    const k = conta.get(f.de.comp) ?? 0;
-    m.set(f.n, k); conta.set(f.de.comp, k + 1);
+    porComp.set(f.de.comp, [...(porComp.get(f.de.comp) ?? []), f]);
   }
+  for (const fs of porComp.values())
+    [...fs].sort((a, b) => vao(a) - vao(b)).forEach((f, i) => m.set(f.n, i));
   return m;
 })();
 

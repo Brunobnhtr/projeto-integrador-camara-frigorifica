@@ -655,8 +655,8 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 | Pigtail **IPEX (u.FL) → SMA macho**, 20–30 cm | 1 | Liga o ESP32 ao conector de painel | |
 | **Conector SMA fêmea de painel (bulkhead)** | 1 | Rosca de painel Ø 6,5 mm, com porca e arruela de pressão. ⚠️ **Nunca** passar o coaxial por prensa-cabo | |
 | Antena 2,4 GHz SMA macho 3 dBi articulável | 1 | Rosqueada por fora, na **lateral direita, parte alta** do painel | |
-| Módulo Micro SD (SPI) | 1 | 5 V, com regulador e level shifter | |
-| Cartão Micro SD | 1 | 8–16 GB, Classe 10 | |
+| ~~Módulo Micro SD (SPI)~~ | ~~1~~ | 🔧 **NÃO COMPRAR** — a ES3C28P já traz o slot, ligado ao ESP32-S3 por SDMMC. Esta linha tinha sobrado da versão com Nextion | |
+| Cartão Micro SD | 1 | 8–16 GB, Classe 10. **Vai no slot da tela**, não em módulo separado | |
 | Módulo RTC DS3231 | 1 | I²C, ±2 ppm | |
 | Bateria CR2032 | 1 | Backup do RTC | |
 

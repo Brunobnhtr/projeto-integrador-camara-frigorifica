@@ -432,7 +432,7 @@ export const COMPONENTES = [
         via('B+', 1, 'BD-POT saída 1'), via('B−', 1, 'BD-0V'),
       ]},
       { ref: 'J1', lado: 'direita', legenda: 'Barra de sinal — no módulo é 2 × 4', pinos: [
-        via('R_PWM', 1, 'Mega D5'), via('L_PWM'),
+        via('R_PWM', 1, 'Mega D5'), via('L_PWM', 1, '⭐ ponte curta até o GND do próprio módulo — fixo em nível BAIXO'),
         via('R_EN', 1, 'Mega D4'), via('L_EN', 1, 'ponte curta do R_EN — o Mega D4 comanda os dois'),
         via('R_IS', 1, 'PI-1 J1-1'), via('L_IS'),
         via('VCC', 1, 'BD-5V saída 4'), via('GND', 1, 'BD-0V'),
@@ -450,7 +450,7 @@ export const COMPONENTES = [
         via('B+', 1, 'BD-POT saída 2'), via('B−', 1, 'BD-0V'),
       ]},
       { ref: 'J1', lado: 'direita', legenda: 'Barra de sinal — no módulo é 2 × 4', pinos: [
-        via('R_PWM', 1, 'Mega D6'), via('L_PWM'),
+        via('R_PWM', 1, 'Mega D6'), via('L_PWM', 1, '⭐ ponte curta até o GND do próprio módulo — fixo em nível BAIXO'),
         via('R_EN', 1, 'Mega D7'), via('L_EN', 1, 'ponte curta do R_EN — o Mega D7 comanda os dois'),
         via('R_IS', 1, 'PI-1 J1-2'), via('L_IS'),
         via('VCC', 1, 'BD-5V saída 5'), via('GND', 1, 'BD-0V'),

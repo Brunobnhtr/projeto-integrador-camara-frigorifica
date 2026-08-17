@@ -119,7 +119,7 @@ Duas armadilhas do Arduino Mega estão documentadas aqui, e as duas eram silenci
 >
 > **Passe por um conversor de nível de 4 canais** — ligação pino a pino no [Doc 03](../camada_0_fundamentos/03_lista_materiais.md).
 | I²C | D20 (SDA) / D21 (SCL) | AM2315C (0x38) + DS3231 (0x68) | 100 kHz | Barramento compartilhado |
-| SPI | D50–D53 | Módulo Micro SD | — | D53 = CS |
+| ~~SPI~~ | ~~D50–D53~~ | 🔧 **LIVRES** — o cartão saiu do Mega e foi para o slot da tela. Ver a correção abaixo | — | — |
 
 ### Atuadores
 
@@ -164,7 +164,24 @@ Duas armadilhas do Arduino Mega estão documentadas aqui, e as duas eram silenci
 | **D3** | **RPM do cooler externo #1 (INT1)** ⚠️ *corrigido* | `INPUT_PULLUP` + interrupção `FALLING` |
 | **A8** | **RPM do cooler externo #2 (PCINT16)** ⭐ *novo — 2ª Peltier* | `INPUT_PULLUP` + interrupção de mudança de pino. As interrupções externas do Mega acabaram: D2 é 1-Wire, D18/19 Serial1, D20/21 I²C |
 | D20 / D21 | AM2315C + DS3231 + **2× INA219** | I²C em 5 V — 4 dispositivos no mesmo par de fios |
-| D50–D53 | Módulo Micro SD | SPI por hardware |
+| ~~D50–D53~~ | 🔧 **LIVRES** — o log passou para o microSD da ES3C28P | — |
+
+> ### 🔧 Correção — o cartão SD saiu do Arduino
+>
+> A [lista de materiais](../camada_0_fundamentos/03_lista_materiais.md) já dizia que a **ES3C28P substituiu a Nextion *e* o módulo de cartão SD** — a tela traz um slot microSD ligado ao ESP32-S3 por interface SDMMC dedicada. Este documento não tinha sido atualizado e continuava gastando **quatro pinos do Mega** (`D50`–`D53`) com um módulo que não existe mais.
+>
+> **Como o log passa a ser gravado:**
+>
+> ```
+>   RTC DS3231 ──I²C──► Mega ──Serial2──► conversor ──► ES3C28P ──► microSD
+>    (data/hora)        (monta o registro)   (5→3,3 V)     (grava)
+> ```
+>
+> O carimbo de tempo continua vindo do **DS3231 no Mega** — quem sabe a hora é quem manda o registro, não quem grava. A tela só recebe a linha pronta e escreve.
+>
+> ⚠️ **Consequência para o protocolo da IHM:** o link serial deixou de ser só "mostrar na tela" e passou a carregar **registro de ensaio**. O [Doc 41](../camada_4_programacao/41_ihm_e_protocolo.md) precisa de um quadro de log com confirmação de gravação — sem o "gravei", o Mega não tem como saber que o ensaio ficou registrado. 📌 Fica junto da reescrita do Doc 41 para LVGL.
+>
+> 🎁 **Os quatro pinos ficaram livres** (`D50`–`D53`), e são justamente os do SPI por hardware — se um dia entrar um módulo que precise de SPI rápido, o barramento está inteiro e desocupado.
 
 ### Comando e sinalização
 
@@ -263,7 +280,7 @@ ARDUINO MEGA 2560
 ├─ D24     ── EMERGÊNCIA (NF)
 ├─ D25     ── divisor 22k/4k7 do BD-POT (24 V presente?)
 ├─ D26     ── LIVRE
-├─ D50..53 ── SPI ────────────────────────► cartão SD
+├─ D50..53 ── LIVRES (o cartão foi para a tela)
 ├─ A0      ── BTS #1 IS  + cap 100 nF
 └─ A1      ── BTS #2 IS  + cap 100 nF
 ```
@@ -469,7 +486,6 @@ Fans padrão geram 2 pulsos por rotação:
 - [ ] DS18B20 no D2 com pull-up de 4,7 kΩ para +5 V
 - [ ] AM2315C e DS3231 no I²C em **5 V**
 - [ ] ⭐ **2× INA219 no mesmo barramento I²C**, endereços 0x40/0x41/0x44/0x45 — scanner deve achar **6 dispositivos** ([Doc 13](13_posicoes_de_ensaio.md))
-- [ ] SD nos pinos D50–D53
 - [ ] START D22 (NA), STOP D23 (NA), EMERG D24 (**NF**)
 - [ ] Divisor **22 kΩ / 4,7 kΩ** do BD-POT para o pino D25 (medir **~4,2 V** com potência presente)
 - [ ] **Pull-down de 10 kΩ em cada `R_EN`** dos BTS7960 — com o Arduino desligado, medir ~0 V

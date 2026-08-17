@@ -68,6 +68,36 @@ export const FIOS_ETAPA4 = [
   { ...sig('S12', meg('D4'), { comp: 'BTS1', via: 'R_EN' },
       'Habilita a ponte do BTS #1.'), nome: 'enable do BTS #1',
     rota: ['CH-topo', 'CV-dir', 'CH-3x2'] },
+  /* ── ⭐ O LPWM PRECISA FICAR PRESO NO 0 V, E ESTAVA SOLTO ──────────
+     O Doc 32 sempre mandou aterrar os dois LPWM ("fixo em nível baixo,
+     carga unidirecional"), mas nenhum fio dizia isso — o borne ficava
+     declarado como livre, e na montagem sairia sem nada ligado.
+
+     🔥 ENTRADA DE PWM FLUTUANDO É O PIOR CASO. O que decide o caminho
+     da corrente é qual metade da ponte conduz: com o RPWM comandando a
+     metade R e o LPWM em nível BAIXO, a metade L fica com o MOSFET de
+     baixo ligado, e é por ele que a corrente volta do M− para o B−.
+     Solto, o LPWM pega ruído: a metade L começa a chavear junto com a
+     R, e as duas conduzindo ao mesmo tempo é curto no barramento de
+     24 V, com 6 A disponíveis.
+
+     📌 Na prática é um jumper de 3 cm entre o LPWM e o GND do próprio
+     módulo, no bloco de bornes da direita. */
+  ...['1', '2'].map((k, i) => ({
+    ...sig(`S31${k}`, { comp: `BTS${k}`, via: 'L_PWM' }, { comp: `BTS${k}`, via: 'GND' },
+      `Prende o LPWM do BTS #${k} em nível baixo.`),
+    rota: [], nome: `LPWM do BTS #${k} no 0 V`,
+    porque: '⭐ A carga é UNIDIRECIONAL: a Peltier só resfria e o PTC só aquece, então '
+          + 'a ponte nunca precisa inverter. Quem conduz é sempre a metade R; a metade '
+          + 'L existe só para devolver a corrente, e para isso o LPWM tem de estar '
+          + 'baixo e o L_EN alto.',
+    aviso: i === 0
+      ? '⚠️ NÃO CONFUNDA COM O L_EN. O L_EN vai ALTO (junto com o R_EN, no D4/D7) — é '
+      + 'ele que liga o MOSFET de baixo da metade L para a corrente voltar por ali em '
+      + 'vez de pelo diodo de corpo. O LPWM é que vai BAIXO. Trocar os dois é '
+      + 'trocar 4 W de calor por um curto.' : undefined,
+  })),
+
   { ...sig('S13', { comp: 'BTS1', via: 'R_EN' }, { comp: 'BTS1', via: 'L_EN' },
       'Ponte curta no próprio módulo: os dois enables andam juntos.'), rota: [],
     nome: 'ponte R_EN–L_EN do BTS #1',

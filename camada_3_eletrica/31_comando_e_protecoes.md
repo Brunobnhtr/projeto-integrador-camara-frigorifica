@@ -69,10 +69,36 @@ Porque depois de um STOP normal eles precisam estar em **estados diferentes ao m
 
 | | KA1 | KA2 |
 |---|---|---|
-| Depois de um **STOP** | continua ligado (a máquina segue habilitada) | desligado (o processo parou) |
+| Com o **STOP apertado** | continua ligado (a máquina segue habilitada) | desligado (a potência caiu) |
 | Depois de uma **EMERGÊNCIA** | desligado (perdeu o selo) | desligado |
 
 Um relé só não consegue estar ligado e desligado ao mesmo tempo. É essa a razão, e é a única.
+
+> ### 🔧 Correção — o STOP corta **enquanto está apertado**, não depois
+>
+> A linha de cima dizia *"depois de um STOP"*. Está errado, e é o tipo de erro que faz o aluno achar que montou o painel errado: ele aperta o STOP, solta, mede o BD-POT, **encontra 24 V**, e conclui que a cadeia não funciona.
+>
+> Olhe o circuito. O bloco NF do S2 está **em série com a bobina do KA2**, e o S2 é um botão de pulso:
+>
+> ```
+>   KA1 · contato NA ──► S2 · NF ──► A1 [ KA2 ] A2 ──► 0 V
+>                        ↑
+>              abre só ENQUANTO você segura
+> ```
+>
+> Solto o botão, o NF fecha de novo e **o KA2 reenergiza na hora**. Os 24 V voltam ao BD-POT. Isso é correto e é proposital:
+>
+> | | STOP | EMERGÊNCIA |
+> |---|---|---|
+> | O que é, na IEC 60204-1 | **parada normal** | **parada de emergência** |
+> | Precisa travar? | não | **sim, obrigatoriamente** |
+> | Como está feito aqui | contato NF em série, sem selo | **selo do KA1** — só o REARME desfaz |
+>
+> **Quem mantém o processo parado depois que você solta o STOP é o firmware**, e não o relé: o segundo bloco do S2 (NA, 5 V) avisa o `D23`, o firmware derruba o `R_EN` dos dois BTS e exige um novo START. Os 24 V estão disponíveis no barramento, mas **nenhuma das duas cargas conduz** — porque quem abre a ponte H é o `R_EN`, não o KA2.
+>
+> ⚠️ **É por isso que a emergência é outra coisa.** Nela a energia não pode voltar nem que o firmware queira, e é o selo do KA1 — hardware puro — que garante isso. Ver o passo 10 da sequência completa.
+>
+> 🔎 **Como conferir na bancada:** com o multímetro no BD-POT, aperte e **segure** o STOP → 0 V. Solte → **volta a 24 V**. Agora aperte o cogumelo e solte → **continua 0 V**, e só volta no REARME. Se o comportamento do STOP fosse igual ao do cogumelo, é a emergência que estaria errada.
 
 ### Por que os botões de parada são "normalmente fechados"
 

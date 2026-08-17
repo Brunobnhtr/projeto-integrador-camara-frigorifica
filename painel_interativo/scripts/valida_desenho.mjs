@@ -199,6 +199,44 @@ for (const f of seis) {
         + ` (${f.prensa})`);
 }
 
+/* ── 8. a rede fecha: curto entre barras, ou nó com um ponto só ────────
+   ⭐ O PRENSA-CABO É FURO, NÃO NÓ. Dois condutores passando pelo mesmo
+   furo não se tocam — e foi a primeira coisa que este teste acusou
+   errado, dando "curto" entre o BD-AUX e o BD-24V só porque os dois
+   entram pelo PG7-2. Cada fio ganha uma ponta própria no furo. */
+console.log('\n=== a rede fecha? ===');
+const BARRA = new Set(['BD-POT', 'BD-AUX', 'BD-24V', 'BD-5V', 'BD-0V']);
+const pai = new Map();
+const achaN = a => {
+  if (!pai.has(a)) pai.set(a, a);
+  while (pai.get(a) !== a) a = pai.get(a);
+  return a;
+};
+const une = (a, b) => { a = achaN(a); b = achaN(b); if (a !== b) pai.set(a, b); };
+const noDe = (a, w) => a.camara ? `CAM:${a.camara}.${a.borne}`
+  : a.tampa ? `TAM:${a.tampa}.${a.borne}` : a.maquete ? `MAQ:${a.maquete}.${a.borne}`
+  : a.prensa ? `poste(${w.n})`
+  : BARRA.has(a.comp) ? a.comp : `${a.comp}.${a.via}`;
+for (const w of FIOS) une(noDe(w.de, w), noDe(w.para, w));
+const nos = new Map();
+for (const k of pai.keys()) {
+  const r = achaN(k);
+  nos.set(r, [...(nos.get(r) ?? []), k]);
+}
+let curto = 0;
+for (const ms of nos.values()) {
+  const bs = ms.filter(x => BARRA.has(x));
+  if (bs.length > 1) { err(`CURTO: ${bs.join(' + ')} caíram no mesmo nó`); curto++; }
+}
+if (!curto) ok(`${nos.size} nós distintos, nenhuma barra em curto com outra`);
+const soltos = [...nos.values()].filter(ms => ms.length < 2);
+if (soltos.length) err(`nó com um ponto só: ${soltos.map(m => m[0]).join(', ')}`);
+else ok('nenhum nó com um ponto só');
+for (const b of BARRA) {
+  const no = [...nos.values()].find(ms => ms.includes(b));
+  ok(`${b}: ${no.length - 1} pontos pendurados`);
+}
+
 console.log(erros ? `\nFALHOU — ${erros} erro(s), ${avisos} aviso(s)`
                   : `\nOK — todo fio tem as duas pontas e todo borne usado tem fio`
                     + ` (${avisos} aviso(s))`);
