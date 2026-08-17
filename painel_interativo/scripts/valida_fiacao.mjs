@@ -229,7 +229,7 @@ let conferidos = 0, mudos = 0;
 for (const c of COMPONENTES)
   for (const g of c.grupos)
     for (const p of g.pinos) {
-      if (!p.usa || !p.para) continue;
+      if (!p.usa || p.semFio || !p.para) continue;
       const meus = FIOS.filter(f =>
         (f.de.comp === c.id && f.de.via === p.nome) ||
         (f.para.comp === c.id && f.para.via === p.nome));
@@ -271,7 +271,8 @@ const faltando = new Map();
 for (const c of COMPONENTES)
   for (const g of c.grupos)
     for (const p of g.pinos) {
-      if (!p.usa) continue;
+      /* jumper de configuração ocupa o borne mas não é fio */
+      if (!p.usa || p.semFio) continue;
       usados++;
       if (comFio.has(`${c.id}.${p.nome}`)) cobertos++;
       else faltando.set(c.id, (faltando.get(c.id) ?? 0) + 1);

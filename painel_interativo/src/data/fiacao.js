@@ -12,6 +12,7 @@
 import { FIOS_ETAPA2 } from './fiacao_etapa2.js';
 import { FIOS_ETAPA3 } from './fiacao_etapa3.js';
 import { FIOS_ETAPA4 } from './fiacao_etapa4.js';
+import { FIOS_ETAPA5 } from './fiacao_etapa5.js';
 import { FIOS_ETAPA6 } from './fiacao_etapa6.js';
 
 /* ⭐ AS CORES SÃO POR FUNÇÃO, NÃO POR FIO.
@@ -150,7 +151,9 @@ export const ETAPAS = [
   { n: 4, nome: 'Sinais — Arduino, PI-1, PI-2 e sensores', feito: true,
     resumo: '30 fios de sinal, todos em canaleta azul. É a etapa que a regra '
           + 'de segregação existe para proteger.' },
-  { n: 5, nome: 'Porta — tela, botões e sinaleiros', feito: false },
+  { n: 5, nome: 'Porta — tela, botões e sinaleiros', feito: true,
+    resumo: 'Os 4 sinaleiros, a tela com o conversor de nível e os blocos de '
+          + '5 V dos comandos. Cruzam pelas duas calhas, cada classe na sua.' },
   { n: 6, nome: 'Saídas — o que vai para a câmara', feito: true,
     resumo: '21 fios saem por dois prensa-cabos: 12 de potência para dentro da '
           + 'câmara e 9 de sinal, mais o lado quente que fica na tampa.' },
@@ -159,5 +162,6 @@ export const ETAPAS = [
 /* a lista única que o resto do app consome */
 /* nenhum fio escolhe a própria cor — ela vem da função */
 export const FIOS = [...FIOS_ETAPA1, ...FIOS_ETAPA2, ...FIOS_ETAPA3,
-                     ...FIOS_ETAPA4, ...FIOS_ETAPA6]
+                     ...FIOS_ETAPA4, ...FIOS_ETAPA5, ...FIOS_ETAPA6]
+  .filter(f => !f.oculto)
   .map(f => ({ ...f, cor: CORES[f.func].hex, corNome: CORES[f.func].nome }));

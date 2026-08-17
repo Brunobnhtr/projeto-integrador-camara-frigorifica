@@ -21,7 +21,7 @@ export const FIOS_ETAPA2 = [
     n: 'C1', etapa: 2, func: 'srv24', nome: 'alimentação da cadeia', classe: 'potencia',
     de: { comp: 'BD-24V', via: 'O2' }, para: { comp: 'S0', via: '11' },
     mm2: 0.5,
-    rota: ['CH-base', 'CP-vpot', 'CP-base'],
+    rota: ['CH-base', 'CP-vpot', 'CP-3x4'],
     diz: 'Sai do barramento PERMANENTE e vai até o cogumelo, na porta.',
     porque: '⭐ Vem do BD-24V e não do BD-POT. Se a cadeia de comando fosse alimentada '
           + 'pela potência que ela mesma comanda, nada nunca ligaria.',
@@ -30,14 +30,14 @@ export const FIOS_ETAPA2 = [
     n: 'C2', etapa: 2, func: 'srv24', nome: 'nó CMD → REARME', classe: 'potencia',
     de: { comp: 'S0', via: '12' }, para: { comp: 'S3', via: '13' },
     mm2: 0.5,
-    rota: ['CP-base', 'CP-vpot', 'CP-3x4'],
+    rota: ['CP-3x4'],
     diz: 'Fio curto, todo dentro da porta: do cogumelo até o botão de rearme.',
   },
   {
     n: 'C3', etapa: 2, func: 'srv24', nome: 'nó CMD → selo do KA1', classe: 'potencia',
     de: { comp: 'S0', via: '12' }, para: { comp: 'KA1', via: '11' },
     mm2: 0.5,
-    rota: ['CP-base', 'CP-vpot', 'CH-base'],
+    rota: ['CP-3x4', 'CP-vpot', 'CH-base'],
     diz: 'O mesmo nó do C2, indo para o comum do contato de selo do KA1.',
   },
   {

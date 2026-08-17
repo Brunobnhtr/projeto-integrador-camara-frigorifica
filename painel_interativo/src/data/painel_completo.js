@@ -93,7 +93,8 @@ export const CANALETAS_PORTA = [
   { id: 'CP-1x2',  tipo: 'sinal',    x: 2, y: 136, w: 240, h: 26, nome: 'entre a tela e os sinaleiros' },
   { id: 'CP-2x3',  tipo: 'sinal',    x: 2, y: 214, w: 240, h: 26, nome: 'entre os sinaleiros e os comandos' },
   { id: 'CP-3x4',  tipo: 'potencia', x: 2, y: 292, w: 240, h: 26, nome: 'entre os comandos e a emergência' },
-  { id: 'CP-base', tipo: 'potencia', x: 2, y: 384, w: 240, h: 26, nome: 'inferior' },
+  { id: 'CP-base', tipo: 'sinal', x: 2, y: 384, w: 240, h: 26,
+    nome: 'inferior — o bloco de 5 V do cogumelo' },
   /* ⭐ DUAS verticais na dobradiça, não uma. A porta carrega os dois
      mundos: o cogumelo, o STOP e os sinaleiros são 24 V de comando —
      e bobina de relé é POLUIDORA, dá pico ao desligar. A tela, os
@@ -537,9 +538,9 @@ export const COMPONENTES = [
         { nome: 'O4+' }, { nome: 'O4−' },
       ]},
       { ref: 'JMP', lado: 'esquerda', legenda: 'Jumpers H/L, um por canal (4)', pinos: [
-        { nome: 'J1', usa: true, para: 'deixar em H — liga com nível alto' },
-        { nome: 'J2', usa: true, para: 'deixar em H' },
-        { nome: 'J3', usa: true, para: 'deixar em H' },
+        { nome: 'J1', usa: true, semFio: true, para: 'deixar em H — liga com nível alto (é POSIÇÃO de jumper, não fio)' },
+        { nome: 'J2', usa: true, semFio: true, para: 'deixar em H (é POSIÇÃO de jumper, não fio)' },
+        { nome: 'J3', usa: true, semFio: true, para: 'deixar em H (é POSIÇÃO de jumper, não fio)' },
         { nome: 'J4' },
       ]},
     ],
@@ -667,18 +668,18 @@ export const COMPONENTES = [
     nota: '⚠️ Recorte da porta 47 × 61 mm, EM RETRATO. Reserve 25 mm livres atrás.',
     grupos: [
       { ref: 'UART', lado: 'baixo', legenda: 'Conector UART (4)', pinos: [
-        via('5V'), via('GND', 1, 'conversor · GND lado LV'),
+        via('5V'), via('GND-UART', 1, 'conversor · GND-LV — a referência do lado de 3,3 V'),
         via('TXD · IO44', 1, 'conversor · RXI'), via('RXD · IO43', 1, 'conversor · TXO'),
       ]},
       { ref: 'I2C', lado: 'cima', legenda: 'Conector I²C (4)', pinos: [
-        via('3V3', 1, 'conversor · LV'), via('GND'), via('SDA · IO16'), via('SCL · IO15'),
+        via('3V3', 1, 'conversor · LV'), via('GND-I2C'), via('SDA · IO16'), via('SCL · IO15'),
       ]},
       { ref: 'EXP', lado: 'cima', legenda: 'Expansão (4)', pinos: [
         via('IO2'), via('IO3'), via('IO14'), via('IO21'),
       ]},
       { ref: 'BAT', lado: 'baixo', legenda: 'Bateria (2)', pinos: [via('BAT+'), via('BAT−')] },
       { ref: 'USB', lado: 'esquerda', legenda: 'Alimentação Type-C (2)', pinos: [
-        via('VBUS', 1, 'BD-5V saída 2'), via('GND', 1, 'BD-0V'),
+        via('VBUS', 1, 'BD-5V saída 2'), via('GND-PWR', 1, 'BD-0V · R9'),
       ]},
     ],
     avisos: ['🔥 NÃO ligue o pino 5 V do conector UART. A wiki lista só Type-C e bateria '
@@ -695,12 +696,13 @@ export const COMPONENTES = [
         + 'que a letra.',
     grupos: [
       { ref: 'HV', lado: 'cima', legenda: 'Lado alto — 5 V (6)', pinos: [
-        via('TXI', 1, 'Mega D16'), via('HV', 1, 'BD-5V'), via('GND', 1, 'BD-0V'),
+        via('TXI', 1, 'Mega D16'), via('HV', 1, 'BD-5V saída 7'),
+        via('GND-HV', 1, 'BD-0V · R10 — referência do lado de 5 V'),
         via('RXO', 1, 'Mega D17'), via('TXI2'), via('RXO2'),
       ]},
       { ref: 'LV', lado: 'baixo', legenda: 'Lado baixo — 3,3 V (6)', pinos: [
         via('TXO', 1, 'tela · RXD IO43'), via('LV', 1, 'tela · 3,3 V do conector I²C'),
-        via('GND', 1, 'BD-0V'), via('RXI', 1, 'tela · TXD IO44'),
+        via('GND-LV', 1, 'tela · GND-UART — referência do lado de 3,3 V'), via('RXI', 1, 'tela · TXD IO44'),
         via('TXO2'), via('RXI2'),
       ]},
     ],
@@ -712,7 +714,11 @@ export const COMPONENTES = [
     x: 52 + i * 42, y: 175, largura: 30, altura: 30,
     cor: ['#2f9e44', '#1971c2', '#e8590c', '#c92a2a'][i],
     grupos: [{ ref: 'LMP', lado: 'baixo', legenda: 'Sinaleiro 22 mm · 24 V (2)', pinos: [
-      via('+', 1, 'BD-24V saída 3 — positivo comum'),
+      /* ⭐ SÓ O PRIMEIRO recebe fio do barramento. Os outros três pegam
+         do vizinho, em ponte curta na própria porta — três travessias de
+         dobradiça a menos, e 20 mA por lâmpada não justificam mais. */
+      via('+', 1, i === 0 ? 'BD-24V saída 3 — o positivo comum entra aqui'
+        : `ponte curta do H${i} · + (o +24 V vem encadeado)`),
       via('−', 1, `PI-1 J2-${i + 4}`),
     ]}],
   })),
@@ -720,7 +726,7 @@ export const COMPONENTES = [
     id: 'S1', nome: 'Botão START (verde)', porta: true,
     aConferir: '🔥 O bloco chaveia para o 0 V, NÃO para o 5 V. Com INPUT_PULLUP o Arduino já segura o pino em 5 V por dentro — ligar o botão no 5 V faz o pino ler HIGH apertado ou não, e o START nunca acontece.',
     x: 57, y: 250, largura: 30, altura: 30, cor: '#2f9e44',
-    grupos: [{ ref: 'NA', lado: 'baixo', legenda: 'Bloco NA de 5 V — contatos 13-14', pinos: [
+    grupos: [{ ref: 'NA', lado: 'cima', legenda: 'Bloco NA de 5 V — contatos 13-14', pinos: [
       via('13', 1, '⚡ 0 V comum dos comandos (vem do SA1-13)'),
       via('14', 1, 'Mega D22 — INPUT_PULLUP, LOW = apertado'),
     ]}],
@@ -729,9 +735,12 @@ export const COMPONENTES = [
     id: 'S2', nome: 'Botão STOP (preto)', porta: true,
     x: 102, y: 250, largura: 30, altura: 30, cor: '#212529',
     nota: 'Este é de 24 V: ele energiza a bobina do KA2 diretamente.',
-    grupos: [{ ref: 'BLK', lado: 'baixo', legenda: '1 bloco NF (24 V) + 1 bloco NA (5 V) — 4 vias', pinos: [
-      via('11', 1, '⚡ HARDWARE: KA1 · 24 (contato de saída)'),
+    grupos: [
+    { ref: 'NF24', lado: 'baixo', legenda: 'Bloco NF de 24 V — contatos 11-12', pinos: [
+      via('11', 1, '⚡ HARDWARE: KA1 · 14 (contato de saída)'),
       via('12', 1, '⚡ HARDWARE: KA2 · A1 — corta a bobina enquanto apertado'),
+    ]},
+    { ref: 'NA5', lado: 'cima', legenda: 'Bloco NA de 5 V — contatos 13-14', pinos: [
       via('13', 1, '⚡ 0 V comum dos comandos (ponte a partir do S1-13)'),
       via('14', 1, 'Mega D23 — INPUT_PULLUP, LOW = apertado'),
     ]}],
@@ -747,7 +756,7 @@ export const COMPONENTES = [
   {
     id: 'SA1', nome: 'Seletora LOCAL / REMOTO', porta: true,
     x: 192, y: 250, largura: 30, altura: 30, cor: '#212529',
-    grupos: [{ ref: 'SEL', lado: 'baixo', legenda: '2 posições · bloco NA — contatos 13-14', pinos: [
+    grupos: [{ ref: 'SEL', lado: 'cima', legenda: '2 posições · bloco NA — contatos 13-14', pinos: [
       via('13', 1, 'BD-0V · R18'), via('14', 1, 'Mega D26'),
     ]}],
     avisos: ['✅ Confirmado no firmware: 1 pino só, o D26, com INPUT_PULLUP. '
@@ -760,8 +769,14 @@ export const COMPONENTES = [
     x: 142, y: 330, largura: 44, altura: 44, cor: '#c92a2a',
     nota: 'Cogumelo com trava. Dois blocos NF: um corta a potência, o outro avisa o '
         + 'Arduino.',
-    grupos: [{ ref: 'NF', lado: 'baixo', legenda: '2 blocos NF (4)', pinos: [
+    /* ⭐ OS DOIS BLOCOS SAEM POR LADOS OPOSTOS, cada um para a canaleta
+       da sua classe: o de 24 V é cadeia de comando (potência) e sobe;
+       o de 5 V é leitura do Arduino (sinal) e desce. */
+    grupos: [
+    { ref: 'NF24', lado: 'cima', legenda: 'Bloco NF de 24 V — contatos 11-12', pinos: [
       via('11', 1, 'BD-24V saída 2'), via('12', 1, 'cadeia → KA1 · A1'),
+    ]},
+    { ref: 'NF5', lado: 'baixo', legenda: 'Bloco NF de 5 V — contatos 21-22', pinos: [
       via('21', 1, '⚡ 0 V comum dos comandos (ponte a partir do S2-13)'),
       via('22', 1, 'Mega D24 — INPUT_PULLUP, HIGH = EMERGÊNCIA (o NF abriu)'),
     ]}],
