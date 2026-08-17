@@ -59,6 +59,9 @@ for (const f of FIOS) {
      Conferir só o destino deixaria passar o erro mais comum: partir de
      um borne que já está ocupado por outra coisa, ou que nem existe. */
   for (const [lado, alvo] of [['sai de', f.de], ['chega em', f.para]]) {
+    /* destino fora do painel: a ponta é uma peça da câmara ou da tampa,
+       e quem confere aquilo é o valida_camara */
+    if (alvo.camara || alvo.tampa) continue;
     if (!alvo.comp) continue;
     const c = COMPONENTES.find(x => x.id === alvo.comp);
     if (!c) { erros.push(`${f.n}: o componente ${alvo.comp} não existe`); continue; }
@@ -138,7 +141,9 @@ for (const f of FIOS) {
 /* ── quantos condutores por prensa-cabo ─────────────────────────────── */
 console.log('\n=== ocupação dos prensa-cabos ===');
 for (const p of PRENSAS_PAINEL) {
-  const fs = FIOS.filter(f => f.de.prensa === p.id);
+  /* o fio ENTRA por um prensa-cabo (de.prensa) ou SAI por um
+     (campo `prensa`) — os dois ocupam o mesmo furo */
+  const fs = FIOS.filter(f => f.de.prensa === p.id || f.prensa === p.id);
   const secao = fs.reduce((a, f) => a + f.mm2, 0);
   const ok = fs.length <= p.capacidade;
   if (!ok) erros.push(`${p.id} leva ${fs.length} condutores e comporta ${p.capacidade}`);
@@ -183,7 +188,8 @@ if (noPonto.size > totPontos)
 
 /* ── as rotas, em texto, para conferir na bancada ───────────────────── */
 console.log('\n=== as rotas ===');
-const nomeDe = a => a.prensa ?? `${a.comp}.${a.via}`;
+const nomeDe = a => a.prensa ?? (a.camara ? `câmara·${a.camara}.${a.borne}`
+  : a.tampa ? `tampa·${a.tampa}.${a.borne}` : `${a.comp}.${a.via}`);
 let etapaAtual = null;
 for (const f of FIOS) {
   if (f.etapa !== etapaAtual) {
@@ -234,6 +240,11 @@ for (const c of COMPONENTES)
          inventário fala — corretamente — de onde o sinal VEM lá atrás.
          Cobrar o nome do componente aqui seria cobrar o óbvio errado. */
       if (meus.every(f => f.de.comp === f.para.comp)) continue;
+      /* ⭐ A ponta de FORA do painel não entra na auditoria de texto: o
+         inventário fala do destino real (a peça na câmara), e às vezes
+         em forma NEGATIVA — "sem passar pela PI-2" citaria a PI-2 e
+         faria o auditor acusar o oposto do que o texto diz. */
+      if (meus.every(f => !f.de.comp || !f.para.comp)) continue;
       const alvos = new Set(meus.map(f =>
         f.de.comp === c.id && f.de.via === p.nome ? f.para.comp : f.de.comp)
         .filter(Boolean));

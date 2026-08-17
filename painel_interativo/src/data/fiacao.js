@@ -12,6 +12,7 @@
 import { FIOS_ETAPA2 } from './fiacao_etapa2.js';
 import { FIOS_ETAPA3 } from './fiacao_etapa3.js';
 import { FIOS_ETAPA4 } from './fiacao_etapa4.js';
+import { FIOS_ETAPA6 } from './fiacao_etapa6.js';
 
 /* ⭐ AS CORES SÃO POR FUNÇÃO, NÃO POR FIO.
    Num painel de verdade não existem 24 cores de fio: a cor diz QUE
@@ -54,6 +55,23 @@ export const PRENSAS_PAINEL = [
     id: 'PG7-2', tipo: 'PG7', face: 'base', x: 170, classe: 'potencia',
     nome: 'ENTRADA 12 V + 24 V SERVIÇOS', capacidade: 3,
     diz: 'Dois positivos: o 12 V do T3 (poste 3) e o 24 V de serviços do ramal R2.',
+  },
+  /* ⭐ AS DUAS SAÍDAS PARA A CÂMARA. Separadas pelo mesmo motivo das
+     entradas: o PG9-2 leva a saída dos BTS, que é o que polui, e o
+     PG9-3 leva os retornos das posições, o I²C e os RPM, que é o que
+     sofre. Ficam nos cantos opostos da base. */
+  {
+    id: 'PG9-2', tipo: 'PG9', face: 'base', x: 300, classe: 'potencia',
+    nome: 'SAÍDA DE POTÊNCIA → CÂMARA', capacidade: 14,
+    diz: 'Peltier, PTC e as três saídas de ventoinha. É por aqui que passam os 6 A '
+       + 'chaveados.',
+  },
+  {
+    id: 'PG9-3', tipo: 'PG9', face: 'base', x: 470, classe: 'sinal',
+    nome: 'SAÍDA DE SINAL E MEDIÇÃO → CÂMARA', capacidade: 10,
+    diz: 'Os retornos das duas posições, o I²C do AM2315C, o DS18B20 do radiador e '
+       + 'os dois RPM. Fica embaixo da CV-dir, para os fios subirem direto pela '
+       + 'canaleta de sinal sem passar pela de potência.',
   },
 ];
 
@@ -133,11 +151,13 @@ export const ETAPAS = [
     resumo: '30 fios de sinal, todos em canaleta azul. É a etapa que a regra '
           + 'de segregação existe para proteger.' },
   { n: 5, nome: 'Porta — tela, botões e sinaleiros', feito: false },
-  { n: 6, nome: 'Saídas — o que vai para a câmara', feito: false },
+  { n: 6, nome: 'Saídas — o que vai para a câmara', feito: true,
+    resumo: '21 fios saem por dois prensa-cabos: 12 de potência para dentro da '
+          + 'câmara e 9 de sinal, mais o lado quente que fica na tampa.' },
 ];
 
 /* a lista única que o resto do app consome */
 /* nenhum fio escolhe a própria cor — ela vem da função */
 export const FIOS = [...FIOS_ETAPA1, ...FIOS_ETAPA2, ...FIOS_ETAPA3,
-                     ...FIOS_ETAPA4]
+                     ...FIOS_ETAPA4, ...FIOS_ETAPA6]
   .map(f => ({ ...f, cor: CORES[f.func].hex, corNome: CORES[f.func].nome }));

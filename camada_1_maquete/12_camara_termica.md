@@ -513,6 +513,50 @@ empurra o ar sobre o aquecedor e para dentro do plenum, de onde ele sobe pelos d
 volta pelo topo. O ar aquecido **atravessa todo o volume** — só entra pelas laterais em vez
 de pelo centro.
 
+### 🔌 Como as duas Peltier se ligam EM SÉRIE
+
+Esta é a ligação que mais gera dúvida, porque o par forma **uma carga só** de 24 V — e não duas de 12 V.
+
+```
+   do painel                                          de volta ao painel
+   BTS #1 · M+                                             BTS #1 · M−
+       │                                                        │
+       ▼                                                        │
+   ┌───────────┐        fio de ligação        ┌───────────┐     │
+   │ PASTILHA 1│  −  ────────────────────  +  │ PASTILHA 2│  −  ┘
+   │  vermelho │                              │           │
+   └───────────┘                              └───────────┘
+        12 V                    +                  12 V     =  24 V
+```
+
+| Passo | O que fazer |
+|---|---|
+| 1 | O fio **vermelho** da pastilha 1 recebe o `M+` que vem do painel |
+| 2 | O fio **preto** da pastilha 1 vai no **vermelho** da pastilha 2 — é a EMENDA DA SÉRIE, e ela fica dentro da câmara |
+| 3 | O fio **preto** da pastilha 2 volta ao painel, no `M−` do BTS #1 |
+
+> ⭐ **Só DOIS fios atravessam a parede**, não quatro. A emenda entre as pastilhas é feita ali mesmo, no topo, com terminal isolado ou solda com termorretrátil.
+
+⚠️ **A polaridade decide qual lado esfria.** Invertendo o par, a face que deveria ficar fria vira a quente — e como o dissipador está do outro lado, a pastilha cozinha em menos de um minuto. **Antes de parafusar, energize por 10 segundos e sinta com a mão qual face esfriou.**
+
+📌 **As duas pastilhas têm que ser do mesmo modelo e do mesmo lote.** Em série passa a MESMA corrente pelas duas; se uma tiver resistência diferente, ela recebe tensão diferente e trabalha fora do ponto.
+
+### 🌀 E as ventoinhas do lado frio, que são duas
+
+Elas **não** se ligam na pastilha — vêm do painel, pelo canal 3 do MV-1, e são de **12 V**:
+
+```
+   MV-1 · O3+ ──┬── ventoinha fria 1 (+)     ┬── ventoinha do duto 1 (+)
+                └── ventoinha fria 2 (+)     └── ventoinha do duto 2 (+)
+   MV-1 · O3− ──── os quatro negativos juntos
+```
+
+> 🔥 **NUNCA ligue a ventoinha na saída da Peltier.** A saída do BTS é PWM de 24 V; a ventoinha é de 12 V contínuos. Além de queimar, ela pararia sempre que o controle reduzisse o duty — exatamente quando o ar mais precisa circular.
+
+**Quatro ventoinhas em paralelo, dois fios atravessando a parede.** Elas formam um circuito de ar só, então ligam e desligam juntas.
+
+---
+
 ### 🧊 Por que TUDO entra pelo fundo
 
 Não é preferência — é a única parede que sobra:
