@@ -362,7 +362,9 @@ export default function VistaPainelInterno() {
           {/* ⭐ AS CALHAS DE TRAVESSIA, entre a placa e a porta */}
           {CALHAS.map(k => {
             const pot = k.tipo === 'potencia';
-            const x0 = CAIXA.largura - 14, x1 = PORTA_X + 44;
+            /* ⭐ cada calha morre DENTRO da sua vertical na porta, e não
+               num ponto comum: quem manda é o `entraEm` da própria calha */
+            const x0 = CAIXA.largura - 14, x1 = PORTA_X + k.entraEm;
             return (
               <g key={k.id}>
                 <rect x={x0} y={k.y} width={x1 - x0} height={k.h} rx={5}

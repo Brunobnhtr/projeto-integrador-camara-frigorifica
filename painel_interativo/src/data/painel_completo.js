@@ -89,19 +89,24 @@ export const REGRA_SEGREGACAO = {
  * ela que TODOS os fios cruzam para dentro do painel.
  */
 export const CANALETAS_PORTA = [
-  { id: 'CP-topo', tipo: 'sinal',    x: 38, y: 10,  w: 200, h: 24, nome: 'superior' },
-  { id: 'CP-1x2',  tipo: 'sinal',    x: 38, y: 136, w: 200, h: 26, nome: 'entre a tela e os sinaleiros' },
-  { id: 'CP-2x3',  tipo: 'sinal',    x: 38, y: 214, w: 200, h: 26, nome: 'entre os sinaleiros e os comandos' },
-  { id: 'CP-3x4',  tipo: 'potencia', x: 38, y: 292, w: 200, h: 26, nome: 'entre os comandos e a emergência' },
-  { id: 'CP-base', tipo: 'potencia', x: 38, y: 384, w: 200, h: 26, nome: 'inferior' },
+  { id: 'CP-topo', tipo: 'sinal',    x: 2, y: 10,  w: 240, h: 24, nome: 'superior' },
+  { id: 'CP-1x2',  tipo: 'sinal',    x: 2, y: 136, w: 240, h: 26, nome: 'entre a tela e os sinaleiros' },
+  { id: 'CP-2x3',  tipo: 'sinal',    x: 2, y: 214, w: 240, h: 26, nome: 'entre os sinaleiros e os comandos' },
+  { id: 'CP-3x4',  tipo: 'potencia', x: 2, y: 292, w: 240, h: 26, nome: 'entre os comandos e a emergência' },
+  { id: 'CP-base', tipo: 'potencia', x: 2, y: 384, w: 240, h: 26, nome: 'inferior' },
   /* ⭐ DUAS verticais na dobradiça, não uma. A porta carrega os dois
      mundos: o cogumelo, o STOP e os sinaleiros são 24 V de comando —
      e bobina de relé é POLUIDORA, dá pico ao desligar. A tela, os
      botões de 5 V e a seletora são sinal. Cada um na sua, e duas
      passagens flexíveis separadas. */
-  { id: 'CP-vsin', tipo: 'sinal',    x: 2,  y: 10, w: 18, h: 400,
+  /* ⭐ A DE SINAL FICA NA BORDA e a de potência POR DENTRO, descendo
+     60 mm mais. É isso que faz cada calha morrer dentro da SUA vertical
+     sem passar por cima da outra: a CL-sin para na primeira que
+     encontra, e a CL-pot cruza aquele trecho na altura em que a de
+     sinal já acabou. */
+  { id: 'CP-vsin', tipo: 'sinal',    x: 2,  y: 10, w: 22, h: 400,
     nome: 'vertical da DOBRADIÇA — sinal', vertical: true, dobradica: true },
-  { id: 'CP-vpot', tipo: 'potencia', x: 22, y: 10, w: 18, h: 400,
+  { id: 'CP-vpot', tipo: 'potencia', x: 26, y: 10, w: 22, h: 460,
     nome: 'vertical da DOBRADIÇA — potência', vertical: true, dobradica: true },
 ];
 
@@ -154,13 +159,14 @@ export const FOLGA_LATERAL = 8;
    e folga de 60 mm — e é o ÚNICO ponto do painel onde os fios passam de
    uma parte para a outra. */
 export const CALHAS = [
-  { id: 'CL-pot', tipo: 'potencia', y: 444, h: 24, nome: 'calha de POTÊNCIA',
-    daPlaca: 'CH-base', naPorta: 'CP-vpot',
-    diz: 'Rente à CH-base, no canto de baixo. Leva a cadeia de comando de 24 V.' },
-  { id: 'CL-sin', tipo: 'sinal', y: 398, h: 24, nome: 'calha de SINAL E MEDIÇÃO',
-    daPlaca: 'CV-dir', naPorta: 'CP-vsin',
-    diz: '46 mm acima da de potência, alimentada pela vertical de sinal. Leva a '
-       + 'tela, os botões de 5 V e a seletora.' },
+  { id: 'CL-pot', tipo: 'potencia', y: 444, h: 24, entraEm: 37,
+    nome: 'calha de POTÊNCIA', daPlaca: 'CH-base', naPorta: 'CP-vpot',
+    diz: 'Rente à CH-base, no canto de baixo. Leva a cadeia de comando de 24 V. '
+       + 'Vai um pouco mais longe porque a vertical de potência é a de dentro.' },
+  { id: 'CL-sin', tipo: 'sinal', y: 380, h: 24, entraEm: 13,
+    nome: 'calha de SINAL E MEDIÇÃO', daPlaca: 'CV-dir', naPorta: 'CP-vsin',
+    diz: 'Mais curta: morre na primeira vertical que encontra, a de sinal, que fica '
+       + 'na borda da dobradiça. Leva a tela, os botões de 5 V e a seletora.' },
 ];
 
 export const TRILHO_X0 = 42;    // logo depois da CV-esq (14..40)
@@ -655,7 +661,7 @@ export const COMPONENTES = [
   /* ════════════ PORTA ════════════ */
   {
     id: 'HMI', nome: 'Tela ES3C28P (ESP32-S3)', porta: true,
-    x: 64, y: 40, largura: 50, altura: 86, cor: '#1971c2',
+    x: 70, y: 40, largura: 50, altura: 86, cor: '#1971c2',
     nota: '⚠️ Recorte da porta 47 × 61 mm, EM RETRATO. Reserve 25 mm livres atrás.',
     grupos: [
       { ref: 'UART', lado: 'baixo', legenda: 'Conector UART (4)', pinos: [
@@ -680,7 +686,7 @@ export const COMPONENTES = [
   },
   {
     id: 'CONV', nome: 'Conversor de nível 2 canais', porta: true,
-    x: 128, y: 44, largura: 34, altura: 22, cor: '#7048e8',
+    x: 134, y: 44, largura: 34, altura: 22, cor: '#7048e8',
     escala: 'ampliado — a placa real tem 14,7 × 12,7 mm',
     nota: 'Monta atrás da tela, em espaçadores de nylon. ⚠️ No desenho ele está '
         + 'ampliado: a placa real tem 14,7 × 12,7 mm e os pinos ficariam menores '
@@ -701,7 +707,7 @@ export const COMPONENTES = [
   },
   ...['ENERGIZADO', 'RESFRIANDO', 'AQUECENDO', 'FALHA'].map((nome, i) => ({
     id: `H${i + 1}`, nome: `Sinaleiro H${i + 1} — ${nome}`, porta: true,
-    x: 46 + i * 42, y: 175, largura: 30, altura: 30,
+    x: 52 + i * 42, y: 175, largura: 30, altura: 30,
     cor: ['#2f9e44', '#1971c2', '#e8590c', '#c92a2a'][i],
     grupos: [{ ref: 'LMP', lado: 'baixo', legenda: 'Sinaleiro 22 mm · 24 V (2)', pinos: [
       via('+', 1, 'BD-24V saída 3 — positivo comum'),
@@ -711,7 +717,7 @@ export const COMPONENTES = [
   {
     id: 'S1', nome: 'Botão START (verde)', porta: true,
     aConferir: '🔥 O bloco chaveia para o 0 V, NÃO para o 5 V. Com INPUT_PULLUP o Arduino já segura o pino em 5 V por dentro — ligar o botão no 5 V faz o pino ler HIGH apertado ou não, e o START nunca acontece.',
-    x: 51, y: 250, largura: 30, altura: 30, cor: '#2f9e44',
+    x: 57, y: 250, largura: 30, altura: 30, cor: '#2f9e44',
     grupos: [{ ref: 'NA', lado: 'baixo', legenda: 'Bloco NA de 5 V — contatos 13-14', pinos: [
       via('13', 1, '⚡ 0 V comum dos comandos (vem do SA1-13)'),
       via('14', 1, 'Mega D22 — INPUT_PULLUP, LOW = apertado'),
@@ -719,7 +725,7 @@ export const COMPONENTES = [
   },
   {
     id: 'S2', nome: 'Botão STOP (preto)', porta: true,
-    x: 96, y: 250, largura: 30, altura: 30, cor: '#212529',
+    x: 102, y: 250, largura: 30, altura: 30, cor: '#212529',
     nota: 'Este é de 24 V: ele energiza a bobina do KA2 diretamente.',
     grupos: [{ ref: 'BLK', lado: 'baixo', legenda: '1 bloco NF (24 V) + 1 bloco NA (5 V) — 4 vias', pinos: [
       via('11', 1, '⚡ HARDWARE: KA1 · 24 (contato de saída)'),
@@ -730,7 +736,7 @@ export const COMPONENTES = [
   },
   {
     id: 'S3', nome: 'Botão REARME (azul)', porta: true,
-    x: 141, y: 250, largura: 30, altura: 30, cor: '#1971c2',
+    x: 147, y: 250, largura: 30, altura: 30, cor: '#1971c2',
     grupos: [{ ref: 'NA', lado: 'baixo', legenda: 'Bloco NA de 24 V — contatos 13-14', pinos: [
       via('13', 1, 'nó CMD — a cadeia, depois do cogumelo'),
       via('14', 1, 'KA1 · A1 — refaz o selo'),
@@ -738,7 +744,7 @@ export const COMPONENTES = [
   },
   {
     id: 'SA1', nome: 'Seletora LOCAL / REMOTO', porta: true,
-    x: 186, y: 250, largura: 30, altura: 30, cor: '#212529',
+    x: 192, y: 250, largura: 30, altura: 30, cor: '#212529',
     grupos: [{ ref: 'SEL', lado: 'baixo', legenda: '2 posições · bloco NA — contatos 13-14', pinos: [
       via('13', 1, 'BD-0V · R18'), via('14', 1, 'Mega D26'),
     ]}],
@@ -749,7 +755,7 @@ export const COMPONENTES = [
   },
   {
     id: 'S0', nome: 'Cogumelo de EMERGÊNCIA', porta: true,
-    x: 136, y: 330, largura: 44, altura: 44, cor: '#c92a2a',
+    x: 142, y: 330, largura: 44, altura: 44, cor: '#c92a2a',
     nota: 'Cogumelo com trava. Dois blocos NF: um corta a potência, o outro avisa o '
         + 'Arduino.',
     grupos: [{ ref: 'NF', lado: 'baixo', legenda: '2 blocos NF (4)', pinos: [

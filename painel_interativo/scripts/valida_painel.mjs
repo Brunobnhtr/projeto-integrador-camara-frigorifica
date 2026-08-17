@@ -6,7 +6,7 @@
  * bancada, quando falta um lugar para o fio.
  */
 import { COMPONENTES, TRILHOS, CAIXA, PLACA, CANALETAS, CANALETAS_PORTA,
-         LATERAIS, FOLGA_LATERAL, TRILHO_X0, TRILHO_X1 }
+         LATERAIS, FOLGA_LATERAL, TRILHO_X0, TRILHO_X1, CALHAS }
   from '../src/data/painel_completo.js';
 
 /* largura util = placa menos as canaletas verticais */
@@ -125,6 +125,32 @@ if (!classes.has('potencia') || !classes.has('sinal'))
     + 'não podem dividir a mesma passagem flexível');
 else if (dob.length !== 2)
   erros.push(`a dobradiça tem ${dob.length} canaletas — deve ter 2, uma por classe`);
+
+/* ── ⭐ CADA CALHA MORRE DENTRO DA SUA VERTICAL ──────────────────────
+   Ela não pode parar antes (o fio ficaria solto) nem passar direto (ela
+   cruzaria a vertical da outra classe). E as duas não podem se cruzar:
+   por isso a de sinal fica na borda e a de potência, mais interna,
+   desce a uma altura em que a de sinal já acabou. */
+console.log('\n=== as calhas terminam onde devem? ===');
+for (const k of CALHAS) {
+  const v = CANALETAS_PORTA.find(x => x.id === k.naPorta);
+  if (!v) { erros.push(`${k.id} aponta para ${k.naPorta}, que não existe`); continue; }
+  if (k.entraEm < v.x || k.entraEm > v.x + v.w)
+    erros.push(`${k.id} entra na porta em x=${k.entraEm}, fora da ${v.id} `
+      + `(${v.x}–${v.x + v.w})`);
+  if (!(k.y < v.y + v.h && v.y < k.y + k.h))
+    erros.push(`${k.id} está na altura ${k.y}–${k.y + k.h} e a ${v.id} vai de `
+      + `${v.y} a ${v.y + v.h} — a calha não encosta na canaleta`);
+  if (v.tipo !== k.tipo)
+    erros.push(`${k.id} é ${k.tipo} e chega na ${v.id}, que é ${v.tipo}`);
+  /* a calha não pode atravessar a vertical da OUTRA classe */
+  for (const o of CANALETAS_PORTA.filter(x => x.dobradica && x.id !== k.naPorta))
+    if (k.entraEm > o.x && k.y < o.y + o.h && o.y < k.y + k.h)
+      erros.push(`${k.id} passa por cima da ${o.id} (${o.tipo}) para chegar na `
+        + `${v.id} — troque a ordem das verticais ou a altura da calha`);
+  console.log(`  . ${k.id}: entra em x=${k.entraEm} dentro da ${v.id} `
+    + `(${v.x}–${v.x + v.w}), altura ${k.y}–${k.y + k.h}`);
+}
 
 /* ── ⭐ NINGUÉM EM CIMA DE CANALETA, NEM O TRILHO ────────────────────
    Fio só anda dentro da canaleta. Se um componente — ou o próprio

@@ -217,18 +217,25 @@ A porta carrega **11 componentes**: a tela, o conversor de nível, 4 sinaleiros,
 Os fios da porta cruzam para a placa **num ponto só de cada classe**, e esse trecho é o único do painel inteiro que **se move**. As duas calhas ficam no **canto inferior direito**, uma acima da outra:
 
 ```
-   PLACA DE MONTAGEM                          PORTA
-   ┌───────────────────────┐            ┌──────────────────┐
-   │                       │            │                  │
-   │              CV-dir ══╪══ CL-sin ══╪══ CP-vsin        │  y = 398
-   │              (sinal)  │  ∿∿∿∿∿∿∿   │   (sinal)        │
-   │                       │            │                  │
-   │             CH-base ══╪══ CL-pot ══╪══ CP-vpot        │  y = 444
-   │            (potência) │  ∿∿∿∿∿∿∿   │  (potência)      │
-   └───────────────────────┘            └──────────────────┘
-                              ▲
-                     espiral · folga de 60 mm
+   PLACA DE MONTAGEM                     PORTA (vista de dentro)
+   ┌────────────────────┐          ┌─┬─┬──────────────────┐
+   │                    │          │s│p│                  │
+   │           CV-dir ══╪═ CL-sin ═╡ │p│                  │  y = 380
+   │           (sinal)  │  ∿∿∿∿∿   │i│o│                  │   ← a mais CURTA
+   │                    │          │n│t│                  │
+   │                    │          │a│ │                  │
+   │          CH-base ══╪═ CL-pot ═╪═╡ │                  │  y = 444
+   │         (potência) │  ∿∿∿∿∿∿  │ └─┘                  │   ← passa mais fundo
+   └────────────────────┘          └────────────────────  ┘
+                                    ▲ ▲
+                            CP-vsin ┘ └ CP-vpot
 ```
+
+⭐ **Repare no comprimento diferente das duas.** A `CL-sin` **morre na primeira vertical que encontra** — a de sinal, que fica na borda da dobradiça. A `CL-pot` precisa ir mais fundo, até a de potência.
+
+**E é por isso que a de sinal está na borda.** Se fosse o contrário, a calha de sinal teria que passar por cima da vertical de potência para chegar ao seu destino — misturando as duas classes justamente no ponto mais crítico. Do jeito que está, a `CL-pot` cruza aquele trecho **na altura em que a vertical de sinal já acabou** (ela vai até y=410; a calha de potência está em 444).
+
+📐 O `npm run valida:painel` confere as três coisas: que cada calha **entra dentro** da sua vertical (nem antes nem depois), que **encosta nela em altura**, e que **não passa por cima** da vertical da outra classe.
 
 | Calha | Sai da placa por | Chega na porta em | Leva |
 |---|---|---|---|
