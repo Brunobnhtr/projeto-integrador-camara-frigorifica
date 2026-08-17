@@ -137,7 +137,12 @@ export const PINAGENS = {
       '⚠️ O UART é o UART0 (IO43/IO44), o mesmo do log de boot. O Arduino vai receber '
       + '~500 bytes de texto a cada reinício da tela. O parser precisa ignorar linha '
       + 'que não siga o protocolo — boa prática de qualquer jeito.',
-      '🔥 NÃO ligue o pino de 5 V do conector UART no BD-5V. A wiki lista apenas Type-C '
+'🔌 "VBUS" e "GND-PWR" no diagrama do painel SÃO o Type-C: VBUS é o +5 V dele e '
+      + 'GND-PWR é o 0 V dele. Não é uma segunda entrada — é o mesmo conector, com os '
+      + 'dois fios nomeados para o desenho poder mostrar onde cada um termina. Na '
+      + 'montagem isso é um RABICHO Type-C: vermelho no BD-5V O2, preto no BD-0V R9. '
+      + '⚠️ Um alimentador de cada vez — com o rabicho ligado, não plugue o PC junto.',
+            '🔥 NÃO ligue o pino de 5 V do conector UART no BD-5V. A wiki lista apenas Type-C '
       + 'e bateria como entradas de alimentação; esse pino é provavelmente saída. '
       + 'Alimente pelo Type-C e use só GND, TXD e RXD do cabo UART. Para tirar a dúvida: '
       + 'com a placa desligada, meça continuidade entre esse pino e o VBUS do Type-C — '

@@ -56,14 +56,27 @@ export const FIOS_ETAPA5 = [
   /* ── a tela e o conversor de nível ────────────────────────────────── */
   { n: 'P10', etapa: 5, classe: 'alim', func: 'log5', mm2: 0.5,
     de: { comp: 'BD-5V', via: 'O2' }, para: { comp: 'HMI', via: 'VBUS' },
-    nome: 'alimentação da tela', rota: ['CH-base', 'CV-dir', 'CP-vsin', 'CP-topo'],
-    diz: 'Os 5 V que alimentam a ES3C28P, pelo VBUS.',
-    aviso: '⚠️ Alimente pelo VBUS OU pelo USB-C, nunca pelos dois. E confira a bitola: '
-         + 'a tela puxa ~140 mA e o cabo é longo, atravessa a dobradiça.' },
+    nome: 'alimentação da tela · +5 V',
+    rota: ['CH-base', 'CV-dir', 'CP-vsin', 'CP-topo'],
+    diz: 'O +5 V da ES3C28P. VBUS É o Type-C: é o nome do fio de 5 V dele.',
+    porque: '⭐ VBUS NÃO É UMA ENTRADA À PARTE. "VBUS" é como se chama o pino de +5 V '
+          + 'de qualquer conector USB — e neste projeto ele chega por um RABICHO '
+          + 'Type-C: um plugue USB-C com dois fios nus na outra ponta, vermelho no '
+          + 'BD-5V e preto no BD-0V. Você não solda nada na placa; pluga o Type-C.',
+    aviso: '⚠️ UM alimentador de cada vez. Com o rabicho ligado no BD-5V, não plugue '
+         + 'também um carregador ou o cabo do PC: seriam duas fontes de 5 V empurrando '
+         + 'uma contra a outra no mesmo conector. Para gravar firmware, desligue o '
+         + 'disjuntor do painel ou desconecte o rabicho antes.',
+    juntoCom: 'P11' },
   { n: 'P11', etapa: 5, classe: 'comum', func: 'zero', mm2: 0.5,
     de: { comp: 'HMI', via: 'GND-PWR' }, para: { comp: 'BD-0V', via: 'R9' },
-    nome: 'retorno da tela', rota: ['CP-1x2', 'CP-vsin', 'CV-dir', 'CH-base'],
-    diz: 'O 0 V da tela, no ponto R9 da barra.' },
+    nome: 'alimentação da tela · 0 V',
+    rota: ['CP-topo', 'CP-vsin', 'CV-dir', 'CH-base'],
+    diz: 'O preto do MESMO rabicho Type-C, no ponto R9 da barra.',
+    porque: '⭐ ANDA COLADO NO P10, porque é o outro fio do mesmo plugue. Se você vir '
+          + 'este par se separando em canaletas diferentes no desenho, é erro: os dois '
+          + 'saem do mesmo Type-C e voltam pelo mesmo caminho.',
+    juntoCom: 'P10' },
   { ...sin('P12', { comp: 'MEGA', via: 'D16' }, { comp: 'CONV', via: 'TXI' },
       'Serial2 do Arduino entrando no lado ALTO do conversor.'),
     nome: 'UART Mega TX → conversor',

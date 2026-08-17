@@ -282,6 +282,22 @@ console.log(`  ${cobertos} de ${usados} bornes usados já têm fio declarado (${
 const top = [...faltando].sort((a, b) => b[1] - a[1]).slice(0, 8);
 console.log('  ainda sem fio: ' + top.map(([id, q]) => `${id}(${q})`).join(' · '));
 
+/* ── par que é um cabo só tem de andar pelo mesmo caminho ──────────────
+   O +5 V e o 0 V de um Type-C são dois fios do MESMO plugue. Estavam
+   declarados com rotas diferentes — no desenho o par se separava e
+   descia por canaletas distintas, coisa que o plugue não deixa fazer. */
+for (const f of FIOS) {
+  if (!f.juntoCom) continue;
+  const par = FIOS.find(x => x.n === f.juntoCom);
+  if (!par) { erros.push(`${f.n} diz andar junto com ${f.juntoCom}, que não existe`); continue; }
+  if (par.juntoCom !== f.n)
+    erros.push(`${f.n} diz andar junto com ${par.n}, mas ${par.n} não diz o mesmo`);
+  const a = [...f.rota].sort().join('>'), b = [...par.rota].sort().join('>');
+  if (a !== b)
+    erros.push(`${f.n} e ${par.n} são o mesmo cabo mas seguem canaletas diferentes: `
+             + `[${f.rota}] contra [${par.rota}]`);
+}
+
 const feitas = ETAPAS.filter(e => e.feito).length;
 console.log(`\netapas concluídas: ${feitas} de ${ETAPAS.length}`);
 avisos.forEach(a => console.log('  ! ' + a));

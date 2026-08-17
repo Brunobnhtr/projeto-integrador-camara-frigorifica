@@ -6,6 +6,8 @@ import * as PI2 from '../data/pi2_fisico';
 import { PINAGENS } from '../data/pinagens';
 import { PRENSAS_PAINEL, FIOS, ETAPAS, CORES } from '../data/fiacao';
 import CamaraNoPainel from './CamaraNoPainel';
+import { PRENSAS3D, ROTAS_CAMARA } from '../data/camara';
+import { pxCamara, naTampa } from '../lib/rota_camara';
 
 /* ⭐ A travessia acontece DENTRO de uma calha, e a altura sai dela.
    'alim' e 'comum' pegam carona na de potência, que é a mais baixa. */
@@ -267,7 +269,7 @@ export default function VistaPainelInterno() {
         </div>
 
         <svg width={larguraTotal * zoom}
-             viewBox={`-14 -14 ${larguraTotal + 28} ${CAIXA.altura + 74}`}
+             viewBox={`-14 -14 ${larguraTotal + 34} ${CAIXA.altura + 122}`}
              style={{ background: '#fff', borderRadius: 8, boxShadow: '0 1px 6px #0002' }}>
 
           {/* caixa e placa de montagem */}
@@ -436,31 +438,80 @@ export default function VistaPainelInterno() {
           {/* ── ⭐ A CÂMARA FRIA, e os cabos indo até ela por BAIXO ── */}
           <CamaraNoPainel x0={CAM_X} y0={CAM_Y} largura={CAM_W} altura={CAM_H}
                           sel={pecaCam} onSel={setPecaCam} />
-          {[['PG9-2', 'CL-cam-pot', '#c92a2a', CAM_Y + 60, 26],
-            ['PG9-3', 'CL-cam-sin', '#1971c2', CAM_Y + 210, 46]].map(
-            ([pid, , cor, yAlvo, desce]) => {
-            const pr = PRENSAS_PAINEL.find(p => p.id === pid);
-            const yBaixo = CAIXA.altura + desce;
-            const d = `M ${pr.x} ${CAIXA.altura + 2} L ${pr.x} ${yBaixo} `
-                    + `L ${CAM_X - 18} ${yBaixo} L ${CAM_X - 18} ${yAlvo} L ${CAM_X} ${yAlvo}`;
-            const fs = FIOS.filter(f => f.prensa === pid);
+          {/* ⭐ O FEIXE AGORA MIRA NO FURO, e não mais na borda da câmara.
+              O trecho tracejado é o que passa POR TRÁS dela: o prensa-cabo
+              fica na parede do fundo, então o cabo some atrás do acrílico
+              e reaparece já do lado de dentro, no PC-1 ou no PC-2.       */}
+          {(() => {
+            const { cx: kx, cy: ky } = pxCamara(CAM_X, CAM_Y, CAM_H);
+            const seis = FIOS.filter(f => f.etapa === 6);
+            const feixes = [
+              { pid: 'PG9-2', pc: 'PC-1', cor: '#c92a2a', desce: 26, sobe: CAM_X - 14 },
+              { pid: 'PG9-3', pc: 'PC-2', cor: '#1971c2', desce: 46,
+                sobe: CAM_X + CAM_W + 14 },
+            ];
+            const paraTampa = [
+              { pid: 'PG9-2', cor: '#e8590c', desce: 66 },
+              { pid: 'PG9-3', cor: '#f76707', desce: 84 },
+            ];
+            const CANTO = { x: CAM_X - 10, y: CAM_Y + CAM_H - 6 };
             return (
-              <g key={pid}>
-                <path d={d} fill="none" stroke="#fff" strokeWidth={7}
-                      strokeLinejoin="round" strokeLinecap="round" opacity={0.9} />
-                <path d={d} fill="none" stroke={cor} strokeWidth={4}
-                      strokeLinejoin="round" strokeLinecap="round" />
-                <circle cx={pr.x} cy={CAIXA.altura + 2} r={7} fill="#495057" />
-                <circle cx={pr.x} cy={CAIXA.altura + 2} r={3.2} fill={cor} />
-                <text x={pr.x} y={CAIXA.altura + 18} textAnchor="middle" fontSize={6}
-                      fontWeight="700" fill={cor}>{pid}</text>
-                <text x={(pr.x + CAM_X) / 2} y={yBaixo - 4} textAnchor="middle"
-                      fontSize={6.5} fontWeight="700" fill={cor}>
-                  {fs.length} fios · por BAIXO da bancada
-                </text>
-              </g>
+              <>
+                {feixes.map(fx => {
+                  const pr = PRENSAS_PAINEL.find(p => p.id === fx.pid);
+                  const g = PRENSAS3D.find(p => p.id === fx.pc);
+                  const yB = CAIXA.altura + fx.desce;
+                  const gx = kx(g.x), gy = ky(g.z);
+                  const sob = `M ${pr.x} ${CAIXA.altura + 2} L ${pr.x} ${yB} `
+                            + `L ${fx.sobe} ${yB} L ${fx.sobe} ${gy}`;
+                  const atras = `M ${fx.sobe} ${gy} L ${gx} ${gy}`;
+                  const n = Object.values(ROTAS_CAMARA).filter(r => r.pc === fx.pc).length;
+                  return (
+                    <g key={fx.pid}>
+                      <path d={sob} fill="none" stroke="#fff" strokeWidth={7}
+                            strokeLinejoin="round" strokeLinecap="round" opacity={0.9} />
+                      <path d={sob} fill="none" stroke={fx.cor} strokeWidth={4}
+                            strokeLinejoin="round" strokeLinecap="round" />
+                      <path d={atras} fill="none" stroke={fx.cor} strokeWidth={3.4}
+                            strokeDasharray="6 4" opacity={0.55} />
+                      <circle cx={pr.x} cy={CAIXA.altura + 2} r={7} fill="#495057" />
+                      <circle cx={pr.x} cy={CAIXA.altura + 2} r={3.2} fill={fx.cor} />
+                      <text x={pr.x} y={CAIXA.altura + 18} textAnchor="middle" fontSize={6}
+                            fontWeight="700" fill={fx.cor}>{fx.pid}</text>
+                      <text x={(pr.x + fx.sobe) / 2} y={yB - 4} textAnchor="middle"
+                            fontSize={6.5} fontWeight="700" fill={fx.cor}>
+                        {n} fios até o {fx.pc} · por BAIXO da bancada
+                      </text>
+                      <text x={(fx.sobe + gx) / 2} y={gy - 20} textAnchor="middle"
+                            fontSize={5.6} fill={fx.cor} opacity={0.85}>
+                        ─ ─ por TRÁS da câmara
+                      </text>
+                    </g>
+                  );
+                })}
+                {paraTampa.map(fx => {
+                  const pr = PRENSAS_PAINEL.find(p => p.id === fx.pid);
+                  const fs = seis.filter(f => naTampa(f) && f.prensa === fx.pid);
+                  if (!fs.length) return null;
+                  const yB = CAIXA.altura + fx.desce;
+                  const d = `M ${pr.x} ${CAIXA.altura + 2} L ${pr.x} ${yB} `
+                          + `L ${CANTO.x} ${yB} L ${CANTO.x} ${CANTO.y}`;
+                  return (
+                    <g key={`t-${fx.pid}`}>
+                      <path d={d} fill="none" stroke="#fff" strokeWidth={5.5}
+                            strokeLinejoin="round" strokeLinecap="round" opacity={0.9} />
+                      <path d={d} fill="none" stroke={fx.cor} strokeWidth={2.6}
+                            strokeLinejoin="round" strokeLinecap="round" />
+                      <text x={(pr.x + CANTO.x) / 2} y={yB - 3} textAnchor="middle"
+                            fontSize={6} fontWeight="700" fill={fx.cor}>
+                        {fs.map(f => f.n).join(' ')} · sobem POR FORA até a tampa
+                      </text>
+                    </g>
+                  );
+                })}
+              </>
             );
-          })}
+          })()}
 
           {/* ── a tampa fechada, vista de fora ── */}
           {tampaFechada && (

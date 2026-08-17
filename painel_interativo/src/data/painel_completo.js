@@ -678,8 +678,14 @@ export const COMPONENTES = [
         via('IO2'), via('IO3'), via('IO14'), via('IO21'),
       ]},
       { ref: 'BAT', lado: 'baixo', legenda: 'Bateria (2)', pinos: [via('BAT+'), via('BAT−')] },
-      { ref: 'USB', lado: 'esquerda', legenda: 'Alimentação Type-C (2)', pinos: [
-        via('VBUS', 1, 'BD-5V saída 2'), via('GND-PWR', 1, 'BD-0V · R9'),
+      /* ⭐ NÃO SÃO DUAS COISAS: VBUS e GND-PWR são o vermelho e o preto do
+         MESMO Type-C. VBUS é o +5 V dele; GND-PWR é o retorno dele. Não
+         existe alimentar por um sem o outro — é um par, como qualquer
+         alimentação. Quem entra pelo Type-C entra pelos dois. */
+      { ref: 'USB', lado: 'esquerda', legenda: 'Type-C — o +5 V e o 0 V dele (2)',
+        parAlim: true, pinos: [
+        via('VBUS', 1, '+5 V do Type-C ← BD-5V saída 2'),
+        via('GND-PWR', 1, '0 V do Type-C → BD-0V · R9'),
       ]},
     ],
     avisos: ['🔥 NÃO ligue o pino 5 V do conector UART. A wiki lista só Type-C e bateria '

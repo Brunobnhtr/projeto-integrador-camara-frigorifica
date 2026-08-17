@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { BLOCOS_LIGACAO } from '../data/camara_ligacoes';
 import { FIOS } from '../data/fiacao';
+import { ROTAS_CAMARA } from '../data/camara';
+import { naCamara, naTampa } from '../lib/rota_camara';
 
 /* A câmara lida de cima para baixo, como quem monta.
 
@@ -9,6 +11,17 @@ import { FIOS } from '../data/fiacao';
    qual terminal desta peça". Aqui cada parte tem a sua página. */
 
 const acha = n => FIOS.find(f => f.n === n);
+
+/* ⭐ O NOME DO BORNE VEM DO DADO, não do texto. Enquanto a tabela dizia
+   "fio VERMELHO da pastilha 1" e o desenho dizia "PELT · +", o aluno
+   tinha de adivinhar que eram a mesma coisa. Agora a etiqueta é a
+   MESMA dos dois lados, e sai do mesmo lugar. */
+function borneDe(n) {
+  const f = acha(n);
+  if (!f) return null;
+  const d = naCamara(f) ?? naTampa(f);
+  return d ? `${d.camara ?? d.tampa} · ${d.borne}` : null;
+}
 
 function Bloco({ b, aberto, alternar }) {
   return (
@@ -39,7 +52,9 @@ function Bloco({ b, aberto, alternar }) {
           )}
 
           <div style={{ fontSize: 10.5, color: '#868e96', letterSpacing: 0.5,
-                        marginBottom: 5 }}>O QUE CHEGA DO PAINEL</div>
+                        marginBottom: 5 }}>
+            O QUE CHEGA DO PAINEL — <b>a coluna do meio é o nome do borne no desenho</b>
+          </div>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12,
                           marginBottom: 12 }}>
             <tbody>
@@ -57,9 +72,18 @@ function Bloco({ b, aberto, alternar }) {
                     <td style={{ padding: '5px 6px', fontFamily: 'monospace',
                                  whiteSpace: 'nowrap' }}>{e.o}</td>
                     <td style={{ padding: '5px 6px', color: '#495057' }}>→ {e.para}</td>
+                    <td style={{ padding: '5px 6px', whiteSpace: 'nowrap' }}>
+                      {borneDe(e.fio) && (
+                        <span style={{ fontFamily: 'monospace', fontSize: 10.5,
+                                       fontWeight: 700, padding: '2px 5px',
+                                       borderRadius: 4, border: `1px solid ${b.cor}66`,
+                                       color: b.cor }}>{borneDe(e.fio)}</span>
+                      )}
+                    </td>
                     <td style={{ padding: '5px 6px', color: '#868e96', fontSize: 10.5,
                                  whiteSpace: 'nowrap' }}>
                       {f ? `${f.mm2} mm² ${f.corNome}` : ''}
+                      {ROTAS_CAMARA[e.fio] ? ` · ${ROTAS_CAMARA[e.fio].pc}` : ' · por fora'}
                     </td>
                   </tr>
                 );
@@ -98,6 +122,9 @@ export default function LigacoesCamara() {
   const usados = new Set(BLOCOS_LIGACAO.flatMap(b => b.externo.map(e => e.fio)));
   const daEtapa6 = FIOS.filter(f => f.etapa === 6).map(f => f.n);
   const orfaos = daEtapa6.filter(n => !usados.has(n));
+  const contaPc = pc => Object.values(ROTAS_CAMARA).filter(r => r.pc === pc).length;
+  const nPC1 = contaPc('PC-1'), nPC2 = contaPc('PC-2');
+  const naTampaN = daEtapa6.filter(n => !ROTAS_CAMARA[n]);
 
   return (
     <div style={{ height: '100%', overflow: 'auto', padding: 16, background: '#eef1f5' }}>
@@ -130,13 +157,16 @@ export default function LigacoesCamara() {
                  alternar={() => alternar(b.id)} />
         ))}
 
+        {/* ⭐ esta conta era escrita à mão e estava errada: contava os fios
+            do lado quente como se furassem a parede. Agora sai dos dados. */}
         <div style={{ background: '#e7f5ff', borderLeft: '3px solid #1971c2',
                       borderRadius: 6, padding: '10px 13px', fontSize: 11.5,
                       lineHeight: 1.6, marginTop: 6 }}>
-          <b>Um resumo do que atravessa a parede:</b> 12 condutores pelo prensa-cabo de
-          potência (PC-1) e 8 pelo de sinal (PC-2). O lado quente da tampa —
-          ventoinhas do radiador, DS18B20 e os dois RPM — <b>não atravessa parede
-          nenhuma</b>: fica no ar ambiente, em cima.
+          <b>Um resumo do que atravessa a parede:</b> {nPC1} condutores pelo prensa-cabo
+          de potência (<b>PC-1</b>) e {nPC2} pelo de sinal (<b>PC-2</b>). O lado quente
+          da tampa — {naTampaN.join(', ')}: ventoinhas do radiador, DS18B20 e os dois
+          RPM — <b>não atravessa parede nenhuma</b>: fica no ar ambiente, em cima, e
+          sobe por fora do acrílico.
         </div>
       </div>
     </div>

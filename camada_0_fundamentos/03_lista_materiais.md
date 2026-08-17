@@ -483,6 +483,24 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 > | Speaker | — | alto-falante que vem na caixa |
 > | BAT | — | ⚠️ **não usar** — ver abaixo |
 >
+> ### 🔌 "VBUS" e "GND-PWR" no diagrama SÃO o Type-C
+>
+> No desenho do painel a tela aparece com dois bornes, `VBUS` e `GND-PWR`. **Não são uma segunda entrada de alimentação ao lado do Type-C — são o Type-C.**
+>
+> `VBUS` é o nome universal do pino de **+5 V** de qualquer conector USB, e `GND-PWR` é o **0 V** dele. São o vermelho e o preto do mesmo cabo. Não existe alimentar por um sem o outro, do mesmo jeito que não se alimenta nada com um fio só.
+>
+> Eles ganharam nome no diagrama por um motivo prático: **todo condutor do painel precisa de um destino com nome** para o desenho poder mostrar onde ele termina e para o script conseguir conferir. "Vai no USB" não é um borne; `VBUS` e `GND-PWR` são.
+>
+> **Como isso vira montagem:** um **rabicho Type-C** — plugue USB-C de um lado, dois fios nus do outro, de 20 a 30 cm. Vermelho no BD-5V (saída 2), preto no BD-0V (ponto R9). Você não solda nada na placa nem abre o conector: pluga.
+>
+> | O que você compra | Onde encosta |
+> |---|---|
+> | rabicho USB-C macho, 2 fios, ~0,5 mm² | vermelho → **BD-5V O2** · preto → **BD-0V R9** |
+>
+> 🔥 **Um alimentador de cada vez.** Com o rabicho ligado no barramento, **não plugue também um carregador nem o cabo do PC** — seriam duas fontes de 5 V empurrando uma contra a outra dentro do mesmo conector, sem nada entre elas. Para gravar firmware: desligue o disjuntor do painel **ou** desconecte o rabicho antes de plugar o PC.
+>
+> ⚠️ Confira a bitola do rabicho antes de usar. A tela puxa ~140 mA e o cabo é longo — ele atravessa a dobradiça da porta.
+>
 > ### ⚠️ O pino de 5 V do conector UART é provavelmente SAÍDA — não ligue nele
 >
 > A wiki oficial lista **apenas duas** entradas de alimentação: o **Type-C** e o **conector de bateria**. O conector UART é descrito só como *"depuração, download e comunicação — requer um módulo USB-serial externo"*.

@@ -188,6 +188,17 @@ export const COMPONENTES = [
   },
 ];
 
+/* ⭐ O LADO QUENTE, na tampa. Não atravessa parede: fica no ar
+   ambiente, em cima dos dissipadores. */
+export const TAMPA3D = [
+  { id: 'RAD', nome: '2 coolers do radiador', cor: '#e8590c',
+    bornes: [{ b:'+', lado:'base', t:0.12 }, { b:'−', lado:'base', t:0.34 },
+              { b:'RPM1', lado:'base', t:0.60 }, { b:'RPM2', lado:'base', t:0.85 }],
+    diz: 'Em paralelo nos dois primeiros; cada uma com o seu fio de RPM.' },
+  { id: 'DS18', nome: 'DS18B20 do radiador', cor: '#f76707', bornes: [{ b:'DATA', lado:'base', t:0.5 }],
+    diz: 'Colado no dissipador com pasta térmica. VCC e GND vêm no próprio cabo dele.' },
+];
+
 /* o que fica FORA, na tampa — o lado quente */
 export const EXTERNOS = [
   { id: 'DIS1', nome: 'dissipador + cooler', x: 366, y: 74, w: 68, h: 50 },
@@ -249,33 +260,89 @@ export const PRENSAS3D = [
   },
 ];
 
-/* caixa = [x0, y0, z0, x1, y1, z1] */
+/* caixa = [x0, y0, z0, x1, y1, z1]
+   bornes = onde o fio encosta, em fração da largura da peça (0 a 1) */
 export const PECAS3D = [
-  { id: 'PELT', nome: '2× Peltier', cor: '#1971c2', pc: 'PC-1',
+  { id: 'PELT', bornes: [{ b:'+', lado:'esq', t:0.30 }, { b:'−', lado:'esq', t:0.70 }], nome: '2× Peltier', cor: '#1971c2', pc: 'PC-1',
     caixa: [60, 30, 236, 140, 70, 250],
     diz: 'Encaixadas na tampa. Face fria para dentro, quente para fora.' },
-  { id: 'VF', nome: '2× ventoinha fria', cor: '#4dabf7', pc: 'PC-1',
+  { id: 'VF', bornes: [{ b:'+', lado:'base', t:0.35 }, { b:'−', lado:'base', t:0.70 }], nome: '2× ventoinha fria', cor: '#4dabf7', pc: 'PC-1',
     caixa: [70, 32, 210, 130, 68, 234],
     diz: 'Sopram para BAIXO — o ar desce pelo centro.' },
-  { id: 'SENS', nome: 'AM2315C', cor: '#f76707', pc: 'PC-2',
+  { id: 'SENS', bornes: [{ b:'VCC', lado:'dir', t:0.15 }, { b:'GND', lado:'dir', t:0.38 },
+              { b:'SDA', lado:'dir', t:0.62 }, { b:'SCL', lado:'dir', t:0.85 }], nome: 'AM2315C', cor: '#f76707', pc: 'PC-2',
     caixa: [88, 42, 116, 112, 58, 136],
     diz: '⭐ No centro geométrico, suspenso. Longe da Peltier e do PTC.' },
-  { id: 'VP', nome: 'ventoinha do PTC', cor: '#4dabf7', pc: 'PC-1',
+  { id: 'VP', bornes: [{ b:'+', lado:'topo', t:0.30 }, { b:'−', lado:'topo', t:0.70 }], nome: 'ventoinha do PTC', cor: '#4dabf7', pc: 'PC-1',
     caixa: [76, 32, 50, 124, 68, 72],
     diz: 'Sopra para BAIXO também — o circuito de ar é único.' },
-  { id: 'PTC', nome: 'PTC 24 V', cor: '#e03131', pc: 'PC-1',
+  { id: 'PTC', bornes: [{ b:'+', lado:'base', t:0.30 }, { b:'−', lado:'base', t:0.70 }], nome: 'PTC 24 V', cor: '#e03131', pc: 'PC-1',
     caixa: [64, 30, 26, 136, 70, 44],
     diz: 'Na base, sobre o plenum de 30 mm.' },
-  { id: 'DUT1', nome: 'Posição 1', cor: '#c92a2a', pc: 'PC-2',
+  { id: 'DUT1', bornes: [{ b:'+24 V', lado:'base', t:0.35 }, { b:'retorno', lado:'topo', t:0.75 }], nome: 'Posição 1', cor: '#c92a2a', pc: 'PC-2',
     caixa: [14, 25, 24, 58, 75, 58],
     diz: 'LED vermelho + 1,2 kΩ — 17,6 mA.' },
-  { id: 'DUT2', nome: 'Posição 2', cor: '#2f9e44', pc: 'PC-2',
+  { id: 'DUT2', bornes: [{ b:'+24 V', lado:'base', t:0.35 }, { b:'retorno', lado:'topo', t:0.75 }], nome: 'Posição 2', cor: '#2f9e44', pc: 'PC-2',
     caixa: [142, 25, 24, 186, 75, 58],
     diz: 'LED verde + 2,2 kΩ — 9,8 mA.' },
-  { id: 'VD1', nome: 'vent. duto esq.', cor: '#74c0fc', pc: 'PC-1', fora: true,
+  { id: 'VD1', bornes: [{ b:'+', lado:'topo', t:0.35 }, { b:'−', lado:'topo', t:0.70 }], nome: 'vent. duto esq.', cor: '#74c0fc', pc: 'PC-1', fora: true,
     caixa: [-32, 35, 108, -6, 65, 138],
     diz: 'Dentro do duto lateral, FORA do volume útil. Sopra para CIMA.' },
-  { id: 'VD2', nome: 'vent. duto dir.', cor: '#74c0fc', pc: 'PC-1', fora: true,
+  { id: 'VD2', bornes: [{ b:'+', lado:'topo', t:0.35 }, { b:'−', lado:'topo', t:0.70 }], nome: 'vent. duto dir.', cor: '#74c0fc', pc: 'PC-1', fora: true,
     caixa: [206, 35, 108, 232, 65, 138],
     diz: 'Idem à esquerda — o retorno tem que ser simétrico.' },
+];
+
+/* ──────────────────────────────────────────────────────────────────────
+   POR ONDE O FIO ANDA DEPOIS DE ATRAVESSAR A PAREDE
+   ==================================================
+   Faltava isto: a etapa 6 dizia que o fio X1 vai da BTS #1 até a
+   pastilha, mas não dizia por onde ele passa DEPOIS do prensa-cabo. Sem
+   caminho, o desenho parava na parede e o aluno não via a ida nem a volta.
+
+   Tudo em milímetros do volume útil (x = 0 na parede esquerda,
+   z = 0 no piso), do jeito que se mede com a trena na hora de montar:
+
+     lane = corredor rente ao PISO, por onde o fio corre no sentido X
+     sobe = coluna vertical rente à PAREDE, por onde ele ganha altura
+     crz  = altura em que ele deixa a coluna e atravessa até a peça
+
+   ⭐ POR QUE CADA FIO TEM UM CORREDOR SÓ DELE: dois fios no mesmo
+   corredor viram um risco só no desenho, e aí não dá para conferir na
+   montagem. As alturas foram escolhidas numa ordem que faz o feixe se
+   abrir como um leque — quem vai mais longe corre mais embaixo — e com
+   isso NENHUM fio cruza outro aqui dentro.
+
+   ⚠️ Quem tem `pc` atravessa a parede. Os cinco que faltam nesta lista
+   (X5, X6, X19, X20, X21) são do lado quente, EM CIMA da tampa: sobem
+   por fora e não furam nada.                                            */
+export const ROTAS_CAMARA = {
+  /* ── PC-1 · potência, entra no piso à esquerda ───────────────────── */
+  X2:  { alvo:'PELT.−', pc:'PC-1', gx:44.1, lane: 8.3, sobe: 4.0 },   // Peltier −
+  X1:  { alvo:'PELT.+', pc:'PC-1', gx:43.2, lane: 9.6, sobe: 5.6 },   // Peltier +
+  X9:  { alvo:'VF.+', pc:'PC-1', gx:42.3, lane:10.9, sobe: 7.2, crz:202 },  // circulação +
+  X10: { alvo:'VF.−', pc:'PC-1', gx:41.4, lane:12.2, sobe: 8.8, crz:198 },  // circulação −
+  X8:  { alvo:'VP.−', pc:'PC-1', gx:40.5, lane:13.5, sobe:10.4, crz:102 },  // vent. PTC −
+  X7:  { alvo:'VP.+', pc:'PC-1', gx:39.6, lane:14.8, sobe:12.0, crz: 98 },  // vent. PTC +
+  X11: { alvo:'DUT1.+24 V', pc:'PC-1', gx:38.7, lane:16.1 },              // posição 1 +
+  X12: { alvo:'DUT2.+24 V', pc:'PC-1', gx:45.9, lane:17.4 },              // posição 2 +
+  X4:  { alvo:'PTC.−', pc:'PC-1', gx:46.8, lane:18.7 },              // PTC −
+  X3:  { alvo:'PTC.+', pc:'PC-1', gx:47.7, lane:20.0 },              // PTC +
+
+  /* ── PC-2 · sinal, entra no alto à direita ───────────────────────── */
+  X14: { alvo:'DUT2.retorno', pc:'PC-2', gx:157.0, lane:227.0, sobe:197.0, crz: 88 }, // retorno 2
+  X13: { alvo:'DUT1.retorno', pc:'PC-2', gx:156.1, lane:225.7, sobe:195.6, crz: 94 }, // retorno 1
+  X15: { alvo:'SENS.VCC', pc:'PC-2', gx:155.2, lane:224.4, sobe:194.2 },          // AM2315C VCC
+  X16: { alvo:'SENS.GND', pc:'PC-2', gx:154.3, lane:223.1, sobe:192.8 },          // AM2315C GND
+  X17: { alvo:'SENS.SDA', pc:'PC-2', gx:153.4, lane:221.8, sobe:191.4 },          // AM2315C SDA
+  X18: { alvo:'SENS.SCL', pc:'PC-2', gx:152.5, lane:220.5, sobe:190.0 },          // AM2315C SCL
+};
+
+/* as emendas feitas DENTRO da câmara, que não são fio vindo do painel */
+export const EMENDAS_CAMARA = [
+  { de:{ p:'VF', b:'+' }, para:{ p:'VD1', b:'+' },
+    diz:'as 4 de circulação em paralelo — 1 par de fios para 4 ventoinhas' },
+  { de:{ p:'VF', b:'−' }, para:{ p:'VD1', b:'−' }, diz:'' },
+  { de:{ p:'VF', b:'+' }, para:{ p:'VD2', b:'+' }, diz:'' },
+  { de:{ p:'VF', b:'−' }, para:{ p:'VD2', b:'−' }, diz:'' },
 ];
