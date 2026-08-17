@@ -207,7 +207,8 @@ export const COMPONENTES = [
 
   /* ════════════ TRILHO 3 — CONTROLE ════════════ */
   {
-    id: 'MEGA', nome: 'Arduino Mega 2560 em adaptador de bornes', trilho: 3,
+    id: 'MEGA', nome: 'MEGA — o cérebro: PID, proteções e intertravamento', trilho: 3,
+    resumoFuncao: '❓ O QUE ELE MANDA E O QUE ELE RECEBE. MANDA (saidas): D27 -> KA3, autoriza a potencia · D30 -> KA4, fan externa · D29 -> MV-1, as 5 fans internas · D4 e D7 -> R_EN dos BTS · D5 e D6 -> PWM dos BTS · D9 a D12 -> sinaleiros · D31 a D34 -> mux da PI-2.  RECEBE (entradas): D23 <- STOP apertado · D24 <- emergencia acionada · D25 <- HA 24 V no BD-POT? · D2 <- temperatura do dissipador · D3 e A8 <- RPM dos 2 coolers · A0 e A1 <- corrente dos BTS · A2 <- corrente das posicoes · D20 e D21 <- I2C.  ⭐ Repare que ele NAO le os reles nem o botao verde: le o D25, que diz se a energia CHEGOU. Comando e verificacao sao fios diferentes.',
     x: 32, largura: 134, altura: 96, cor: '#0ca678',
     nota: 'O Mega encaixa no meio da placa adaptadora e cada pino dele vira um borne '
         + 'de parafuso nas bordas. São 82 bornes em FILEIRA ÚNICA por borda, um ao '
@@ -216,9 +217,10 @@ export const COMPONENTES = [
              + 'cima. Meça a placa quando ela chegar.',
     grupos: [
       { ref: 'TOPO', lado: 'cima', legenda: 'Borda de cima — 35 bornes', pinos: [
-        via('D30'), via('D29', 1, '⭐ MV-1 canal 3 → ventoinhas de CIRCULAÇÃO'), via('D28', 1, '⭐ MV-1 canal 2 → ventoinha do PTC'), via('D27'),
-        via('D26', 1, 'Seletora LOCAL / REMOTO'), via('D25', 1, 'PI-1 J2-8 — vigia se os 24 V caíram'), via('D24', 1, 'Emergência — bloco NF de 5 V'), via('D23', 1, 'Botão STOP (NA, 5 V)'),
-        via('D22', 1, 'Botão START S1-14 — NA para o 0 V'), via('+5V', 1, 'BD-5V saída 1'), via('D21', 1, 'I²C SCL — o mesmo barramento'), via('D20', 1, 'I²C SDA — AM2315C (câmara), DS3231 e 2× INA219'),
+        via('D30', 1, '⭐ Gatilho do KA4 → ventoinhas do RADIADOR'), via('D29', 1, '⭐ MV-1 canal 3 → as 5 ventoinhas INTERNAS (4 de circulação + a do PTC)'), via('D28'),
+        via('D27', 1, '⭐ HAB_POTENCIA → gatilho do KA3. HIGH autoriza a potência; LOW derruba o selo e corta'),
+        via('D26'), via('D25', 1, 'PI-1 J2-8 — vigia se os 24 V caíram'), via('D24', 1, 'Emergência — bloco NF de 5 V'), via('D23', 1, 'Botão STOP (NA, 5 V)'),
+        via('D22'), via('+5V', 1, 'BD-5V saída 1'), via('D21', 1, 'I²C SCL — o mesmo barramento'), via('D20', 1, 'I²C SDA — AM2315C (câmara), DS3231 e 2× INA219'),
         via('D19', 1, 'Serial1 RX ← DNLCB30/ESP32'), via('D18', 1, 'Serial1 TX → DNLCB30/ESP32'), via('D17', 1, 'Serial2 RX ← conversor ← tela'), via('D16', 1, 'Serial2 TX → conversor → tela'),
         via('D15'), via('D14'), via('D0'), via('D1'),
         via('D2', 1, 'PI-1 J2-3 — 1-Wire do DS18B20 do RADIADOR'), via('D3', 1, 'RPM da ventoinha do radiador #1'), via('D4', 1, 'BTS #1 · R_EN e L_EN juntos'), via('D5', 1, 'BTS #1 · RPWM (frio)'),
@@ -259,7 +261,8 @@ export const COMPONENTES = [
     ],
   },
   {
-    id: 'PI1', nome: 'Placa de interface PI-1', trilho: 3,
+    id: 'PI1', nome: 'PI-1 — filtros, divisores e driver dos sinaleiros', trilho: 3,
+    resumoFuncao: '🔎 O QUE ELA FAZ: limpa e adapta sinais entre o Arduino e o mundo. 1) filtra com 100 nF a leitura de corrente dos dois BTS; 2) divide os 24 V do BD-POT para 4,22 V, que e como o D25 sabe se a potencia chegou; 3) da o pull-up de 4,7 kΩ ao 1-Wire do DS18B20; 4) o ULN2803 deixa o Arduino de 5 V acender os 4 sinaleiros de 24 V. Nao comanda potencia nenhuma.',
     x: 176, largura: 105, altura: 62, cor: '#f08c00',
     nota: 'Caixa DIN de 6 módulos. A placa cresceu para 86 × 74 mm — a largura '
         + 'extra é o que dá espaço para os fios correrem em canais separados por '
@@ -283,10 +286,16 @@ export const COMPONENTES = [
     avisos: ['✅ 19 vias, 19 usadas, ZERO reserva — e é assim de propósito. A PI-1 é '
            + 'uma placa feita à mão para este projeto: se um dia precisar de outro '
            + 'sinal, ela é refeita de qualquer jeito. Borne sobrando só ocuparia '
-           + 'espaço no trilho.'],
+           + 'espaço no trilho.',
+           '🔧 O Q1 CHEGOU A SER PROJETADO AQUI, E O VALIDADOR REPROVOU. Pôr o MOSFET '
+           + 'na PI-1 obrigaria o circuito da BOBINA do KA2 a subir do trilho 1 ao '
+           + 'trilho 3 e voltar — dois fios de bobina atravessando o painel, um deles '
+           + 'pela canaleta de SINAL. É exatamente o que a regra do §31.4 proíbe: '
+           + 'cadeia de comando é potência. O Q1 foi para junto do KA2.'],
   },
   {
-    id: 'ESP32', nome: 'DNLCB30 + ESP32 30 pinos', trilho: 2,
+    id: 'ESP32', nome: 'ESP32 — Wi-Fi, MQTT e dashboard remoto', trilho: 2,
+    resumoFuncao: '🔎 O QUE ELE FAZ: e a janela do sistema para a internet. Recebe a telemetria do Mega pela Serial1, publica por MQTT e repassa comandos do dashboard. ⛔ So pode PARAR: o START e recusado por MQTT, porque ligar a maquina exige alguem olhando para ela. Nao aciona atuador nenhum — ele PEDE, o Mega valida e decide.',
     x: 268, largura: 96, altura: 84, cor: '#1971c2',
     nota: 'Os nomes são os da serigrafia da borda externa, exatamente como estão '
         + 'impressos na placa. Cada bloco tem 15 bornes em FILEIRA ÚNICA — o "5V" é o '
@@ -349,7 +358,8 @@ export const COMPONENTES = [
   },
 
   {
-    id: 'PI-2', nome: 'PI-2 — medição de corrente das posições', trilho: 3,
+    id: 'PI-2', nome: 'PI-2 — mede a corrente das 2 posições de ensaio', trilho: 3,
+    resumoFuncao: '🔎 O QUE ELA FAZ: mede quanta corrente cada uma das 2 posicoes de ensaio esta consumindo. Um shunt de 47 Ω por posicao vira tensao, e um multiplexador de 16 canais leva as duas para UMA unica entrada analogica (A2) — economizando entradas do Mega. O Arduino escolhe o canal pelos bits D31 a D34.',
     x: 291, largura: 105, altura: 62, cor: '#ae3ec9',
     nota: 'Caixa DIN de 6 módulos, igual à PI-1 — as duas saem da MESMA placa de 9 × 15 cm cortada ao meio. Dentro dela ficam soldados o multiplexador, os '
         + 'resistores shunt e o INA219 de referência. Os bornes abaixo são os FIOS que '
@@ -398,7 +408,8 @@ export const COMPONENTES = [
     ],
   },
   {
-    id: 'F-P', nome: 'F-P1 e F-P2 — fusíveis das posições de ensaio', trilho: 2,
+    id: 'F-P', nome: 'F-P — fusíveis das 2 posições de ensaio', trilho: 2,
+    resumoFuncao: '🔎 O QUE ELE FAZ: dois porta-fusiveis, um para cada posicao de ensaio. Se o dispositivo sob teste entrar em curto, o fusivel dele abre e a OUTRA posicao continua o ensaio. Sem eles, um curto numa posicao derrubaria o ramal inteiro e perderia o ensaio todo.',
     x: 224, largura: 36, altura: 46, cor: '#fab005',
     nota: '1 porta-fusível de 2 vias COM INTERRUPTOR — um fusível e uma chave por posição.',
     grupos: [
@@ -421,7 +432,8 @@ export const COMPONENTES = [
 
   /* ════════════ TRILHO 2 — POTÊNCIA ════════════ */
   {
-    id: 'BTS1', nome: 'BTS7960 (IBT-2) #1 — Peltier', trilho: 2,
+    id: 'BTS1', nome: 'BTS1 — driver de potência da PELTIER (frio)', trilho: 2,
+    resumoFuncao: '🔎 O QUE ELE FAZ: e a CHAVE DE CONTROLE da Peltier. Recebe os 24 V do BD-POT e entrega a pastilha em PWM de 1 Hz, na potencia que o PID pedir. Quem manda e o Arduino (D5 = quanto, D4 = pode ou nao). Devolve pelo R_IS uma amostra da corrente. ⚠ Ele e a chave de CONTROLE, nao a de SEGURANCA — quem corta de verdade e o KA2.',
     aConferir: '📐 NO DESENHO os 8 pinos de sinal aparecem em FILA ÚNICA, na borda. '
              + 'No módulo real eles são uma barra de 2 × 4. A ordem é a mesma; o que '
              + 'muda é só o desenho, para dar para ver qual fio entra em qual pino.',
@@ -442,7 +454,8 @@ export const COMPONENTES = [
            + 'módulo, entre R_EN/L_EN e GND — não na PI-1.'],
   },
   {
-    id: 'BTS2', nome: 'BTS7960 (IBT-2) #2 — PTC', trilho: 2,
+    id: 'BTS2', nome: 'BTS2 — driver de potência do PTC (quente)', trilho: 2,
+    resumoFuncao: '🔎 O QUE ELE FAZ: identico ao BTS1, mas para o aquecedor PTC. D6 = quanto, D7 = pode ou nao. ⚠ O firmware NUNCA habilita os dois ao mesmo tempo — e o intertravamento: aquecer e resfriar juntos so gastaria energia e brigaria consigo.',
     x: 92, largura: 50, altura: 50, cor: '#c92a2a',
     grupos: [
       { ref: 'P1', lado: 'esquerda', legenda: 'Borne verde de potência (4 parafusos)', pinos: [
@@ -458,8 +471,9 @@ export const COMPONENTES = [
     ],
   },
   {
-    id: 'KA1', nome: 'KA1 — relé de selo', trilho: 1,
-    x: 357, largura: 34, altura: 50, cor: '#7048e8',
+    id: 'KA1', nome: 'KA1 — SEGURANÇA: cai na emergência, rearme azul', trilho: 1,
+    resumoFuncao: '🔎 O QUE ELE FAZ: e o rele da SEGURANCA. Sela-se sozinho quando alguem aperta o REARME azul e so cai quando o cogumelo e socado. Nenhum fio do Arduino chega perto dele — e por isso que a emergencia nao depende de software. Enquanto ele estiver caido, nada no painel pode armar potencia.',
+    x: 362, largura: 34, altura: 50, cor: '#7048e8',
     nota: 'Relé de 8 pinos com 2 contatos reversíveis, em base PTF08A.',
     grupos: [
       /* ⭐ A base PTF08A tem os 8 terminais em DUAS fileiras de 4.
@@ -487,28 +501,114 @@ export const COMPONENTES = [
     ],
   },
   {
-    id: 'KA2', nome: 'KA2 — relé de potência', trilho: 1,
-    x: 397, largura: 34, altura: 50, cor: '#7048e8',
+    id: 'KA2', nome: 'KA2 — PROCESSO: cai no STOP, religa no verde', trilho: 1,
+    resumoFuncao: '🔎 O QUE ELE FAZ: e o rele do PROCESSO, e o unico que liga e desliga os 24 V dos BTS. Tem selo proprio: o botao VERDE o arma, o botao PRETO o derruba (e ele NAO volta sozinho), e o KA3 pode derruba-lo tambem, quando o firmware detecta uma falha. ⚠ Contato de 10 A em corrente continua — ele pode abrir sob os 6 A da Peltier.',
+    x: 402, largura: 34, altura: 50, cor: '#7048e8',
     nota: '⚠️ Contato declarado em CORRENTE CONTÍNUA, mínimo 10 A.',
     grupos: [
       { ref: 'CIMA', lado: 'cima', legenda: 'Fileira de cima · pinos 4 · 8 · 12 · 14', pinos: [
-        rele('22'), rele('24'), rele('21'),
-        rele('A2', 1, 'BD-0V · R12'),
+        rele('22'),
+        rele('24', 1, '⭐ O SELO DO KA2 — ponte na base até o próprio A1'),
+        rele('21', 1, '⭐ comum do selo — vem do S1 · 13, no nó depois do bloco NF do STOP'),
+        rele('A2', 1, '⭐ KA3 · COM3 — a bobina fecha pelo contato do módulo de relé'),
       ]},
       { ref: 'BAIXO', lado: 'baixo', legenda: 'Fileira de baixo · pinos 1 · 5 · 9 · 13', pinos: [
         rele('12'),
         rele('14', 1, '⚡ saída para o BD-POT — é este contato que corta a potência'),
         rele('11', 1, '⚡ entrada dos 24 V do prensa-cabo PG9-1'),
-        rele('A1', 1, 'S2-12 — vem pelo bloco NF do STOP, que vem do KA1 · 24'),
+        rele('A1', 1, '⭐ S1 · 14 (START verde) EM PARALELO com o selo KA2 · 24'),
       ]},
     ],
-    avisos: ['📌 Sobra um contato reversível inteiro (21-22-24) sem uso. Serve de '
-           + 'reserva para um intertravamento futuro.'],
+    avisos: ['⭐ ESTE RELÉ AGORA TEM SELO PRÓPRIO, igual ao KA1 — é o circuito clássico '
+           + 'de partida-parada. O contato 21-24 realimenta a própria bobina, o S2 (NF) '
+           + 'está em série e o S1 (START verde) em paralelo com o selo. Aperta o STOP '
+           + 'UMA VEZ: a bobina cai, o selo abre junto, e nem soltando o botão ela volta. '
+           + 'Só o botão verde religa. Memória sem uma linha de código.',
+             '🔥 SÃO DOIS SELOS NO PAINEL, E ELES NÃO SÃO IGUAIS. O do KA1 se desfaz na '
+           + 'EMERGÊNCIA e só o REARME azul o refaz. O do KA2 se desfaz no STOP e o botão '
+           + 'VERDE o refaz. Trocar os dois na montagem faz o STOP exigir rearme e a '
+           + 'emergência religar com o botão verde — exatamente o inverso da norma.',
+           '⭐ A BOBINA DESTE RELÉ JÁ NÃO FECHA DIRETO NO 0 V. Entre o A2 e a barra '
+           + 'entrou o Q1, um MOSFET 2N7000 comandado pelo D27 do Mega. É o '
+           + 'VETO DO FIRMWARE: ele pode DERRUBAR a potência (trip, STOP pela IHM, '
+           + 'STOP remoto), mas não pode segurá-la contra o S0 nem contra o S2, que '
+           + 'continuam a montante. Em série soma; em paralelo furaria. Doc 31 §31.13.',
+           '🔥 MONTE O DIODO D1 (1N4007) DIRETO NESTES BORNES: catodo (faixa '
+           + 'prateada) no A1, anodo no A2. SEM ELE O Q1 MORRE NO PRIMEIRO '
+           + 'DESLIGAMENTO — a bobina de 650 Ω joga centenas de volts no dreno, '
+           + 'contra os 60 V que o 2N7000 aguenta. Se o relé já tiver diodo interno '
+           + '(teste de diodo entre A1 e A2 conduz num sentido só), o D1 externo é '
+           + 'dispensável e o A1 é obrigatoriamente o positivo.',
+           '⚠️ INVERTIDO, O D1 CURTO-CIRCUITA A BOBINA e derruba o F2 (2 A) assim que '
+           + 'o KA1 selar. É um erro que se acha em 10 segundos e custa uma hora se '
+           + 'você não desconfiar dele.',
+           '⭐ O Q1, O R10 E O D1 SÃO UM CONJUNTO TERMORRETRÁTIL PRESO AQUI, não uma '
+           + 'placa. É o mesmo princípio dos pull-downs de 10 kΩ soldados nos próprios '
+           + 'BTS7960: com o R10 colado ao gate, um rompimento do fio do D27 ainda '
+           + 'deixa o gate em 0 V — e a potência cortada. Fosse o R10 na PI-1, o '
+           + 'trecho até aqui ficaria alto-impedante e o KA2 poderia atracar sozinho. '
+           + 'De quebra, todo o circuito de bobina fica confinado ao trilho 1 e só um '
+           + 'fio de sinal atravessa o painel.'],
   },
 
 
   {
-    id: 'MV-1', nome: 'MV-1 — módulo MOSFET 4 canais, isolado', trilho: 2,
+    id: 'KA34', nome: 'KA3 (POTÊNCIA) + KA4 (FAN EXTERNA DA PELTIER) — módulos de relé', trilho: 2,
+    resumoFuncao: '🔎 O QUE FAZEM: sao as duas maos do FIRMWARE no mundo fisico. KA3 (POTENCIA) fica em serie com a bobina do KA2 — abrindo, derruba o selo e os 24 V somem do BD-POT, e nao voltam ate alguem apertar o botao verde. KA4 (FAN EXTERNA DA PELTIER) chaveia o +12 V das 2 ventoinhas do radiador. ⭐ Os dois so RECEBEM ordem; quem confirma que a potencia chegou e o divisor no pino D25.',
+    x: 374, largura: 70, altura: 60, cor: '#e8590c',
+    nota: 'Dois módulos de relé de 1 canal, 5 V, com optoacoplador e jumper H/L, '
+        + 'empilhados dentro de uma caixa modular DIN de 4 módulos. 51 × 25,5 mm cada. '
+        + 'O DC+ e o DC− são pontelhados entre os dois lá dentro — sai UM par de fios.',
+    grupos: [
+      { ref: 'ALIM', lado: 'baixo', legenda: 'Alimentação dos dois módulos (2)', pinos: [
+        via('+5V', 1, 'BD-5V saída 12 — DC+ dos dois, em ponte interna'),
+        via('0V', 1, 'BD-0V · R21 — DC− dos dois, em ponte interna'),
+      ]},
+      { ref: 'CMD', lado: 'cima', legenda: 'Gatilhos, vindos do Arduino (2)', pinos: [
+        via('IN3', 1, '⭐ Mega D27 — KA3, autoriza a potência'),
+        via('IN4', 1, '⭐ Mega D30 — KA4, ventoinhas do radiador'),
+      ]},
+      { ref: 'KA3', lado: 'baixo', legenda: '⚡ KA3 · POTÊNCIA — corta os 24 V dos BTS (2)', pinos: [
+        via('COM3', 1, 'KA2 · A2 — o retorno da bobina do KA2 passa por aqui'),
+        via('NO3', 1, 'BD-0V · R12 — fecha o circuito da bobina'),
+      ]},
+      { ref: 'KA4', lado: 'baixo', legenda: '🌀 KA4 · FAN EXTERNA — ventoinhas do radiador (2)', pinos: [
+        via('COM4', 1, 'BD-AUX saída 2 — os 12 V permanentes'),
+        via('NO4', 1, 'fio X5 → ventoinhas do radiador · +'),
+      ]},
+    ],
+    avisos: [
+      '⭐ OS DOIS JUMPERS EM **H** (gatilho ALTO). Assim digitalWrite(pino, HIGH) fecha o '
+      + 'relé, que é a convenção intuitiva e a mesma dos jumpers do MV-1. Em L a lógica '
+      + 'inverte e o firmware vira uma armadilha de leitura.',
+      '🔥 USE COM + NO (NORMALMENTE ABERTO). NUNCA O NC. Módulo sem energia = contato '
+      + 'aberto = potência cortada e ventoinha parada. Ligado no NC a lógica inverte e o '
+      + 'fail-safe morre: um Arduino desligado passaria a ARMAR a potência.',
+      '⚠️ RESISTOR DE 10 kΩ ENTRE CADA IN E O 0 V. O anúncio promete tolerância a falha '
+      + '("linha de controle quebrada, o relé não funciona") e o LED do optoacoplador de '
+      + 'fato precisa de corrente para acender. O resistor torna isso determinístico em '
+      + 'vez de confiado: pino solto = 0 V no IN = relé aberto, medível com multímetro.',
+      '📌 A ISOLAÇÃO É NOMINAL, NÃO GALVÂNICA. O módulo tem só 3 bornes de entrada '
+      + '(DC+, DC−, IN), então o DC− É a referência do sinal — ele partilha o 0 V do '
+      + 'Arduino. O optoacoplador entrega imunidade a ruído (a entrada é acionada por '
+      + 'corrente, não por tensão), não separação de terras. Para isolação de verdade '
+      + 'seria preciso a versão de 4 pinos, com JD-VCC e jumper removível.',
+      '⚠️ CONFIRME QUE A BOBINA É DE 5 V. Estes anúncios vendem 5 / 12 / 24 V na mesma '
+      + 'página e a FOTO costuma ser da versão de 24 V. Ao receber, leia o corpo do relé: '
+      + 'tem de estar escrito 5VDC. Um módulo de 24 V não fecha com os 5 V do BD-5V.',
+      '📌 65 mA CADA, do barramento de 5 V. São 130 mA a mais no ramal T2 — confira a '
+      + 'soma com o Arduino, a tela e o ESP32 antes de fechar o projeto de energia.',
+      '❓ "O ARDUINO SÓ MANDA E NÃO RECEBE DOS RELÉS?" — sim, e é de propósito. Ele não '
+      + 'lê contato auxiliar nenhum. O que ele lê é o RESULTADO: o divisor 22k/4,7k no '
+      + 'pino D25 mede se os 24 V realmente chegaram ao BD-POT. É melhor que ler o '
+      + 'relé, porque um contato auxiliar diria "mandei fechar" enquanto o D25 diz '
+      + '"a energia chegou" — e ele denuncia relé colado, fusível aberto, borne solto '
+      + 'e emergência acionada, tudo com o mesmo fio.',
+    ],
+  },
+  {
+    id: 'MV-1', nome: 'MV-1 — liga as 5 ventoinhas INTERNAS da câmara', trilho: 2,
+    resumoFuncao: '🔎 O QUE ELE FAZ: liga e desliga as 5 ventoinhas INTERNAS da camara (2 frias da Peltier, 2 dos dutos e a do PTC), todas juntas, pelo canal 3. Elas giram enquanto o ensaio roda — aquecendo ou resfriando — e param junto com ele. ⚠ Ele chaveia o NEGATIVO, e foi por isso que NAO pode comandar as ventoinhas do radiador: o tacometro delas e referenciado nesse mesmo negativo. Quem faz aquelas e o KA4.',
     x: 150, largura: 66, altura: 51, cor: '#0ca678',
     nota: 'Comanda os três grupos de ventoinha e ainda sobra um canal. Optoacoplador '
         + 'em cada entrada, jumper H/L por canal e 66 × 50,5 mm.',
@@ -517,8 +617,8 @@ export const COMPONENTES = [
         { nome: 'VCC', usa: true, para: 'BD-5V saída 9 — alimenta o lado do comando' },
         { nome: 'GND-C', usa: true, para: 'BD-0V · R14 — retorno do COMANDO' },
         { nome: 'IN1' },
-        { nome: 'IN2', usa: true, para: 'Mega D28 — grupo PTC' },
-        { nome: 'IN3', usa: true, para: 'Mega D29 — grupo CIRCULAÇÃO' },
+        { nome: 'IN2' },
+        { nome: 'IN3', usa: true, para: '⭐ Mega D29 — TODAS as 5 ventoinhas internas' },
         { nome: 'IN4' },
       ]},
       { ref: 'VIN', lado: 'direita', legenda: 'Alimentação das cargas (2)', pinos: [
@@ -528,15 +628,15 @@ export const COMPONENTES = [
       { ref: 'OUT', lado: 'baixo', legenda: 'Saídas — 4 pares independentes (8)', pinos: [
         { nome: 'O1+' },
         { nome: 'O1−' },
-        { nome: 'O2+', usa: true, para: 'ventoinha do PTC +' },
-        { nome: 'O2−', usa: true, para: 'ventoinha do PTC −' },
-        { nome: 'O3+', usa: true, para: '2 frias + 2 do duto  +' },
-        { nome: 'O3−', usa: true, para: '2 frias + 2 do duto  −' },
+        { nome: 'O2+' },
+        { nome: 'O2−' },
+        { nome: 'O3+', usa: true, para: '⭐ 2 frias + 2 do duto + PTC  (+)' },
+        { nome: 'O3−', usa: true, para: '⭐ 2 frias + 2 do duto + PTC  (−)' },
         { nome: 'O4+' }, { nome: 'O4−' },
       ]},
       { ref: 'JMP', lado: 'esquerda', legenda: 'Jumpers H/L, um por canal (4)', pinos: [
         { nome: 'J1' },
-        { nome: 'J2', usa: true, semFio: true, para: 'deixar em H (é POSIÇÃO de jumper, não fio)' },
+        { nome: 'J2' },
         { nome: 'J3', usa: true, semFio: true, para: 'deixar em H (é POSIÇÃO de jumper, não fio)' },
         { nome: 'J4' },
       ]},
@@ -555,13 +655,22 @@ export const COMPONENTES = [
       + 'margem que restaria. (O anúncio diz "5–36 V", mas o transistor é de 30 V — '
       + 'confie no componente, não no anúncio.)',
       '📌 60 W por canal, e o maior grupo daqui puxa uns 7 W. O módulo trabalha frio.',
-      '🎁 O canal 4 fica livre, com borne e jumper próprios.',
+      '🎁 SOBRAM OS CANAIS 2 E 4. O canal 2 era da ventoinha do PTC, que passou para o canal 3 — as internas todas têm a MESMA condição (ensaio rodando), então cabem num canal só. Liberou também o pino D28 do Mega.',
+      '⭐ O CANAL 1 VOLTOU — MAS COMANDANDO UM GATE, NÃO UMA VENTOINHA. O erro da versão '
+      + 'anterior não foi usar o módulo: foi pedir a um MOSFET de lado baixo que fosse o RETORNO '
+      + 'de uma ventoinha com tacômetro. Hoje o O1− puxa apenas o gate do Q2 (um P-MOSFET que '
+      + 'chaveia o POSITIVO), e o preto das ventoinhas fica em 0 V de verdade, sempre. Puxar um '
+      + 'gate para 0 V é literalmente a função de um canal N de lado baixo.',
+      '⚠️ USE SÓ O O1−. O O1+ FICA SEM FIO: ele é o VIN de 12 V do módulo passando, e aqui quem '
+      + 'alimenta a ventoinha é o Q2. O LR7843 do módulo só enxerga os 12 V do pull-up R11 — bem '
+      + 'dentro dos 30 V dele.',
     ],
   },
 
   /* ════════════ TRILHO 1 — DISTRIBUIÇÃO ════════════ */
   {
-    id: 'BD-POT', nome: 'BD-POT — 24 V de potência', trilho: 1,
+    id: 'BD-POT', nome: 'BD-POT — 24 V COMUTADO (morre na emergência)', trilho: 1,
+    resumoFuncao: '🔎 O QUE ELE E: a barra dos 24 V que MORRE. Tudo o que sai daqui cai na emergencia, no STOP e em qualquer trip — sao os dois BTS. E daqui tambem que sai a amostra que o pino D25 vigia para saber se a potencia esta presente.',
     x: 30, largura: 36, altura: 58, cor: '#c92a2a',
     nota: 'COMUTADO pelo KA2 — cai na emergência.',
     grupos: [
@@ -573,18 +682,31 @@ export const COMPONENTES = [
     ],
   },
   {
-    id: 'BD-AUX', nome: 'BD-AUX — 12 V auxiliar', trilho: 1,
+    id: 'BD-AUX', nome: 'BD-AUX — 12 V das ventoinhas (permanente)', trilho: 1,
+    resumoFuncao: '🔎 O QUE ELE E: os 12 V das ventoinhas, tambem permanente. Ele nao passa pelo KA2 de proposito: e o que permite as ventoinhas do radiador continuarem resfriando o dissipador quente DEPOIS de alguem socar o cogumelo.',
     x: 72, largura: 36, altura: 58, cor: '#fab005',
     grupos: [
       { ref: 'IN', lado: 'cima', legenda: 'Entrada 2,5 mm² (1)', pinos: [via('IN', 1, 'prensa-cabo do 12 V')] },
       { ref: 'OUT', lado: 'baixo', legenda: 'Saídas (4)', pinos: [
         via('O1', 1, 'MV-1 · VIN — alimenta os 4 canais'),
-        via('O2', 1, 'ventoinhas do radiador · 12 V PERMANENTE'), via('O3'), via('O4'),
+        via('O2', 1, '⭐ KA4 · COM — 12 V das ventoinhas do radiador, comandado'), via('O3'), via('O4'),
       ]},
     ],
+    avisos: ['⭐ O Q2 (IRF9540N, canal P) FICA AQUI, em conjunto termorretrátil, EM SÉRIE com a '
+           + 'saída O2. Ele chaveia o LADO POSITIVO das ventoinhas do radiador — nunca o negativo, '
+           + 'que é a referência do tacômetro e foi o que quebrou na versão anterior. Doc 31 §31.14.',
+           '🔥 CANAL P TEM A FONTE NO +12 V, NÃO NO 0 V. Ligado como se fosse canal N ele conduz '
+           + 'sempre, e a ventoinha nunca desliga. Fonte no BD-AUX, dreno no fio X5.',
+           '⚠️ O R11 (10 kΩ) VAI DO GATE PARA O +12 V, e não para o 0 V. É pull-UP: gate solto = '
+           + 'Vgs zero = MOSFET cortado = ventoinha DESLIGADA. Com o Arduino ausente, o radiador '
+           + 'fica parado — o que é aceitável porque, sem Arduino, a Peltier também está desligada '
+           + 'pelo Q1 e pelos pull-downs do R_EN: para de gerar calor antes de parar de tirar.',
+           '⭐ O D2 (1N4007) É DE RODA-LIVRE DO MOTOR, catodo no +12 V, montado no mesmo conjunto. '
+           + 'Ventoinha é carga indutiva e nada mais a grampeia.'],
   },
   {
-    id: 'BD-24V', nome: 'BD-24V — 24 V de serviços', trilho: 1,
+    id: 'BD-24V', nome: 'BD-24V — 24 V PERMANENTE (comando e sinaleiros)', trilho: 1,
+    resumoFuncao: '🔎 O QUE ELE E: a barra dos 24 V que SOBREVIVE. Alimenta a cadeia de comando (o cogumelo, o rearme, os reles) e os 4 sinaleiros. ⭐ Tem de ser permanente: se a cadeia de comando fosse alimentada pela potencia que ela mesma comanda, nada nunca ligaria — e o sinaleiro vermelho de FALHA apagaria justamente na emergencia.',
     x: 114, largura: 45, altura: 58, cor: '#e8590c',
     nota: 'PERMANENTE — não cai na emergência.',
     grupos: [
@@ -598,8 +720,9 @@ export const COMPONENTES = [
     ],
   },
   {
-    id: 'BD-5V', nome: 'BD-5V — 5,10 V', trilho: 1,
-    x: 165, largura: 80, altura: 58, cor: '#f08c00',
+    id: 'BD-5V', nome: 'BD-5V — 5,10 V da eletrônica (permanente)', trilho: 1,
+    resumoFuncao: '🔎 O QUE ELE E: os 5,10 V de toda a eletronica — Mega, IHM, ESP32, RTC e os dois modulos de rele. Permanente: o Arduino tem de continuar vivo depois da emergencia para registrar o evento no log e mostrar o alerta na tela.',
+    x: 165, largura: 87, altura: 58, cor: '#f08c00',
     grupos: [
       { ref: 'IN', lado: 'cima', legenda: 'Entrada 2,5 mm² (1)', pinos: [via('IN', 1, 'prensa-cabo dos 5 V')] },
       { ref: 'OUT', lado: 'baixo', legenda: 'Saídas (12) ⬆', pinos: [
@@ -610,15 +733,16 @@ export const COMPONENTES = [
         via('O8', 1, 'PI-2 — alimenta o mux e o INA219'),
         via('O9', 1, 'MV-1 · VCC do lado do comando'),
         via('O10', 1, '⭐ AM2315C · VCC — o sensor DENTRO da câmara'),
-        via('O11', 1, 'DS18B20 do radiador · VCC'), via('O12'),
+        via('O11', 1, 'DS18B20 do radiador · VCC'), via('O12', 1, '⭐ KA3 + KA4 · DC+ — alimenta os dois módulos de relé'), via('O13'),
       ]},
     ],
     avisos: ['📌 Cresceu de 10 para 12 pontos quando o AM2315C ganhou saída própria. '
            + 'As 11 cargas de 5 V somam ~310 mA — o LM2596 de 2 A trabalha folgado.'],
   },
   {
-    id: 'BD-0V', nome: 'BD-0V — barra do 0 V (star ground)', trilho: 1,
-    x: 251, largura: 100, altura: 58, cor: '#212529',
+    id: 'BD-0V', nome: 'BD-0V — retorno único de tudo (star ground)', trilho: 1,
+    resumoFuncao: '🔎 O QUE ELE E: o ponto onde TODO retorno do painel se encontra, um parafuso por dispositivo. ⭐ Estrela, nunca em cadeia: pendurar um retorno no outro faz a corrente de um virar erro de medicao do outro — e como os BTS chaveiam, esse erro PISCA no ritmo do PWM. Chama-se acoplamento por impedancia comum e e a causa numero 1 de medicao ruim em painel.',
+    x: 258, largura: 105, altura: 58, cor: '#212529',
     nota: '⭐ O ÚNICO 0 V do projeto. Barra de 20 pontos — ou dois blocos de 8 mais '
         + 'um de 4, ligados por ponte de 4 mm².',
     grupos: [
@@ -629,7 +753,8 @@ export const COMPONENTES = [
         via('R5', 1, 'Arduino · GND'), via('R6', 1, 'PI-1 J1-9'),
         via('R7', 1, 'DNLCB30 · −'), via('R8', 1, 'RTC DS3231 · GND'),
         via('R9', 1, 'tela ES3C28P · GND'), via('R10', 1, 'conversor de nível · GND'),
-        via('R11', 1, 'KA1 · A2'), via('R12', 1, 'KA2 · A2'),
+        via('R11', 1, 'KA1 · A2'),
+        via('R12', 1, '⭐ KA3 · NO3 — o retorno da bobina, depois do contato do módulo de relé'),
         via('R13', 1, 'MV-1 · GND da carga (lado VIN)'),
         via('R14', 1, 'MV-1 · GND do comando (lado isolado)'),
         via('R15', 1, '⭐ AM2315C · GND — o sensor DENTRO da câmara'),
@@ -638,13 +763,15 @@ export const COMPONENTES = [
         via('R18', 1, 'seletora LOCAL/REMOTO — contato para o 0 V'),
         via('R19', 1, 'DS18B20 do radiador · GND'),
         via('R20', 1, '⭐ retorno das ventoinhas do radiador — referência dos 2 RPM'),
+        via('R21', 1, '⭐ KA3 + KA4 · DC− — retorno dos dois módulos de relé'),
       ]},
     ],
     avisos: ['🔥 É o componente mais fácil de subdimensionar. Chegam 18 retornos + a '
            + 'entrada. Um bloco comum de 8 saídas NÃO serve.'],
   },
   {
-    id: 'RTC', nome: 'RTC DS3231', trilho: 3,
+    id: 'RTC', nome: 'RTC DS3231 — data e hora reais para o log', trilho: 3,
+    resumoFuncao: '🔎 O QUE ELE FAZ: guarda data e hora reais, com pilha propria, para que cada linha do log tenha carimbo de tempo verdadeiro mesmo depois de faltar energia. Sem ele o log comecaria em 1970 a cada boot, e a rastreabilidade do ensaio morreria.',
     x: 402, largura: 35, altura: 40, cor: '#0ca678',
     nota: '⭐ Subiu para o trilho 3, ao lado do Arduino: o I²C fica curto e o módulo '
         + 'sai da canaleta de potência. Abriu espaço no trilho 1 para os dois relés, '
@@ -661,7 +788,8 @@ export const COMPONENTES = [
 
   /* ════════════ PORTA ════════════ */
   {
-    id: 'HMI', nome: 'Tela ES3C28P (ESP32-S3)', porta: true,
+    id: 'HMI', nome: 'IHM — configura o ciclo, INICIAR, e grava o log no SD', porta: true,
+    resumoFuncao: '🔎 O QUE ELA FAZ: e por onde o operador trabalha. Configura o ciclo, aperta INICIAR, ve temperatura e estado, e grava o log no cartao SD. ⭐ O INICIAR dela liga o PID e o PWM — NAO arma a potencia. Quem arma e o botao verde da porta.',
     x: 70, y: 40, largura: 50, altura: 86, cor: '#1971c2',
     nota: '⚠️ Recorte da porta 47 × 61 mm, EM RETRATO. Reserve 25 mm livres atrás.',
     grupos: [
@@ -692,7 +820,8 @@ export const COMPONENTES = [
            + 'contrapartida.'],
   },
   {
-    id: 'CONV', nome: 'Conversor de nível 2 canais', porta: true,
+    id: 'CONV', nome: 'CONV — adapta 5 V ↔ 3,3 V entre o Mega e a IHM', porta: true,
+    resumoFuncao: '🔎 O QUE ELE FAZ: o Mega fala em 5 V e a tela IHM so aguenta 3,3 V. Sem este tradutor no meio, o pino RXD da tela se degrada — e o pior e que parece funcionar no comeco, porque os diodos internos de protecao grampeiam a tensao.',
     x: 134, y: 44, largura: 34, altura: 22, cor: '#7048e8',
     escala: 'ampliado — a placa real tem 14,7 × 12,7 mm',
     nota: 'Monta atrás da tela, em espaçadores de nylon. ⚠️ No desenho ele está '
@@ -715,6 +844,7 @@ export const COMPONENTES = [
   },
   ...['ENERGIZADO', 'RESFRIANDO', 'AQUECENDO', 'FALHA'].map((nome, i) => ({
     id: `H${i + 1}`, nome: `Sinaleiro H${i + 1} — ${nome}`, porta: true,
+    resumoFuncao: `🔎 O QUE ELE MOSTRA: ${nome}. ⭐ Sao de 24 V e vem do BD-24V PERMANENTE, acionados pelo ULN2803 da PI-1 — o vermelho de FALHA precisa continuar aceso com a emergencia acionada, e por isso nenhum deles pode pendurar no BD-POT.`,
     x: 52 + i * 42, y: 175, largura: 30, altura: 30,
     cor: ['#2f9e44', '#1971c2', '#e8590c', '#c92a2a'][i],
     grupos: [{ ref: 'LMP', lado: 'baixo', legenda: 'Sinaleiro 22 mm · 24 V (2)', pinos: [
@@ -727,49 +857,62 @@ export const COMPONENTES = [
     ]}],
   })),
   {
-    id: 'S1', nome: 'Botão START (verde)', porta: true,
-    aConferir: '🔥 O bloco chaveia para o 0 V, NÃO para o 5 V. Com INPUT_PULLUP o Arduino já segura o pino em 5 V por dentro — ligar o botão no 5 V faz o pino ler HIGH apertado ou não, e o START nunca acontece.',
-    x: 57, y: 250, largura: 30, altura: 30, cor: '#2f9e44',
-    grupos: [{ ref: 'NA', lado: 'cima', legenda: 'Bloco NA de 5 V — contatos 13-14', pinos: [
-      via('13', 1, '⚡ 0 V comum dos comandos (vem do SA1-13)'),
-      via('14', 1, 'Mega D22 — INPUT_PULLUP, LOW = apertado'),
+    id: 'S1', nome: 'S1 · LIGAR (verde) — arma a potência, NÃO inicia o ensaio', porta: true,
+    resumoFuncao: '🔎 O QUE ELE FAZ: ARMA A POTENCIA. Refaz o selo do KA2 e traz os 24 V de volta ao BD-POT. ⭐ Ele NAO inicia o ensaio — isso e o INICIAR da tela IHM. E o Arduino nem o le: nao ha fio dele ate pino nenhum. O firmware descobre que a potencia voltou pelo divisor no D25, do mesmo jeito que ignora o REARME azul.',
+    x: 147, y: 250, largura: 30, altura: 30, cor: '#2f9e44',
+    nota: '⭐ Bloco de 24 V, na cadeia de comando — NÃO é um botão de sinal. Ele ARMA a '
+        + 'potência refazendo o selo do KA2. O Arduino nem o lê.',
+    grupos: [{ ref: 'NA24', lado: 'baixo', legenda: 'Bloco NA de 24 V — contatos 13-14', pinos: [
+      via('13', 1, 'nó do STOP — vem do S2 · 12'),
+      via('14', 1, 'KA2 · A1 — refaz o selo do KA2'),
     ]}],
+    avisos: ['⭐ ELE ARMA A POTÊNCIA, NÃO INICIA O ENSAIO. São duas coisas diferentes e '
+           + 'com nomes parecidos: o VERDE traz os 24 V de volta ao BD-POT (hardware); o '
+           + 'INICIAR da tela IHM liga o PID e o PWM (software). Etiquete-o como LIGAR '
+           + 'para o operador não confundir.',
+             '📌 UM BLOCO SÓ, e de 24 V. Diferente do S2, este botão não tem contato de '
+           + '5 V: o Arduino descobre que a potência voltou pelo divisor no D25, do mesmo '
+           + 'jeito que já ignora o REARME azul.'],
   },
   {
-    id: 'S2', nome: 'Botão STOP (preto)', porta: true,
-    x: 102, y: 250, largura: 30, altura: 30, cor: '#212529',
-    nota: 'Este é de 24 V: ele energiza a bobina do KA2 diretamente.',
+    id: 'S2', nome: 'S2 · STOP (preto) — corta a potência E avisa o Arduino', porta: true,
+    resumoFuncao: '❓ E AQUI QUE O ARDUINO DESCOBRE QUE APERTARAM O STOP. O botao tem DOIS blocos de contato empilhados atras da mesma pastilha plastica, acionados pelo mesmo dedo — mas eletricamente SEPARADOS. O bloco de 24 V (11-12) derruba o selo do KA2 e corta a potencia sem o Arduino participar de nada. O bloco de 5 V (13-14) fecha para o 0 V no pino D23, e e SO por ele que o firmware fica sabendo. Um botao, dois circuitos que nao se tocam.',
+    x: 57, y: 250, largura: 30, altura: 30, cor: '#212529',
+    nota: '⭐ AQUI ESTÁ A RESPOSTA PARA "como o Arduino sabe que apertaram o STOP?". '
+        + 'O botão tem DOIS blocos de contato, empilhados atrás do mesmo cogumelo '
+        + 'plástico e acionados pelo mesmo dedo — mas eletricamente SEPARADOS. O de '
+        + '24 V derruba o selo do KA2 (hardware, o Arduino nem participa); o de 5 V '
+        + 'fecha para o 0 V no pino D23 e é por ele que o firmware fica sabendo. '
+        + 'Um botão, dois circuitos que não se tocam.',
     grupos: [
     { ref: 'NF24', lado: 'baixo', legenda: 'Bloco NF de 24 V — contatos 11-12', pinos: [
       via('11', 1, '⚡ HARDWARE: KA1 · 14 (contato de saída)'),
-      via('12', 1, '⚡ HARDWARE: KA2 · A1 — corta a bobina enquanto apertado'),
+      via('12', 1, '⚡ HARDWARE: nó do selo do KA2 — vai ao S1 · 13 e ao KA2 · 21'),
     ]},
     { ref: 'NA5', lado: 'cima', legenda: 'Bloco NA de 5 V — contatos 13-14', pinos: [
-      via('13', 1, '⚡ 0 V comum dos comandos (ponte a partir do S1-13)'),
+      via('13', 1, '⚡ 0 V comum dos comandos (vem do BD-0V · R18)'),
       via('14', 1, 'Mega D23 — INPUT_PULLUP, LOW = apertado'),
     ]}],
+    avisos: ['🔥 NÃO CONFUNDA OS DOIS BLOCOS. O de 24 V (11-12) é o que corta de verdade; '
+           + 'o de 5 V (13-14) só avisa. Ligar o Arduino no bloco de 24 V queima o pino '
+           + 'D23 na hora; ligar a cadeia no bloco de 5 V deixa o STOP sem efeito nenhum '
+           + 'em hardware. É o erro nº 1 do Doc 31 §31.5.',
+             '⚠️ O bloco chaveia para o 0 V, NÃO para o 5 V. Com INPUT_PULLUP o Arduino '
+           + 'já segura o pino em 5 V por dentro — ligado ao 5 V o pino lê HIGH '
+           + 'apertado ou não, e o STOP nunca acontece.'],
   },
   {
-    id: 'S3', nome: 'Botão REARME (azul)', porta: true,
-    x: 147, y: 250, largura: 30, altura: 30, cor: '#1971c2',
+    id: 'S3', nome: 'S3 · REARME (azul) — só depois da emergência', porta: true,
+    resumoFuncao: '🔎 O QUE ELE FAZ: refaz o selo do KA1, e so isso. E o unico jeito de sair de uma emergencia — destravar o cogumelo NAO religa nada. A norma exige que religar seja um ato separado e deliberado de uma pessoa, e este botao azul e essa pessoa. Depois dele, ainda falta o verde para armar a potencia.',
+    x: 192, y: 250, largura: 30, altura: 30, cor: '#1971c2',
     grupos: [{ ref: 'NA', lado: 'baixo', legenda: 'Bloco NA de 24 V — contatos 13-14', pinos: [
       via('13', 1, 'nó CMD — a cadeia, depois do cogumelo'),
       via('14', 1, 'KA1 · A1 — refaz o selo'),
     ]}],
   },
   {
-    id: 'SA1', nome: 'Seletora LOCAL / REMOTO', porta: true,
-    x: 192, y: 250, largura: 30, altura: 30, cor: '#212529',
-    grupos: [{ ref: 'SEL', lado: 'cima', legenda: '2 posições · bloco NA — contatos 13-14', pinos: [
-      via('13', 1, 'BD-0V · R18'), via('14', 1, 'Mega D26'),
-    ]}],
-    avisos: ['✅ Confirmado no firmware: 1 pino só, o D26, com INPUT_PULLUP. '
-           + 'Aberto = LOCAL, fechado para o 0 V = REMOTO.',
-             '⭐ A inversão é proposital: fio rompido lê HIGH e cai em LOCAL. Uma falha '
-           + 'de fiação nunca abre a máquina para comando pela internet.'],
-  },
-  {
-    id: 'S0', nome: 'Cogumelo de EMERGÊNCIA', porta: true,
+    id: 'S0', nome: 'S0 · EMERGÊNCIA — corta tudo em hardware e trava', porta: true,
+    resumoFuncao: '🔎 O QUE ELE FAZ: derruba o selo do KA1 e, com ele, TUDO. Corta em hardware puro, sem uma linha de firmware no caminho, e TRAVA: destravar o cogumelo nao devolve energia nenhuma. O segundo bloco, de 5 V, avisa o pino D24 — mas so para o firmware registrar no log e mostrar na tela. Ele nao participa do corte.',
     x: 142, y: 330, largura: 44, altura: 44, cor: '#c92a2a',
     nota: 'Cogumelo com trava. Dois blocos NF: um corta a potência, o outro avisa o '
         + 'Arduino.',

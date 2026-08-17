@@ -32,6 +32,31 @@ export const FIOS_ETAPA4 = [
       `Comando do sinaleiro ${nome}.`, { rota: ['CH-topo'],
       nome: `Mega ${d} → sinaleiro ${nome}` })),
 
+  /* ── ⭐ os dois gatilhos dos módulos de relé ───────────────────────── */
+  { ...sig('S4b', meg('D27'), { comp: 'KA34', via: 'IN3' },
+      'Gatilho do KA3 — o relé que fica em série com a bobina do KA2.'),
+    nome: 'Mega D27 → gatilho do KA3', rota: ['CH-topo', 'CV-dir', 'CH-3x2'],
+    porque: '⭐ O ÚNICO FIO DO PAINEL QUE DÁ AO SOFTWARE PODER SOBRE A POTÊNCIA — e é de '
+          + 'propósito que ele seja só um. HIGH fecha o KA3 e a bobina do KA2 pode '
+          + 'energizar; LOW abre, o selo do KA2 se perde e o BD-POT vai a 0 V. Como o '
+          + 'selo não se refaz sozinho, o corte é RETENTIVO: só o botão verde religa. '
+          + 'Doc 31 §31.13.',
+    aviso: '⚠️ JUMPER DO MÓDULO EM "H" e um resistor de 10 kΩ deste nó para o 0 V. É o '
+         + 'que garante o fail-safe: Arduino resetado, desligado ou com este fio rompido '
+         + '→ IN em 0 V → relé aberto → potência cortada.' },
+
+  { ...sig('S4c', meg('D30'), { comp: 'KA34', via: 'IN4' },
+      'Gatilho do KA4 — as duas ventoinhas do radiador.'),
+    nome: 'Mega D30 → gatilho do KA4', rota: ['CH-topo', 'CV-dir', 'CH-3x2'],
+    porque: '⭐ UM CONTATO SECO NÃO TEM LADO ALTO NEM LADO BAIXO. Era esse o problema '
+          + 'que derrubou o comando destas ventoinhas: o MV-1 chaveia o NEGATIVO, e o '
+          + 'tacômetro delas é referenciado nesse mesmo negativo. O relé chaveia o '
+          + 'POSITIVO sem nenhum truque de nível — o preto fica em 0 V de verdade, '
+          + 'sempre. Doc 31 §31.14.',
+    aviso: '⚠️ Idem: jumper em "H" e pull-down de 10 kΩ. Arduino ausente = ventoinhas '
+         + 'paradas — aceitável porque, sem Arduino, o KA3 também abriu e a Peltier não '
+         + 'está gerando calor.' },
+
   /* ── o que a PI-1 devolve ao Arduino ──────────────────────────────── */
   { ...ana('S5', { comp: 'PI1', via: 'J2-1' }, meg('A0'),
       'A corrente do BTS #1, já filtrada pelo C1.'),
@@ -117,11 +142,17 @@ export const FIOS_ETAPA4 = [
      ligadas no BD-AUX, porque o MV-1 chaveia o NEGATIVO e o tacômetro
      delas tem o emissor referenciado nesse mesmo negativo. Ver X5/X6 na
      etapa 6. O D27 do Mega e o canal 1 do MV-1 ficaram livres. */
-  ...[['S18', 'D28', 'IN2', 'PTC'],
-      ['S19', 'D29', 'IN3', 'CIRCULAÇÃO']]
-    .map(([n, d, i, g]) => sig(n, meg(d), { comp: 'MV-1', via: i },
-      `Liga o grupo de ventoinhas ${g}.`,
-      { rota: ['CH-topo', 'CV-dir', 'CH-3x2'], nome: `Mega ${d} → ventoinhas ${g}` })),
+  { ...sig('S19', meg('D29'), { comp: 'MV-1', via: 'IN3' },
+      'Liga as CINCO ventoinhas internas: 2 frias, 2 do duto e a do PTC.'),
+    nome: 'Mega D29 → ventoinhas internas', rota: ['CH-topo', 'CV-dir', 'CH-3x2'],
+    porque: '🔧 ERAM DOIS CANAIS E VIRARAM UM. A ventoinha do PTC tinha canal próprio '
+          + '(D28 → IN2) para poder continuar girando depois que o aquecedor desligava. '
+          + 'Isso deixou de ser necessário: o PTC é AUTO-LIMITADO — sem fluxo de ar a '
+          + 'resistência dele sobe e ele corta a própria potência. Com a mesma condição '
+          + 'das outras quatro (ensaio rodando), as cinco cabem num canal só.',
+    aviso: '⭐ Sumiram o pino D28, o canal 2 do MV-1 e DOIS condutores do prensa-cabo '
+         + 'PG13-2 — a ventoinha do PTC passou a entrar em paralelo com as outras, '
+         + 'dentro da câmara.' },
 
   /* ── o multiplexador da PI-2 ──────────────────────────────────────── */
   ...[['S20', 'D31', 'S0', 0], ['S21', 'D32', 'S1', 1],

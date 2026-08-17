@@ -445,7 +445,9 @@ Esta seção descrevia uma placa com três diodos Zener (5V6 / 13 V / 15 V) que 
 
 > ⚠️ **Duas Peltier significam dois coolers e dois sinais de RPM.** O pino D2 já é do 1-Wire, então o **segundo tacômetro precisa de outro pino de interrupção**. No Mega, as interrupções externas ficam em D2, D3, D18, D19, D20 e D21 — e D18–D21 já estão ocupados por Serial1 e I²C. **Use D3 (INT1) para o cooler #1 e uma interrupção por mudança de pino (PCINT) para o cooler #2**, ou realoque a Serial1. 📌 **Definir em [Doc 32](32_sinais_e_sensores.md) e [Doc 40](../camada_4_programacao/40_firmware_arduino.md) antes de fechar a fiação.**
 
-> ⚠️ **Os coolers externos das Peltier NÃO passam pelos BTS.** Vêm do ramal auxiliar e ficam **sempre ligados** enquanto o painel estiver energizado. Se dependessem do BTS, ao desligar a Peltier os dissipadores parariam de ser ventilados justamente quando ainda estão cheios de calor.
+> ⚠️ **Os coolers externos das Peltier NÃO passam pelos BTS.** Vêm do ramal auxiliar, então **sobrevivem ao STOP e à emergência** — se dependessem do BTS, ao desligar a Peltier os dissipadores parariam de ser ventilados justamente quando ainda estão cheios de calor.
+>
+> 🔧 **Mas eles já não ficam ligados o tempo todo.** A revisão de [Doc 31 §31.14](31_comando_e_protecoes.md) devolveu o comando: o **contato do KA4** (um módulo de relé) chaveia o **lado positivo** dos 12 V — nunca o negativo, que é a referência do tacômetro e foi o que quebrou antes. A regra é uma só: **ligados enquanto a Peltier resfria OU enquanto o DS18B20 disser que o dissipador está quente.** Eles param apenas depois de a pós-ventilação terminar, e o `!sensorOK` conta sensor com defeito como *quente*. Economiza ~5 W de marcha lenta e os ~2,5 W de fuga térmica que atrapalhavam o PTC.
 
 ### Distribuição dentro da câmara
 

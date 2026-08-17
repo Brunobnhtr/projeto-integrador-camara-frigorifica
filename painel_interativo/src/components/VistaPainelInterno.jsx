@@ -825,6 +825,13 @@ export default function VistaPainelInterno() {
               </div>
             </div>
             <div style={{ padding: '12px 16px' }}>
+              {sel.resumoFuncao && (
+                <div style={{ fontSize: 12.5, color: '#0b5563', background: '#e3fafc',
+                              border: '2px solid #66d9e8', borderRadius: 6,
+                              padding: '10px 12px', marginBottom: 11, lineHeight: 1.55 }}>
+                  {sel.resumoFuncao}
+                </div>
+              )}
               {sel.aConferir && (
                 <div style={{ fontSize: 11.5, color: '#7a5c00', background: '#fff9db',
                               border: '2px solid #ffe066', borderRadius: 6,

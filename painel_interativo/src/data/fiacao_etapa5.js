@@ -120,19 +120,13 @@ export const FIOS_ETAPA5 = [
 
   /* ── os blocos de 5 V dos comandos ────────────────────────────────── */
   { n: 'P20', etapa: 5, classe: 'comum', func: 'zero', mm2: 0.25,
-    de: { comp: 'BD-0V', via: 'R18' }, para: { comp: 'SA1', via: '13' },
+    de: { comp: 'BD-0V', via: 'R18' }, para: { comp: 'S2', via: '13' },
     nome: '0 V dos comandos → porta', rota: ['CH-base', 'CV-dir', 'CP-vsin', 'CP-2x3'],
-    diz: 'UM fio de 0 V cruza a dobradiça e serve os quatro comandos.',
+    diz: 'UM fio de 0 V cruza a dobradiça e serve os dois comandos de 5 V.',
     porque: '⭐ Aqui pendurar É o certo. O limiar do Arduino fica em 2,5 V e o pull-up '
-          + 'interno dá 0,25 mA — alguns milivolts de queda não mudam nada. Quatro '
-          + 'travessias de dobradiça economizadas sem custo de precisão.' },
-  ...[['P21', 'SA1', '13', 'S1', '13'], ['P22', 'S1', '13', 'S2', '13']]
-    .map(([n, a, va, b, vb]) => ({
-      n, etapa: 5, classe: 'comum', func: 'zero', mm2: 0.25,
-      de: { comp: a, via: va }, para: { comp: b, via: vb },
-      nome: `ponte do 0 V · ${a} → ${b}`, rota: ['CP-2x3'],
-      diz: 'Ponte curta entre blocos vizinhos, na própria porta.',
-    })),
+          + 'interno dá 0,25 mA — alguns milivolts de queda não mudam nada. 🔧 Eram '
+          + 'QUATRO comandos antes de o START e a seletora saírem da porta; hoje são '
+          + 'dois, e o fio serve o STOP e o cogumelo.' },
   /* o cogumelo está uma fileira abaixo, então o 0 V dele desce pela
      vertical de sinal em vez de ser ponte curta */
   { n: 'P23', etapa: 5, classe: 'comum', func: 'zero', mm2: 0.25,
@@ -140,10 +134,8 @@ export const FIOS_ETAPA5 = [
     nome: 'ponte do 0 V · S2 → cogumelo',
     rota: ['CP-2x3', 'CP-vsin', 'CP-base'],
     diz: 'Desce pela vertical de sinal até a fileira do cogumelo.' },
-  ...[['P24', 'S1', '14', 'D22', 'START', 'CP-2x3'],
-      ['P25', 'S2', '14', 'D23', 'STOP', 'CP-2x3'],
-      ['P26', 'S0', '22', 'D24', 'EMERGÊNCIA', 'CP-base'],
-      ['P27', 'SA1', '14', 'D26', 'LOCAL/REMOTO', 'CP-2x3']]
+  ...[['P25', 'S2', '14', 'D23', 'STOP', 'CP-2x3'],
+      ['P26', 'S0', '22', 'D24', 'EMERGÊNCIA', 'CP-base']]
     .map(([n, c, v, d, nome, k]) => ({
       ...sin(n, { comp: c, via: v }, { comp: 'MEGA', via: d },
         `O Arduino lê o ${nome} por este fio.`),

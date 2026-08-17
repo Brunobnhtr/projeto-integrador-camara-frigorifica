@@ -45,7 +45,7 @@ Como a moldura tem travessas de reforço no meio (senão a base entorta com o pe
 ```
 
 **3. Todos os furos são feitos ANTES de pintar.**
-São 12 furos: 3 para os postes, 1 para a saída da subestação, 3 para as entradas do painel, 1 para o chicote da câmara, 1 para o dreno e 3 para os postes de iluminação da rua. Furar depois de pintar arranca a tinta na borda e o acabamento fica ruim.
+🔧 São **11 furos**: 3 para os postes, 1 para a saída da subestação, 3 para as entradas do painel, 1 para o chicote da câmara e 3 para os postes de iluminação da rua. **O 12º era o do dreno da câmara, e ele saiu** — o condensado passou a ser recolhido por uma bandeja removível ([Doc 12 §12.6](12_camara_termica.md)). Furar depois de pintar arranca a tinta na borda e o acabamento fica ruim.
 
 ### O truque para acertar a furação: fure em duas etapas
 
@@ -118,6 +118,8 @@ Uma base de 1,5 m não entra no porta-malas da maioria dos carros. A solução �
 | **A — Via pública** | Rua, subestação, 3 postes com transformadores | 640 × 500 mm |
 | **B — Interior da empresa** | Portão, painel, chão de fábrica, câmara | 860 × 500 mm |
 
+> 🔧 **A CÂMARA ENCOLHEU de 336 × 176 para 290 × 110 mm.** Saíram, em duas etapas, o XPS de 30 mm, o vão de ar que o substituiu e a cobertura branca de 3 mm — 66 mm em cada dimensão ([Doc 12 §12.1](12_camara_termica.md)). ⚠️ **A demarcação amarela de piso que contorna a área da câmara segue esse contorno e precisa acompanhar.**
+
 | Item | Especificação |
 |---|---|
 | União mecânica | 4 parafusos M6 com inserto, pelas travessas de topo dos dois módulos |
@@ -182,7 +184,7 @@ Y=500 ┌───────────────────────�
       │▓ SUBESTAÇÃO ▓                                    │               │  │   CÂMARA    │ │
 Y=400 │▓ ┌────────┐ ▓                                    │    PAINEL     │  │  FRIGORÍF.  │ │
       │▓ │FONTE   │ ▓                                    │  DE COMANDO   │  │             │ │
-      │▓ │24V 240W│ ▓                                    │   400 × 200   │  │  336 × 176  │ │
+      │▓ │24V 240W│ ▓                                    │   400 × 200   │  │  290 × 110  │ │
 Y=300 │▓ └────────┘ ▓                                    └───────────────┘  └─────────────┘ │
       │▓▓▓▓▓▓▓▓▓▓▓▓▓▓                                  ▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓ zebrado NR-10    │
       │      ═══════════●━━━━━━━●━━━━━━━●              ║                                    │

@@ -64,11 +64,15 @@ A porta tem só o que a pessoa precisa **tocar ou ver**:
 | Peça | Função |
 |---|---|
 | **Botão cogumelo vermelho** | Emergência. Grande e vermelho por norma — para ser achado sem pensar |
-| **START / STOP** | Liga e para o processo |
-| **REARME (azul)** | Destrava depois de uma emergência |
-| **Seletora LOCAL/REMOTO** | Define quem manda: o painel ou o dashboard |
+| **STOP (preto)** | Para o processo **e retém**: derruba o selo do KA2, em hardware |
+| ⭐ **START / LIGAR (verde)** | **Arma a potência** refazendo o selo do KA2. Não inicia o ensaio — isso é o `INICIAR` da tela |
+| **REARME (azul)** | Destrava depois de uma emergência: refaz o selo do KA1 |
 | **4 sinaleiros** | Verde = rodando · Azul = esfriando · Amarelo = aquecendo · Vermelho = falha |
-| **Tela ES3C28P** | Mostra temperatura, setpoint e estado |
+| **Tela ES3C28P** | Mostra temperatura, setpoint e estado — e ⭐ **é onde fica o INICIAR** |
+
+> 🔧 **A porta tem QUATRO botoeiras.** Saiu apenas a **seletora LOCAL/REMOTO** — era a segunda camada de uma regra que a primeira já garante (o START nunca é aceito por MQTT). Um furo a menos, 2 fios a menos pela dobradiça e o pino D26 devolvido.
+>
+> 🔥 **Etiquete o verde como `LIGAR` e o da tela como `INICIAR ENSAIO`.** Chamar os dois de start garante que alguém aperte o verde e fique esperando a temperatura mudar — ele arma a potência, não começa o ciclo.
 
 > ⚠️ **Uma armadilha real desta etapa:** o botão de emergência com 2 blocos de contato ocupa **7 cm atrás da chapa**. Confira se ele não bate no trilho antes de furar — está detalhado na §20.6, e é o erro que obriga a refazer a porta.
 
@@ -684,7 +688,7 @@ Elevação de temperatura: ΔT = 7 / (2,8 × 0,76) ≈ 3,3 K
 - [ ] Pigtail IPEX→SMA ligado ao ESP32 **sem dobras fechadas** (raio mínimo de curvatura: 10 mm)
 - [ ] Antena rosqueada por fora e articulada para a vertical
 - [ ] Cooler de 40 mm apontado para os BTS7960
-- [ ] Todas as etiquetas aplicadas (Q1, S0, S1, S2, H1–H4)
+- [ ] Todas as etiquetas aplicadas (Q0 geral, S0, S1 `LIGAR`, S2, S3, H1–H4)
 - [ ] Bolsa porta-documentos instalada
 - [ ] Painel fixado na base da maquete e alinhado com a faixa zebrada
 - [ ] Porta abre e fecha sem esforço, sem tocar em nenhum componente

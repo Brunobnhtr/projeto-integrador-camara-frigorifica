@@ -2,7 +2,9 @@
 
 > Como testar a lógica do projeto **antes de comprar ou montar qualquer coisa**. Serve para ajustar o PID, validar o modo ciclo, provar que a emergência não religa sozinha e estimar quanto tempo o ensaio vai durar.
 >
-> 📁 Arquivos: [`simulacao/`](../simulacao/)
+> ⭐ **A ferramenta principal virou o simulador do aplicativo React** — ele roda a cadeia elétrica, o firmware e um modelo térmico juntos, e **confere o resultado contra a tabela de estados do [Doc 31](../camada_3_eletrica/31_comando_e_protecoes.md)**. Ver §42.0.
+>
+> 📁 Arquivos: [`painel_interativo/src/sim/`](../painel_interativo/src/sim/) · [`scripts/valida_simulador.mjs`](../painel_interativo/scripts/valida_simulador.mjs)
 
 ---
 
@@ -19,23 +21,95 @@ A ideia: você pode testar quase tudo **antes de ter o hardware na mão**. E é 
 | Na maquete montada | Desmontar, ressoldar, remontar |
 | Na apresentação | Não tem conserto |
 
-### As três ferramentas, e para que serve cada uma
+### As ferramentas, e para que serve cada uma
 
-| Ferramenta | Responde a que pergunta | Custo |
+| Ferramenta | Responde a que pergunta | Onde |
 |---|---|---|
-| **Simulador Python** | *"Quanto tempo leva para esfriar? Os ganhos do PID estão bons? O que acontece se um cooler parar?"* | Grátis |
-| **Wokwi** (Arduino no navegador) | *"O código roda? Os botões funcionam? A interrupção de RPM conta certo?"* | Grátis |
-| **Falstad** (circuito no navegador) | *"O circuito de selo funciona mesmo? A emergência trava?"* | Grátis |
+| ⭐ **Simulador do app** (`npm run simula`) | *"O STOP retém? A emergência trava? A ventoinha continua? O que acontece se o BTS colar em curto?"* | §42.0 |
+| **Wokwi** (Arduino no navegador) | *"O código C++ compila e roda? A interrupção de RPM conta certo?"* | §42.3 |
+| **Falstad** (circuito no navegador) | *"O desenho do selo está certo?"* — hoje redundante com o simulador | §42.4 |
 
-Nenhuma das três precisa de peça comprada.
+---
 
-### O que o simulador Python realmente faz
+## 42.0 ⭐ O simulador do aplicativo — a documentação virou teste
 
-Ele é um **modelo matemático da câmara**: um programa que sabe como a temperatura responde quando você liga a Peltier. Você diz "ligue em 80 %", e ele calcula, segundo a segundo, o que a temperatura faria de verdade.
+```bash
+cd painel_interativo
+npm run simula          # 107 verificações, ~3 segundos
+npm run valida          # o simulador roda ANTES dos 8 validadores de fiação
+```
 
-Com isso você consegue, em 30 segundos de execução, ver como seria uma hora de ensaio real — e testar coisas que na bancada seriam destrutivas:
+Ele roda **três camadas juntas**, e a separação entre elas é o que torna a resposta confiável:
 
-> **"E se o cooler travar durante o ensaio?"** No simulador você vê o lado quente disparar e a capacidade de refrigeração ir a zero. Na bancada, esse mesmo teste custa uma pastilha Peltier queimada.
+| Arquivo | O que modela | O que ele NÃO sabe |
+|---|---|---|
+| [`src/sim/eletrica.js`](../painel_interativo/src/sim/eletrica.js) | os dois selos, os barramentos, o contato do KA3 | **nada de firmware** — de propósito |
+| [`src/sim/firmware.js`](../painel_interativo/src/sim/firmware.js) | espelho em JS da máquina de estados do [Doc 40 §40.10](40_firmware_arduino.md) | nada de eletricidade — só lê pinos |
+| [`src/sim/index.js`](../painel_interativo/src/sim/index.js) | o laço de tempo, o modelo térmico de 2 massas e a injeção de falhas | — |
+
+> 🎯 **A camada elétrica não pode enxergar o firmware, e é isso que dá valor ao resultado.** A pergunta que o projeto inteiro responde — *"a emergência funciona com o software morto?"* — só significa alguma coisa se der para respondê-la **sem olhar para o software**. Então o firmware entra ali como uma variável externa (o estado do KA3), exatamente como um dedo entra como o estado de um botão.
+
+### O que ele prova, cenário por cenário
+
+| # | Cenário | O que fica provado |
+|---|---|---|
+| 1–4 | Boot, rearme, verde | Os dois selos nascem abertos; o REARME **não** arma a potência |
+| **5** | ⭐ STOP preto | Aperta **uma vez e solta** → 0 V no BD-POT, **e permanece** |
+| **6** | ⭐ Só o verde religa | A IHM tenta e recebe `APERTE_O_VERDE` |
+| 7–8 | STOP pela IHM e por MQTT | Categoria 2 — a potência segue armada e a tela religa |
+| 9–11 | Emergência | Destravar o cogumelo **não religa nada**; nem o verde sem o azul antes |
+| 12 | Arduino morre | O KA3 abre, a potência cai **e não volta sozinha** |
+| 13 | Fan travada | Trip com corte **físico e retentivo** |
+| **14** | 🔥 **BTS7960 em curto** | A Peltier conduz ignorando o `R_EN` — **e o KA3 a mata assim mesmo** |
+| 15–18 | Ventoinhas | As 4 linhas da regra única, o fail-safe do sensor solto, a sobrevivência à emergência |
+| 19 | Intertravamento | 400 passos com inversão de modo, **nunca os dois `R_EN` juntos** |
+| 20–21 | Chave geral e processo | Tudo morre junto; e a câmara chega a **6,9 °C** com setpoint de 5 |
+
+### 🐛 Os dois defeitos que ELE encontrou, na primeira execução
+
+Nenhum dos dois era do projeto — os dois eram do **modelo**. E é por isso que valem a leitura:
+
+**1. "Arduino revive e a potência não volta nem com o verde."** O modelo mantinha o estado durante a morte e retomava de onde parou. **Microcontrolador não pausa — ele morre e RENASCE**, pelo watchdog ou pelo religamento. Corrigido: a transição morto→vivo agora reinicia o firmware inteiro, e aí o `BOOT` autoriza a potência de novo.
+
+**2. "A câmara estabiliza em 8,2 °C com setpoint de 5."** Não era o modelo térmico: era o controlador. Eu tinha escrito um **P puro**, e P puro precisa de erro para gerar saída — então o erro nunca vai a zero. A conta fecha exatamente em 8,16 °C.
+
+> 🎓 **O segundo é um resultado de sala de aula que apareceu sozinho.** O simulador reproduziu o *offset de regime permanente* de um controlador proporcional, com o número certo, sem ninguém procurar por isso. **É a melhor justificativa possível para o `I` do PID estar no projeto** — e vale mais que qualquer parágrafo explicando a teoria.
+
+### ▶️ E a aba "Simulador" — o painel operável
+
+```bash
+npm run dev        # e abra a última aba
+```
+
+O mesmo motor, agora com botões que funcionam:
+
+| O que você vê | O que ele mostra |
+|---|---|
+| **A cadeia de comando** desenhada | verde onde há tensão, cinza onde está morto — e os dois selos abrindo e fechando ao vivo |
+| **Barramentos** | tensão **e corrente** de cada um, com barra de ocupação contra o limite de projeto |
+| **Processo** | temperatura da câmara e do dissipador, setpoint arrastável, duty, e o estado de cada ventoinha |
+| **Botoeiras** | os quatro botões, **em pulso** — aperta e solta, como na vida real |
+| **IHM e MQTT** | os quatro comandos, com o `MQTT · iniciar` recusando de propósito |
+| **Injeção de falhas** | sete caixas de seleção: Arduino morto, BTS em curto, ventoinha travada, DS18B20 solto, contatos soldados, chave geral |
+| **Diário de bordo** | registra só o que **muda**, com carimbo de tempo |
+
+E um controle de velocidade de **1× / 10× / 60×** — um ensaio de 25 minutos passa em 25 segundos.
+
+> 🎓 **A demonstração de 30 segundos para a banca:** aperte o cogumelo e mostre a cadeia inteira ficando cinza. Destrave — **nada volta**. Aperte o verde — **continua nada**. Aperte o azul, depois o verde — a potência volta. É o ensaio nº 4 do §31.11 acontecendo na tela, e ninguém precisa acreditar em você.
+>
+> 📌 **Marque a caixa "🔥 BTS7960 em curto"** com o ensaio rodando e depois "ventoinha travada": o trip dispara, o BD-POT vai a 0 V e a câmara **para de esfriar** — que é o argumento inteiro do KA3 em uma imagem.
+
+> ⭐ **A tela não decide nada.** Ela recebe um instantâneo de `src/sim/` e desenha — o render é uma função pura. É a mesma lógica que o `npm run simula` valida contra a tabela de estados, então **o que você vê na aba é exatamente o que os 107 testes provam**.
+
+### ⚠️ O limite honesto desta ferramenta
+
+O firmware existe **duas vezes**: em C++ no [Doc 40](40_firmware_arduino.md) e em JavaScript no simulador. **Eles podem divergir.** As defesas:
+
+- toda função JS tem **o mesmo nome** da função C++ correspondente, para que o diff seja óbvio
+- o modelo é deliberadamente pequeno: só as decisões que decidem ligar, parar, reter e travar
+- **em caso de discordância, o C++ é a verdade** — o simulador é o modelo, não o contrário
+
+E o que ele **não** simula: temporização em microssegundos, ruído elétrico, queda de tensão nos cabos, o comportamento real de um contato ao abrir sob carga. Para isso não há substituto para a bancada.
 
 ### Por que ajustar o PID no simulador antes
 
@@ -98,7 +172,13 @@ Nenhuma ferramenta simula tudo. Cada uma resolve uma parte:
 
 ---
 
-## 42.2 O simulador de bancada (`simulador.py`)
+## 42.2 ~~O simulador de bancada (`simulador.py`)~~ — substituído
+
+> 🔧 **Este simulador em Python foi removido do projeto.** Ele modelava só a parte térmica e não sabia nada dos selos, dos relés nem da máquina de estados — respondia *"quanto tempo leva para esfriar"* e mais nada.
+>
+> **O simulador do §42.0 faz tudo o que ele fazia e mais**, roda com um comando dentro do próprio aplicativo, e — o que o Python nunca fez — **compara o resultado com a documentação**. A seção fica abaixo como registro do modelo físico, que continua válido e foi reaproveitado.
+
+### O modelo físico que foi reaproveitado
 
 Simula a câmara **e** a lógica de controle. Não precisa de biblioteca nenhuma além do Python padrão.
 
@@ -307,6 +387,10 @@ O [Falstad Circuit Simulator](https://www.falstad.com/circuit/) é ideal para pr
 ---
 
 ## 42.6 ✅ Checklist
+
+- [ ] ⭐ **`npm run simula` passando** — as 83 verificações da tabela de estados
+- [ ] ⭐ **`npm run valida` passando** — o simulador roda **antes** dos validadores de fiação
+- [ ] Se você mudar o `.ino`, o espelho JS em `src/sim/firmware.js` mudou junto?
 
 - [ ] `simulador.py` rodado nos 6 cenários
 - [ ] Ganhos do PID escolhidos com base na curva do `--cenario degrau`

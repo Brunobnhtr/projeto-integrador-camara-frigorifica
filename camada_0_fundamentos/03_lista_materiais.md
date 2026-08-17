@@ -347,7 +347,7 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 | Parede lateral ESQ / DIR | 5 mm transp. | 110 × 250 mm | 2 | Recorte 90 × 210 mm (duto), bordas 45° |
 | Parede traseira | 5 mm transp. | 210 × 250 mm | 1 | Bordas 45° + **2 furos Ø 16 mm para prensa-cabo**, um no canto inferior e outro no superior, ⚠️ **afastados ≥ 100 mm** |
 | Tampa topo | 5 mm transp. | 210 × 110 mm | 1 | Recorte das 2 Peltier |
-| Base externa | 5 mm transp. | 210 × 110 mm | 1 | Furo do dreno |
+| Base externa | 5 mm transp. | 210 × 110 mm | 1 | 🔧 **Sem furos** — o dreno saiu do projeto |
 | Base interna (apoio do PTC) | 5 mm transp. | 190 × 90 mm | 1 | Bordas 90° |
 | **Porta — vidro externo** | 5 mm transp. | 210 × 250 mm | 1 | **Porta dupla (ver §C.3)** |
 | **Porta — vidro interno** | 5 mm transp. | 190 × 230 mm | 1 | **Porta dupla** |
@@ -364,12 +364,13 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 
 | Item | Qtd | Especificação | Link |
 |---|---:|---|---|
-| **XPS 30 mm** (poliestireno extrudado) | 1 m² | Isolante principal — k ≈ 0,033 W/m·K. **30 mm, não 20 mm** (ver [Doc 12](../camada_1_maquete/12_camara_termica.md)) | |
-| **Fita adesiva de alumínio 50 mm** | 1 rolo | ⚠️ **Barreira de vapor** — obrigatória em todas as juntas do XPS, pelo lado externo (quente) | |
+| ~~XPS 30 mm~~ | ~~1 m²~~ | 🔧 **REMOVIDO.** O vão de 30 mm que ele ocupava fica **com ar**, e a fita de alumínio nas duas faces o transforma em barreira de radiação. Custa **3 pontos de duty** (41 % → 44 %) e economiza a chapa inteira. Ver [Doc 12 §12.2](../camada_1_maquete/12_camara_termica.md) | |
+| ⭐ **Fita adesiva de alumínio 50 mm** | **3 rolos** | 🔧 **Virou o isolamento E a superfície externa da câmara.** Reveste toda a caixa por fora e sela **todas** as juntas coladas do acrílico. Com ε ≈ 0,05 ela mais que dobra a resistência de superfície (0,13 → 0,31 m²·K/W). ⚠️ **Barreira de vapor é a função mais importante dela** — quanto menos vapor entra, mais a sílica dura e menos gelo se forma | |
+| ~~Espaçadores de 30 mm~~ | — | 🔧 **REMOVIDOS junto com a cobertura externa.** Eles só existiam para manter o vão de ar aberto | |
 | Manta elastomérica autoadesiva 6 mm | 1 m² | Tipo Armaflex — cantos, arestas e ao redor das passagens de cabo | |
-| Espuma expansiva PU (mini) | 1 | Selagem de passagens de cabo e dreno | |
+| Espuma expansiva PU (mini) | 1 | Selagem das passagens de cabo | |
 
-## C.3 — Vedação, porta e dreno
+## C.3 — Vedação, porta e condensado
 
 | Item | Qtd | Especificação | Link |
 |---|---:|---|---|
@@ -379,10 +380,10 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 | Puxador de câmara fria (miniatura) | 1 | Estética — pode ser um puxador de móvel pequeno | |
 | Cola S-320 Sinteglas | 250 ml | Colagem de acrílico por capilaridade | |
 | Silicone neutro transparente | 1 tubo | Vedação de juntas (⚠️ **neutro**, o acético ataca o acrílico) | |
-| Bandeja de alumínio | 1 | ~190 × 90 mm — coleta de condensado | |
-| Tubo de silicone Ø 6 mm | 40 cm | Dreno até o recipiente externo | |
-| Sílica gel indicadora | 3 sachês | 2 na câmara + **1 dentro da câmara de ar da porta dupla** | |
-| Recipiente coletor de condensado | 1 | Frasco pequeno, embutido na maquete | |
+| ⭐ **Bandeja de alumínio REMOVÍVEL** | 1 | ~190 × 90 mm, **sem furo** — desliza para fora para esvaziar. 🔧 Era fixa e inclinada, com dreno | |
+| ⭐ **Tubo de silicone Ø 4 mm** | 40 cm | **RESPIRO**, enrolado em espiral dentro da câmara. ⚠️ **Não é opcional:** resfriar de 25 para 5 °C contrai o ar 6,7 % e, numa câmara bem vedada, isso dá **34 kgf puxando a porta para dentro**. O caminho longo e estreito equaliza a pressão e quase não deixa vapor passar | |
+| ⭐ **Sílica gel indicadora** | **4 sachês** | 3 na câmara + 1 dentro da câmara de ar da porta dupla. Azul → rosa = trocar. Regenera no forno a 120 °C por 2 h | |
+| ~~Tubo Ø 6 mm, sifão e frasco coletor~~ | — | 🔧 **REMOVIDOS.** São **~1 grama de água** numa apresentação inteira (§12.6) — a bandeja removível dá conta | |
 
 ---
 
@@ -421,11 +422,27 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 | Identificadores de borne e de cabo | 1 kit | Anilhas numeradas — **exigido em painel industrial** | |
 | Trava-fim de trilho DIN | 8 | Impede os componentes de deslizarem | |
 | **Botão de Emergência cogumelo 22 mm** | 1 | Com trava (girar p/ destravar) — **2 blocos NF** (1 para o comando 24 V, 1 para a leitura do Arduino) | |
-| **Botão START 22 mm** | 1 | Verde, momentâneo — **1 bloco NA** (só informa o Arduino) | |
-| **Botão STOP 22 mm** | 1 | Vermelho, momentâneo — **1 NF (corta o KA2 em 24 V) + 1 NA (avisa o Arduino)** | |
+| **Botão START / LIGAR 22 mm** | 1 | **Verde**, momentâneo — **1 bloco NA de 24 V**. ⭐ Fica na **cadeia de comando**, refazendo o selo do KA2: é ele que traz os 24 V de volta ao BD-POT depois de um STOP. **Não é lido por pino nenhum.** ⚠️ Etiquete-o como `LIGAR` — o `INICIAR ENSAIO` é o da tela | |
+| **Botão STOP 22 mm** | 1 | Preto, momentâneo — **1 NF de 24 V + 1 NA de 5 V**. O NF fica **dentro da malha do selo do KA2** e corta a potência de verdade, retendo; o NA avisa o `D23` | |
 | **Botão REARME 22 mm** | 1 | **AZUL**, momentâneo — **1 bloco NA**. Refaz o selo do KA1 após a emergência. Buscar `botão pulsador azul 22mm` | |
-| **Blocos de contato 22 mm avulsos** | 4 | **3 NF + 1 NA**: emergência (2 NF), STOP (1 NF + 1 NA). Ver [Doc 31 §31.3](../camada_3_eletrica/31_comando_e_protecoes.md) | |
-| **Chave seccionadora 24 V no painel** | 1 | Rotativa 2 posições 22 mm — chave geral local da máquina | |
+| **Blocos de contato 22 mm avulsos** | 4 | **3 NF + 1 NA**: emergência (2 NF), STOP (1 NF + 1 NA). Os blocos NA do START e do REARME vêm com as próprias botoeiras. Ver [Doc 31 §31.6](../camada_3_eletrica/31_comando_e_protecoes.md) | |
+
+> ### ⭐ A porta: QUATRO botoeiras e a tela
+>
+> **EMERGÊNCIA (vermelho) · STOP (preto) · START/LIGAR (verde) · REARME (azul)**, mais a IHM.
+>
+> 🔥 **São dois selos e dois botões de rearme, e eles não são intercambiáveis:**
+>
+> | | cai com | refeito por |
+> |---|---|---|
+> | Selo do **KA1** | EMERGÊNCIA | **REARME azul** |
+> | Selo do **KA2** | STOP | **START verde** |
+>
+> Trocá-los na montagem faz o STOP exigir rearme e **a emergência religar com o botão verde** — o inverso do que a norma manda. É o erro mais caro possível neste painel.
+>
+> 🔧 **A seletora LOCAL / REMOTO continua fora**, e não volta: era a segunda camada de uma regra que a primeira já garante sozinha — *o `START` nunca é aceito por MQTT*. Libera o pino **D26**.
+
+| **Chave seccionadora 24 V no painel** | 1 | Rotativa 2 posições 22 mm — chave geral local da máquina. ⚠️ **Não confundir com a antiga seletora LOCAL/REMOTO, que foi removida** | |
 | **Sinaleiros LED 22 mm 24 V** | 4 | Verde (RUN), Azul (COOL), Amarelo (HEAT), Vermelho (FAULT). ⚠️ **24 V confirmado** — acionados pelo **ULN2803 da placa PI-1**, alimentados pelo **BD-24V permanente** (o vermelho de FALHA precisa continuar aceso com a emergência acionada). ~20 mA cada, resistor interno já incluso | |
 | **Prensa-cabo PG9** | 3 | Entrada **24 V de potência** (vindo do P1) · saída de potência para a câmara · saída de sinais | |
 | **Prensa-cabo PG7** | 2 | Entrada 5 V (do T2) e entrada 12 V auxiliar + 24 V (do T3) | |
@@ -901,12 +918,18 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 | ⭐ **Borne KF301 / KRE passo 5,08 mm — 2 vias** | 12 | 7 em uso + 5 reserva. Junto com os de 3 vias formam as **32 vias** das duas placas | |
 | **CI ULN2803A** (DIP 18 pinos) | 2 | **Driver dos 4 sinaleiros de 24 V** — 8 canais Darlington, 500 mA/50 V, com diodos de proteção internos. 1 uso + 1 reserva (o CI é barato e é o único ponto onde 24 V encosta na lógica) | |
 | **Soquete DIP 18 pinos** | 1 | ⚠️ **Solde o soquete, não o CI.** Permite trocar o chip sem dessoldar nada | |
+| ⭐ **Módulo relé 1 canal 5 V, optoacoplado** | 4 | **`KA3` e `KA4`** — 2 em uso + 2 reserva. ⚠️ **Exija três coisas no anúncio:** *optoacoplador*, **jumper de gatilho alto/baixo** e a variante de **5 V** (a foto costuma ser da de 24 V — confira no corpo do relé ao receber). Contato 10 A / 30 Vcc, 51 × 25,5 mm, 65 mA cada. Buscar `modulo rele 1 canal 5v optoacoplador`. Ver [Doc 31 §31.13 e §31.14](../camada_3_eletrica/31_comando_e_protecoes.md) | |
+| ⭐ **Caixa modular DIN 4 módulos (70 mm)** | 1 | Abriga os **dois** módulos de relé empilhados, no trilho 2. Buscar `caixa para trilho din 4m modular` | |
+| ⭐ **Resistor 10 kΩ · ¼ W** | 4 | **`R10` e `R11`** — pull-down do `IN` de cada módulo para o 0 V. 2 em uso + 2 reserva. ⚠️ **É o que torna o fail-safe medível:** Arduino ausente ou fio rompido → `IN` em 0 V → relé aberto → potência cortada e ventoinha parada | |
+| ⭐ **Diodo 1N4007** | — | **`D1` (bobina do KA2) e `D2` (ventoinhas do radiador).** ⭐ **Não compre: já existem 4 sobressalentes** na lista L.2. 🔥 **Ficaram MAIS importantes com os módulos de relé:** um contato seco abrindo uma bobina forma arco **no contato do KA3**, e um contato que pita acaba soldando — o veto do firmware perdido em silêncio. 🔎 **O `D1` pode ser dispensável:** teste o KA2 em *teste de diodo* entre `A1` e `A2`; se conduzir num sentido só, ele já tem diodo interno. ⚠️ **O `D2` é obrigatório** — o motor é indutivo e nada o grampeia. Catodo no **+12 V** | |
 | Fio rígido 0,25 mm² para interligação | 1 m | Ligações por baixo da placa. ⚠️ Não usar "sobra de perna" de componente em trecho longo — oxida e não é isolada | |
 | Verniz spray para PCI (ou esmalte incolor) | 1 | Proteção do lado da solda contra umidade e oxidação | |
 | Termorretrátil Ø 2 mm | 30 cm | Isolação dos 2 resistores de 10 kΩ soldados nos BTS7960 | |
 | Etiqueta impressa em papel adesivo | 1 | Identificação das 20 vias na frente da caixa — **é o que torna a placa auditável** | |
 
 > 📌 **Componentes que vão NA placa PI-1:** 2× 100 nF (filtro IS) · 1× 22 kΩ + 1× 4,7 kΩ + 1× 100 nF (divisor D25) · 1× 4,7 kΩ (pull-up 1-Wire) · **1× ULN2803A** (driver dos sinaleiros). Os passivos já estão nas listas L.2 e L.4 — não compre de novo.
+>
+> ⭐ **O KA3, o KA4 e seus resistores NÃO vão na PI-1.** Os dois módulos de relé moram numa **caixa DIN de 4 módulos, no trilho 2** — onde a canaleta de baixo já é de potência e serve o trilho 1 diretamente. A primeira versão punha um MOSFET na PI-1 e o `npm run valida` reprovou: o circuito da bobina teria de atravessar o painel duas vezes, uma delas pela canaleta de sinal. **Componente de ancoragem é de proximidade.**
 >
 > 📌 **Os 4× 220 Ω NÃO vão mais na PI-1.** Eles mudaram de função: agora limitam a corrente dos **LEDs brancos da iluminação pública da maquete**, que passaram a ser de **5 V**. Montam-se dentro da base de cada poste de iluminação (seção M.4).
 >

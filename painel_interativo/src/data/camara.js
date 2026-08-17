@@ -62,22 +62,32 @@ export const COMPONENTES = [
     ],
   },
   {
-    id: 'VD1', pc: 'PC-1', nome: 'ventoinha do duto esq.', tipo: 'ar',
-    x: 236, y: 300, w: 36, h: 30, cor: '#4dabf7', sopra: 'cima', pequeno: true,
-    onde: 'Dentro do duto lateral esquerdo (30 × 30 mm).',
-    porque: 'Fecha o circuito: o ar que desceu pelo centro sobe pelas laterais e volta '
-          + 'ao topo. É o que impede o gradiente entre a base e a tampa.',
+    id: 'VD1', pc: 'PC-1', nome: 'ventoinha da entrada do duto esq.', tipo: 'ar',
+    x: 340, y: 485, w: 36, h: 30, cor: '#4dabf7', sopra: 'esquerda', grupoAr: 'duto', pequeno: true,
+    onde: '⭐ ABAIXO DO PTC, na BOCA do duto esquerdo — não dentro dele.',
+    porque: 'Fecha o circuito: o ar que desceu pelo centro entra aqui e sobe pelo duto '
+          + 'lateral até o topo. É o que impede o gradiente entre a base e a tampa. '
+          + '🔧 Ela ficava DENTRO do duto de 30 × 30 mm, e isso era um erro de duas caras: '
+          + 'uma ventoinha de 40 mm não cabe folgada num vão de 30, e enfiada lá dentro '
+          + 'ela sopra contra a parede em vez de empurrar o ar para a entrada.',
     terminais: [
       { t: '+', de: 'MV-1 · O3+', ref: ['MV-1', 'O3+'], fio: 'em paralelo com as frias' },
       { t: '−', de: 'MV-1 · O3−', ref: ['MV-1', 'O3−'], fio: '—' },
     ],
     avisos: ['📌 O duto fica FORA da parede de acrílico, dentro do isolamento. O ar circula '
-           + 'sem furar o volume útil.'],
+           + 'sem furar o volume útil.',
+           '⭐ AS DUAS FICAM LADO A LADO, ABAIXO DO PTC, cada uma soprando para a boca do '
+           + 'seu duto. Assim elas ficam acessíveis para manutenção sem desmontar o duto, '
+           + 'e o ar entra no duto já com velocidade em vez de ser empurrado contra a '
+           + 'parede lateral.',
+           '⚠️ CONFIRA A SETA DE FLUXO no corpo de cada uma antes de fixar. Invertidas, as '
+           + 'duas puxam o ar do duto para o centro e o circuito de ar roda ao contrário — '
+           + 'defeito quase impossível de perceber sem teste de fumaça.'],
   },
   {
-    id: 'VD2', pc: 'PC-1', nome: 'ventoinha do duto dir.', tipo: 'ar',
-    x: 608, y: 300, w: 36, h: 30, cor: '#4dabf7', sopra: 'cima', pequeno: true,
-    onde: 'Dentro do duto lateral direito.',
+    id: 'VD2', pc: 'PC-1', nome: 'ventoinha da entrada do duto dir.', tipo: 'ar',
+    x: 504, y: 485, w: 36, h: 30, cor: '#4dabf7', sopra: 'direita', grupoAr: 'duto', pequeno: true,
+    onde: '⭐ ABAIXO DO PTC, na BOCA do duto direito — ao lado da VD1.',
     porque: 'Idem à esquerda — o retorno tem que ser simétrico, senão um lado da câmara '
           + 'fica mais frio que o outro.',
     terminais: [
@@ -137,10 +147,11 @@ export const COMPONENTES = [
     x: 405, y: 396, w: 70, h: 26, cor: '#4dabf7', sopra: 'baixo',
     onde: 'Logo acima do PTC, soprando PARA BAIXO — no MESMO sentido das de cima.',
     porque: 'Empurra o ar sobre o PTC e para dentro do plenum, de onde ele sobe pelos '
-          + 'dutos. Canal próprio no MV-1 para o intertravamento com o aquecedor.',
+          + 'dutos. 🔧 Antes tinha canal próprio no MV-1; hoje entra em PARALELO com as '
+          + 'outras quatro internas, porque todas têm a mesma condição — ensaio rodando.',
     terminais: [
-      { t: '+', de: 'MV-1 · O2+', ref: ['MV-1', 'O2+'], fio: '0,5 mm² vermelho' },
-      { t: '−', de: 'MV-1 · O2−', ref: ['MV-1', 'O2−'], fio: '0,5 mm² preto' },
+      { t: '+', de: 'MV-1 · O3+ (emenda com as 4 de circulação)', ref: ['MV-1', 'O3+'], fio: '0,5 mm² vermelho' },
+      { t: '−', de: 'MV-1 · O3− (emenda com as 4 de circulação)', ref: ['MV-1', 'O3−'], fio: '0,5 mm² preto' },
     ],
     avisos: [
       '🔥 SOPRA PARA BAIXO, IGUAL ÀS DE CIMA — e isto NÃO é engano. Uma ventoinha DC não '
@@ -238,8 +249,7 @@ export const PRENSAS = [
 export const TRAVESSIA = [
   { pc: 'PC-1', g: 'Potência',   n: 2, o: 'Peltier + e −', de: 'BTS #1', mm: '1,5 mm²' },
   { pc: 'PC-1', g: 'Potência',   n: 2, o: 'PTC + e −', de: 'BTS #2', mm: '1,5 mm²' },
-  { pc: 'PC-1', g: 'Ventilação', n: 2, o: 'circulação (4 ventoinhas)', de: 'MV-1 · O3', mm: '0,5 mm²' },
-  { pc: 'PC-1', g: 'Ventilação', n: 2, o: 'ventoinha do PTC', de: 'MV-1 · O2', mm: '0,5 mm²' },
+  { pc: 'PC-1', g: 'Ventilação', n: 2, o: '⭐ as 5 internas (4 de circulação + a do PTC, em paralelo)', de: 'MV-1 · O3', mm: '0,5 mm²' },
   { pc: 'PC-2', g: 'Ensaio',     n: 2, o: 'positivos das posições', de: 'F-P1 e F-P2', mm: '0,5 mm²' },
   { pc: 'PC-2', g: 'Ensaio',     n: 2, o: 'retornos individuais', de: 'PI-2 · RET-1/2', mm: '0,5 mm²' },
   { pc: 'PC-2', g: 'Sinal',      n: 4, o: 'AM2315C (VCC GND SDA SCL)', de: 'Mega + BD-5V', mm: '0,25 mm²' },
@@ -299,10 +309,10 @@ export const PECAS3D = [
   { id: 'DUT2', bornes: [{ b:'+24 V', lado:'base', t:0.35 }, { b:'retorno', lado:'topo', t:0.75 }], nome: 'Posição 2', cor: '#2f9e44', pc: 'PC-2',
     caixa: [138, 25, 24, 178, 75, 58],
     diz: 'LED verde + 2,2 kΩ — 9,8 mA.' },
-  { id: 'VD1', bornes: [{ b:'+', lado:'topo', t:0.35 }, { b:'−', lado:'topo', t:0.70 }], nome: 'vent. duto esq.', cor: '#74c0fc', pc: 'PC-1', fora: true,
+  { id: 'VD1', bornes: [{ b:'+', lado:'topo', t:0.35 }, { b:'−', lado:'topo', t:0.70 }], nome: 'vent. entrada duto esq.', cor: '#74c0fc', pc: 'PC-1', fora: true,
     caixa: [-32, 35, 108, -6, 65, 138],
     diz: 'Dentro do duto lateral, FORA do volume útil. Sopra para CIMA.' },
-  { id: 'VD2', bornes: [{ b:'+', lado:'topo', t:0.35 }, { b:'−', lado:'topo', t:0.70 }], nome: 'vent. duto dir.', cor: '#74c0fc', pc: 'PC-1', fora: true,
+  { id: 'VD2', bornes: [{ b:'+', lado:'topo', t:0.35 }, { b:'−', lado:'topo', t:0.70 }], nome: 'vent. entrada duto dir.', cor: '#74c0fc', pc: 'PC-1', fora: true,
     caixa: [206, 35, 108, 232, 65, 138],
     diz: 'Idem à esquerda — o retorno tem que ser simétrico.' },
 ];
@@ -341,8 +351,6 @@ export const ROTAS_CAMARA = {
   X1:  { alvo:'PELT.+', pc:'PC-1', gx:43.2, lane: 9.6, sobe: 6.6 },   // Peltier +
   X9:  { alvo:'VF.+', pc:'PC-1', gx:42.3, lane:10.9, sobe: 9.2, crz:202 },  // circulação +
   X10: { alvo:'VF.−', pc:'PC-1', gx:41.4, lane:12.2, sobe:11.8, crz:198 },  // circulação −
-  X8:  { alvo:'VP.−', pc:'PC-1', gx:40.5, lane:13.5, sobe:14.4, crz:102 },  // vent. PTC −
-  X7:  { alvo:'VP.+', pc:'PC-1', gx:39.6, lane:14.8, sobe:17.0, crz: 98 },  // vent. PTC +
   X11: { alvo:'DUT1.+24 V', pc:'PC-1', gx:38.7, lane:16.1 },              // posição 1 +
   X12: { alvo:'DUT2.+24 V', pc:'PC-1', gx:45.9, lane:17.4 },              // posição 2 +
   X4:  { alvo:'PTC.−', pc:'PC-1', gx:46.8, lane:18.7 },              // PTC −
@@ -360,8 +368,15 @@ export const ROTAS_CAMARA = {
 /* as emendas feitas DENTRO da câmara, que não são fio vindo do painel */
 export const EMENDAS_CAMARA = [
   { de:{ p:'VF', b:'+' }, para:{ p:'VD1', b:'+' },
-    diz:'as 4 de circulação em paralelo — 1 par de fios para 4 ventoinhas' },
+    diz:'⭐ as 5 internas em paralelo — 1 par de fios para 5 ventoinhas' },
   { de:{ p:'VF', b:'−' }, para:{ p:'VD1', b:'−' }, diz:'' },
   { de:{ p:'VF', b:'+' }, para:{ p:'VD2', b:'+' }, diz:'' },
   { de:{ p:'VF', b:'−' }, para:{ p:'VD2', b:'−' }, diz:'' },
+  { de:{ p:'VF', b:'+' }, para:{ p:'VP', b:'+' },
+    diz:'🔧 A ventoinha do PTC entrou nesta emenda. Ela tinha canal e par próprios '
+      + '(MV-1 · O2, fios X7/X8) para continuar girando depois do aquecedor — não '
+      + 'precisa: o PTC é AUTO-LIMITADO, sem fluxo de ar a resistência sobe e ele '
+      + 'corta a própria potência. Saíram 2 condutores da parede, 1 canal do MV-1 '
+      + 'e o pino D28 do Mega.' },
+  { de:{ p:'VF', b:'−' }, para:{ p:'VP', b:'−' }, diz:'' },
 ];

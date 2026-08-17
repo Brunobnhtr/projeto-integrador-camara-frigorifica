@@ -89,15 +89,22 @@ console.log('\n=== o circuito de ar fecha? ===');
    FECHAR, o centro e os dutos têm que soprar em sentidos OPOSTOS — se
    soprassem no mesmo, uma metade empurraria contra a outra.          */
 const fans = COMPONENTES.filter(c => c.tipo === 'ar');
-const zona = f => (f.x + f.w / 2 < UTIL.x1 || f.x + f.w / 2 > UTIL.x2) ? 'duto' : 'centro';
+/* ⭐ A ZONA É FUNCIONAL, NÃO GEOGRÁFICA. As ventoinhas das entradas dos
+   dutos ficam DENTRO do volume útil — abaixo do PTC — mas servem ao
+   circuito dos dutos e sopram para os lados. Classificá-las pela
+   posição faria o validador exigir que soprassem para baixo como as do
+   centro, que é exatamente o contrário do que elas devem fazer. */
+const zona = f => f.grupoAr
+  ?? ((f.x + f.w / 2 < UTIL.x1 || f.x + f.w / 2 > UTIL.x2) ? 'duto' : 'centro');
 const grupo = z => [...new Set(fans.filter(f => zona(f) === z).map(f => f.sopra))];
 
 const centro = grupo('centro'), duto = grupo('duto');
 if (centro.length !== 1)
   err(`as ventoinhas do centro discordam (${centro.join(' e ')}) — `
     + fans.filter(f => zona(f) === 'centro').map(f => `${f.id}=${f.sopra}`).join(', '));
-else if (duto.length !== 1)
-  err(`as ventoinhas dos dutos discordam (${duto.join(' e ')}) — e elas dividem o canal O3`);
+else if (duto.length !== 2)
+  err(`as 2 ventoinhas de duto deviam soprar para lados OPOSTOS (cada uma para a sua `
+    + `boca), e sopram para: ${duto.join(' e ')}`);
 else if (centro[0] === duto[0])
   err(`centro e dutos sopram os dois para "${centro[0]}" — isso não é um circuito, `
     + 'é uma metade empurrando contra a outra');

@@ -67,37 +67,33 @@ export const FIOS_ETAPA6 = [
      📌 Se um dia quiser controlar a rotação delas, o caminho é ventoinha
      de 4 fios (PWM): ali o preto é 0 V de verdade, o tacômetro tem
      referência fixa e o controle vai por um fio só de comando. */
-  { ...kabo('X5', { comp: 'BD-AUX', via: 'O2' }, naTampa('RAD', '+'), 0.5,
+  { ...kabo('X5', { comp: 'KA34', via: 'NO4' }, naTampa('RAD', '+'), 0.5,
       'aux12', 'alim', 'As 2 ventoinhas do radiador, em paralelo, direto no 12 V.'),
-    nome: 'ventoinhas do radiador · +12 V permanente', prensa: 'PG13-2',
-    rota: ['CH-base'],
+    nome: '⭐ ventoinhas do radiador · +12 V COMANDADO pelo KA4', prensa: 'PG13-2',
+    rota: ['CH-2x1', 'CV-esq', 'CH-base'],
     porque: '⭐ Elas NÃO atravessam a parede: ficam na tampa, do lado de fora, soprando '
-          + 'nos dissipadores. É o calor que a Peltier tirou de dentro.' },
+          + 'nos dissipadores. É o calor que a Peltier tirou de dentro. 🔧 O fio agora '
+          + 'nasce no contato do KA4, e não mais direto no BD-AUX: é assim que o firmware '
+          + 'consegue desligá-las quando o dissipador esfria.' },
   { ...kabo('X6', naTampa('RAD', '−'), { comp: 'BD-0V', via: 'R20' }, 0.5,
       'zero', 'comum', 'Retorno das ventoinhas do radiador, no 0 V de verdade.'),
     nome: 'ventoinhas do radiador · 0 V', prensa: 'PG13-2', rota: ['CH-base'],
     aviso: '🔥 ESTE FIO É A REFERÊNCIA DOS DOIS TACÔMETROS. Ligado num negativo '
          + 'chaveado, os sinais de RPM viram lixo e podem danificar o Mega. Ele vai '
          + 'na barra de 0 V, e em ponto próprio — não encadeado.' },
-  { ...kabo('X7', { comp: 'MV-1', via: 'O2+' }, naCamara('VP', '+'), 0.5,
-      'aux12', 'alim', 'A ventoinha do PTC, dentro da câmara.'),
-    nome: 'ventoinha do PTC +', prensa: 'PG13-2', rota: ['CH-2x1', 'CV-esq', 'CH-base'],
-    aviso: '⚠️ CANAL SEPARADO DO AQUECEDOR, de propósito. O PTC é comandado pelo BTS #2 '
-         + 'e a ventoinha dele pelo MV-1 canal 2 — são dois circuitos independentes. É '
-         + 'isso que permite o intertravamento: o firmware não liga o PTC sem ela, e a '
-         + 'mantém girando depois que ele desliga.' },
-  { ...kabo('X8', { comp: 'MV-1', via: 'O2−' }, naCamara('VP', '−'), 0.5,
-      'aux12', 'alim', 'Retorno da ventoinha do PTC.'),
-    nome: 'ventoinha do PTC −', prensa: 'PG13-2', rota: ['CH-2x1', 'CV-esq', 'CH-base'] },
   { ...kabo('X9', { comp: 'MV-1', via: 'O3+' }, naCamara('VF', '+'), 0.5,
-      'aux12', 'alim', 'As 4 ventoinhas de circulação: 2 frias e 2 dos dutos.'),
-    nome: 'circulação +', prensa: 'PG13-2', rota: ['CH-2x1', 'CV-esq', 'CH-base'],
-    porque: '⭐ QUATRO VENTOINHAS EM DOIS FIOS. Elas ligam em paralelo dentro da câmara, '
+      'aux12', 'alim', '⭐ As 5 internas: 2 frias, 2 dos dutos e a do PTC.'),
+    nome: 'ventoinhas internas +', prensa: 'PG13-2', rota: ['CH-2x1', 'CV-esq', 'CH-base'],
+    porque: '⭐ CINCO VENTOINHAS EM DOIS FIOS. Ligam em paralelo dentro da câmara, '
           + 'porque formam um circuito de ar só — ligar uma sem as outras não faria '
-          + 'sentido. Só 2 condutores atravessam a parede.' },
+          + 'sentido. Só 2 condutores atravessam a parede.',
+    aviso: '🔧 A DO PTC ENTROU NESTE PAR. Ela tinha canal e par próprios (MV-1 O2, fios '
+         + 'X7/X8) para poder continuar girando depois do aquecedor. Não precisa: o PTC '
+         + 'é auto-limitado. Sumiram 2 condutores do PG13-2, 1 canal do MV-1 e o pino '
+         + 'D28 do Mega. Emende o + dela junto com os outros quatro, dentro da câmara.' },
   { ...kabo('X10', { comp: 'MV-1', via: 'O3−' }, naCamara('VF', '−'), 0.5,
-      'aux12', 'alim', 'Retorno das 4 de circulação.'),
-    nome: 'circulação −', prensa: 'PG13-2', rota: ['CH-2x1', 'CV-esq', 'CH-base'] },
+      'aux12', 'alim', 'Retorno das 5 internas.'),
+    nome: 'ventoinhas internas −', prensa: 'PG13-2', rota: ['CH-2x1', 'CV-esq', 'CH-base'] },
 
   /* ── AS DUAS POSIÇÕES DE ENSAIO ───────────────────────────────────── */
   { ...kabo('X11', { comp: 'F-P', via: 'F-P1' }, naCamara('DUT1', '+24 V'), 0.5,

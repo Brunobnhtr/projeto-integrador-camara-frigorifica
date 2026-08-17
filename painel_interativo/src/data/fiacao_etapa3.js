@@ -116,6 +116,26 @@ export const FIOS_ETAPA3 = [
       'Idem para o BTS #2.'), rota: ['CH-2x1', 'CV-esq', 'CH-base'] },
   { ...zero('D19', { comp: 'MEGA', via: 'GND3' }, { comp: 'BD-0V', via: 'R5' },
       'O 0 V do Arduino.'), rota: ['CH-3x2', 'CV-dir', 'CH-base'] },
+  { ...cinco('D7b', { comp: 'BD-5V', via: 'O12' }, { comp: 'KA34', via: '+5V' },
+      '⭐ Alimenta os DOIS módulos de relé — o DC+ é pontelhado entre eles na caixa.'),
+    rota: ['CH-base', 'CV-esq', 'CH-2x1'], nome: '5 V dos módulos KA3/KA4',
+    aviso: '⚠️ 65 mA CADA, com o relé fechado. São 130 mA a mais no ramal T2 — some com '
+         + 'o Arduino, a tela e o ESP32 antes de fechar o projeto de energia.' },
+  { ...zero('D20b', { comp: 'KA34', via: '0V' }, { comp: 'BD-0V', via: 'R21' },
+      '⭐ O DC− dos dois módulos, em ponto próprio da barra.'),
+    rota: ['CH-2x1', 'CV-esq', 'CH-base'],
+    porque: '📌 PONTO PRÓPRIO, e não pendurado. O DC− carrega os 130 mA das duas bobinas '
+          + 'e é também a referência do sinal de gatilho — a entrada do módulo tem só '
+          + 'três bornes, então o DC− É o 0 V do IN. Pendurá-lo num retorno de medição '
+          + 'somaria corrente chaveada a uma referência.' },
+  { ...pot('D6b', { comp: 'BD-AUX', via: 'O2' }, { comp: 'KA34', via: 'COM4' }, 0.5,
+      '⭐ Os 12 V permanentes entrando no contato do KA4.'),
+    classe: 'alim', func: 'aux12', rota: ['CH-base', 'CV-esq', 'CH-2x1'],
+    nome: '12 V → contato do KA4',
+    porque: '⭐ O KA4 fica EM SÉRIE com o lado POSITIVO das ventoinhas do radiador. O '
+          + 'negativo delas (X6) vai direto ao BD-0V · R20 e NUNCA é chaveado — é a '
+          + 'referência dos dois tacômetros, e mexer nela foi o erro que tirou o comando '
+          + 'destas ventoinhas na primeira versão.' },
   { ...zero('D20', { comp: 'PI1', via: 'J1-9' }, { comp: 'BD-0V', via: 'R6' },
       'O 0 V da PI-1, que lá dentro vira o barramento de fio nu.'),
     rota: ['CH-topo', 'CV-dir', 'CH-base'] },

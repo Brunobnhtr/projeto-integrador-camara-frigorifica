@@ -364,6 +364,24 @@ I = (5 V − 3,1 V) / 220 Ω = 8,6 mA   ✅ brilho adequado para cenografia
 
 ---
 
+### 🔧 O veto da potência NÃO mora nesta placa — e a história vale a leitura
+
+Chegou a ser projetado aqui: um **MOSFET 2N7000** com resistor e diodo, dando ao firmware o poder de cortar os 24 V. Fazia sentido — é a placa que existe justamente para que nenhum componente fique pendurado no fio (§33.1).
+
+**O `npm run valida` reprovou:**
+
+```
+  X C10 chega em PI1.J2-9 (borda baixo) usando a CH-topo — esse borne alcança CH-3x2
+```
+
+A PI-1 está no trilho 3 e o KA2 no trilho 1. Com o MOSFET na placa, o **circuito da bobina** teria de subir três trilhos e voltar — dois fios de bobina atravessando o painel, um deles pela canaleta de **sinal**, colado ao `IS` analógico e ao 1-Wire. É o contrário da regra de [§31.4](31_comando_e_protecoes.md), que foi quem decidiu em que trilho os relés moram.
+
+✅ **A função virou o `KA3`**, um **módulo de relé de 1 canal, 5 V**, pronto, numa caixa DIN de 4 módulos no **trilho 2** — onde a canaleta de baixo (CH-2x1) já é de potência e serve o trilho 1 diretamente. Circuito completo em [Doc 31 §31.13](31_comando_e_protecoes.md).
+
+> 🎓 **Duas lições que valem a defesa.** A primeira: **componente de ancoragem é de proximidade** — é a mesma razão pela qual os pull-downs de 10 kΩ do `R_EN` são soldados nos próprios BTS7960, logo acima. A segunda: um script de validação escrito por você mesmo reprovando uma decisão sua é o argumento mais forte que existe a favor de ter escrito o script.
+
+---
+
 ## 33.3 ✂️ Uma placa de 9 × 15 cm vira as duas placas
 
 As placas ilhadas compradas são de **9 × 15 cm**. Um corte reto no meio dá **dois pedaços de 34 × 29 furos** — um é a PI-1, o outro é a PI-2.

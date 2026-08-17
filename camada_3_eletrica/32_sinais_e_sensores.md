@@ -187,14 +187,24 @@ Duas armadilhas do Arduino Mega estão documentadas aqui, e as duas eram silenci
 
 | Pino | Destino | Modo | Lógica |
 |---|---|---|---|
-| **D22** | Botão START — bloco NA de 5 V | `INPUT_PULLUP` | `LOW` = pressionado |
 | **D23** | Botão STOP — bloco NA de 5 V | `INPUT_PULLUP` | `LOW` = pressionado |
 | **D24** | Emergência — bloco **NF** de 5 V | `INPUT_PULLUP` | `HIGH` = **acionada** |
 | **D25** | Presença dos **24 V** no BD-POT (divisor **22 k / 4,7 k** + 100 nF) | `INPUT` (**sem** pull-up) | `HIGH` = **potência disponível** |
-| **D26** | ⭐ **Seletora LOCAL / REMOTO (SA1)** — bloco NA de 5 V na porta | `INPUT_PULLUP` | `LOW` = **REMOTO** · `HIGH` = LOCAL |
-| ~~D27~~ | 🔧 **LIVRE** — era o canal 1 do MV-1, para as ventoinhas do radiador. Ver a correção abaixo | — | — |
-| **D28** | ⭐ MV-1 canal 2 → **ventoinha do PTC** | `OUTPUT` | `HIGH` = ligada |
-| **D29** | ⭐ MV-1 canal 3 → **circulação** (2 frias + 2 do duto) | `OUTPUT` | `HIGH` = ligadas |
+| **D27** | ⭐ **`HAB_POTENCIA`** → gatilho do **KA3** → bobina do **KA2** | `OUTPUT` | `HIGH` = potência **autorizada** · `LOW` = **selo do KA2 cai, 0 V no BD-POT** |
+| **D29** | ⭐ MV-1 canal 3 → **as 5 ventoinhas internas** (2 frias + 2 do duto + PTC) | `OUTPUT` | `HIGH` = ligadas |
+| **D30** | ⭐ Gatilho do **KA4** → **ventoinhas do radiador** | `OUTPUT` | `HIGH` = ligadas. O contato chaveia o **positivo** — ver §31.14 |
+
+> ### 🔧 Simplificação — três pinos e um canal do MV-1 devolvidos
+>
+> | Pino | Era | Por que saiu |
+> |---|---|---|
+> | **D22** | leitura do botão START | O botão verde **voltou**, mas como comando de **24 V** na cadeia do selo do KA2 — ele não precisa de pino. O firmware descobre que a potência foi armada pelo divisor no `D25`, como já ignora o REARME azul |
+> | **D26** | seletora LOCAL / REMOTO | Era a **segunda** camada de uma regra que a primeira já garante: o `START` nunca é aceito por MQTT. Ver [Doc 41 §41.3](../camada_4_programacao/41_esp32_ihm_iot.md) |
+> | **D28** | canal 2 do MV-1, ventoinha do PTC | A ventoinha do PTC e as de circulação passaram a ter **a mesma condição** — ensaio rodando —, então cabem **num canal só** |
+>
+> **Também saiu o bloco NF de 24 V do STOP.** O S2 ficou com um bloco só (NA, 5 V → `D23`), e com isso sumiu o fio dele até a bobina do KA2 — e sumiu **um dos três erros de montagem catalogados em [§31.5](31_comando_e_protecoes.md)**, o de trocar os blocos e queimar o `D23`.
+>
+> 🎯 **O MV-1 usa 1 dos 4 canais** (o 3, das cinco ventoinhas internas) e o Mega tem `D22`, `D26`, `D28` e `D50–D53` livres.
 | **D31–D34** | ⭐ **PI-2 · S0–S3** — seleção de canal do multiplexador | `OUTPUT` | 4 bits = 16 canais |
 | **A2** | ⭐ **PI-2 · SIG** — a **única** entrada analógica dos 16 canais | `INPUT` | shunt 47 Ω · ~1 mA por contagem |
 
@@ -225,13 +235,39 @@ Este documento colocava as duas no **canal 1 do MV-1** (`D27`). Estava errado, e
 
 ⚠️ **E mesmo antes de estragar alguma coisa, a leitura já mentia:** com o canal desligado o firmware leria "ventoinha parada" — que é exatamente o alarme que deveria salvar a pastilha. O sinal que existe para detectar falha passaria a *inventar* falha.
 
-**Correção adotada: as duas ficam permanentemente ligadas, direto no BD-AUX.** Não é só conserto — é o comportamento certo, e é o que o [Doc 30](30_forca_e_distribuicao.md) já mandava:
+**Primeira correção adotada: as duas ficaram permanentemente ligadas, direto no BD-AUX.** Resolvia o defeito elétrico, e garantia o que o [Doc 30](30_forca_e_distribuicao.md) já mandava:
 
 - o lado quente precisa continuar sendo resfriado **depois** que tudo desliga, porque o calor que já está no dissipador não some junto com o comando;
 - o BD-AUX vem direto do prensa-cabo e não passa pelo KA2, então elas **sobrevivem até à emergência**;
 - o preto vai à barra de 0 V, em ponto próprio (`R20`), e aí os dois tacômetros passam a ter uma referência que nunca se mexe.
 
-📌 **O `D27` do Mega e o canal 1 do MV-1 ficaram livres.** O módulo agora tem dois canais sobrando (1 e 4).
+📌 **E o canal 1 continuou livre.** Chegou a ser projetado um P-MOSFET comandado por ele, para devolver o controle das ventoinhas do radiador chaveando o lado positivo — mas **um contato de relé faz o mesmo sem inversor de nível nenhum**, e o KA4 assumiu o serviço ([Doc 31 §31.14](31_comando_e_protecoes.md)).
+
+📌 **Sobram os canais 1, 2 e 4** — o MV-1 usa só o 3, para as cinco ventoinhas internas.
+
+#### ⭐ E o `D27` foi reaproveitado: ele virou o veto do firmware sobre a potência
+
+O pino que vagou aqui é o mesmo que resolve o maior buraco do projeto: o firmware não tinha como **cortar** a potência, só como desabilitar os drivers. Hoje ele comanda o **KA3**, um módulo de relé em série com a bobina do KA2 ([Doc 31 §31.13](31_comando_e_protecoes.md)).
+
+```
+   TRILHO 3                     TRILHO 2                   TRILHO 1
+   ─────────                    ─────────                  ─────────
+   MEGA · D27 ──── sinal ─────► IN  ┌───────┐              bobina do KA2
+        │                           │  KA3  │  COM ──────► A2
+   [ R10 · 10 kΩ ]                  └───────┘  NO  ──────► BD-0V · R12
+        │
+       0 V           (jumper do módulo em "H": HIGH fecha o contato)
+```
+
+> ⭐ **Por que os módulos ficam no trilho 2, e não junto do KA2.** O circuito da bobina precisa de canaleta de **potência** nas duas pontas ([§31.4](31_comando_e_protecoes.md)) — e o trilho 2 tem a **CH-2x1** logo abaixo, que é justamente a canaleta de potência que serve o trilho 1. **O circuito da bobina nunca sobe até o trilho 3**, onde correm o `IS` analógico e o 1-Wire; só o fio de gatilho faz esse caminho, e ele não conduz corrente nenhuma.
+>
+> 🔧 **A alternativa descartada** era um MOSFET 2N7000 soldado no próprio KA2 (R$ 1,10). Tecnicamente melhor — não desgasta, não consome —, mas exigia solda e não tinha LED de estado. **E, decisiva para o KA4: um contato seco não tem lado alto nem lado baixo**, o que apagou um problema inteiro de projeto.
+
+| Se o D27… | O KA2 | O BD-POT |
+|---|---|---|
+| `HIGH` | **autoriza** — a bobina pode energizar quando alguém apertar o botão verde | 24 V, **depois do verde** |
+| `LOW` | **cai** | **0 V** |
+| Arduino resetado / ausente (pino em alta impedância) | **cai** — o R10 puxa o `IN` a 0 V | **0 V** ✅ fail-safe |
 
 > 🎁 **Se um dia quiser controlar a rotação delas:** o caminho é **ventoinha de 4 fios (PWM)**. Nela o preto é 0 V de verdade, o tacômetro tem referência fixa, e o controle entra por um quarto fio de comando — que aí sim pode sair de um pino PWM do Mega, sem mexer no circuito de potência.
 

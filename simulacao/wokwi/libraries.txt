@@ -1,8 +1,0 @@
-# Bibliotecas usadas pelo sketch de simulação.
-# O Wokwi instala automaticamente ao abrir o projeto.
-#
-# O PID é escrito à mão dentro do sketch de propósito: assim não há
-# dependência de biblioteca de terceiros e o projeto sempre compila.
-
-OneWire
-DallasTemperature

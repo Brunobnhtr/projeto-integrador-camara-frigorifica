@@ -103,6 +103,20 @@ E existe uma regra que atravessa tudo:
 | 10 | **Watchdog habilitado** | Sem ele, um travamento deixaria a Peltier ligada. Com ele, o Mega reseta em 2 s e os pull-downs desligam os drivers |
 | 11 | **Pull-down de 10 kΩ em cada `R_EN`** | Garante que **pino flutuante = driver desligado**. É o que torna o watchdog realmente eficaz |
 
+### 🔧 Revisão de agosto/2026 — quatro correções nascidas de duas perguntas
+
+| # | Correção | O que estava errado |
+|---|---|---|
+| **12** | ⭐ **`HAB_POTENCIA` (D27) → KA3 → bobina do KA2** | O firmware **não tinha como cortar a potência**, só como desabilitar drivers. Um BTS com MOSFET em curto ficava fora do alcance de qualquer trip. E o STOP não retinha ao ser solto — o KA2 apenas copiava o botão ([Doc 31 §31.13](../camada_3_eletrica/31_comando_e_protecoes.md)) |
+| **13** | ⭐ **`pedidoDeStop()` testado ANTES de `potenciaDisponivel()`** | Na ordem antiga, apertar o STOP físico caía em **`FALHA`** com log `POTENCIA_PERDIDA`, e exigia segurar o botão 2 s para reconhecer. A queda de potência causada pelo próprio comando estava sendo classificada como defeito |
+| **14** | ⭐ **`gerenciarVentoinhas()` — os pinos das ventoinhas passaram a ser escritos** | Estavam **apenas `#define`ados**. Sem `pinMode`, sem um `digitalWrite` sequer. **As cinco ventoinhas internas nunca giravam** |
+| **16** | 🔧 **Simplificação: 3 pinos e 1 canal do MV-1 a menos** | O `D22` (leitura do START), o `D26` (seletora LOCAL/REMOTO) e o `D28` (canal separado da ventoinha do PTC) foram eliminados. O `INICIAR` passou para a IHM; a seletora era a segunda camada de uma regra que a primeira já garante; e as internas ganharam **uma condição só**, então cabem num canal só |
+| **17** | ⭐ **O KA2 ganhou selo próprio, e o botão verde voltou como comando de 24 V** | O STOP passou a cortar **e reter** em hardware — circuito clássico de partida-parada. O botão verde entrou na cadeia de 24 V (não é lido por pino nenhum) e o `KA3` passou a **autorizar** em vez de armar. Como o selo não se refaz sozinho, **o trip do firmware virou retentivo de graça** |
+| **18** | ⭐ **Três paradas com categorias diferentes** | Botão preto = Cat. 1, retém, exige o verde. IHM/MQTT = Cat. 2, potência segue armada, a tela religa. Trip = Cat. 1, retém, exige reconhecimento **e** o verde |
+| **15** | 🔧 **O comentário do `dispararTrip()`** | Dizia *"agora o firmware abre um relé, e o corte é físico"*. Não abria: a função só mexia em pinos de sinal. A correção 12 é o que torna a frase verdadeira |
+
+> 🎓 **Vale contar essa origem na defesa.** As correções 12 e 13 produziam **o mesmo sintoma** — "o STOP parece que precisa ser segurado" — por causas totalmente diferentes, uma elétrica e uma de software. É o exemplo perfeito de por que se depura um sintoma até o fim em vez de parar na primeira explicação plausível.
+
 ---
 
 ## 40.2 Bibliotecas
@@ -150,19 +164,43 @@ E existe uma regra que atravessa tudo:
 // I2C: SDA=20, SCL=21 -> AM2315C (0x38) + DS3231 (0x68)
 
 // ---------- COMANDO ----------
-#define BTN_START    22    // bloco NA  -> LOW = pressionado
 #define BTN_STOP     23    // bloco NA  -> LOW = pressionado
-#define BTN_EMERG    24    // bloco NF  -> HIGH = EMERGÊNCIA ACIONADA
+#define BTN_EMERG    24    // bloco NF  -> HIGH = EMERGENCIA ACIONADA
 #define POTENCIA_OK  25    // divisor 22k/4k7 do BD-POT -> HIGH = 24 V presente
-#define SEL_REMOTO   26    // seletora LOCAL/REMOTO -> LOW = REMOTO (ver nota)
+// D22 e D26 ficaram LIVRES:
+//   D22 era o botao START verde -- o START passou para a IHM.
+//   D26 era a seletora LOCAL/REMOTO -- removida. A regra que dava
+//   seguranca sempre foi "START nunca por MQTT", nao a chave.
 
-// ── VENTOINHAS: 2 grupos comandados, no modulo MOSFET MV-1 ──────────
-// As 2 do RADIADOR nao tem pino: ficam SEMPRE ligadas, direto no
-// BD-AUX. O MV-1 chaveia o negativo, e o tacometro delas e
-// referenciado nesse mesmo negativo -- ver Doc 32.
-#define VENT_PTC      28   // ventoinha do aquecedor
-#define VENT_CIRCUL   29   // 2 frias da Peltier + 2 do duto
-// D26 e D27 ficaram LIVRES (D26 era o rele K0; D27 era o radiador)
+// ── VENTOINHAS: 3 grupos comandados ─────────────────────────────────
+// ⭐ UM canal so para TODAS as internas: 2 frias da Peltier, 2 do duto
+//   e a do PTC. Todas tem a mesma condicao -- ligam com o ensaio
+//   rodando, em qualquer modo, e param junto com ele.
+#define VENT_INTERNAS 29   // MV-1 canal 3 -> as 5 ventoinhas internas
+// D28 (MV-1 canal 2) ficou LIVRE: a ventoinha do PTC entrou no canal 3.
+
+// ⭐ RADIADOR (lado quente da Peltier) -- 2 ventoinhas de 3 fios.
+//   NAO chaveia o negativo delas: o tacometro e referenciado nesse
+//   negativo, e corta-lo estragava a leitura de RPM e injetava
+//   corrente no D3. Quem chaveia e o CONTATO do KA4,
+//   e um contato seco nao tem lado alto nem lado baixo -- basta poe-lo
+//   no fio POSITIVO. O preto fica em 0 V de verdade, sempre.
+//   Ver Doc 31 §31.14.
+#define VENT_RADIADOR 30   // gatilho do KA4 (modulo de rele)
+
+// ⭐ AUTORIZACAO DA POTENCIA -- o "veto" do firmware sobre o KA2.
+//   Comanda o KA3 (modulo de rele, caixa DIN no trilho 2), em SERIE
+//   com a bobina do KA2. HIGH = "estou saudavel, a potencia PODE ser
+//   armada". ⚠ JUMPER DO MODULO EM "H" -- assim HIGH fecha o contato e
+//   a logica do firmware fica natural, sem inversao.
+//   Quem ARMA e o operador, no botao verde -- sao duas chaves e as
+//   duas precisam concordar. LOW derruba o SELO do KA2, e como o selo
+//   nao se refaz sozinho, o corte e RETENTIVO: so o verde religa.
+//   Ver Doc 31 §31.13.
+//   Pull-down de 10k no gate: Arduino resetado ou ausente = potencia
+//   cortada. O D27 vagou quando o radiador saiu do MV-1.
+#define HAB_POTENCIA  27
+// D26 ficou LIVRE (era o rele K0)
 
 // ⚠ R_EN e L_EN de cada modulo vao JUNTOS no mesmo pino do Arduino.
 //   O IBT-2 e UMA ponte H: a corrente sai por M+ e VOLTA por M-, entao
@@ -189,6 +227,18 @@ inline void desabilitarDrivers() {
     digitalWrite(BTS1_REN, LOW);   digitalWrite(BTS1_RPWM, LOW);
     digitalWrite(BTS2_REN, LOW);   digitalWrite(BTS2_RPWM, LOW);
 }
+
+// ⭐ Corte FISICO e RETENTIVO. Abre o KA3 -> a bobina do KA2 perde o
+//   retorno -> o contato de SELO abre junto -> 0 V no BD-POT.
+//   Um pulso de 50 ms basta: mesmo que o KA3 feche de novo, o selo ja se
+//   perdeu e a potencia NAO retorna. So o botao verde religa.
+//   Funciona ate com um MOSFET do BTS7960 colado em curto, porque quem
+//   abre e um contato de rele a montante dele.
+inline void cortarPotencia()    { digitalWrite(HAB_POTENCIA, LOW);  }
+
+// AUTORIZA -- nao arma. Depois disto o operador ainda precisa apertar
+// o botao verde para o KA2 selar.
+inline void autorizarPotencia() { digitalWrite(HAB_POTENCIA, HIGH); }
 
 // ---------- PARÂMETROS DE PROCESSO ----------
 const unsigned long JANELA_PWM_MS      = 1000;          // PWM lento de 1 Hz
@@ -221,11 +271,13 @@ const double        DEGELO_DUTY         = 20.0;            // PTC em 20 %
 >
 > Cada grupo tem uma condição diferente, e a diferença não é economia: é térmica.
 >
-> | Grupo | Liga quando | Desliga quando |
-> |---|---|---|
-> | ~~**RADIADOR**~~ (2, lado quente) | 🔧 **nunca desliga** — ver a correção abaixo | — |
-> | **PTC** (1, no aquecedor) | está **aquecendo** | as aletas voltarem perto da ambiente |
-> | **CIRCULAÇÃO** (2 frias + 2 do duto) | ensaio rodando, **frio ou quente** | fim do ensaio, na hora |
+> | Grupo | Pino | Liga quando | Desliga quando |
+> |---|---|---|---|
+> | **RADIADOR** (2, lado quente) | ⭐ **D30** | a Peltier está resfriando **ou** o dissipador está quente | o **DS18B20** dizer que voltou perto da ambiente |
+> | **PTC** (1, no aquecedor) | D28 | está **aquecendo** ou em degelo | **2 min** depois de parar de aquecer |
+> | **CIRCULAÇÃO** (2 frias + 2 do duto) | D29 | ensaio rodando, **frio ou quente** | fim do ensaio, na hora |
+>
+> ⚠️ **Os três comportamentos só existem a partir da revisão de §40.10.** Antes, os pinos D28 e D29 estavam apenas `#define`ados e nenhuma linha do firmware escrevia neles — **as ventoinhas comandadas não giravam nunca** — e o radiador não tinha pino algum: girava sem parar enquanto o painel estivesse energizado.
 >
 > ### 🔧 Correção — o radiador perdeu o comando, e por um motivo elétrico
 >
@@ -241,21 +293,11 @@ const double        DEGELO_DUTY         = 20.0;            // PTC em 20 %
 >
 > **⭐ Por que a ventoinha não desliga junto com a carga: a PÓS-VENTILAÇÃO.** Quando o ensaio acaba, o dissipador ainda está cheio de calor armazenado. Cortar a ventoinha ali deixa esse calor voltar por condução — no caso da Peltier, atravessando a própria pastilha no sentido errado, que é o que mais encurta a vida dela. Então a ventoinha continua girando até o dissipador esfriar.
 >
-> ```cpp
-> // O sensor do dissipador é um SEGUNDO DS18B20, no MESMO fio do primeiro.
-> // 1-Wire é barramento: cada sensor tem endereço próprio, então não
-> // custa pino nenhum a mais.
-> const float MARGEM_AMBIENTE = 5.0;      // °C acima da ambiente
-> const unsigned long POS_VENT_MAX = 600000UL;   // 10 min, rede de seguranca
+> 🔧 **A implementação está em [§40.10 · gerenciarVentoinhas()](#-as-ventoinhas--quem-liga-quem-para-e-quem-nunca-para), e mudou de critério.** A versão anterior desta nota trazia uma `precisaPosVentilar()` que comparava a temperatura do dissipador com a ambiente — mas **a função nunca foi chamada por ninguém**, e ela pressupunha um *"segundo DS18B20"* que não existe: o [Doc 32 §32.1](../camada_3_eletrica/32_sinais_e_sensores.md) usa o **único** DS18B20 do projeto no dissipador do lado quente da Peltier, e não há sensor nas aletas do PTC.
 >
-> bool precisaPosVentilar(float tDissipador, float tAmbiente,
->                         unsigned long desde) {
->     if (millis() - desde > POS_VENT_MAX) return false;   // sensor falhou
->     return tDissipador > tAmbiente + MARGEM_AMBIENTE;
-> }
-> ```
+> Como a única ventoinha que ainda precisa de pós-ventilação comandada é a do PTC — e ela não tem sensor —, **a pós-ventilação passou a ser por tempo: 2 minutos.** Some o sensor inexistente, some a rede de segurança `POS_VENT_MAX` que existia só para tapar o travamento desse sensor, e some um modo de falha.
 >
-> ⚠️ **O `POS_VENT_MAX` não é detalhe.** Sem ele, um sensor que trave lendo 80 °C deixaria a ventoinha girando para sempre.
+> **O DS18B20 do dissipador continua útil**, só que para outra coisa: acender o aviso *"DISSIPADOR QUENTE — NÃO DESLIGUE A CHAVE GERAL"* na tela.
 >
 > ✅ **A pós-ventilação sobrevive à emergência**, e isso foi de graça: o MV-1 é alimentado pelo **BD-AUX** e o Arduino pelo **BD-5V** — os dois são barramentos permanentes, que não caem com o KA2. Ou seja, alguém pode socar o cogumelo com a câmara a 60 °C e as ventoinhas continuam tirando o calor.
 
@@ -387,6 +429,13 @@ void desligarTudo() {
     digitalWrite(BTS1_REN, LOW);   digitalWrite(BTS1_RPWM, LOW);
     digitalWrite(BTS2_REN, LOW);   digitalWrite(BTS2_RPWM, LOW);
     digitalWrite(LED_COOL, LOW);   digitalWrite(LED_HEAT, LOW);
+
+    // ⭐ Todas as internas param junto com o ensaio.
+    //   O PTC nao precisa de pos-ventilacao: ele e AUTO-LIMITADO -- sem
+    //   fluxo de ar a resistencia sobe e ele corta a propria potencia.
+    //   Quem continua ventilando e so o RADIADOR, pelo KA4, enquanto o
+    //   DS18B20 disser que o dissipador esta quente.
+    digitalWrite(VENT_INTERNAS, LOW);
 }
 
 void aplicarPotencia() {
@@ -491,7 +540,8 @@ void medirRPM() {
 
 ```cpp
 void dispararTrip(const char* motivo) {
-    desabilitarDrivers();              // ⚡ corta a saída dos dois drivers
+    desabilitarDrivers();              // 1º — corta o comando dos dois drivers
+    cortarPotencia();                  // 2º — ⚡ e ABRE O KA2: corte FÍSICO
     desligarTudo();
     digitalWrite(LED_RUN, LOW);
     digitalWrite(LED_FAULT, HIGH);
@@ -502,7 +552,15 @@ void dispararTrip(const char* motivo) {
 }
 ```
 
-> 🎯 **Esta é a diferença entre a versão anterior e esta.** Antes, o trip apenas colocava `R_EN = LOW` — se o pino travasse em nível alto, a Peltier continuaria ligada. Agora o firmware **abre um relé**, e o corte é físico. O software participa da segurança, mas a segurança não depende dele.
+> ### 🔧 Correção — este comentário prometia um relé que não existia
+>
+> A versão anterior dizia: *"Agora o firmware **abre um relé**, e o corte é físico."* **Era falso.** A função chamava `desabilitarDrivers()` e `desligarTudo()`, e as duas só fazem `digitalWrite` em pinos de sinal. **O firmware não tinha relé nenhum sob comando** — o KA1 e o KA2 respondiam apenas às botoeiras.
+>
+> Na prática, um trip por fan parada baixava o `R_EN` e nada mais. **Se o BTS7960 tivesse um MOSFET em curto** — que é o modo de falha típico de MOSFET de potência — a Peltier continuaria a 100 % com o LED de falha aceso, e só o STOP físico ou o cogumelo a parariam.
+>
+> O `cortarPotencia()` acima torna a frase verdadeira: ele abre o **KA3**, a bobina do **KA2** perde o retorno e o **contato de potência** do KA2 abre — junto com o selo, que é o que torna o corte retentivo. O corte é galvânico e acontece **a montante do BTS** — então independe de o driver estar são. Ver [Doc 31 §31.13](../camada_3_eletrica/31_comando_e_protecoes.md).
+>
+> 📌 **A ordem importa:** desabilitar os drivers **antes** de abrir o KA2 faz o contato interromper uma corrente já próxima de zero. Abrir sob 6 A queimaria o contato em poucas dezenas de operações.
 
 ---
 
@@ -603,8 +661,11 @@ bool pedidoStop  = false;
 bool emergenciaAtiva()    { return digitalRead(BTN_EMERG) == HIGH; }  // NF aberto
 bool potenciaDisponivel() { return digitalRead(POTENCIA_OK) == HIGH; }
 
-// START e STOP: botão FÍSICO **ou** IHM — exatamente equivalentes
-bool pedidoDeStart() { return digitalRead(BTN_START) == LOW || pedidoStart; }
+// START: só pela IHM (§41.3). STOP: botão da porta, IHM ou MQTT.
+bool pedidoDeStart() { return pedidoStart; }   // ⭐ INICIAR: só pela IHM.
+// O botão VERDE não é lido por pino nenhum: ele arma a potência em
+// hardware (refaz o selo do KA2) e o firmware descobre pelo D25 —
+// exatamente como já ignora o REARME azul.
 bool pedidoDeStop()  { return digitalRead(BTN_STOP)  == LOW || pedidoStop;  }
 
 void maquinaDeEstados() {
@@ -612,6 +673,7 @@ void maquinaDeEstados() {
     // EMERGÊNCIA tem prioridade absoluta, em qualquer estado
     if (emergenciaAtiva() && estado != EMERGENCIA) {
         desabilitarDrivers();
+        cortarPotencia();      // redundante (o KA1 já caiu) — e é de propósito
         desligarTudo();
         digitalWrite(LED_RUN, LOW);
         digitalWrite(LED_FAULT, HIGH);
@@ -624,39 +686,40 @@ void maquinaDeEstados() {
     switch (estado) {
 
       case BOOT:
-        if (autoTesteOK()) estado = AGUARDA_START;
+        if (autoTesteOK()) {
+            autorizarPotencia();   // ⭐ "estou saudável" — o verde já pode armar
+            estado = AGUARDA_START;
+        }
         break;
 
       case AGUARDA_START:
         digitalWrite(LED_FAULT, LOW);
-        // START pode vir do botão FÍSICO ou da IHM — os dois são equivalentes
+        // ⭐ INICIAR vem da IHM. O botão verde não é lido: ele arma a
+        //    potência em hardware, e o firmware descobe pelo D25.
         if (pedidoDeStart()) {
-            delay(50);                            // debounce
-            if (!potenciaDisponivel()) {          // 12 V não chegou aos BTS
-                strncpy(alerta, "SEM_POTENCIA", sizeof(alerta) - 1);
-                break;                             // não inicia; provável fusível ou emergência
+            if (!potenciaDisponivel()) {
+                // O selo do KA2 está aberto — só um dedo no verde o refaz
+                strncpy(alerta, "APERTE_O_VERDE", sizeof(alerta) - 1);
+                pedidoStart = false;
+                break;
             }
             meuPID.SetMode(AUTOMATIC);
             digitalWrite(LED_RUN, HIGH);
-            alerta[0] = '\0';
+            alerta[0] = '';
             pedidoStart = false;
             estado = RODANDO;
         }
         break;
 
       case RODANDO:
-        // A emergência derrubou o KA1 sem passar pelo bloco de 5 V? (fio solto)
-        if (!potenciaDisponivel()) { dispararTrip("POTENCIA_PERDIDA"); break; }
+        // ⚠ O STOP vem PRIMEIRO. A queda de potência que o botão preto
+        //   causa não é defeito — e o teste de potência, se viesse antes,
+        //   classificaria toda parada normal como FALHA.
+        if (pedidoDeStop()) { pararProcesso(); break; }
 
-        // STOP pode vir do botão FÍSICO ou da IHM
-        if (pedidoDeStop()) {
-            desabilitarDrivers();
-            desligarTudo();
-            digitalWrite(LED_RUN, LOW);
-            meuPID.SetMode(MANUAL);
-            pedidoStop = false;
-            estado = AGUARDA_START;
-        }
+        // Potência que sumiu sem ninguém ter pedido = fusível, borne solto,
+        // ou a emergência com o bloco de 5 V rompido.
+        if (!potenciaDisponivel()) { dispararTrip("POTENCIA_PERDIDA"); break; }
         break;
 
       case EMERGENCIA:
@@ -684,6 +747,183 @@ void maquinaDeEstados() {
     }
 }
 ```
+
+> ### 🔧 Correção — a ordem dos dois testes do `RODANDO` transformava STOP em FALHA
+>
+> A versão anterior testava assim:
+>
+> ```cpp
+> if (!potenciaDisponivel()) { dispararTrip("POTENCIA_PERDIDA"); break; }   // ← antes
+> if (pedidoDeStop())        { ... estado = AGUARDA_START; }                // ← depois
+> ```
+>
+> **Apertar o STOP físico dispara as duas condições.** O botão tem dois blocos mecanicamente ligados: o NF de 24 V corta a bobina do KA2 (e o BD-POT cai, derrubando o `D25`), e o NA de 5 V avisa o `D23`. Tipicamente o NF abre uns 2 ms antes de o NA fechar, mas o relé leva ~10 ms para desatracar — e o `loop()` carrega PID, sensores, SD e três seriais, então seu período é bem maior que isso. **Quando a máquina de estados finalmente roda, as duas já são verdadeiras.** E aí quem está escrito primeiro vence.
+>
+> | | Comportamento antigo | Corrigido |
+> |---|---|---|
+> | Apertar o STOP | cai em **`FALHA`**, LED vermelho, log `POTENCIA_PERDIDA` | `AGUARDA_START`, sem alarme |
+> | Para voltar | **segurar o STOP por 2 s** (reconhecimento de falha) | um START |
+>
+> 🎯 **Era o segundo motivo, puramente de software, para o STOP "precisar ser segurado".** O primeiro era o estágio 2 não ter selo — resolvido devolvendo o selo ao KA2. Os dois se somavam e produziam o mesmo sintoma, o que torna esse tipo de defeito difícil de diagnosticar na bancada.
+>
+> **A regra geral:** um efeito colateral previsto do comando que o operador acabou de dar **não é falha**. O teste do comando vem sempre antes do teste do sintoma.
+
+### ⭐ A parada — uma função, três origens
+
+```cpp
+// Botão da porta, IHM ou MQTT chegam todos aqui. São o MESMO comando.
+void pararProcesso() {
+    desabilitarDrivers();          // R_EN dos dois em nível baixo
+    // ⭐ NÃO chama cortarPotencia(). Parar pela IHM é Categoria 2: a
+    //    potência segue armada e o INICIAR da tela religa sem ninguém
+    //    sair do lugar. Quem derruba o selo é o botão preto (hardware)
+    //    ou um TRIP (dispararTrip). São coisas diferentes de propósito.
+    desligarTudo();
+    digitalWrite(LED_RUN, LOW);
+    meuPID.SetMode(MANUAL);
+    pedidoStop = false;
+    registrarEvento("STOP_IHM");
+    estado = AGUARDA_START;
+}
+```
+
+> 📌 **Os 50 ms entre desabilitar o driver e abrir o KA2 são a única sutileza aqui.** O contato do relé precisa interromper uma corrente já em zero: abrir sob 6 A em corrente contínua gera arco, e corrente contínua não tem passagem por zero para ajudar a extinguir. É o que come contato de relé.
+>
+> 🔧 **Aqui havia uma `pararCategoria1()` com rampa de duty de 250 ms**, que descia a saída antes de abrir o KA2. **Ela perdeu o cliente:** esta função não abre relé nenhum — parar pela IHM é Categoria 2 e a potência segue armada. E quando o KA2 *é* aberto, quem o abre é o **botão preto**, em hardware, onde nenhuma rampa de software chegaria a tempo. **Saiu a função, saiu o laço com `wdt_reset()` dentro, saiu a variável de rampa.**
+>
+> ⚠️ **Um detalhe que a rampa cobria e que agora é do hardware:** o contato do KA2 pode abrir sob os 6 A da Peltier quando alguém soca o botão preto. É por isso que o **KA2 é declarado para ≥ 10 A em corrente contínua** ([Doc 31 §31.0](../camada_3_eletrica/31_comando_e_protecoes.md)) — corrente contínua não tem passagem por zero para extinguir o arco, e um contato subdimensionado solda depois de algumas dezenas de paradas.
+
+### 🌀 As ventoinhas — e a regra única que governa o radiador
+
+```cpp
+const float         MARGEM_AMBIENTE = 5.0;       // °C acima da ambiente
+bool                dissipadorQuente = false;
+bool                radiadorLigado   = false;    // estado comandado, p/ o trip
+```
+
+```cpp
+// ⚠ CHAMADA EM TODO LOOP, EM QUALQUER ESTADO — inclusive EMERGENCIA.
+//   A pós-ventilação do radiador não pode viver dentro do
+//   if (estado == RODANDO).
+void gerenciarVentoinhas(float tDissipador, float tAmbiente) {
+
+    // ── ⭐ RADIADOR (lado quente da Peltier) — UMA regra, quatro casos ──
+    //
+    //   ligado  ⟺  a Peltier está trabalhando
+    //              OU o dissipador ainda está quente
+    //
+    //   ⚠ SENSOR COM DEFEITO CONTA COMO QUENTE. O DS18B20 devolve
+    //     DEVICE_DISCONNECTED_C (−127 °C) quando o fio se solta, e −127
+    //     é "frio" para qualquer comparação — o que desligaria a
+    //     ventilação exatamente quando ninguém está medindo nada.
+    bool sensorOK  = (tDissipador > -100.0 && tDissipador < 150.0);
+    dissipadorQuente = !sensorOK || (tDissipador > tAmbiente + MARGEM_AMBIENTE);
+
+    bool peltierAtiva = (estado == RODANDO && modo == RESFRIAMENTO);
+    radiadorLigado    = peltierAtiva || dissipadorQuente;
+    digitalWrite(VENT_RADIADOR, radiadorLigado ? HIGH : LOW);
+
+    // ── ⭐ INTERNAS (2 frias + 2 do duto + a do PTC) — uma condição só ──
+    //   Ensaio rodando, em qualquer modo. Param junto com ele.
+    digitalWrite(VENT_INTERNAS, estado == RODANDO ? HIGH : LOW);
+}
+```
+
+> ### ⭐ Uma regra só resolve a tabela inteira
+>
+> O comportamento pedido para o radiador tem quatro linhas, e todas caem da mesma condição:
+>
+> | Situação | Peltier ativa? | Dissipador quente? | **Resultado** |
+> |---|---|---|---|
+> | Resfriando | ✅ | (irrelevante) | 🟢 **ligado** |
+> | Aquecendo com o PTC | ❌ | ❌ — a pastilha está desligada, o dissipador está na ambiente | ⚫ **desligado** |
+> | Pós-ventilação | ❌ | ✅ | 🟢 **ligado** |
+> | Parado e já frio | ❌ | ❌ | ⚫ **desligado** |
+>
+> 🎯 **E a regra é auto-protetora:** a ventoinha **só pode desligar quando o sensor confirma que não há calor para tirar**. Não existe combinação de estados em que ela pare com o dissipador quente — nem em `FALHA`, nem em `EMERGENCIA`, nem com o cogumelo socado. Isso não é uma coincidência feliz: é o motivo de a condição ser sobre **temperatura**, e não sobre o estado da máquina.
+>
+> ⚠️ **A linha do sensor com defeito é a mais importante do bloco.** `DallasTemperature` devolve **−127 °C** quando o sensor some do barramento, e −127 é menor que qualquer ambiente — a comparação ingênua concluiria "está frio, pode desligar" **justamente quando o firmware perdeu a capacidade de saber**. Fio solto num sensor **nunca** pode autorizar o desligamento de uma proteção térmica. Por isso o `!sensorOK` entra com **OU**, forçando "quente".
+
+> ### ⚡ O trip por RPM continua coerente — e ganhou uma guarda
+>
+> A ventoinha agora pode estar legitimamente parada, e o alarme `FAN_PARADA` existe para detectar exatamente "parada". Sem cuidado, o novo controle criaria alarme falso.
+>
+> Só que os dois casos não se cruzam: o trip só arma em `modo == RESFRIAMENTO`, e em `RESFRIAMENTO` a regra acima **sempre** liga o radiador. Mesmo assim, vale explicitar em vez de depender da coincidência:
+>
+> ```cpp
+> // Em medirRPM(), na condição de trip:
+> if (radiadorLigado && modo == RESFRIAMENTO && estado == RODANDO &&
+>     (millis() - inicioModoFrio > TEMPO_PARTIDA_FAN)) {
+>     if (rpmAtual1 < RPM_MINIMA) dispararTrip("FAN1_PARADA");
+>     if (rpmAtual2 < RPM_MINIMA) dispararTrip("FAN2_PARADA");
+> }
+> ```
+>
+> 📌 **`radiadorLigado` é o estado COMANDADO, não o medido.** A diferença é toda a função do alarme: comparar "mandei ligar" com "está girando" é o que detecta a ventoinha travada. Se a condição usasse a própria RPM, o alarme provaria a si mesmo e nunca dispararia.
+
+> ### 🔥 Correção — as duas ventoinhas comandadas nunca ligavam
+>
+> Os pinos das ventoinhas estavam **apenas `#define`ados**. Não havia `pinMode()`, não havia um único `digitalWrite()` em lugar nenhum do firmware. E a `precisaPosVentilar()` estava escrita numa nota lateral, **sem ninguém chamá-la**.
+>
+> Na prática: os canais 2 e 3 do MV-1 nunca eram acionados, a ventoinha do PTC e as quatro de circulação **nunca giravam**, e o ensaio rodava com o ar parado dentro da câmara. É o tipo de coisa que só aparece na bancada, quando a temperatura não homogeneíza e ninguém entende por quê.
+>
+> 📌 **A ventoinha do PTC não tem mais pós-ventilação, e não precisa.** Ela entrou no mesmo canal das outras internas e para junto com o ensaio — **o PTC é auto-limitado**: sem fluxo de ar a resistência dele sobe e ele corta a própria potência. Somem um pino, um canal do MV-1, um temporizador e um modo de falha. O **DS18B20 continua útil**, comandando a pós-ventilação do **radiador**, que é onde ela realmente importa.
+
+### ⚠️ Quem para quando, e quem sobrevive à emergência
+
+| Grupo | Pino | Para no STOP? | Para na EMERGÊNCIA? | O que a desliga |
+|---|---|---|---|---|
+| **2× radiador** (lado quente da Peltier) | **D30** | ❌ não — **só quando esfriar** | ❌ **não** | o **DS18B20** do dissipador |
+| 1× ventoinha do PTC | D28 | não na hora — **2 min de pós-ventilação** | idem | o tempo |
+| 4× circulação (2 frias + 2 do duto) | D29 | ✅ sim, na hora | ✅ sim | `desligarTudo()` |
+
+**Nenhuma das três passa pelo KA2.** Todas vêm do BD-AUX, alimentado pelo ramal auxiliar T3 ([Doc 30](../camada_3_eletrica/30_forca_e_distribuicao.md)), e o Arduino vem do BD-5V — os dois são barramentos permanentes. Então:
+
+> 🎯 **Alguém pode socar o cogumelo com o dissipador a 60 °C e as ventoinhas do radiador continuam girando** — e continuam até o DS18B20 dizer que o dissipador voltou para perto da ambiente. Uma Peltier desligada com o lado quente sem ventilação deixa o calor voltar **através dela**, no sentido inverso, e é isso que mais encurta a vida dela.
+
+> ### 🔧 Revisão — o radiador recuperou o comando, e o canal 1 do MV-1 voltou a existir
+>
+> Este documento dizia que as ventoinhas do radiador **não tinham pino e nunca desligavam**. Funcionava, e era seguro, mas cobrava dois preços: **~5 W girando o dia inteiro** com o painel energizado, e **~2,5 W de fuga térmica durante o aquecimento** — o dissipador ventilado puxando calor da câmara através da pastilha desligada, contra o próprio PTC.
+>
+> **A causa nunca foi térmica, foi topológica:** o MV-1 chaveia o **negativo**, e o tacômetro da ventoinha é referenciado nesse mesmo negativo. Cortar o canal levantava o preto para perto de 12 V, injetava corrente no diodo de proteção do `D3` e, antes disso, já fazia a leitura mentir — canal desligado lia "ventoinha parada", que é justamente o alarme que existe para salvar a pastilha.
+>
+> ✅ **A correção não é trocar a ventoinha: é trocar o lado que se chaveia.** O **contato do KA4** — um módulo de relé de 1 canal — corta o **positivo** dos 12 V. O preto das ventoinhas fica em **0 V de verdade, permanentemente**:
+>
+> | | Chaveando o NEGATIVO (o que quebrou) | **Contato do KA4 no POSITIVO** |
+> |---|---|---|
+> | O preto da ventoinha, desligada | sobe para ~12 V 🔥 | **fica em 0 V** ✅ |
+> | Referência do tacômetro | se mexe | **fixa, sempre** |
+> | Sinal no `D3` com ela off | injeta corrente pelo diodo de proteção | coletor aberto → o pull-up leva o pino a HIGH. Inofensivo |
+> | Ventoinha necessária | — | **as de 3 fios que já estão na lista** |
+>
+> 🎯 **Um contato seco não tem lado alto nem lado baixo — e é essa frase que apaga o problema inteiro.** O MV-1 é um MOSFET canal N: ele só sabe puxar para 0 V, e por isso era obrigado a chavear o negativo. Um relé apenas abre e fecha, e **você escolhe em que fio pô-lo**. O canal 1 do MV-1 continua livre.
+>
+> ⚡ **E o custo do comando de volta são três componentes:** o KA4, um resistor de 10 kΩ e um diodo de roda-livre — cerca de **R$ 3,50**. Montagem em [Doc 31 §31.14](../camada_3_eletrica/31_comando_e_protecoes.md).
+
+> ### ⚠️ O que se perde, e por que é aceitável
+>
+> Antes, as ventoinhas do radiador giravam **mesmo com o Arduino morto**. Agora dependem dele. Vale encarar isso de frente:
+>
+> | Falha | O que acontece |
+> |---|---|
+> | **Firmware trava** | O watchdog reseta em 2 s e o `setup()` liga o radiador antes de qualquer outra coisa. **2 segundos sem ventilação** — irrelevante para a inércia de um dissipador de alumínio |
+> | **Arduino morre de vez** | Sem ventilação. **Mas também sem Peltier:** o `R_EN` cai pelos pull-downs e o **KA3** corta os 24 V. Não há geração de calor, só o residual, que se dissipa por convecção natural |
+> | **DS18B20 solta o fio** | ⭐ **A ventoinha LIGA e fica ligada.** O `!sensorOK` força "quente" |
+> | **Contato do KA4 falha aberto** | Sem ventilação — e sem alarme. É o pior caso, e é o que o **trip por RPM = 0** já detectava antes de tudo isso existir |
+>
+> 📌 **A dependência do Arduino não é nova, é a mesma de sempre.** Ele já era o único que sabia parar a Peltier por RPM. O que mudou foi a ventilação passar a depender dele também — e como as duas dependem do mesmo componente, uma falha dele derruba as duas juntas, que é a ordem correta: **primeiro para de gerar calor, depois para de tirar.**
+
+> ### ⛔ O único caso em que o resfriamento realmente para: a chave geral
+>
+> Corte a chave rotativa (ou falte energia) com o dissipador quente e **tudo** para — ventoinhas incluídas. Não há projeto que resolva isso sem bateria, e não vale a pena aqui. Resolve-se por procedimento, e o firmware ajuda:
+>
+> ```cpp
+> // Em atualizarTela(), quando o ensaio não está rodando:
+> if (estado != RODANDO && dissipadorQuente)
+>     mostrar("DISSIPADOR QUENTE - NAO DESLIGUE A CHAVE GERAL");
+> ```
+>
+> 📋 **Vai para o procedimento operacional:** ao terminar o ensaio, espere a tela liberar antes de desligar a chave geral. É exatamente a instrução que existe em compressor, em turbo e no radiador de carro que você citou — e pela mesma razão física.
 
 ---
 
@@ -757,10 +997,22 @@ void setup() {
     pinMode(LED_RUN, OUTPUT);   pinMode(LED_COOL, OUTPUT);
     pinMode(LED_HEAT, OUTPUT);  pinMode(LED_FAULT, OUTPUT);
 
-    pinMode(BTN_START,   INPUT_PULLUP);
     pinMode(BTN_STOP,    INPUT_PULLUP);
     pinMode(BTN_EMERG,   INPUT_PULLUP);
     pinMode(POTENCIA_OK, INPUT);       // divisor resistivo — sem pull-up!
+
+    // ⭐ Habilitação da potência: SAÍDA e LOW **antes de tudo**.
+    //   O pull-down de 10 kΩ no gate já garantia isso durante o boot;
+    //   aqui a garantia passa a ser ativa. O painel nasce sem 24 V nos BTS.
+    pinMode(HAB_POTENCIA, OUTPUT);
+    digitalWrite(HAB_POTENCIA, LOW);
+
+    // ⭐ Ventoinhas comandadas (jumpers do MV-1 em H: HIGH = ligada)
+    pinMode(VENT_INTERNAS, OUTPUT); digitalWrite(VENT_INTERNAS, LOW);
+    // ⚠ O radiador NASCE LIGADO. Enquanto o primeiro lerSensores() nao
+    //   rodar nao ha leitura do dissipador, e "nao sei" tem que valer
+    //   como "pode estar quente". Sao ~2 s de ventilacao a mais no boot.
+    pinMode(VENT_RADIADOR, OUTPUT); digitalWrite(VENT_RADIADOR, HIGH);
 
     desligarTudo();
     setupRPM();
@@ -782,6 +1034,11 @@ void loop() {
     maquinaDeEstados();
     medirRPM();
     lerSensores();                         // entrada, umidade, temperatura de referência
+
+    // ⭐ FORA do if abaixo, de propósito: a pós-ventilação do PTC e o aviso
+    //    de dissipador quente precisam continuar em AGUARDA_START, em FALHA
+    //    e em EMERGENCIA. Só param quando a chave geral cair.
+    gerenciarVentoinhas(tDissipador, tAmbiente);
 
     if (estado == RODANDO) {
         gerenciarDegelo();

@@ -79,17 +79,17 @@ O nosso sistema é igual:
 |---|---|---|
 | Onde está | No painel, colado na máquina | Na rede Wi-Fi, em qualquer lugar |
 | O que faz sempre | Controla a temperatura, executa as proteções | Observa tudo e publica |
-| Quando comanda | Chave em **LOCAL** | Chave em **REMOTO** |
+| O que pode comandar | **tudo** — é ele quem executa | ⭐ **só o que leva ao estado seguro** |
 
-E a chave que arbitra existe fisicamente no painel: a **seletora LOCAL / REMOTO**.
+⭐ **Não há chave seletora, e é de propósito.** Quem arbitra é a natureza do comando, não uma posição de contato.
 
 ### As três regras que nunca mudam
 
-1. **EMERGÊNCIA e STOP não passam por software.** Cortam em hardware, com a chave em qualquer posição. Nenhum comando pela internet religa.
+1. **A EMERGÊNCIA não passa por software.** Corta em hardware, trava, e nenhum comando pela internet a desfaz.
 2. **O controle crítico fica sempre no Arduino.** PID, intertravamento e proteção de RPM não podem depender de uma rede Wi-Fi que pode cair no meio do ensaio.
 3. **O ESP32 nunca aciona atuador diretamente.** Ele *pede*; o Arduino valida e decide. Pedido absurdo — setpoint fora de faixa, START sem potência armada — é recusado, e o motivo volta pelo MQTT.
 
-> 🎓 **Frase para a defesa:** *"A restrição de continuidade operacional nos impediu de substituir o controlador. Implementamos o ESP32 em paralelo, com arbitragem por chave Local/Remoto — a mesma solução que qualquer painel industrial usa para conviver com comando local e sistema supervisório."*
+> 🎓 **Frase para a defesa:** *"A restrição de continuidade operacional nos impediu de substituir o controlador. Implementamos o ESP32 em paralelo, e a arbitragem entre local e remoto é feita pela **classe do comando**: o que leva ao estado seguro pode vir de qualquer lugar, o que leva ao estado energizado só da IHM, na frente da máquina."*
 
 ### O que é MQTT, e por que não é "só mandar pela internet"
 
@@ -230,9 +230,25 @@ O ESP32 repassa pela mesma serial, em formato simples e curto:
 | Comando | Efeito | Segurança |
 |---|---|---|
 | `SP:7.5\n` | Altera o setpoint para 7,5 °C | ✅ Permitido — só muda uma referência |
-| `STOP\n` | Para o processo (equivale ao botão STOP) | ✅ Permitido — comando **para o estado seguro** |
+| `STOP\n` | ⭐ Para o processo **e corta os 24 V** (parada Categoria 1) | ✅ Permitido — comando **para o estado seguro** |
 | `ACK\n` | Reconhece um alerta (sai de `FALHA`) | ⚠️ Permitido, mas registrado no log |
 | ~~`START`~~ **por MQTT** | — | ⛔ **BLOQUEADO** |
+
+> ### ⭐ Por que o STOP remoto é Categoria 2, e não corta a energia
+>
+> Parece uma fraqueza e é o contrário. Com o **selo do KA2** ([Doc 31 §31.0](../camada_3_eletrica/31_comando_e_protecoes.md)), qualquer corte físico da potência **retém** — e só o **botão verde**, no painel, o desfaz.
+>
+> Se o `STOP` remoto derrubasse o selo, quem parasse a máquina do celular condenaria alguém a **caminhar até o painel** para religá-la. O comando remoto viraria uma armadilha.
+>
+> | Origem | O que cai | Como volta |
+> |---|---|---|
+> | **MQTT / IHM** | só o `R_EN` — Categoria 2 | pela própria tela |
+> | **Botão preto** (porta) | o selo do KA2, em hardware — Cat. 1 | botão verde, na porta |
+> | **Trip** do firmware | o selo do KA2, pelo KA3 — Cat. 1 | reconhecimento **+** botão verde |
+>
+> 🎯 **A regra por trás: quem para de longe, religa de longe. Quem para de perto ou por falha, exige alguém de perto.** A parada por **falha** é a que precisa de um humano olhando a máquina — e é justamente a que retém.
+>
+> ⚠️ **E o corte físico continua a um toque de distância para quem estiver lá:** o botão preto e o cogumelo não passam por software em ponto nenhum.
 
 > ✅ **Pela IHM Nextion o START é PERMITIDO.** A diferença é a distância: quem toca a tela está **na frente da máquina** e enxerga a câmara — é um comando local, igual ao botão do painel. Já o MQTT vem de qualquer lugar do mundo, sem ninguém olhando. Por isso a IHM tem botão INICIAR e o dashboard não.
 
@@ -246,54 +262,46 @@ O ESP32 repassa pela mesma serial, em formato simples e curto:
 >
 > 📌 Diga isso na apresentação. É o tipo de decisão que mostra maturidade de projeto — e se a banca perguntar "por que não dá para ligar pelo celular?", você tem a resposta pronta.
 
-### ⭐ A chave LOCAL / REMOTO — quem manda em cada momento
+### ⭐ Quem manda em cada momento — sem chave nenhuma
 
-A tabela acima diz **o que** pode ser comandado à distância. A chave seletora do painel diz **quando**.
-
-| Comando remoto | Chave em **LOCAL** | Chave em **REMOTO** |
-|---|---|---|
-| `SP:` alterar setpoint | ⛔ **Recusado** | ✅ Aceito (dentro da faixa) |
-| `ACK` reconhecer alarme | ⛔ Recusado | ✅ Aceito e registrado |
-| `STOP` parar | ✅ **Sempre aceito** | ✅ Sempre aceito |
-| `START` | ⛔ Bloqueado sempre | ⛔ Bloqueado sempre |
-
-**Repare no padrão, que é a regra inteira em uma frase:**
-
-> **A chave restringe comandos que vão para o estado energizado. Comandos que vão para o estado seguro passam sempre.**
-
-Isso significa que, mesmo com a chave em LOCAL — quando teoricamente "o remoto não manda" —, quem estiver acompanhando pelo dashboard **ainda consegue parar a máquina**. Nunca há uma situação em que alguém veja um problema e não possa agir.
+> ### 🔧 A seletora LOCAL / REMOTO foi removida
+>
+> Ela existia para responder *"quando o remoto pode comandar?"*. Mas olhe a tabela que ela governava:
+>
+> | Comando remoto | Com a chave em LOCAL | Com a chave em REMOTO |
+> |---|---|---|
+> | `START` | ⛔ bloqueado | ⛔ **bloqueado igual** |
+> | `STOP` | ✅ aceito | ✅ **aceito igual** |
+> | `SP:` / `ACK` | ⛔ recusado | ✅ aceito |
+>
+> **Nas duas linhas que importam para a segurança, a chave não mudava nada** — o `START` já era bloqueado sempre e o `STOP` já era aceito sempre. Ela só arbitrava o setpoint e o reconhecimento de alarme, que **não levam a máquina ao estado energizado**: um setpoint fora de faixa é recusado pela validação, e um `ACK` remoto vai para o log.
+>
+> 🎯 **A regra de segurança real nunca foi a chave — foi a classe do comando.** Ela continua inteira, e agora é a única:
+>
+> > **Comando que leva ao estado SEGURO pode vir de qualquer lugar. Comando que leva ao estado ENERGIZADO só da IHM, na frente da máquina.**
+>
+> **Saem:** uma seletora de 22 mm, um bloco de contato, dois fios pela dobradiça, o pino **D26**, a função `modoRemoto()` e o caminho de recusa `MODO_LOCAL`. **Não sai nenhuma proteção.**
 
 ```cpp
-// No Arduino — a chave é uma entrada digital comum, no pino D26
-#define SEL_REMOTO 26        // no setup(): pinMode(SEL_REMOTO, INPUT_PULLUP);
-
-// ⚠️ LOW = REMOTO, e a inversão é proposital: com INPUT_PULLUP, um fio
-// rompido lê HIGH e o sistema cai em LOCAL. Uma falha de fiação nunca
-// abre a máquina para comando pela internet.
-bool modoRemoto() { return digitalRead(SEL_REMOTO) == LOW; }
-
 void processarComandoRemoto() {
     // ...
-
-    if (cmd == "STOP") {                    // sempre, em qualquer posição
-        desligarTudo();
-        estado = AGUARDA_START;
+    if (cmd == "STOP") {              // ✅ sempre — leva ao estado seguro
+        pararProcesso();
         registrarEvento("STOP_REMOTO");
         return;
     }
-
-    if (!modoRemoto()) {                    // demais comandos: só em REMOTO
-        Serial1.println(F("{\"nak\":\"MODO_LOCAL\"}"));
-        registrarEvento("CMD_RECUSADO_LOCAL");
+    if (cmd == "START") {             // ⛔ nunca — leva ao estado energizado
+        Serial1.println(F("{\"nak\":\"START_SO_NA_IHM\"}"));
+        registrarEvento("START_REMOTO_RECUSADO");
         return;
     }
-    // ... trata SP: e ACK
+    // SP: e ACK seguem, com validação de faixa
 }
 ```
 
-> 💡 **Devolva sempre o motivo da recusa.** O `{"nak":"MODO_LOCAL"}` faz o dashboard mostrar *"comando recusado: painel em modo local"* em vez de simplesmente não acontecer nada. Comando que falha em silêncio é a origem de metade das reclamações de sistema supervisório.
+> 💡 **Devolva sempre o motivo da recusa.** O `{"nak":"START_SO_NA_IHM"}` faz o dashboard mostrar *"iniciar só é possível na tela do painel"* em vez de simplesmente não acontecer nada. Comando que falha em silêncio é a origem de metade das reclamações de sistema supervisório.
 
-> 📊 **A posição da chave vai na telemetria** (campo `modo`), para que o dashboard mostre em que modo o painel está antes de alguém tentar comandar.
+> 📊 **O estado da máquina vai na telemetria** (campo `estado`), para que o dashboard mostre se há ensaio rodando antes de alguém tentar comandar.
 
 ```cpp
 // No Arduino

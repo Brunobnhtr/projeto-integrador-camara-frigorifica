@@ -147,9 +147,11 @@ Imagine um carro de autoescola: tem **dois volantes**. Um do aluno, outro do ins
 O nosso sistema é igual. Tem dois microcontroladores:
 
 - O **Arduino** fica no painel, perto da máquina. É o "volante do aluno": controla a temperatura o tempo todo e obedece à IHM e às botoeiras.
-- O **ESP32** está na rede Wi-Fi. É o "volante do instrutor": vê tudo de longe e pode assumir o comando — **mas só quando a chave permitir**.
+- O **ESP32** está na rede Wi-Fi. É o "volante do instrutor": vê tudo de longe e **pode parar a máquina de qualquer lugar — mas nunca ligá-la**.
 
-Essa chave existe de verdade no painel, e se chama **seletora LOCAL / REMOTO**. É a peça que impede os dois de brigarem.
+⭐ **A regra de arbitragem não é uma chave, é a natureza do comando:**
+
+> **O que leva ao estado SEGURO pode vir de qualquer lugar. O que leva ao estado ENERGIZADO só da IHM, na frente da máquina.**
 
 ### Por que dois, e não um só
 
@@ -162,46 +164,34 @@ A empresa **não pode parar os ensaios** enquanto o projeto acontece. Arrancar o
 | Unidade | Papel | Responsabilidades |
 |---|---|---|
 | **Arduino Mega 2560** | **Controle em tempo real e segurança** — nunca sai de cena | PID, leitura de sensores, PWM 1 Hz, monitoramento de RPM, intertravamento, trip, alimenta a IHM e o log |
-| **ESP32-WROOM-32U** (na base DNLCB30) | **Supervisão sempre · comando quando em REMOTO** | Wi-Fi, MQTT bidirecional, dashboard, envio de setpoint e comandos, alarmes remotos |
+| **ESP32-WROOM-32U** (na base DNLCB30) | **Supervisão sempre · pode PARAR de qualquer lugar, nunca INICIAR** | Wi-Fi, MQTT bidirecional, dashboard, envio de setpoint e comandos, alarmes remotos |
 
 ### A regra de arbitragem
 
-| Chave em | Quem **comanda** | Quem **supervisiona** |
+| Comando | De onde pode vir | Por quê |
 |---|---|---|
-| **LOCAL** | Arduino — IHM e botoeiras do painel | ESP32 vê tudo, mas **comandos remotos são recusados** |
-| **REMOTO** | ESP32 — dashboard e MQTT | Arduino executa, valida e continua vendo tudo |
+| **STOP** | botoeira da porta · IHM · **dashboard remoto** | Leva ao estado **seguro**. Quem vê um problema tem que poder agir, esteja onde estiver |
+| **START** | ⭐ **botão verde na porta** (arma a potência) + **IHM** (inicia o ensaio) | Leva ao estado **energizado**. Partida é ato local e deliberado, com o operador vendo a câmara |
+| **Setpoint / `ACK`** | IHM · dashboard | Não energizam nada. O Arduino valida a faixa e recusa o que for absurdo |
+| **EMERGÊNCIA / REARME** | ⛔ **só a botoeira física** | Não passam por software em ponto nenhum |
 
-**Três regras que valem nas duas posições, sem exceção:**
+> 🔧 **Havia uma seletora LOCAL / REMOTO no painel, e ela foi removida.** Olhando a tabela acima fica claro por quê: nas duas linhas que importam para a segurança ela não mudava nada — o `START` já era bloqueado sempre e o `STOP` já era aceito sempre. Ela só arbitrava setpoint e reconhecimento de alarme, que não energizam nada. **Saíram uma seletora, um bloco de contato, dois fios e um pino do Arduino. Não saiu nenhuma proteção.**
 
-1. **EMERGÊNCIA e STOP nunca passam por software.** Cortam a energia em hardware, com a chave em qualquer posição. Nenhum comando remoto religa.
+**Três regras que valem sempre, sem exceção:**
+
+1. **A EMERGÊNCIA nunca passa por software.** Corta a energia em hardware, trava, e nenhum comando remoto a desfaz.
 2. **PID, intertravamento e trip por RPM ficam sempre no Arduino.** É controle crítico — não pode depender de uma rede Wi-Fi que pode cair.
-3. **O ESP32 nunca aciona atuador diretamente.** Ele pede; o Arduino valida e decide. Se o pedido for absurdo (setpoint fora de faixa, START sem potência armada), é recusado e o motivo volta pelo MQTT.
+3. **O ESP32 nunca aciona atuador diretamente.** Ele pede; o Arduino valida e decide. Pedido absurdo é recusado, e o motivo volta pelo MQTT.
 
-> 🎓 **Frase para a defesa:** *"A restrição de continuidade operacional nos impediu de substituir o controlador. Implementamos o ESP32 em paralelo, com arbitragem por chave Local/Remoto — a mesma solução que qualquer painel industrial usa para conviver com comando local e sistema supervisório."*
+> 🎓 **Frase para a defesa:** *"A restrição de continuidade operacional nos impediu de substituir o controlador. Implementamos o ESP32 em paralelo, e a arbitragem entre local e remoto é feita pela **classe do comando** em vez de por uma chave: o que leva ao estado seguro pode vir de qualquer lugar, o que leva ao estado energizado só da IHM."*
 
 ```
-        ┌──────────── CHAVE LOCAL / REMOTO ────────────┐
-        │                                               │
-   LOCAL ▼                                       REMOTO ▼
- Botoeiras + IHM tátil                      Dashboard + MQTT
-        │                                               │
-        └──────────────┐                 ┌──────────────┘
-                       ▼                 ▼
+   IHM na porta          Botoeiras                  Dashboard / MQTT
+   INICIAR · STOP · cfg  LIGAR · STOP · EMERG · REARME   STOP  (⛔ nunca START)
+        │                    │                     │
+        └────────┬───────────┘                     │
+                 ▼                                 ▼
  Sensores ────► ARDUINO MEGA 2560 ◄──Serial1──► ESP32 (DNLCB30)
- (DS18B20,      PID · PWM 1 Hz · SD · RTC        Wi-Fi · MQTT
-  AM2315C,      intertravamento · trip           dashboard
-  RPM×2, IS)              │
-                          ▼
-        BTS7960 #1 (Frio) ⊕ BTS7960 #2 (Quente)   ← intertravados
-                          │
-                          ▼
-     CABINE CLIMATIZADA (2× Peltier em série + PTC 24 V + 4 fans)
-                          │
-                          ▼
-     4 POSIÇÕES DE ENSAIO — dispositivos energizados e monitorados
-        cada uma com fusível próprio + medição de corrente
-
-     ⛔ EMERGÊNCIA e STOP cortam em HARDWARE, fora dos dois caminhos
 ```
 
 ---
@@ -307,7 +297,7 @@ CAMADA 5 — INTEGRAÇÃO
 | **0** | [03 — Lista de Materiais](03_lista_materiais.md) | BOM completa com especificação e link |
 | **1** | [10 — Base e Chão de Fábrica](../camada_1_maquete/10_base_e_chao_de_fabrica.md) | Dimensões, setores, piso industrial, sinalização, escala |
 | **1** | [11 — Subestação e Postes](../camada_1_maquete/11_subestacao_e_postes.md) | Caixa da subestação, postes, cruzetas, isoladores, transformadores |
-| **1** | [12 — Câmara Térmica](../camada_1_maquete/12_camara_termica.md) | Acrílico, isolamento, porta dupla, vedação, dutos, dreno |
+| **1** | [12 — Câmara Térmica](../camada_1_maquete/12_camara_termica.md) | Acrílico, fita de alumínio e vão de ar, porta dupla, vedação, dutos, condensado |
 | **2** | [20 — Painel de Comando](../camada_2_painel/20_painel_projeto_e_layout.md) | Dimensionamento, layout interno cotado, furação, montagem |
 | **3** | [30 — Força e Distribuição](../camada_3_eletrica/30_forca_e_distribuicao.md) | Fiação AC, barramento 24 V, conversores, distribuição |
 | **3** | [31 — Comando e Proteções](../camada_3_eletrica/31_comando_e_protecoes.md) | Relé de interface, emergência em hardware, fusíveis, aterramento, seletividade |

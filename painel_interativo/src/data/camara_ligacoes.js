@@ -76,8 +76,8 @@ export const BLOCOS_LIGACAO = [
     cor: '#4dabf7',
     diz: 'Sopram para BAIXO, empurrando o ar frio para dentro do volume.',
     externo: [
-      { fio: 'X9', o: 'MV-1 · O3+', para: '⚠️ os positivos das QUATRO de circulação' },
-      { fio: 'X10', o: 'MV-1 · O3−', para: 'os quatro negativos' },
+      { fio: 'X9', o: 'MV-1 · O3+', para: '⚠️ os positivos das CINCO internas (4 de circulação + a do PTC)' },
+      { fio: 'X10', o: 'MV-1 · O3−', para: 'os cinco negativos' },
     ],
     interno: [
       'As 2 frias e as 2 dos dutos ficam TODAS em paralelo nestes dois fios — quatro '
@@ -144,8 +144,8 @@ export const BLOCOS_LIGACAO = [
     externo: [
       { fio: 'X3', o: 'BTS #2 · M+', para: 'PTC · positivo' },
       { fio: 'X4', o: 'BTS #2 · M−', para: 'PTC · negativo' },
-      { fio: 'X7', o: 'MV-1 · O2+', para: 'ventoinha do PTC · + (12 V)' },
-      { fio: 'X8', o: 'MV-1 · O2−', para: 'ventoinha do PTC · −' },
+      { fio: 'X9', o: 'MV-1 · O3+', para: '⭐ em paralelo com as 4 de circulação (12 V)' },
+      { fio: 'X10', o: 'MV-1 · O3−', para: 'idem, no mesmo par' },
     ],
     interno: [
       '⭐ A VENTOINHA NÃO SE LIGA NO PTC. O aquecedor é 24 V comandado pelo BTS #2; a '

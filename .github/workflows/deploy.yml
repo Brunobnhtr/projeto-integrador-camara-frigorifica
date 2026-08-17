@@ -1,0 +1,68 @@
+# Publica o aplicativo do painel no GitHub Pages.
+#
+# ⭐ O DEPLOY SÓ ACONTECE SE OS VALIDADORES PASSAREM. Isso é de propósito:
+#   o site é a documentação viva do projeto, e publicar um desenho com
+#   fiação inconsistente seria pior que não publicar. Se `npm run valida`
+#   reprovar — fio sem as duas pontas, rota impossível, ou o simulador
+#   discordando da tabela de estados do Doc 31 — o job para aqui e o
+#   site anterior continua no ar.
+
+name: Publicar o painel interativo
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'painel_interativo/**'
+      - '.github/workflows/deploy.yml'
+  workflow_dispatch:        # permite publicar à mão pelo botão do GitHub
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Uma publicação por vez; se chegar outra no meio, ela espera.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  construir:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: painel_interativo
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: painel_interativo/package-lock.json
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: ✅ Validar o projeto antes de publicar
+        run: npm run valida
+
+      - name: Construir
+        run: npm run build
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: painel_interativo/dist
+
+  publicar:
+    needs: construir
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4

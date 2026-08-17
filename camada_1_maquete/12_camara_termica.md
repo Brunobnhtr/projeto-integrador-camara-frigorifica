@@ -55,7 +55,7 @@ Dentro da cabine, isso gera dois problemas:
 
 | Problema | Consequência | Solução no projeto |
 |---|---|---|
-| Água escorrendo lá dentro | Pinga na eletrônica em ~1 h de operação | **Bandeja + dreno** para fora |
+| Água escorrendo lá dentro | Pinga na eletrônica em ~1 h de operação | **Bandeja removível + sílica gel** (§12.6) |
 | Gelo na placa fria | Vira uma "manta" isolante e a câmara **para de esfriar** | **Ciclo de degelo** automático no firmware |
 | Embaçamento **por fora** da porta | Você não vê nada durante a apresentação | **Porta dupla** — o cálculo prova que a simples embaça |
 
@@ -72,7 +72,9 @@ Dentro da cabine, isso gera dois problemas:
 | **Ponto de orvalho** | Temperatura em que o ar "solta" a água que carrega. Abaixo dela, condensa |
 | **Barreira de vapor** | Camada que impede a umidade de entrar no isolante e estragá-lo |
 | **Plenum** | O espaço vazio por onde o ar circula, embaixo do piso interno |
-| **XPS** | Isopor de célula fechada. Não absorve água, corta limpo |
+| ~~XPS~~ | Isopor de célula fechada. **Saiu do projeto** — o vão de 30 mm dele ficou com ar (§12.2) |
+| **Barreira de radiação** | Superfície de baixa emissividade (a fita de alumínio, ε ≈ 0,05). ⚠️ **Só funciona de frente para um vão de ar** |
+| **Emissividade** | O quanto uma superfície irradia calor. Acrílico ≈ 0,90 · alumínio polido ≈ 0,05 |
 | **Qc** | Quanto calor a Peltier consegue bombear para fora |
 | **Degelo** | Aquecer de leve, de propósito, para derreter o gelo acumulado |
 
@@ -83,20 +85,30 @@ Dentro da cabine, isso gera dois problemas:
 | Medida | Valor |
 |---|---|
 | **Volume interno útil** | 200 × 100 × 250 mm = **5,0 litros** |
+| **Envelope externo** | 🔧 **356** × 176 × 326 mm (a largura cresceu 20 mm com o duto de 40) |
 | Parede estrutural | Acrílico transparente **5 mm** |
-| Dutos externos de circulação | Acrílico **3 mm**, seção 30 × 30 mm |
-| **Isolamento** | **XPS 30 mm** (era 20 mm — ver §12.3) |
-| Cobertura externa | Acrílico **branco 3 mm** (visual de painel PIR de câmara fria) |
+| Dutos externos de circulação | Acrílico **3 mm**, seção 🔧 **40 × 40 mm** (era 30 × 30) |
+| **Isolamento** | 🔧 **Fita de alumínio colada direto no acrílico** (era XPS 30 mm — ver §12.2) |
+| ~~Cobertura externa~~ | 🔧 **REMOVIDA.** A fita de alumínio passou a ser a superfície externa |
 | Altura do plenum inferior | 30 mm |
-| **Dimensão externa final** | **336 × 176 × 326 mm** |
+| **Dimensão externa final** | 🔧 **290 × 110 × 260 mm** (era 336 × 176 × 326) |
 | Altura total com os dissipadores das Peltier | ≈ **406 mm** (⚠️ conferir com os 2 conjuntos lado a lado) |
 
 ### Como se chega às dimensões externas
 
 ```
-LARGURA:     200 (útil) + 2×5 (acrílico) + 2×30 (dutos) + 2×30 (XPS) + 2×3 (cobertura) = 336 mm
-PROFUNDIDADE: 100 (útil) + 2×5 (acrílico)              + 2×30 (XPS) + 2×3 (cobertura) = 176 mm
-ALTURA:       250 (útil) + 2×5 (acrílico)              + 2×30 (XPS) + 2×3 (cobertura) = 326 mm
+LARGURA:     200 (útil) + 2×5 (acrílico) + 2×40 (dutos) = 290 mm  🔧
+PROFUNDIDADE: 100 (útil) + 2×5 (acrílico)              = 110 mm  🔧
+ALTURA:       250 (útil) + 2×5 (acrílico)              = 260 mm  🔧
+
+🔧 A CÂMARA ENCOLHEU MUITO. Saíram, em duas etapas, o XPS de 30 mm, o
+   vão de ar que o substituiu e a cobertura branca de 3 mm — ou seja,
+   66 mm de cada dimensão. A caixa foi de 356 × 176 × 326 para
+   290 × 110 × 260 mm.
+
+⚠️ ISSO AFETA O LAYOUT DA BASE DA MAQUETE. O Doc 10 desenha a área da
+   câmara como 336 × 176 mm, e a demarcação amarela de piso segue esse
+   contorno. Os dois precisam ser refeitos para 290 × 110 mm.
 ```
 
 ### Anatomia interna
@@ -105,7 +117,7 @@ ALTURA:       250 (útil) + 2×5 (acrílico)              + 2×30 (XPS) + 2×3 (
        ┌─────────────────────────────┐  ← tampa topo (2× Peltier + dissipadores)
        │  ╔═══════════════════════╗  │
   ║    │  ║                       ║  │    ║   ← dutos laterais de retorno
-  ║dut │  ║    ESPAÇO ÚTIL        ║  │ dut║      (30 × 30 mm, altura 210 mm)
+  ║dut │  ║    ESPAÇO ÚTIL        ║  │ dut║      (40 × 40 mm, altura 210 mm)
   ║o   │  ║      220 mm           ║  │ o  ║
   ║    │  ║                       ║  │    ║
        │  ╠═══════════════════════╣  │  ← base interna 190×90 (sobre 4 cubinhos)
@@ -144,24 +156,98 @@ ALTURA:       250 (útil) + 2×5 (acrílico)              + 2×30 (XPS) + 2×3 (
 |---|---:|---:|---:|
 | Filme de ar interno (com ventilação forçada) | — | — | 0,08 |
 | Acrílico | 5 mm | 0,19 | 0,026 |
-| **XPS** | **30 mm** | **0,033** | **0,909** |
-| Acrílico branco (cobertura) | 3 mm | 0,19 | 0,016 |
-| Filme de ar externo | — | — | 0,13 |
-| **R total** | | | **1,161** |
-| **U = 1/R** | | | **0,86 W/m²·K** |
+| ~~XPS 30 mm~~ | ~~30 mm~~ | ~~0,033~~ | ~~0,909~~ |
+| ~~Vão de ar 30 mm~~ | — | — | 🔧 **removido junto com a cobertura** |
+| ~~Acrílico branco (cobertura)~~ | — | — | 🔧 **removida** |
+| 🔧 **Filme de ar externo, superfície ALUMINIZADA** | — | ε ≈ 0,05 | **0,31** (era 0,13 com acrílico nu) |
+| **R total** | | | 🔧 **0,416** |
+| **U = 1/R** | | | 🔧 **2,40 W/m²·K** |
 
 ```
-Q_paredes = U × A × ΔT = 0,86 × 0,181 × 20 = 3,1 W
+Q_paredes = U × A × ΔT = 2,40 × 0,181 × 20 = 8,7 W   (3,1 W com XPS · 4,8 W com vão de ar)
 ```
+
+### 🔧 Revisão — a fita de alumínio no lugar do XPS, e o que ela realmente faz
+
+**Primeiro a parte desconfortável: fita de alumínio não é isolante.** Ela tem 0,05 mm e o alumínio conduz a 205 W/m·K — a resistência térmica dela é, para efeito prático, **zero**. O que ela é de verdade é uma **barreira de radiação**: a emissividade cai de ~0,90 (acrílico) para ~0,05.
+
+E barreira de radiação **só funciona de frente para um vão de ar**. Colada camada sobre camada direto no acrílico, as camadas se tocam, o calor atravessa por condução pelo próprio alumínio, e o ganho é quase nada.
+
+**Mas o simulador respondeu quanto custa, e a resposta é boa:**
+
+| Isolamento | tempo até 10 °C | **duty médio em regime** | fuga a 5 °C |
+|---|---:|---:|---:|
+| **XPS 30 mm** (projeto original) | 12,5 min | **41 %** | 5,5 W |
+| ⭐ **Fita alu + vão de ar de 30 mm** | 12,8 min | **44 %** | 7,2 W |
+| **Fita alu colada, sem vão** | 13,4 min | **51 %** | 11,0 W |
+| Acrílico nu, sem nada | 14,9 min | 66 % | 19,4 W |
+
+> 🎯 **Três leituras que valem o relatório:**
+>
+> **1. Todos funcionam.** Até o acrílico nu chega aos 5 °C, a 66 % de duty. O projeto tem folga, e agora isso é um número e não uma esperança.
+>
+> **2. O isolamento quase não muda o tempo de descida** (12,5 → 14,9 min). A descida é limitada pela massa térmica e pela potência da Peltier, não pela fuga. **O isolamento decide o esforço para MANTER, não a velocidade para CHEGAR.**
+>
+> **3. O vão de ar vale 7 pontos de duty, de graça.** É a diferença entre usar a fita como barreira de radiação (com vão) e como enfeite (colada).
+
+#### 🔧 E depois a cobertura externa também saiu
+
+A recomendação anterior era **tirar o XPS mas deixar o vão de ar**, com a cobertura branca fazendo a segunda parede. **A cobertura foi removida do projeto**, e com ela o vão. Sobrou a fita colada direto no acrílico — a terceira linha da tabela.
+
+**Isso não zera o ganho da fita**, e vale entender por quê. Mesmo de frente para o ar da sala, uma superfície com ε ≈ 0,05 troca muito menos calor por **radiação** que uma de ε ≈ 0,90:
+
+```
+   Superfície comum (acrílico):   h_conv 3,0 + h_rad 4,6 = 7,6 W/m²K → R = 0,13
+   Superfície aluminizada:        h_conv 3,0 + h_rad 0,3 = 3,3 W/m²K → R = 0,31
+```
+
+**A resistência de superfície mais que dobra.** É por isso que a fita sozinha ainda entrega 51 % de duty, contra 66 % do acrílico nu.
+
+| | duty de regime | fuga a 5 °C |
+|---|---:|---:|
+| XPS 30 mm | 41 % | 5,5 W |
+| Fita + vão de ar | 44 % | 7,2 W |
+| ⭐ **Fita colada — o projeto atual** | **51 %** | **11,0 W** |
+| Acrílico nu, sem fita | 66 % | 19,4 W |
+
+> ⚠️ **Dois custos de deixar a fita exposta**, que não são térmicos e valem a decisão consciente:
+>
+> **1. Ela é frágil.** São 0,05 mm de alumínio. Ponta solta engancha e rasga, e a borda corta o dedo. Passe a unha dobrando as rebarbas antes de a câmara ir para a mesa.
+>
+> **2. Some o visual de painel de câmara fria.** Era a função estética da cobertura branca. Numa apresentação avaliada, isso conta — e a cobertura custava 5 chapas de 3 mm e 8 cubinhos.
+>
+> 💡 **Se um dia ela voltar**, o ganho de 51 % → 44 % vem junto de graça: basta manter os espaçadores de 30 mm e aluminizar a face interna dela.
+
+#### ✅ E o que a fita faz de melhor não é térmico
+
+Você citou a razão certa: **vedar as frestas do acrílico colado**. Isso vale mais do que o ganho térmico, e ainda mais agora que o dreno saiu:
+
+| Função | Por quê importa |
+|---|---|
+| **Barreira de vapor** | Acrílico colado tem microfrestas na junta. Fita de alumínio é praticamente impermeável a vapor |
+| **Menos vapor entrando** | ⭐ É exatamente o que a estratégia de **sílica sem dreno** precisa: quanto menos vapor entra, mais tempo a sílica dura e menos gelo se forma |
+| **Barreira de radiação** | Com vão de ar, os 7 pontos de duty acima |
+
+> 🎯 **A fita e a sílica se reforçam.** Menos vapor entrando → menos condensação → a sílica dá conta → o dreno não faz falta. **É uma decisão coerente, não um atalho** — e é assim que ela deve ser defendida.
 
 ### A porta: o elo fraco
 
-| Configuração | R total | U (W/m²·K) | **Q (W)** | % da perda total |
-|---|---:|---:|---:|---:|
-| **Porta simples, acrílico 10 mm** | 0,263 | 3,80 | **3,8 W** | **55 %** |
-| **Porta dupla, 2×5 mm + 10 mm de ar** | 0,413 | 2,42 | **2,4 W** | **44 %** |
+| Configuração | R total | U (W/m²·K) | **Q (W)** | Carga total | % da perda |
+|---|---:|---:|---:|---:|---:|
+| **Porta simples, acrílico 10 mm** | 0,263 | 3,80 | **3,8 W** | 12,5 W | **30 %** |
+| **Porta dupla, 2×5 mm + 10 mm de ar** | 0,413 | 2,42 | **2,4 W** | **11,1 W** | 🔧 **22 %** |
 
-> ⚠️ **Descoberta importante do dimensionamento:** a porta ocupa apenas **22 % da área** da câmara, mas responde por **mais da metade de todo o calor que entra**. Investir na porta rende muito mais que aumentar o isolamento das paredes.
+> ### 🔧 Correção — a porta deixou de ser "mais da metade"
+>
+> A versão anterior dizia: *"a porta ocupa 22 % da área mas responde por mais da metade de todo o calor que entra."* **Era verdade com o XPS**, quando as paredes deixavam entrar só 3,1 W. Sem o XPS, sem o vão e sem a cobertura, as paredes passaram a **8,7 W** e a porta caiu para **22 %** — exatamente a fração da área que ela ocupa.
+>
+> ⚠️ **É o tipo de número que envelhece calado.** A frase continuava impressionante e continuava errada — quem a repetisse na banca seria corrigido com uma conta de duas linhas.
+>
+> ✅ **A conclusão prática, porém, não muda:** a porta dupla economiza **1,4 W** por duas chapas de acrílico e quatro tiras. Ainda é o melhor retorno por real gasto da câmara — só não é mais "metade da perda".
+>
+> 📌 **Carga total pelas superfícies: 11,1 W.** Confere com o simulador, que usa `UA = 0,555 W/K × 20 K = 11,1 W` — e ele chegou lá por outro caminho, somando o consumo passo a passo.
+>
+> 🎯 **E a conclusão inverteu:** a porta deixou de ser desproporcional. Ela ocupa 22 % da área e responde por 22 % da perda. **Agora quem manda são as paredes** — se um dia faltar capacidade, é lá que se mexe, não na porta.
 
 ### ⚠️ Verificação de condensação na face externa da porta
 
@@ -226,20 +312,32 @@ PORTA DUPLA (5 + ar 10 + 5 mm):
 
 ### Balanço térmico total
 
-| Fonte de calor | Carga |
-|---|---:|
-| Transmissão pelas paredes isoladas | 3,1 W |
-| Transmissão pela porta dupla | 2,4 W |
-| **Dissipação das 2 fans internas** (todo o trabalho elétrico vira calor **dentro**) | 3,0 W |
-| Sensores e cabos | 0,2 W |
-| Infiltração média (aberturas de porta) | ~0,8 W |
-| **CARGA TÉRMICA TOTAL (câmara vazia)** | **≈ 9,5 W** |
-| **2 posições de ensaio energizadas** (0,37 + 0,21 W) | **+0,6 W** |
-| **CARGA TÉRMICA TOTAL COM DISPOSITIVOS** | **≈ 10,1 W** |
+| Fonte de calor | Antes (XPS) | 🔧 **Agora (vão de ar)** |
+|---|---:|---:|
+| Transmissão pelas paredes | 3,1 W | 🔧 **8,7 W** |
+| Transmissão pela porta dupla | 2,4 W | 2,4 W |
+| 🔧 **Dissipação das ventoinhas internas** — todo o trabalho elétrico vira calor **dentro** | 3,0 W (2 fans) | **6,0 W** (⭐ são **5**, e ligam juntas) |
+| Sensores e cabos | 0,2 W | 0,2 W |
+| Infiltração média (aberturas de porta) | ~0,8 W | ~0,8 W |
+| **CARGA TÉRMICA TOTAL (câmara vazia)** | ≈ 9,5 W | **≈ 18,1 W** |
+| **2 posições de ensaio energizadas** | +0,6 W | +0,6 W |
+| **CARGA TÉRMICA TOTAL COM DISPOSITIVOS** | ≈ 10,1 W | 🔧 **≈ 18,7 W** |
+
+> ### 🔧 Duas linhas mudaram, e a segunda é a que surpreende
+>
+> A das paredes já era esperada — foi a troca do XPS pelo vão de ar (§12.2).
+>
+> **A das ventoinhas não era.** A tabela somava *"2 fans internas"* porque elas eram comutadas por modo. Hoje são **cinco** (2 frias + 2 dos dutos + a do PTC) e ligam **todas juntas**, num canal só do MV-1. **Todo watt elétrico que uma ventoinha interna consome vira calor dentro da câmara** — ela não tem para onde mandar. São 6 W, e agora são a **maior fonte isolada de carga térmica**, maior que as paredes.
+>
+> 📌 **É o mesmo erro que o simulador achou no Doc 02**, aparecendo pela segunda vez em outro documento: ninguém releu as contas depois de a simplificação juntar as cinco ventoinhas num canal só.
+>
+> ✅ **E continua cabendo:** 18,7 W contra os ~60 W que as duas Peltier bombeiam a ΔT = 20 K. **Margem de 3,2×** — era 4× com o vão de ar.
+>
+> 💡 **Se um dia faltar capacidade, é aqui que se corta:** separar as ventoinhas dos dutos num segundo canal do MV-1 (o canal 2 está livre) devolveria ~2,4 W de carga e ~0,25 A no ramal de 12 V.
 
 > 📌 **Os simuladores praticamente não aquecem, e isso é uma decisão consciente.** Eles existem para consumir uma corrente conhecida — o que se está provando é a **detecção de falha**, não o desempenho térmico. Ver [Doc 13 §13.3b](13_posicoes_de_ensaio.md).
 >
-> ⚠️ **Diga isto na apresentação:** numa cabine real as placas sob ensaio dissipariam dezenas de watts, e o ciclo de resfriamento seria mais lento do que o demonstrado aqui. A margem das Peltier (≈ 60 W a ΔT = 20 K contra 10,1 W) mostra que o dimensionamento **suportaria** essa carga extra — a maquete só não a reproduz.
+> ⚠️ **Diga isto na apresentação:** numa cabine real as placas sob ensaio dissipariam dezenas de watts, e o ciclo de resfriamento seria mais lento do que o demonstrado aqui. A margem das Peltier (≈ 60 W a ΔT = 20 K contra 18,7 W) mostra que o dimensionamento **suportaria** essa carga extra — a maquete só não a reproduz.
 
 ### As Peltier dão conta?
 
@@ -404,7 +502,7 @@ O ar externo (25 °C, 65 % UR) tem **pressão de vapor maior** que o ar interno 
 
 ---
 
-## 12.6 Condensado e dreno
+## 12.6 Condensado: bandeja, sílica e respiro
 
 ### Quanta água realmente se forma?
 
@@ -429,35 +527,39 @@ Toda essa umidade condensa **na superfície mais fria**, que são as placas fria
 | Bloqueia a passagem de ar entre as aletas | A circulação forçada perde eficiência |
 | Ao degelar, escorre tudo de uma vez | **Aí sim** você tem água sobre a eletrônica |
 
-> 🔧 **Solução no firmware — ciclo de degelo:** a cada 2 h de operação contínua em frio (ou quando a corrente do IS indicar queda de desempenho), desligar a Peltier e ligar o PTC em duty baixo (~20 %) por 3 minutos, mantendo as fans ligadas. A água escorre para a bandeja e sai pelo dreno. Implementação em [Doc 40](../camada_4_programacao/40_firmware_arduino.md).
+> 🔧 **Solução no firmware — ciclo de degelo:** a cada 2 h de operação contínua em frio (ou quando a corrente do IS indicar queda de desempenho), desligar a Peltier e ligar o PTC em duty baixo (~20 %) por 3 minutos, mantendo as fans ligadas. **A água escorre para a bandeja**, que você esvazia depois do ensaio. Implementação em [Doc 40](../camada_4_programacao/40_firmware_arduino.md).
 
-### Projeto do dreno
+### 🔧 Revisão — sai o dreno, entra bandeja removível + sílica + respiro
 
-```
-        interior da câmara
-              │
-     ┌────────▼─────────┐
-     │ bandeja alumínio │  ← inclinada 3° para um canto
-     └────────┬─────────┘
-              │ furo Ø 6 mm no ponto mais baixo
-     ═════════╪═══════════  base + XPS (selar com PU + silicone)
-              │
-              │ tubo de silicone Ø 6 mm
-              │
-              ╰──╮      ← ⚠️ SIFÃO (curva em U com ~15 mm de coluna d'água)
-                 ╰──╮
-                    ╰────────► frasco coletor, embutido na maquete
-```
+**A conta acima é que decide.** ~1 grama de água numa apresentação inteira não justifica furar a base, passar tubo de silicone, montar sifão, selar com PU e embutir frasco coletor. Para algumas gotas, isso é canhão para matar mosca.
 
-### ⚠️ O sifão não é opcional — ele tem 3 funções
-
-| Função | Explicação |
+| Sai | Entra |
 |---|---|
-| **1. Bloqueia a entrada de ar** | Um tubo de dreno aberto é um furo direto para o ambiente. Sem sifão, você tem **infiltração contínua de ar quente e úmido** — o equivalente a deixar a porta entreaberta. A carga térmica dispara e o gelo se forma sem parar |
-| **2. Bloqueia a entrada de vapor** | Mesma coisa, para a difusão de vapor |
-| **3. Equaliza a pressão** | Ao resfriar de 25 °C para 5 °C, o ar interno contrai ~7 %. Numa câmara perfeitamente selada isso criaria uma depressão de vários kPa (dezenas de kgf puxando a porta para dentro). O sifão cede sob pequena diferença de pressão e equaliza, sem deixar o ar entrar livremente |
+| Furo Ø 6 mm na base + selagem PU | — |
+| Tubo de silicone, sifão e frasco coletor | — |
+| Bandeja fixa e inclinada 3° | **Bandeja de alumínio REMOVÍVEL**, sem furo — você a puxa e esvazia |
+| — | **3 sachês de sílica gel indicadora** |
+| — | ⚠️ **Tubo de respiro** — ver abaixo |
 
-> Faça o sifão simplesmente **amarrando o tubo de silicone em um laço** fixo com abraçadeira. Encha-o com água uma vez antes do primeiro ensaio.
+> ⚠️ **A sílica sozinha NÃO resolve, e vale saber por quê.** Ela baixa a umidade **do ar**; ela não recolhe a água que **já condensou na placa fria** — e é lá que a água vai, porque a condensação sempre acontece na superfície mais fria. Quando o ciclo de degelo derreter o gelo, aquilo escorre. **A sílica reduz quanto se forma; a bandeja recolhe o que se formou.** As duas coisas, não uma.
+
+### ⚠️ O respiro — a função do sifão que você NÃO pode jogar fora
+
+O sifão fazia três coisas. Duas somem sem problema. A terceira é física e não negocia:
+
+```
+   Resfriar de 25 °C para 5 °C contrai o ar em 6,7 %
+   Numa câmara BEM vedada:   ΔP ≈ 6,7 kPa
+   Na porta de 200 × 250 mm (0,05 m²):   335 N   ≈   34 kgf
+```
+
+**Trinta e quatro quilos puxando a porta para dentro.** Isso empena acrílico, arrebenta vedação e trinca junta colada.
+
+Na prática o acrílico não é hermético e equaliza pelas frestas — mas aí você tem **entrada descontrolada de ar úmido**, que é justamente o que gera o gelo. **Vedar bem sem dar caminho de equalização é trocar um problema pelo outro.**
+
+> ✅ **A solução, e ela custa dois reais:** um **tubo de silicone Ø 4 mm × 300 mm**, enrolado em espiral dentro da câmara, com uma ponta saindo pela parede traseira. Equaliza a pressão, e o caminho longo e estreito corta quase toda a difusão de vapor.
+>
+> **Sem água para encher, sem o que entornar, sem frasco.** Faz o trabalho do sifão sem ser um sifão.
 
 ### Sílica gel
 
@@ -564,9 +666,9 @@ Não é preferência — é a única parede que sobra:
 | Parede | Por que não serve |
 |---|---|
 | **Frente** | é a porta, e ela abre |
-| **Laterais** | são os dutos de circulação de 30 mm |
+| **Laterais** | são os dutos de circulação de 40 mm |
 | **Topo** | tem as Peltier e os dissipadores |
-| **Base** | tem o dreno de condensado e a bandeja |
+| **Base** | é onde a bandeja de condensado desliza |
 | ✅ **Fundo** | **livre — é por aqui** |
 
 📐 **Veja girando:** na aba "❄️ Dentro da câmara", botão **"🧊 3D girável"**. Arraste para girar, e use o preset **"🔌 De trás"** para ver os dois prensa-cabos em cantos opostos. Clicando num deles, só os cabos que passam por ele ficam acesos.
@@ -600,12 +702,25 @@ e porque, com tudo desligado, a convecção natural ainda ajuda em vez de atrapa
 
 ```
 Vazão de 2 fans de 40 mm:  ≈ 10 CFM = 0,0047 m³/s
-Seção de 2 dutos:          2 × (30 × 30) = 1800 mm² = 0,0018 m²
-Velocidade nos dutos:      0,0047 / 0,0018 = 2,6 m/s      ✅ adequado
+Seção de 2 dutos:          2 × (40 × 40) = 3200 mm² = 0,0032 m²
+Velocidade nos dutos:      0,0047 / 0,0032 = 1,5 m/s
 Trocas de ar por segundo:  0,0047 / 0,005 = ~0,94          ✅ ~1 troca/s, excelente
 ```
 
-> ✅ Velocidade entre 2 e 4 m/s é a faixa ideal: abaixo disso a mistura é ruim (estratificação térmica), acima disso o ruído e a perda de carga aumentam sem ganho.
+> ### 🔧 Correção — o duto passou de 30 × 30 para 40 × 40 mm
+>
+> **A causa é a mudança das ventoinhas.** Enquanto elas ficavam *dentro* do duto, 30 × 30 já era apertado para um corpo de 40 mm. Agora que elas ficam **na boca**, soprando para dentro, um duto de 30 × 30 seria um **estrangulamento na saída da ventoinha**: 1600 mm² de hélice descarregando em 900 mm² de duto. A ventoinha trabalharia contra a própria restrição, com ruído e vazão real bem abaixo da nominal.
+>
+> **Casando a seção do duto com a da ventoinha (40 × 40), a descarga é direta.**
+>
+> | | 30 × 30 | **40 × 40** |
+> |---|---:|---:|
+> | Seção dos 2 dutos | 1800 mm² | **3200 mm²** |
+> | Velocidade | 2,6 m/s | **1,5 m/s** |
+> | Restrição na saída da fan | 🔥 44 % de estrangulamento | ✅ nenhuma |
+> | Largura externa da câmara | 336 mm | 🔧 **356 mm** |
+>
+> ⚠️ **1,5 m/s fica abaixo da faixa de 2–4 m/s que eu chamei de "ideal" acima**, e é justo apontar. Mas aquela faixa é regra de bolso para dutos de ar-condicionado, onde o que se otimiza é atrito por metro de duto. **Aqui o duto tem 21 cm.** O atrito é irrelevante e o que importa é a vazão total — que é a mesma, e dá ~1 troca de ar por segundo. **Menos velocidade com a mesma vazão é melhor:** menos ruído, menos perda de carga, e a ventoinha entregando o que promete em vez de lutar contra um estrangulamento.
 
 ### ⚠️ Os dutos ficam DENTRO do envelope isolante
 
@@ -633,9 +748,9 @@ Erro comum: isolar só a caixa central e deixar os dutos expostos. Como os dutos
 | Peça | Dimensão | Qtd | Bordas 45° | Recorte |
 |---|---|---:|---|---|
 | Parede lateral ESQ / DIR | 110 × 250 mm | 2 | Traseira + Topo + Base | **90 × 210 mm** (abertura do duto) |
-| Parede traseira | 210 × 250 mm | 1 | Esq + Dir + Topo + Base | — |
+| Parede traseira | 210 × 250 mm | 1 | Esq + Dir + Topo + Base | 2 furos Ø 16 (prensa-cabos) + ⭐ **Ø 6 do respiro** |
 | Tampa topo | 210 × 110 mm | 1 | Todas as 4 | Recorte das **2 Peltier** + prensa-cabo |
-| Base externa | 210 × 110 mm | 1 | Todas as 4 | Furo Ø 6 mm do dreno |
+| Base externa | 210 × 110 mm | 1 | Todas as 4 | 🔧 **nenhum furo** |
 | Base interna (apoio do PTC) | 190 × 90 mm | 1 | — (todas 90°) | — |
 | **Porta — vidro externo** | 250 × 290 mm | 1 | todas 90° | — |
 | **Porta — vidro interno** | 250 × 290 mm | 1 | todas 90° | — |
@@ -655,26 +770,27 @@ Erro comum: isolar só a caixa central e deixar os dutos expostos. Como os dutos
 |---|---|---:|---|---|
 | Face frontal do duto | 30 × 210 mm | 2 | Esq + Dir + Topo + Base | — |
 | Faces laterais do duto | 30 × 210 mm | 4 | Frontal + Topo + Base | Traseira (cola na parede) |
-| Tampas topo do duto | 30 × 30 mm | 2 | Frontal + Esq + Dir | Traseira |
-| Tampas base do duto | 30 × 30 mm | 2 | Frontal + Esq + Dir | Traseira |
+| Tampas topo do duto | 🔧 **40 × 40 mm** | 2 | Frontal + Esq + Dir | Traseira |
+| ⚠️ ~~Tampas base do duto~~ | — | — | — | **NÃO EXISTEM: é a boca por onde a ventoinha sopra** |
 | **Subtotal 3 mm transparente** | | **10 peças** | | |
 
-### Acrílico BRANCO 3 mm — cobertura externa e batente
+### Acrílico BRANCO 3 mm — só o batente
 
 | Peça | Dimensão | Qtd |
 |---|---|---:|
-| Cobertura traseira | 330 × 320 mm | 1 |
-| Cobertura lateral ESQ / DIR | 170 × 320 mm | 2 |
-| Cobertura topo | 336 × 176 mm | 1 |
-| Cobertura base | 336 × 176 mm | 1 |
-| **Batente frontal** (moldura) | 336 × 326 mm, **vazado 200 × 240 mm** | 1 |
-| **Subtotal branco 3 mm** | | **6 peças** |
+| ~~Cobertura traseira, laterais, topo e base~~ | — | 🔧 **REMOVIDAS** |
+| **Batente frontal** (moldura) | 🔧 **290 × 260 mm**, vazado 200 × 240 mm | 1 |
+| **Subtotal branco 3 mm** | | 🔧 **1 peça** (eram 6) |
+
+> 🔧 **As 5 faces de cobertura saíram do projeto**, e com elas os 8 espaçadores de 30 mm. A fita de alumínio passou a ser a superfície externa da câmara — ver §12.2 para o que isso custa em duty (44 % → 51 %) e para os dois custos não-térmicos.
+>
+> ⭐ **O batente frontal fica.** Ele não era cobertura: é a moldura onde o perfil EPDM se apoia e onde a porta comprime. Sem ele a porta não tem contra o que vedar. A medida acompanhou o encolhimento da caixa.
 
 ### Sobras
 
 | Peça | Dimensão | Qtd | Origem |
 |---|---|---:|---|
-| Cubinhos de apoio da base interna | 20 × 20 × 30 mm | 4 | Sobra de 5 mm colada |
+| Cubinhos de apoio da base interna | 20 × 20 × 30 mm | 4 | Sobra de 5 mm colada — ⭐ **estes ficam**: são o vão onde a bandeja desliza, não os espaçadores da cobertura |
 
 ### 📋 Resumo para a gráfica
 
@@ -700,11 +816,14 @@ Erro comum: isolar só a caixa central e deixar os dutos expostos. Como os dutos
  6. Montar os 2 dutos (5 peças cada) e colar por fora das paredes laterais,
     alinhados com a abertura de 90 × 210 mm
  7. Silicone neutro em TODAS as juntas internas → curar 24 h
- 8. Instalar a bandeja de alumínio, o furo e o tubo de dreno com sifão
- 9. Colar o XPS 30 mm nas 5 faces (contornando os dutos)
-10. ⚠️ FITA DE ALUMÍNIO em todas as juntas e no perímetro (barreira de vapor)
+ 8. Encaixar a bandeja de alumínio REMOVÍVEL no vão (sem furo, sem tubo, sem sifão)
+ 9. ⭐ FITA DE ALUMÍNIO em TODA a superfície externa da caixa e em TODA a face
+    interna da cobertura branca — sobrepor 10 mm nas emendas
+10. ⭐ Montar o RESPIRO: tubo Ø 4 mm × 300 mm enrolado dentro, saindo pelo furo
+    de 6 mm da traseira
 11. Selar todas as passagens de cabo com espuma PU + silicone
-12. Colar a cobertura de acrílico BRANCO 3 mm
+12. Colar os 8 espaçadores de 30 mm e, sobre eles, a cobertura BRANCA 3 mm
+    ⚠️ o vão de 30 mm fica VAZIO — é ele que substituiu o XPS
 13. Colar o batente frontal (moldura vazada 200 × 240)
 14. Montar a porta dupla (§12.5), com a sílica dentro → curar 24 h
 15. Instalar dobradiça, EPDM tubular e os 2 fechos de pressão
