@@ -208,7 +208,12 @@ const citados = txt => {
   for (const id of IDS) {
     /* o hífen NÃO pode entrar no lookahead: 'S2-11' tem que casar com
        'S2', que é justamente a forma como o inventário cita um borne */
-    const re = new RegExp(id.replace(/[-]/g, '.') + '(?!\w)', 'i');
+    /* \w precisa de barra dupla DENTRO de string: com uma só, o JS
+       engole a barra e o regex vira (?!w), que casa com quase tudo */
+    /* ⚠️ dentro de string o \w precisa de barra DUPLA: com uma só o JS
+       engole a barra e o regex vira (?!w), que casa com quase tudo —
+       foi assim que "S3" apareceu casando dentro de "DS3231" */
+    const re = new RegExp(id.replace(/[-]/g, '.') + '(?!\\w)', 'i');
     if (re.test(txt)) achados.add(id);
   }
   return achados;
@@ -224,6 +229,11 @@ for (const c of COMPONENTES)
         (f.para.comp === c.id && f.para.via === p.nome));
       if (!meus.length) { mudos++; continue; }
       conferidos++;
+      /* ⭐ PONTE INTERNA NÃO ENTRA NA AUDITORIA. Num jumper dentro do
+         próprio componente o "outro lado" é ele mesmo, e o texto do
+         inventário fala — corretamente — de onde o sinal VEM lá atrás.
+         Cobrar o nome do componente aqui seria cobrar o óbvio errado. */
+      if (meus.every(f => f.de.comp === f.para.comp)) continue;
       const alvos = new Set(meus.map(f =>
         f.de.comp === c.id && f.de.via === p.nome ? f.para.comp : f.de.comp)
         .filter(Boolean));

@@ -11,6 +11,7 @@
  */
 import { FIOS_ETAPA2 } from './fiacao_etapa2.js';
 import { FIOS_ETAPA3 } from './fiacao_etapa3.js';
+import { FIOS_ETAPA4 } from './fiacao_etapa4.js';
 
 /* ⭐ AS CORES SÃO POR FUNÇÃO, NÃO POR FIO.
    Num painel de verdade não existem 24 cores de fio: a cor diz QUE
@@ -128,12 +129,15 @@ export const ETAPAS = [
   { n: 3, nome: 'Distribuição — dos barramentos aos consumidores', feito: true,
     resumo: '24 fios saindo dos quatro barramentos para quem consome, dentro '
           + 'da placa de montagem. A porta fica para a etapa 5.' },
-  { n: 4, nome: 'Sinais — Arduino, PI-1, PI-2 e sensores', feito: false },
+  { n: 4, nome: 'Sinais — Arduino, PI-1, PI-2 e sensores', feito: true,
+    resumo: '30 fios de sinal, todos em canaleta azul. É a etapa que a regra '
+          + 'de segregação existe para proteger.' },
   { n: 5, nome: 'Porta — tela, botões e sinaleiros', feito: false },
   { n: 6, nome: 'Saídas — o que vai para a câmara', feito: false },
 ];
 
 /* a lista única que o resto do app consome */
 /* nenhum fio escolhe a própria cor — ela vem da função */
-export const FIOS = [...FIOS_ETAPA1, ...FIOS_ETAPA2, ...FIOS_ETAPA3]
+export const FIOS = [...FIOS_ETAPA1, ...FIOS_ETAPA2, ...FIOS_ETAPA3,
+                     ...FIOS_ETAPA4]
   .map(f => ({ ...f, cor: CORES[f.func].hex, corNome: CORES[f.func].nome }));

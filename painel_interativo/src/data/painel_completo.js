@@ -163,10 +163,11 @@ export const CALHAS = [
     nome: 'calha de POTÊNCIA', daPlaca: 'CH-base', naPorta: 'CP-vpot',
     diz: 'Rente à CH-base, no canto de baixo. Leva a cadeia de comando de 24 V. '
        + 'Vai um pouco mais longe porque a vertical de potência é a de dentro.' },
-  { id: 'CL-sin', tipo: 'sinal', y: 380, h: 24, entraEm: 13,
+  { id: 'CL-sin', tipo: 'sinal', y: 305, h: 24, entraEm: 13,
     nome: 'calha de SINAL E MEDIÇÃO', daPlaca: 'CV-dir', naPorta: 'CP-vsin',
-    diz: 'Mais curta: morre na primeira vertical que encontra, a de sinal, que fica '
-       + 'na borda da dobradiça. Leva a tela, os botões de 5 V e a seletora.' },
+    diz: 'Alinhada com a CH-2x1, e mais curta: morre na primeira vertical que '
+       + 'encontra, a de sinal, na borda da dobradiça. Leva a tela, os botões de '
+       + '5 V e a seletora.' },
 ];
 
 export const TRILHO_X0 = 42;    // logo depois da CV-esq (14..40)
@@ -374,8 +375,9 @@ export const COMPONENTES = [
         { nome: 'S2', usa: true, para: 'Mega D33 — bit 2' },
         { nome: 'S3', usa: true, para: 'Mega D34 — bit 3' },
         { nome: 'SIG', usa: true, para: 'Mega A2 — a leitura dos 16 canais sai por aqui' },
-        { nome: 'SDA', usa: true, para: 'Mega D20 — só do INA219 de referência' },
-        { nome: 'SCL', usa: true, para: 'Mega D21' },
+        { nome: 'SDA', usa: true, para: 'I²C SDA — chega do RTC · SDA. É barramento: o '
+        + 'mesmo par serve o RTC, o INA219 daqui e o AM2315C da câmara' },
+        { nome: 'SCL', usa: true, para: 'I²C SCL — chega do RTC · SCL, mesmo barramento' },
       ]},
     ],
     avisos: [
@@ -433,7 +435,7 @@ export const COMPONENTES = [
       ]},
       { ref: 'J1', lado: 'direita', legenda: 'Barra de sinal — no módulo é 2 × 4', pinos: [
         via('R_PWM', 1, 'Mega D5'), via('L_PWM'),
-        via('R_EN', 1, 'Mega D4'), via('L_EN', 1, 'Mega D4 — o MESMO pino'),
+        via('R_EN', 1, 'Mega D4'), via('L_EN', 1, 'ponte curta do R_EN — o Mega D4 comanda os dois'),
         via('R_IS', 1, 'PI-1 J1-1'), via('L_IS'),
         via('VCC', 1, 'BD-5V saída 4'), via('GND', 1, 'BD-0V'),
       ]},
@@ -451,7 +453,7 @@ export const COMPONENTES = [
       ]},
       { ref: 'J1', lado: 'direita', legenda: 'Barra de sinal — no módulo é 2 × 4', pinos: [
         via('R_PWM', 1, 'Mega D6'), via('L_PWM'),
-        via('R_EN', 1, 'Mega D7'), via('L_EN', 1, 'Mega D7 — o MESMO pino'),
+        via('R_EN', 1, 'Mega D7'), via('L_EN', 1, 'ponte curta do R_EN — o Mega D7 comanda os dois'),
         via('R_IS', 1, 'PI-1 J1-2'), via('L_IS'),
         via('VCC', 1, 'BD-5V saída 5'), via('GND', 1, 'BD-0V'),
       ]},
