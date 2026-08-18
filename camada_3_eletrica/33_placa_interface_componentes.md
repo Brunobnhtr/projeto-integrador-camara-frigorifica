@@ -1066,7 +1066,7 @@ Os dois pull-downs **não vão na placa PI-1**, pelo motivo explicado na §33.2:
 
 | Componente | Quantidade na BOM | Destino |
 |---|---:|---|
-| **Diodo 1N4007** | 4 | 🗑️ **Sai do painel.** Ele existiria como diodo de roda-livre das bobinas dos relés — mas **KA1 e KA2 são relés de interface com o roda-livre já embutido no módulo**. Os 4 diodos vão para o saquinho de sobressalentes, não para o projeto |
+| ~~Diodo 1N4007~~ | ~~4~~ | ⚠️ **CORRIGIDO — os diodos FICAM no projeto.** Esta linha supunha que os relés KA1/KA2 já trouxessem o roda-livre embutido. Quem traz são os **módulos de 5 V do KA3/KA4**; o KA1 e o KA2 são relés de 8 pinos em base PTF08A, e a base não tem componente nenhum. Monte o **`D1`** na bobina do KA2 e o **`D2`** nas ventoinhas do radiador — ver [Doc 31 §31.9](31_comando_e_protecoes.md) e o cadastro `painel_interativo/src/data/discretos.js`. Sobram 2 diodos de reserva |
 | ~~Diodo Zener 5V6 / 13 V / 15 V~~ | ~~6~~ | 🗑️ Já eliminados na revisão do Plano B — proteção nativa do LM2596. Ver [Doc 02 §2.6](../camada_0_fundamentos/02_arquitetura_de_energia.md) |
 
 > 💡 **Repare no padrão:** os componentes que saíram são justamente os da categoria "proteção" — e saíram porque **os módulos realmente já protegem**. Os que ficaram são todos de **interface**. A sua intuição sobre proteção estava correta; ela só não se aplicava a estes nove componentes, porque eles nunca foram proteção.
@@ -1126,7 +1126,7 @@ A dúvida sobre a tensão dos LEDs está resolvida, e a divisão é por **onde**
 - [ ] Pull-up do 1-Wire medindo ~4,7 kΩ entre D2 e +5 V
 - [ ] **4× 220 Ω montados na base dos postes de iluminação da maquete**, com termorretrátil
 - [ ] **Nenhum componente solto ou soldado no meio de cabo em todo o projeto**
-- [ ] 4× 1N4007 guardados como sobressalentes, fora do painel
+- [ ] **`D1` montado nos bornes `A1`/`A2` do KA2** — ou o teste de diodo provando que o relé já tem o interno — e **`D2` montado junto às ventoinhas do radiador**, catodo no `+12 V`. Os outros 2 diodos ficam de reserva
 
 ---
 

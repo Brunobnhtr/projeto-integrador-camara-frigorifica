@@ -752,7 +752,7 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 > 📌 **Sobre importar:** a recomendação de comprar nacional existe por causa do **datasheet com a corrente em DC**, que anúncio genérico não fornece. Isso não impede importar — impede comprar **sem marca**. Um Omron, Finder ou Hongfa com número de modelo você consulta antes de clicar; um "24V 10A Relay Module" sem fabricante, não.
 
 > ⚠️ **O divisor de realimentação mudou de escala.** Ele antes lia os 12 V do T1 (10 kΩ + 4,7 kΩ → 3,84 V no ADC). Agora precisa ler o **barramento de 24 V**, e com os resistores antigos entregaria **7,67 V no pino D25 — o suficiente para danificar a entrada do Arduino**. Com **22 kΩ + 4,7 kΩ** a leitura fica em `24 × 4,7/26,7 = 4,22 V`, dentro da faixa segura e com margem para o barramento oscilar. 📌 **Sinalizar em [Doc 32](../camada_3_eletrica/32_sinais_e_sensores.md):** o esquema do divisor e a constante de conversão do firmware precisam ser atualizados junto.
-| Diodo 1N4007 | 4 | ⚠️ **Sobressalente, não vai no painel.** Os relés de interface KA1/KA2 já trazem o diodo de roda-livre embutido. Guarde no saquinho de reposição — ver [Doc 33 §33.5](../camada_3_eletrica/33_placa_interface_componentes.md) | |
+| Diodo 1N4007 | 4 | **2 usos + 2 reservas.** `D1` na bobina do KA2 (catodo no `A1`) e `D2` nas ventoinhas do radiador (catodo no `+12 V`). 🔎 **Antes de montar o `D1`:** multímetro em *teste de diodo* entre `A1` e `A2` do KA2 — se já conduzir num sentido só, o relé tem diodo interno e o `D1` é dispensável. **O `D2` é sempre obrigatório** — o motor é indutivo e nada mais o grampeia. Ver [Doc 31 §31.9](../camada_3_eletrica/31_comando_e_protecoes.md) | |
 
 ## L.3 — Atuadores térmicos e ventilação
 
@@ -898,8 +898,8 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 | **Porta-fusível DIN 2 vias COM INTERRUPTOR** | 1 | **F-P1 e F-P2** — proteção individual de cada posição, com fusível tubular de **100 mA**. ⭐ O interruptor é o que permite simular a falha ao vivo | |
 | Fusível mini automotivo 500 mA | 8 | 4 usos + 4 reservas | |
 | Placa ilhada pequena | 4 | ~30 × 40 mm — corpo de cada placa simuladora de dispositivo | |
-| Resistor 220 Ω / **5 W** | 4 | Carga térmica de cada simulador (~3 W). ⚠️ **5 W**, não 1/4 W | |
-| Resistor 1,2 kΩ 1/4 W | 4 | Limitador do LED indicador de cada posição | |
+| Resistor 1,2 kΩ · **1/2 W** | 2 | Limitador do LED da **posição 1** — 17,6 mA | |
+| Resistor 2,2 kΩ · **1/2 W** | 2 | Limitador do LED da **posição 2** — 9,8 mA. ⚠️ Valor diferente do da posição 1 **de propósito**: é o que prova que o sistema compara cada posição com o normal DELA, e não com um limiar único | |
 | LED 5 mm difuso | 4 | Indica "posição viva", visível pela porta da câmara | |
 | **Micro-chave ou jumper** | 4 | ⭐ **Simula a falha do dispositivo** — é o que permite demonstrar a detecção ao vivo na apresentação | |
 | Borne DIN 2,5 mm² | 8 | Entrada e saída de cada posição | |
@@ -921,7 +921,7 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 | ⭐ **Módulo relé 1 canal 5 V, optoacoplado** | 4 | **`KA3` e `KA4`** — 2 em uso + 2 reserva. ⚠️ **Exija três coisas no anúncio:** *optoacoplador*, **jumper de gatilho alto/baixo** e a variante de **5 V** (a foto costuma ser da de 24 V — confira no corpo do relé ao receber). Contato 10 A / 30 Vcc, 51 × 25,5 mm, 65 mA cada. Buscar `modulo rele 1 canal 5v optoacoplador`. ⭐ **O KA3 usa o `NO` e o KA4 usa o `NC`** — estados seguros opostos, de propósito. 💰 **E é aqui que o projeto economiza:** o KA3 conduz 37 mA e o KA4 conduz 0,36 A. Relé de 8 pinos de 10 A nestes dois seria R$ 75 de folga que ninguém usa — só o **KA2** precisa mesmo dos 10 A. Ver [Doc 31 §31.13 e §31.14](../camada_3_eletrica/31_comando_e_protecoes.md) | |
 | ⭐ **Caixa modular DIN 4 módulos (70 mm)** | 1 | Abriga os **dois** módulos de relé empilhados, no trilho 2. Buscar `caixa para trilho din 4m modular` | |
 | ⭐ **Resistor 10 kΩ · ¼ W** | 4 | **`R10` e `R11`** — pull-down do `IN` de cada módulo para o 0 V. 2 em uso + 2 reserva. ⚠️ **É o que torna o fail-safe medível:** Arduino ausente ou fio rompido → `IN` em 0 V → relé aberto → potência cortada e ventoinha parada | |
-| ⭐ **Diodo 1N4007** | — | **`D1` (bobina do KA2) e `D2` (ventoinhas do radiador).** ⭐ **Não compre: já existem 4 sobressalentes** na lista L.2. 🔥 **Ficaram MAIS importantes com os módulos de relé:** um contato seco abrindo uma bobina forma arco **no contato do KA3**, e um contato que pita acaba soldando — o veto do firmware perdido em silêncio. 🔎 **O `D1` pode ser dispensável:** teste o KA2 em *teste de diodo* entre `A1` e `A2`; se conduzir num sentido só, ele já tem diodo interno. ⚠️ **O `D2` é obrigatório** — o motor é indutivo e nada o grampeia. Catodo no **+12 V** | |
+| ⭐ **Diodo 1N4007** | — | **`D1` (bobina do KA2) e `D2` (ventoinhas do radiador).** ⭐ **Não compre de novo: já estão na lista L.2**, com 2 reservas. 🔥 **Ficaram MAIS importantes com os módulos de relé:** um contato seco abrindo uma bobina forma arco **no contato do KA3**, e um contato que pita acaba soldando — o veto do firmware perdido em silêncio. 🔎 **O `D1` pode ser dispensável:** teste o KA2 em *teste de diodo* entre `A1` e `A2`; se conduzir num sentido só, ele já tem diodo interno. ⚠️ **O `D2` é obrigatório** — o motor é indutivo e nada o grampeia. Catodo no **+12 V** | |
 | Fio rígido 0,25 mm² para interligação | 1 m | Ligações por baixo da placa. ⚠️ Não usar "sobra de perna" de componente em trecho longo — oxida e não é isolada | |
 | Verniz spray para PCI (ou esmalte incolor) | 1 | Proteção do lado da solda contra umidade e oxidação | |
 | Termorretrátil Ø 2 mm | 30 cm | Isolação dos 2 resistores de 10 kΩ soldados nos BTS7960 | |
@@ -999,6 +999,7 @@ Se você já tinha uma lista antiga em mãos, confira **estes seis** antes de fe
 | ~~Cooler 30 mm 12 V~~ | Ventilava o XL4016 dentro do T1 |
 | ~~Fusível 6 A~~ | **F1 subiu para 10 A** (ramal R1 conduz 6,0 A contínuos) |
 | ~~Aquecedor PTC de 12 V~~ | Trocado pela **versão de 24 V**, alimentada direto do barramento |
+| ~~Resistor 220 Ω / 5 W (carga térmica do simulador)~~ | O DUT **não** simula carga térmica: é LED + resistor de ½ W, 0,37 W e 0,21 W ([Doc 13 §13.3b](../camada_1_maquete/13_posicoes_de_ensaio.md)) |
 | ~~Resistor 2,2 kΩ (LEDs da maquete em 24 V)~~ | A iluminação da maquete passou para **5 V** — o limitador virou **220 Ω** |
 | ~~4× resistor 220 Ω nos sinaleiros do painel~~ | Os sinaleiros viraram **módulos de 24 V** com **ULN2803**. Os 220 Ω não foram descartados: **migraram para os LEDs da maquete** |
 | ~~Acrílico preto 3 mm (cobertura)~~ | Trocado por **branco**, visual de câmara frigorífica real |

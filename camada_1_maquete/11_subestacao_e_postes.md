@@ -522,7 +522,7 @@ O LM2596 traz um **display LED vermelho de 3 dígitos soldado na própria placa*
 | Posição | Calçada do fundo (Y = 265) | **Calçada da frente (Y = 75)** |
 | Topo | Cruzeta com 3 isoladores | **Braço curvo com luminária** |
 | Quantidade | 3 | 3 — em X = 150, 330 e 510 |
-| Alimentação | — | LED 3 mm branco quente + resistor 2,2 kΩ, do ramal R3 |
+| Alimentação | — | LED 3 mm branco quente + resistor **220 Ω**, do **BD-5V** (ramal R2 · saída O7) |
 
 ```
 Cálculo do resistor:  R = (24 − 3,1) / 0,0095 ≈ 2200 Ω
@@ -570,7 +570,7 @@ O braço curvo se faz com **arame de 1,5 mm** dobrado em curva suave, 25 mm de a
 
 ### Rua
 - [ ] 3 postes de iluminação pública (Ø 5 mm, 180 mm) na calçada da frente
-- [ ] LEDs acendendo com resistor de 2,2 kΩ
+- [ ] LEDs acendendo com resistor de **220 Ω** ⚠️ o valor de 2,2 kΩ era da versão em que estes LEDs eram de 24 V; hoje eles são de 5 V
 - [ ] Não há como confundir poste de iluminação com poste de distribuição
 
 ---
