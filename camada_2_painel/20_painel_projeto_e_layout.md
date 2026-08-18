@@ -411,9 +411,8 @@ O projeto declarava um **PG9** ali, com "capacidade: 14 fios" escrito à mão. R
 | 3 | **MV-1** — liga as 5 ventoinhas INTERNAS da câmara | 150 | 66 mm | 216 |
 | 4 | **F-P** — fusíveis das 2 posições de ensaio | 224 | 36 mm | 260 |
 | 5 | **ESP32** — Wi-Fi, MQTT e dashboard remoto | 268 | 96 mm | 364 |
-| 6 | **KA3** — VETO DO FIRMWARE: a única mão do software na potência | 374 | 34 mm | 408 |
-| 7 | **KA4** — VENTOINHAS DO RADIADOR: chaveia o lado positivo | 412 | 34 mm | 446 |
-| | **Ocupação total** | | **412 mm** | livre até 458 — sobram **12 mm** |
+| 6 | **KA34** — KA3 (POTÊNCIA) + KA4 (FAN EXTERNA DA PELTIER) — módulos de relé | 374 | 70 mm | 444 |
+| | **Ocupação total** | | **410 mm** | livre até 458 — sobram **14 mm** |
 
 ### TRILHO 3 — Controle (Y = 125)
 

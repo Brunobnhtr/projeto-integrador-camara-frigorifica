@@ -250,7 +250,7 @@ Esta é a tabela para colocar no relatório e usar na defesa. **É o que transfo
 | Lógica (VCC) dos 2 BTS7960 | 5 | 0,02 A | 0,1 W |
 | ~~4 LEDs sinalizadores 22 mm~~ | — | — | — |
 | **4 LEDs da iluminação da maquete** (branco 3 mm, 220 Ω) | 5 | 0,04 A | 0,2 W |
-| 🗑️ ~~KA3 + KA4 — módulos de relé~~ | ~~5~~ | **saiu — −0,13 A** | — |
+| ⭐ **KA3 + KA4 — módulos de relé** | 5 | **0,13 A** (0,065 cada, só com o relé atracado) | 0,7 W |
 | **Total do ramal** | **5** | **0,59 A** medido · **0,70 A** no pior caso | **3,0 W** |
 
 > 🔄 **Os LEDs trocaram de ramal.** Os **4 sinaleiros do painel viraram módulos de 24 V** (acionados por um ULN2803, ver [Doc 33](../camada_3_eletrica/33_placa_interface_componentes.md)) e saíram do 5 V. No lugar deles entraram os **4 LEDs brancos da iluminação pública da maquete**, que passaram de 12 V para **5 V** — LED branco tem Vf ≈ 3,1 V e funciona melhor a partir de 5 V que de 12 V, com resistor menor e menos calor dissipado à toa.
@@ -270,7 +270,6 @@ Esta é a tabela para colocar no relatório e usar na defesa. **É o que transfo
 | **Subtotal em 12 V** | **12** | 🔧 **1,25 A** | **15,0 W** | pior caso medido pelo simulador |
 | DNLCB30 + ESP32 (**direto em 24 V**) | 24 | 0,10 A | 2,4 W | |
 | Bobinas dos relés **KA1 + KA2** (**direto em 24 V**) | 24 | 0,10 A | 2,4 W | |
-| ⭐ Bobinas dos relés **KA3 + KA4** (**direto em 24 V**) | 24 | **0,074 A** | 1,8 W | **novas** — vieram do 5 V |
 | **4 sinaleiros LED 22 mm de 24 V** (via ULN2803) | 24 | 0,08 A | 1,9 W | **novos neste barramento** |
 | **Subtotal direto em 24 V** | **24** | **0,28 A** | **6,7 W** | |
 

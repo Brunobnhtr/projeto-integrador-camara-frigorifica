@@ -116,46 +116,19 @@ export const FIOS_ETAPA3 = [
       'Idem para o BTS #2.'), rota: ['CH-2x1', 'CV-esq', 'CH-base'] },
   { ...zero('D19', { comp: 'MEGA', via: 'GND3' }, { comp: 'BD-0V', via: 'R5' },
       'O 0 V do Arduino.'), rota: ['CH-3x2', 'CV-dir', 'CH-base'] },
-  /* 🔄 O D7b SAIU. Ele levava 5 V aos dois módulos de relé; com o KA3 e o KA4
-     virando relés de 8 pinos de bobina 24 V, os 130 mA saíram do ramal T2 e o
-     BD-5V · O12 ficou livre. Quem alimenta as bobinas agora é o D6c, abaixo. */
-  { ...zero('D20b', { comp: 'KA3', via: 'S' }, { comp: 'BD-0V', via: 'R21' },
-      '⭐ A fonte dos dois MOSFET, em ponto próprio da barra.'),
-    rota: ['CH-2x1', 'CV-esq', 'CH-base'], nome: 'fonte dos conjuntos Q3/Q4 → 0 V',
-    porque: '📌 PONTO PRÓPRIO, e não pendurado. Este 0 V é ao mesmo tempo o retorno das '
-          + 'duas bobinas e a REFERÊNCIA DOS DOIS GATES — o R10 e o R11 puxam para ele. '
-          + 'Pendurá-lo num retorno de medição somaria corrente chaveada à referência '
-          + 'que decide se a potência pode existir.' },
-  { ...zero('D20c', { comp: 'KA4', via: 'S' }, { comp: 'KA3', via: 'S' },
-      'Ponte curta entre os dois conjuntos — daí sai um fio só para o BD-0V.'),
-    rota: [], nome: 'ponte Q4 · S → Q3 · S' },
-
-  /* ⭐ OS 24 V DAS DUAS BOBINAS NOVAS. Saíram do 5 V e vieram para o 24 V
-     permanente quando o KA3 e o KA4 deixaram de ser módulos de Arduino. */
-  { ...pot('D6c', { comp: 'BD-24V', via: 'O6' }, { comp: 'KA3', via: 'A1' }, 0.5,
-      '⭐ 24 V permanentes para as bobinas do KA3 e do KA4.'),
-    classe: 'potencia', func: 'srv24', rota: ['CH-base', 'CV-esq', 'CH-2x1'],
-    nome: '24 V → bobinas do KA3/KA4',
-    porque: '⭐ PERMANENTE, e tem de ser. Se as bobinas viessem do BD-POT, o KA3 '
-          + 'cortaria a própria alimentação e ficaria oscilando; e o KA4 pararia as '
-          + 'ventoinhas do radiador na emergência, que é exatamente quando elas mais '
-          + 'precisam girar.' },
-  { ...pot('D6d', { comp: 'KA3', via: 'A1' }, { comp: 'KA4', via: 'A1' }, 0.5,
-      'Ponte curta de uma base à outra — as duas bobinas partem do mesmo nó.'),
-    classe: 'potencia', func: 'srv24', rota: [], nome: 'ponte 24 V KA3 · A1 → KA4 · A1' },
-  { ...pot('D6e', { comp: 'KA3', via: 'A1' }, { comp: 'KA3', via: 'A2' }, 0.5,
-      'Diodo D3 (1N4007) direto nos bornes da bobina — catodo (faixa) no A1.'),
-    classe: 'potencia', func: 'srv24', rota: [], nome: '⭐ roda-livre da bobina do KA3',
-    porque: '🔥 SEM ELE O Q3 MORRE NO PRIMEIRO DESLIGAMENTO: a bobina de 650 Ω joga '
-          + 'centenas de volts no dreno, contra os 60 V que o 2N7000 aguenta. E é ele '
-          + 'que deixa o fio do A2 limpo o bastante para correr na canaleta.' },
-  { ...pot('D6f', { comp: 'KA4', via: 'A1' }, { comp: 'KA4', via: 'A2' }, 0.5,
-      'Diodo D4 (1N4007) na bobina do KA4 — catodo no A1. Mesmo papel do D3.'),
-    classe: 'potencia', func: 'srv24', rota: [], nome: '⭐ roda-livre da bobina do KA4',
-    aviso: '⚠️ NÃO CONFUNDA COM O D2. O D2 fica junto das VENTOINHAS, grampeando o '
-         + 'motor; o D4 fica na BOBINA deste relé. Os dois são 1N4007 e têm funções '
-         + 'diferentes.' },
-  { ...pot('D6b', { comp: 'BD-AUX', via: 'O2' }, { comp: 'KA4', via: '11' }, 0.5,
+  { ...cinco('D7b', { comp: 'BD-5V', via: 'O12' }, { comp: 'KA34', via: '+5V' },
+      '⭐ Alimenta os DOIS módulos de relé — o DC+ é pontelhado entre eles na caixa.'),
+    rota: ['CH-base', 'CV-esq', 'CH-2x1'], nome: '5 V dos módulos KA3/KA4',
+    aviso: '⚠️ 65 mA CADA, com o relé fechado. São 130 mA a mais no ramal T2 — some com '
+         + 'o Arduino, a tela e o ESP32 antes de fechar o projeto de energia.' },
+  { ...zero('D20b', { comp: 'KA34', via: '0V' }, { comp: 'BD-0V', via: 'R21' },
+      '⭐ O DC− dos dois módulos, em ponto próprio da barra.'),
+    rota: ['CH-2x1', 'CV-esq', 'CH-base'],
+    porque: '📌 PONTO PRÓPRIO, e não pendurado. O DC− carrega os 130 mA das duas bobinas '
+          + 'e é também a referência do sinal de gatilho — a entrada do módulo tem só '
+          + 'três bornes, então o DC− É o 0 V do IN. Pendurá-lo num retorno de medição '
+          + 'somaria corrente chaveada a uma referência.' },
+  { ...pot('D6b', { comp: 'BD-AUX', via: 'O2' }, { comp: 'KA34', via: 'COM4' }, 0.5,
       '⭐ Os 12 V permanentes entrando no contato do KA4.'),
     classe: 'alim', func: 'aux12', rota: ['CH-base', 'CV-esq', 'CH-2x1'],
     nome: '12 V → contato do KA4',
@@ -163,8 +136,8 @@ export const FIOS_ETAPA3 = [
           + 'negativo delas (X6) vai direto ao BD-0V · R20 e NUNCA é chaveado — é a '
           + 'referência dos dois tacômetros, e mexer nela foi o erro que tirou o comando '
           + 'destas ventoinhas na primeira versão.',
-    aviso: '🔥 A SAÍDA É O CONTATO 12 (NF), NÃO O 14. Ao contrário do KA3, aqui o '
-         + 'estado seguro é FECHADO: relé desatracado, ventoinha girando.' },
+    aviso: '🔥 A SAÍDA É O CONTATO NC4, NÃO O NO4. Ao contrário do KA3, aqui o estado '
+         + 'seguro é FECHADO: módulo sem energia, ventoinha girando (§31.14).' },
   { ...zero('D20', { comp: 'PI1', via: 'J1-9' }, { comp: 'BD-0V', via: 'R6' },
       'O 0 V da PI-1, que lá dentro vira o barramento de fio nu.'),
     rota: ['CH-topo', 'CV-dir', 'CH-base'] },

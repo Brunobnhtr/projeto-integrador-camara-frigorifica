@@ -136,7 +136,7 @@ export const FIOS_ETAPA2 = [
   },
   {
     n: 'C10', etapa: 2, func: 'zero', nome: '⭐ bobina do KA2 → contato do KA3', classe: 'comum',
-    de: { comp: 'KA2', via: 'A2' }, para: { comp: 'KA3', via: '11' },
+    de: { comp: 'KA2', via: 'A2' }, para: { comp: 'KA34', via: 'COM3' },
     mm2: 0.5,
     rota: ['CH-2x1'],
     diz: 'O retorno da bobina do KA2 já não vai direto ao 0 V: passa pelo contato do KA3.',
@@ -151,13 +151,13 @@ export const FIOS_ETAPA2 = [
   },
   {
     n: 'C10b', etapa: 2, func: 'zero', nome: 'contato do KA3 → 0 V', classe: 'comum',
-    de: { comp: 'KA3', via: '14' }, para: { comp: 'BD-0V', via: 'R12' },
+    de: { comp: 'KA34', via: 'NO3' }, para: { comp: 'BD-0V', via: 'R12' },
     mm2: 0.5,
     rota: ['CH-2x1', 'CV-esq', 'CH-base'],
     diz: 'Fecha o circuito da bobina do KA2 no ponto R12 da barra.',
-    aviso: '🔥 USE O CONTATO NA (11→14), NUNCA O NF. Relé desatracado = contato '
-         + 'aberto = potência cortada. No NF, um Arduino desligado ARMARIA a potência. '
-         + '⚠ O KA4 usa o NF de propósito — lá o estado seguro é o contrário.',
+    aviso: '🔥 USE O NO (NORMALMENTE ABERTO), NUNCA O NC. Módulo sem energia = contato '
+         + 'aberto = potência cortada. No NC, um Arduino desligado ARMARIA a potência. '
+         + '⚠ O KA4 usa o NC de propósito — lá o estado seguro é o contrário (§31.14).',
   },
   {
     n: 'C12', etapa: 2, func: 'srv24', nome: '⭐ roda-livre da bobina do KA2', classe: 'potencia',

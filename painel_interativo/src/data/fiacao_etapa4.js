@@ -33,7 +33,7 @@ export const FIOS_ETAPA4 = [
       nome: `Mega ${d} → sinaleiro ${nome}` })),
 
   /* ── ⭐ os dois gatilhos dos módulos de relé ───────────────────────── */
-  { ...sig('S4b', meg('D27'), { comp: 'KA3', via: 'G' },
+  { ...sig('S4b', meg('D27'), { comp: 'KA34', via: 'IN3' },
       'Gatilho do KA3 — o relé que fica em série com a bobina do KA2.'),
     nome: 'Mega D27 → gatilho do KA3', rota: ['CH-topo', 'CV-dir', 'CH-3x2'],
     porque: '⭐ O ÚNICO FIO DO PAINEL QUE DÁ AO SOFTWARE PODER SOBRE A POTÊNCIA — e é de '
@@ -45,7 +45,7 @@ export const FIOS_ETAPA4 = [
          + 'que garante o fail-safe: Arduino resetado, desligado ou com este fio rompido '
          + '→ IN em 0 V → relé aberto → potência cortada.' },
 
-  { ...sig('S4c', meg('D30'), { comp: 'KA4', via: 'G' },
+  { ...sig('S4c', meg('D30'), { comp: 'KA34', via: 'IN4' },
       'Gatilho do KA4 — as duas ventoinhas do radiador.'),
     nome: 'Mega D30 → gatilho do KA4', rota: ['CH-topo', 'CV-dir', 'CH-3x2'],
     porque: '⭐ UM CONTATO SECO NÃO TEM LADO ALTO NEM LADO BAIXO. Era esse o problema '

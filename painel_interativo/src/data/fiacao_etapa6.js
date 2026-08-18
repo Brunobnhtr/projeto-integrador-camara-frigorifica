@@ -67,7 +67,7 @@ export const FIOS_ETAPA6 = [
      📌 Se um dia quiser controlar a rotação delas, o caminho é ventoinha
      de 4 fios (PWM): ali o preto é 0 V de verdade, o tacômetro tem
      referência fixa e o controle vai por um fio só de comando. */
-  { ...kabo('X5', { comp: 'KA4', via: '12' }, naTampa('RAD', '+'), 0.5,
+  { ...kabo('X5', { comp: 'KA34', via: 'NC4' }, naTampa('RAD', '+'), 0.5,
       'aux12', 'alim', 'As 2 ventoinhas do radiador, em paralelo, direto no 12 V.'),
     nome: '⭐ ventoinhas do radiador · +12 V COMANDADO pelo KA4', prensa: 'PG13-2',
     rota: ['CH-2x1', 'CV-esq', 'CH-base'],

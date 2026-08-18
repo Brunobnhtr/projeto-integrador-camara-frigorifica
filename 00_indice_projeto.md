@@ -116,7 +116,7 @@
 | Layout do painel | [04_painel_layout.svg](desenhos/04_painel_layout.svg) | Backplate e porta, cotados |
 | Diagrama unifilar | [05_diagrama_unifilar.svg](desenhos/05_diagrama_unifilar.svg) | Toda a cadeia de energia e proteções |
 | Diagrama de comando ⭐ | [06_diagrama_comando.svg](desenhos/06_diagrama_comando.svg) | **Os dois selos (KA1 e KA2), o KA3 em série na bobina do KA2 e o que o Arduino pode e não pode fazer** |
-| **Ligação dos relés KA1–KA4** ⭐ | [11_reles_ligacao.svg](desenhos/11_reles_ligacao.svg) | **A base PTF08A vista de cima: o que entra em CADA parafuso, com o número gravado ao lado do nome IEC.** Gerado do `painel_completo.js` por `npm run trilhos` |
+| **Ligação dos relés KA1–KA4** ⭐ | [11_reles_ligacao.svg](desenhos/11_reles_ligacao.svg) | **Os quatro relés borne por borne, e os componentes discretos pendurados neles** (D1, R10, R11, D2). No painel interativo, clique num relé → *Ver o borne e os componentes nele*. Gerado do `painel_completo.js` |
 | Corte da câmara | [07_camara_corte.svg](desenhos/07_camara_corte.svg) | Camadas de isolamento e circulação de ar |
 | **Esquema da placa PI-1** | [08_placa_pi1_esquema.svg](desenhos/08_placa_pi1_esquema.svg) | **Os 4 circuitos da placa de interface, separados: filtros IS, divisor do D25, pull-up 1-Wire e driver ULN2803** |
 | **Circuito da PI-1 (norma IEC)** ⭐ | [10_placa_pi1_circuito.png](desenhos/10_placa_pi1_circuito.png) | **Esquema elétrico com símbolos normalizados. Editável no navegador pelo arquivo `.cddx`** |

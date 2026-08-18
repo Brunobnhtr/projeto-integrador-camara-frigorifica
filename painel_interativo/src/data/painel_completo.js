@@ -45,7 +45,7 @@ export const REGRA_SEGREGACAO = {
   quemPolui: [
     'Saída dos BTS para a Peltier e o PTC: 6 A chaveados',
     'Entrada de 24 V dos BTS: a corrente vem em pulsos, não contínua',
-    'Bobinas dos relés KA1 a KA4: dão um pico ao desligar — por isso cada uma tem o seu diodo NO BORNE',
+    'Bobinas dos relés KA1 e KA2: dão um pico ao desligar',
   ],
   /* ⭐ TRÊS CLASSES, NÃO DUAS. A divisão binária não sabe onde pôr um
      trilho de 5 V: ele não POLUI (não chaveia nada) e não SOFRE (é de
@@ -217,8 +217,8 @@ export const COMPONENTES = [
              + 'cima. Meça a placa quando ela chegar.',
     grupos: [
       { ref: 'TOPO', lado: 'cima', legenda: 'Borda de cima — 35 bornes', pinos: [
-        via('D30', 1, '⭐ Gatilho do KA4 (Q4) → ventoinhas do RADIADOR. ⚠ LÓGICA INVERTIDA: HIGH PARA'), via('D29', 1, '⭐ MV-1 canal 3 → as 5 ventoinhas INTERNAS (4 de circulação + a do PTC)'), via('D28'),
-        via('D27', 1, '⭐ HAB_POTENCIA → gatilho do KA3 (Q3). HIGH autoriza a potência; LOW derruba o selo e corta'),
+        via('D30', 1, '⭐ Gatilho do KA4 → ventoinhas do RADIADOR'), via('D29', 1, '⭐ MV-1 canal 3 → as 5 ventoinhas INTERNAS (4 de circulação + a do PTC)'), via('D28'),
+        via('D27', 1, '⭐ HAB_POTENCIA → gatilho do KA3. HIGH autoriza a potência; LOW derruba o selo e corta'),
         via('D26'), via('D25', 1, 'PI-1 J2-8 — vigia se os 24 V caíram'), via('D24', 1, 'Emergência — bloco NF de 5 V'), via('D23', 1, 'Botão STOP (NA, 5 V)'),
         via('D22'), via('+5V', 1, 'BD-5V saída 1'), via('D21', 1, 'I²C SCL — o mesmo barramento'), via('D20', 1, 'I²C SDA — AM2315C (câmara), DS3231 e 2× INA219'),
         via('D19', 1, 'Serial1 RX ← DNLCB30/ESP32'), via('D18', 1, 'Serial1 TX → DNLCB30/ESP32'), via('D17', 1, 'Serial2 RX ← conversor ← tela'), via('D16', 1, 'Serial2 TX → conversor → tela'),
@@ -510,7 +510,7 @@ export const COMPONENTES = [
         rele('22'),
         rele('24', 1, '⭐ O SELO DO KA2 — ponte na base até o próprio A1'),
         rele('21', 1, '⭐ comum do selo — vem do S1 · 13, no nó depois do bloco NF do STOP'),
-        rele('A2', 1, '⭐ KA3 · 11 — a bobina fecha pelo contato NA do KA3'),
+        rele('A2', 1, '⭐ KA3 · COM3 — a bobina fecha pelo contato do módulo de relé'),
       ]},
       { ref: 'BAIXO', lado: 'baixo', legenda: 'Fileira de baixo · pinos 1 · 5 · 9 · 13', pinos: [
         rele('12'),
@@ -534,137 +534,87 @@ export const COMPONENTES = [
            + 'remoto), mas não pode segurá-la contra o S0 nem contra o S2, que '
            + 'continuam a montante. Em série soma; em paralelo furaria. §31.13.',
            '🔥 MONTE O DIODO D1 (1N4007) DIRETO NESTES BORNES: catodo (faixa '
-           + 'prateada) no A1, anodo no A2. SEM ELE O PICO INDUTIVO ABRE ARCO NO CONTATO '
-           + 'DO KA3 e, depois de algumas centenas de operações, ele solda — e contato '
-           + 'soldado aí é o veto do firmware perdido em silêncio. Se o relé já tiver '
-           + 'diodo interno (teste de diodo entre A1 e A2 conduz num sentido só), o D1 '
-           + 'externo é dispensável e o A1 é obrigatoriamente o positivo.',
+           + 'prateada) no A1, anodo no A2. SEM ELE o pico indutivo desta bobina abre '
+           + 'arco NO CONTATO DO KA3, e um contato que pita acaba soldando — o veto do '
+           + 'firmware perdido em silêncio. Se o relé já tiver diodo interno (teste de '
+           + 'diodo entre A1 e A2 conduz num sentido só), o D1 externo é dispensável e '
+           + 'o A1 é obrigatoriamente o positivo.',
            '⚠️ INVERTIDO, O D1 CURTO-CIRCUITA A BOBINA e derruba o F2 (2 A) assim que '
            + 'o KA1 selar. É um erro que se acha em 10 segundos e custa uma hora se '
            + 'você não desconfiar dele.',
-           '🧪 O D1 TEM UM CUSTO QUE VALE MEDIR NO ENSAIO: diodo puro na bobina '
-           + 'atrasa o DESATRACAMENTO em 2 a 5 vezes, e contato que se separa devagar '
-           + 'arca por mais tempo — justamente neste relé, que interrompe 6 A em '
-           + 'corrente contínua. Quem quiser os dois lados troca o D1 por 1N4007 EM '
-           + 'SÉRIE COM UM ZENER DE 24 a 33 V: grampeia (o contato do KA3 segue '
-           + 'protegido) num patamar mais alto, e o campo colapsa rápido. Doc 31 §31.15.',
-           '⭐ TODO O CIRCUITO DE BOBINA FICA NAS CANALETAS DE POTÊNCIA. O único fio de '
-           + 'SINAL que chega perto é o do D27, e ele para no gate do Q3, na base do '
-           + 'KA3 — nunca na bobina.'],
+           '🧪 O D1 COBRA UM PREÇO QUE VALE CONHECER: diodo puro na bobina atrasa o '
+           + 'DESATRACAMENTO em 2 a 5 vezes, e contato que se separa devagar arca por '
+           + 'mais tempo — justamente NESTE relé, que interrompe 6 A em corrente '
+           + 'contínua. Quem quiser os dois lados troca por 1N4007 EM SÉRIE COM UM '
+           + 'ZENER DE 24 a 33 V. Ver Doc 31 §31.15.',
+           '⭐ TODO O CIRCUITO DE BOBINA DESTE RELÉ FICA NAS CANALETAS DE POTÊNCIA. O '
+           + 'único fio de SINAL que chega perto é o do D27, e ele para no IN3 do módulo '
+           + 'do KA3, no trilho 2 — nunca na bobina.'],
   },
+
+
   {
-    id: 'KA3', nome: 'KA3 — VETO DO FIRMWARE: a única mão do software na potência', trilho: 2,
-    resumoFuncao: '🔎 O QUE ELE FAZ: fica EM SERIE com a bobina do KA2. Abrindo, derruba o selo do KA2 e os 24 V somem do BD-POT — e nao voltam ate alguem apertar o botao verde. Em serie ele so pode DERRUBAR: jamais segurar a potencia contra o cogumelo ou contra o STOP, que estao a montante. ⭐ Ele so RECEBE ordem; quem confirma que a potencia caiu de verdade e o divisor no pino D25.',
-    x: 374, largura: 34, altura: 50, cor: '#e8590c',
-    nota: '⭐ MESMO relé do KA1 e do KA2 — 8 pinos, bobina 24 Vcc, base PTF08A. '
-        + 'Um modelo só no painel inteiro: 4 em uso, e a reserva serve para qualquer um.',
+    id: 'KA34', nome: 'KA3 (POTÊNCIA) + KA4 (FAN EXTERNA DA PELTIER) — módulos de relé', trilho: 2,
+    resumoFuncao: '🔎 O QUE FAZEM: sao as duas maos do FIRMWARE no mundo fisico. KA3 (POTENCIA) fica em serie com a bobina do KA2 — abrindo, derruba o selo e os 24 V somem do BD-POT, e nao voltam ate alguem apertar o botao verde. KA4 (FAN EXTERNA DA PELTIER) chaveia o +12 V das 2 ventoinhas do radiador. ⭐ Os dois so RECEBEM ordem; quem confirma que a potencia chegou e o divisor no pino D25.',
+    x: 374, largura: 70, altura: 60, cor: '#e8590c',
+    nota: 'Dois módulos de relé de 1 canal, 5 V, com optoacoplador e jumper H/L, '
+        + 'empilhados dentro de uma caixa modular DIN de 4 módulos. 51 × 25,5 mm cada. '
+        + 'O DC+ e o DC− são pontelhados entre os dois lá dentro — sai UM par de fios.',
     grupos: [
-      /* ⭐ Como no KA1 e no KA2, os fios EXTERNOS ficam na fileira de
-         BAIXO, de frente para a CH-2x1 (potência), que é por onde a
-         cadeia de comando anda. Em cima só o A2, que desce 3 cm até o
-         conjunto do Q3 preso na própria base. */
-      { ref: 'CIMA', lado: 'cima', legenda: 'Fileira de cima · pinos 4 · 8 · 12 · 14', pinos: [
-        rele('22'),
-        rele('24'),
-        rele('21'),
-        rele('A2', 1, '⭐ Q3 · dreno (solda, não fio) + o diodo D3 vindo do A1'),
+      { ref: 'ALIM', lado: 'baixo', legenda: 'Alimentação dos dois módulos (2)', pinos: [
+        via('+5V', 1, 'BD-5V saída 12 — DC+ dos dois, em ponte interna'),
+        via('0V', 1, 'BD-0V · R21 — DC− dos dois, em ponte interna'),
       ]},
-      /* O conjunto termorretrátil preso na própria base — não é placa,
-         não é módulo, não fica pendurado em lugar nenhum. Três peças e
-         dois rabichos: o GATE sobe para a canaleta de sinal, a FONTE
-         desce para a barra de 0 V. */
-      { ref: 'Q3-G', lado: 'cima', legenda: 'Conjunto Q3 · gatilho (1)', pinos: [
-        via('G', 1, '⭐ Mega D27 — o gatilho. O R10 (10 kΩ) do gate ao 0 V fica DENTRO do conjunto'),
+      { ref: 'CMD', lado: 'cima', legenda: 'Gatilhos, vindos do Arduino (2)', pinos: [
+        via('IN3', 1, '⭐ Mega D27 — KA3, autoriza a potência'),
+        via('IN4', 1, '⭐ Mega D30 — KA4, ventoinhas do radiador'),
       ]},
-      { ref: 'BAIXO', lado: 'baixo', legenda: 'Fileira de baixo · pinos 1 · 5 · 9 · 13', pinos: [
-        rele('12'),
-        rele('14', 1, '⚡ BD-0V · R12 — é aqui que o circuito da bobina do KA2 se fecha'),
-        rele('11', 1, '⚡ KA2 · A2 — o retorno da bobina do KA2 entra por este contato'),
-        rele('A1', 1, 'BD-24V · O6 — 24 V permanentes, com ponte curta até o KA4 · A1'),
+      { ref: 'KA3', lado: 'baixo', legenda: '⚡ KA3 · POTÊNCIA — corta os 24 V dos BTS (2)', pinos: [
+        via('COM3', 1, 'KA2 · A2 — o retorno da bobina do KA2 passa por aqui'),
+        via('NO3', 1, 'BD-0V · R12 — fecha o circuito da bobina'),
       ]},
-      { ref: 'Q3-S', lado: 'baixo', legenda: 'Conjunto Q3 · fonte (1)', pinos: [
-        via('S', 1, 'ponte curta até o Q4 · S, e daí um fio só ao BD-0V · R21'),
+      { ref: 'KA4', lado: 'baixo', legenda: '🌀 KA4 · FAN EXTERNA — ventoinhas do radiador (2)', pinos: [
+        via('COM4', 1, 'BD-AUX saída 2 — os 12 V permanentes'),
+        via('NC4', 1, '⭐ fio X5 → ventoinhas do radiador · + — É O NC, e é por isso que o Arduino morto VENTILA'),
       ]},
-      /* O conjunto termorretrátil preso na própria base — não é placa,
-         não é módulo, não fica pendurado em lugar nenhum. Três peças
-         com dois fios saindo. */
     ],
     avisos: [
-      '⭐ O CONTATO TEM DE SER O NA (11→14), NUNCA O NF. Relé desatracado = contato '
-      + 'aberto = bobina do KA2 sem retorno = potência cortada. No NF a lógica inverte '
-      + 'e o fail-safe morre: um Arduino desligado passaria a ARMAR a potência.',
-      '🔥 O R10 (10 kΩ) VAI COLADO AO GATE, dentro do conjunto — não na PI-1. Com ele '
-      + 'ali, um rompimento do fio do D27 ainda deixa o gate em 0 V e a potência '
-      + 'cortada. Fosse o R10 na placa, o trecho até aqui ficaria alto-impedante e o '
-      + 'KA3 poderia atracar sozinho por ruído.',
-      '🔥 O D3 (1N4007) VAI DIRETO NOS BORNES A1/A2: catodo (faixa prateada) no A1, '
-      + 'anodo no A2. SEM ELE O Q3 MORRE NO PRIMEIRO DESLIGAMENTO — a bobina de 650 Ω '
-      + 'joga centenas de volts no dreno, contra os 60 V que o 2N7000 aguenta. É também '
-      + 'ele que mantém o fio do A2 limpo o bastante para correr na canaleta.',
-      '⚠️ INVERTIDO, O D3 CURTO-CIRCUITA A BOBINA e derruba o F2 (2 A) no primeiro '
-      + 'comando. Erro de 10 segundos para achar e uma hora se você não desconfiar dele.',
-      '📌 O CONTATO 2 (21-22-24) FICA DE RESERVA, e é de propósito. Ele existe para o '
-      + 'dia em que o projeto precisar sinalizar o veto num sinaleiro próprio ou '
-      + 'intertravar outra coisa — foi um dos motivos de trocar o módulo de 1 canal '
-      + 'por este relé.',
+      '⭐ OS DOIS JUMPERS EM **H** (gatilho ALTO). Assim digitalWrite(pino, HIGH) fecha o '
+      + 'relé, que é a convenção intuitiva e a mesma dos jumpers do MV-1. Em L a lógica '
+      + 'inverte e o firmware vira uma armadilha de leitura.',
+      '🔥 O KA3 USA COM + NO. NUNCA O NC. Módulo sem energia = contato aberto = '
+      + 'potência cortada. Ligado no NC a lógica inverte e o fail-safe morre: um Arduino '
+      + 'desligado passaria a ARMAR a potência.',
+      '🔥 JÁ O KA4 USA COM + NC, E ISSO NÃO É DESCUIDO — É O CONTRÁRIO DO KA3 DE '
+      + 'PROPÓSITO. Os dois têm estados seguros OPOSTOS: para o KA3, seguro é potência '
+      + 'cortada; para o KA4, seguro é ventoinha GIRANDO, porque o dissipador quente é o '
+      + 'que mata a pastilha. Com o NC, Arduino morto, fio do D30 rompido ou 5 V caído '
+      + 'deixam as ventoinhas ligadas. No NO, a mesma falha parava a ventilação sem '
+      + 'alarme nenhum — era o pior caso do projeto. Ver Doc 31 §31.14.',
+      '⚠️ E POR ISSO A LÓGICA DO D30 É INVERTIDA EM RELAÇÃO À DO D27: HIGH fecha o relé, '
+      + 'o NC abre e as ventoinhas PARAM. LOW ou pino solto = elas GIRAM. Existe UMA '
+      + 'função no firmware que escreve neste pino, e a inversão mora só lá dentro — '
+      + 'é assim que uma inversão deixa de ser armadilha (Doc 40 §40.10).',
+      '⚠️ RESISTOR DE 10 kΩ ENTRE CADA IN E O 0 V. O anúncio promete tolerância a falha '
+      + '("linha de controle quebrada, o relé não funciona") e o LED do optoacoplador de '
+      + 'fato precisa de corrente para acender. O resistor torna isso determinístico em '
+      + 'vez de confiado: pino solto = 0 V no IN = relé aberto, medível com multímetro.',
+      '📌 A ISOLAÇÃO É NOMINAL, NÃO GALVÂNICA. O módulo tem só 3 bornes de entrada '
+      + '(DC+, DC−, IN), então o DC− É a referência do sinal — ele partilha o 0 V do '
+      + 'Arduino. O optoacoplador entrega imunidade a ruído (a entrada é acionada por '
+      + 'corrente, não por tensão), não separação de terras. Para isolação de verdade '
+      + 'seria preciso a versão de 4 pinos, com JD-VCC e jumper removível.',
+      '⚠️ CONFIRME QUE A BOBINA É DE 5 V. Estes anúncios vendem 5 / 12 / 24 V na mesma '
+      + 'página e a FOTO costuma ser da versão de 24 V. Ao receber, leia o corpo do relé: '
+      + 'tem de estar escrito 5VDC. Um módulo de 24 V não fecha com os 5 V do BD-5V.',
+      '📌 65 mA CADA, do barramento de 5 V. São 130 mA a mais no ramal T2 — confira a '
+      + 'soma com o Arduino, a tela e o ESP32 antes de fechar o projeto de energia.',
       '❓ "O ARDUINO SÓ MANDA E NÃO RECEBE DOS RELÉS?" — sim, e é de propósito. Ele não '
       + 'lê contato auxiliar nenhum. O que ele lê é o RESULTADO: o divisor 22k/4,7k no '
       + 'pino D25 mede se os 24 V realmente chegaram ao BD-POT. É melhor que ler o '
       + 'relé, porque um contato auxiliar diria "mandei fechar" enquanto o D25 diz '
       + '"a energia chegou" — e ele denuncia relé colado, fusível aberto, borne solto '
       + 'e emergência acionada, tudo com o mesmo fio.',
-    ],
-  },
-  {
-    id: 'KA4', nome: 'KA4 — VENTOINHAS DO RADIADOR: chaveia o lado positivo', trilho: 2,
-    resumoFuncao: '🔎 O QUE ELE FAZ: liga e desliga as 2 ventoinhas do radiador da Peltier chaveando o +12 V delas. ⭐ Tem de ser o POSITIVO: o negativo e a referencia dos dois tacometros, e corta-lo fazia a leitura de RPM mentir e injetava corrente no pino D3. ⭐ E usa o contato NF, ao contrario do KA3: rele desatracado = ventoinhas GIRANDO, que e o estado seguro DESTE lado.',
-    x: 412, largura: 34, altura: 50, cor: '#e8590c',
-    nota: '⭐ MESMO relé do KA1, KA2 e KA3 — 8 pinos, bobina 24 Vcc, base PTF08A.',
-    grupos: [
-      { ref: 'CIMA', lado: 'cima', legenda: 'Fileira de cima · pinos 4 · 8 · 12 · 14', pinos: [
-        rele('22'),
-        rele('24'),
-        rele('21'),
-        rele('A2', 1, '⭐ Q4 · dreno (solda, não fio) + o diodo D4 vindo do A1'),
-      ]},
-      /* O conjunto termorretrátil preso na própria base — não é placa,
-         não é módulo, não fica pendurado em lugar nenhum. Três peças e
-         dois rabichos: o GATE sobe para a canaleta de sinal, a FONTE
-         desce para a barra de 0 V. */
-      { ref: 'Q4-G', lado: 'cima', legenda: 'Conjunto Q4 · gatilho (1)', pinos: [
-        via('G', 1, '⭐ Mega D30 — o gatilho. O R11 (10 kΩ) do gate ao 0 V fica DENTRO do conjunto'),
-      ]},
-      { ref: 'BAIXO', lado: 'baixo', legenda: 'Fileira de baixo · pinos 1 · 5 · 9 · 13', pinos: [
-        rele('12', 1, '⭐ fio X5 → ventoinhas do radiador · + — É O NF, e é por isso que o Arduino morto VENTILA'),
-        rele('14'),
-        rele('11', 1, 'BD-AUX · O2 — os 12 V permanentes, que não passam pelo KA2'),
-        rele('A1', 1, 'ponte curta do KA3 · A1 — os mesmos 24 V permanentes'),
-      ]},
-      { ref: 'Q4-S', lado: 'baixo', legenda: 'Conjunto Q4 · fonte (1)', pinos: [
-        via('S', 1, 'ponte curta até o Q3 · S — os dois voltam por um fio só'),
-      ]},
-    ],
-    avisos: [
-      '🔥 AQUI O CONTATO É O NF (11→12), E ISSO NÃO É DESCUIDO — É O CONTRÁRIO DO KA3 '
-      + 'DE PROPÓSITO. Os dois relés têm estados seguros OPOSTOS: para o KA3, seguro é '
-      + 'potência cortada; para o KA4, seguro é ventoinha GIRANDO. Com o NF, Arduino '
-      + 'morto, fio do D30 rompido ou 5 V caído deixam as ventoinhas ligadas, que é '
-      + 'exatamente o que o dissipador quente precisa. No NA, a mesma falha parava a '
-      + 'ventilação sem alarme nenhum — era o pior caso do projeto.',
-      '⚠️ A LÓGICA DO D30 É INVERTIDA EM RELAÇÃO À DO D27, e o firmware sabe disso: '
-      + 'D30 em HIGH atraca a bobina, o NF abre e as ventoinhas PARAM. D30 em LOW ou '
-      + 'em alta impedância (boot, reset, Arduino morto) deixa o NF fechado e elas '
-      + 'GIRAM. Quem inverte é uma linha só do firmware — ver Doc 40 §40.10.',
-      '📌 A BOBINA FICA ATRACADA A MAIOR PARTE DO TEMPO (sempre que as ventoinhas '
-      + 'estão desligadas). São ~37 mA contínuos no BD-24V, que o ramal absorve com '
-      + 'folga — e é o preço, barato, de ter o fail-safe apontando para o lado certo.',
-      '🔥 O D2 (1N4007) É O DE RODA-LIVRE DAS VENTOINHAS, catodo no +12 V, montado '
-      + 'junto delas. O D4, também 1N4007, é o da BOBINA deste relé, nos bornes A1/A2, '
-      + 'catodo no A1. São dois diodos com funções diferentes — não troque.',
-      '⭐ O NEGATIVO DAS VENTOINHAS (X6) NUNCA É CHAVEADO. Vai direto ao BD-0V · R20 e '
-      + 'fica lá. É a referência dos dois tacômetros, e mexer nela foi o erro que tirou '
-      + 'o comando destas ventoinhas na primeira versão do projeto.',
-      '📌 O CONTATO 2 FICA DE RESERVA, como no KA3.',
     ],
   },
   {
@@ -750,45 +700,34 @@ export const COMPONENTES = [
       { ref: 'IN', lado: 'cima', legenda: 'Entrada 2,5 mm² (1)', pinos: [via('IN', 1, 'prensa-cabo do 12 V')] },
       { ref: 'OUT', lado: 'baixo', legenda: 'Saídas (4)', pinos: [
         via('O1', 1, 'MV-1 · VIN — alimenta os 4 canais'),
-        via('O2', 1, '⭐ KA4 · 11 — 12 V das ventoinhas do radiador, comandado'), via('O3'), via('O4'),
+        via('O2', 1, '⭐ KA4 · COM — 12 V das ventoinhas do radiador, comandado'), via('O3'), via('O4'),
       ]},
     ],
-    avisos: ['⭐ A SAÍDA O2 VAI AO CONTATO 11 DO KA4, e o 12 (NF) dele é que segue '
-           + 'para o fio X5. O relé chaveia o LADO POSITIVO das ventoinhas do '
-           + 'radiador — nunca o negativo, que é a referência do tacômetro e foi o '
-           + 'que quebrou na versão anterior. Doc 31 §31.14.',
-           '🔥 É O CONTATO NF (FECHADO EM REPOUSO), NÃO O NA. Com o relé desatracado — '
-           + 'Arduino morto, fio do D30 rompido, 5 V caído — as ventoinhas GIRAM. Este é '
-           + 'o único ponto do painel em que o estado seguro é LIGADO, e é por isso que '
-           + 'ele foge da regra do KA3.',
+    avisos: ['⭐ A SAÍDA O2 VAI AO COM4 DO MÓDULO DO KA4, e o NC4 dele é que segue '
+           + 'para o fio X5. O contato chaveia o LADO POSITIVO das ventoinhas do '
+           + 'radiador — nunca o negativo, que é a referência do tacômetro e foi o que '
+           + 'quebrou na versão anterior. Doc 31 §31.14.',
+           '🔥 É O NC (FECHADO EM REPOUSO), NÃO O NO. Com o módulo sem energia — '
+           + 'Arduino morto, fio do D30 rompido, 5 V caído — as ventoinhas GIRAM. Este '
+           + 'é o único ponto do painel em que o estado seguro é LIGADO.',
            '⭐ O BD-AUX NÃO PASSA PELO KA2 DE PROPÓSITO. Com o cogumelo socado e o '
            + 'dissipador a 60 °C, estes 12 V continuam de pé e as ventoinhas continuam '
            + 'girando — até o DS18B20 dizer que esfriou.',
-           '⭐ O D2 (1N4007) É DE RODA-LIVRE DO MOTOR, catodo no +12 V, montado junto das '
-           + 'ventoinhas. Ventoinha é carga indutiva e nada mais a grampeia. Não confunda '
-           + 'com o D4, que é o da BOBINA do KA4.'],
+           '⭐ O D2 (1N4007) É DE RODA-LIVRE DO MOTOR, catodo no +12 V, montado junto '
+           + 'das ventoinhas. Ventoinha é carga indutiva e nada mais a grampeia.'],
   },
   {
     id: 'BD-24V', nome: 'BD-24V — 24 V PERMANENTE (comando e sinaleiros)', trilho: 1,
     resumoFuncao: '🔎 O QUE ELE E: a barra dos 24 V que SOBREVIVE. Alimenta a cadeia de comando (o cogumelo, o rearme, os reles) e os 4 sinaleiros. ⭐ Tem de ser permanente: se a cadeia de comando fosse alimentada pela potencia que ela mesma comanda, nada nunca ligaria — e o sinaleiro vermelho de FALHA apagaria justamente na emergencia.',
     x: 114, largura: 45, altura: 58, cor: '#e8590c',
     nota: 'PERMANENTE — não cai na emergência.',
-    avisos: ['🔄 CRESCEU DE 6 PARA 8 SAÍDAS quando o KA3 e o KA4 viraram relés de bobina '
-           + '24 V: a O6, que era a única reserva, foi ocupada pelas duas bobinas. Um bloco '
-           + 'de 8 é o tamanho comercial seguinte e devolve 2 pontos de reserva.',
-           '⭐ AS BOBINAS DO KA3/KA4 TÊM DE VIR DAQUI, NÃO DO BD-POT. Se viessem da '
-           + 'potência, o KA3 cortaria a própria alimentação e ficaria oscilando — e o KA4 '
-           + 'pararia as ventoinhas do radiador na emergência, que é quando elas mais '
-           + 'precisam girar.'],
     grupos: [
       { ref: 'IN', lado: 'cima', legenda: 'Entrada 2,5 mm² (1)', pinos: [via('IN', 1, 'prensa-cabo dos 24 V de serviços')] },
-      { ref: 'OUT', lado: 'baixo', legenda: 'Saídas (8) ⭐', pinos: [
+      { ref: 'OUT', lado: 'baixo', legenda: 'Saídas (6)', pinos: [
         via('O1', 1, 'DNLCB30 · VIN'), via('O2', 1, 'cadeia de comando · S0'),
         via('O3', 1, 'positivo comum dos 4 sinaleiros'),
         via('O4', 1, 'F-P1/F-P2 — entrada do porta-fusível'),
-        via('O5', 1, 'PI-1 J1-10 — COM do ULN2803'),
-        via('O6', 1, '⭐ KA3 · A1 — bobinas do KA3 e do KA4 (ponte curta de um A1 ao outro)'),
-        via('O7'), via('O8'),
+        via('O5', 1, 'PI-1 J1-10 — COM do ULN2803'), via('O6'),
       ]},
     ],
   },
@@ -806,14 +745,11 @@ export const COMPONENTES = [
         via('O8', 1, 'PI-2 — alimenta o mux e o INA219'),
         via('O9', 1, 'MV-1 · VCC do lado do comando'),
         via('O10', 1, '⭐ AM2315C · VCC — o sensor DENTRO da câmara'),
-        via('O11', 1, 'DS18B20 do radiador · VCC'), via('O12'), via('O13'),
+        via('O11', 1, 'DS18B20 do radiador · VCC'), via('O12', 1, '⭐ KA3 + KA4 · DC+ — alimenta os dois módulos de relé'), via('O13'),
       ]},
     ],
     avisos: ['📌 Cresceu de 10 para 12 pontos quando o AM2315C ganhou saída própria. '
-           + 'As 10 cargas de 5 V somam ~180 mA — o LM2596 de 2 A trabalha folgado.',
-           '⭐ O O12 VOLTOU A FICAR LIVRE quando o KA3 e o KA4 deixaram de ser módulos '
-           + 'de 5 V e viraram relés de bobina 24 V. São 130 mA que saíram deste ramal '
-           + 'e a primeira reserva real que o BD-5V tem.'],
+           + 'As 11 cargas de 5 V somam ~310 mA — o LM2596 de 2 A trabalha folgado.'],
   },
   {
     id: 'BD-0V', nome: 'BD-0V — retorno único de tudo (star ground)', trilho: 1,
@@ -830,7 +766,7 @@ export const COMPONENTES = [
         via('R7', 1, 'DNLCB30 · −'), via('R8', 1, 'RTC DS3231 · GND'),
         via('R9', 1, 'tela ES3C28P · GND'), via('R10', 1, 'conversor de nível · GND'),
         via('R11', 1, 'KA1 · A2'),
-        via('R12', 1, '⭐ KA3 · 14 — o retorno da bobina do KA2, depois do contato NA'),
+        via('R12', 1, '⭐ KA3 · NO3 — o retorno da bobina, depois do contato do módulo de relé'),
         via('R13', 1, 'MV-1 · GND da carga (lado VIN)'),
         via('R14', 1, 'MV-1 · GND do comando (lado isolado)'),
         via('R15', 1, '⭐ AM2315C · GND — o sensor DENTRO da câmara'),
@@ -839,7 +775,7 @@ export const COMPONENTES = [
         via('R18', 1, 'seletora LOCAL/REMOTO — contato para o 0 V'),
         via('R19', 1, 'DS18B20 do radiador · GND'),
         via('R20', 1, '⭐ retorno das ventoinhas do radiador — referência dos 2 RPM'),
-        via('R21', 1, '⭐ Q3 + Q4 · fonte — os dois conjuntos, em ponte curta entre si'),
+        via('R21', 1, '⭐ KA3 + KA4 · DC− — retorno dos dois módulos de relé'),
       ]},
     ],
     avisos: ['🔥 É o componente mais fácil de subdimensionar. Chegam 18 retornos + a '

@@ -192,7 +192,7 @@ E existe uma regra que atravessa tudo:
 //     quente e o que mata a pastilha. Como o rele atraca para DESLIGAR,
 //     a logica deste pino e INVERTIDA em relacao a de todos os outros.
 //     Ver Doc 31 §31.14.
-#define VENT_RADIADOR 30   // gatilho do Q4 -> bobina do KA4
+#define VENT_RADIADOR 30   // gatilho do KA4 (modulo de rele, IN4)
 //   ⚠ HIGH  = bobina atracada = contato NF ABERTO  = ventoinhas PARADAS
 //     LOW   = bobina solta     = contato NF FECHADO = ventoinhas GIRANDO
 //   Existe UMA funcao para escrever neste pino, e e por ela que a
@@ -200,10 +200,10 @@ E existe uma regra que atravessa tudo:
 inline void radiador(bool ligar) { digitalWrite(VENT_RADIADOR, ligar ? LOW : HIGH); }
 
 // ⭐ AUTORIZACAO DA POTENCIA -- o "veto" do firmware sobre o KA2.
-//   Comanda o KA3 (rele de 8 pinos em base PTF08A, trilho 2, pelo
-//   MOSFET Q3 colado na propria base), em SERIE com a bobina do KA2.
-//   HIGH = "estou saudavel, a potencia PODE ser armada".
-//   ⚠ CONTATO NA (11->14): rele solto = potencia cortada.
+//   Comanda o KA3 (modulo de rele, caixa DIN no trilho 2), em SERIE
+//   com a bobina do KA2. HIGH = "estou saudavel, a potencia PODE ser
+//   armada". ⚠ JUMPER DO MODULO EM "H" -- assim HIGH fecha o contato.
+//   ⚠ CONTATO NO: modulo sem energia = potencia cortada.
 //   Quem ARMA e o operador, no botao verde -- sao duas chaves e as
 //   duas precisam concordar. LOW derruba o SELO do KA2, e como o selo
 //   nao se refaz sozinho, o corte e RETENTIVO: so o verde religa.
@@ -1062,7 +1062,7 @@ void gerenciarVentoinhas(float tDissipador, float tAmbiente) {
 >
 > **A causa nunca foi térmica, foi topológica:** o MV-1 chaveia o **negativo**, e o tacômetro da ventoinha é referenciado nesse mesmo negativo. Cortar o canal levantava o preto para perto de 12 V, injetava corrente no diodo de proteção do `D3` e, antes disso, já fazia a leitura mentir — canal desligado lia "ventoinha parada", que é justamente o alarme que existe para salvar a pastilha.
 >
-> ✅ **A correção não é trocar a ventoinha: é trocar o lado que se chaveia.** O **contato NF do KA4** — um relé de 8 pinos, o mesmo do KA1/KA2 — corta o **positivo** dos 12 V. O preto das ventoinhas fica em **0 V de verdade, permanentemente**:
+> ✅ **A correção não é trocar a ventoinha: é trocar o lado que se chaveia.** O **contato NC do KA4** — um módulo de relé de 1 canal — corta o **positivo** dos 12 V. O preto das ventoinhas fica em **0 V de verdade, permanentemente**:
 >
 > | | Chaveando o NEGATIVO (o que quebrou) | **Contato do KA4 no POSITIVO** |
 > |---|---|---|
@@ -1073,7 +1073,7 @@ void gerenciarVentoinhas(float tDissipador, float tAmbiente) {
 >
 > 🎯 **Um contato seco não tem lado alto nem lado baixo — e é essa frase que apaga o problema inteiro.** O MV-1 é um MOSFET canal N: ele só sabe puxar para 0 V, e por isso era obrigado a chavear o negativo. Um relé apenas abre e fecha, e **você escolhe em que fio pô-lo**. O canal 1 do MV-1 continua livre.
 >
-> ⚡ **E o custo do comando de volta é um relé e um punhado de centavos:** o KA4 (o mesmo modelo de 8 pinos do KA1, KA2 e KA3), mais o conjunto Q4 — um MOSFET 2N7000, um resistor de 10 kΩ e um diodo 1N4007 num termorretrátil preso na própria base. Montagem em [Doc 31 §31.14](../camada_3_eletrica/31_comando_e_protecoes.md).
+> ⚡ **E o custo do comando de volta são três componentes:** o módulo do KA4, um resistor de 10 kΩ e um diodo de roda-livre — cerca de **R$ 13**. Montagem em [Doc 31 §31.14](../camada_3_eletrica/31_comando_e_protecoes.md).
 
 > ### ⭐ O contato NF, e por que o KA4 é o oposto do KA3
 >

@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef } from 'react';
 import PlacaIlhada from './PlacaIlhada';
+import ConjuntoRele from './ConjuntoRele';
 import PlacaReal from './PlacaReal';
 import * as PI1 from '../data/pi1_fisico';
 import * as PI2 from '../data/pi2_fisico';
@@ -27,6 +28,12 @@ const PLACAS = {
   ESP32:{ tipo: 'real', chave: 'ESP32', rotulo: 'placa DNLCB30 — 32 bornes de parafuso' },
   HMI:  { tipo: 'real', chave: 'HMI',  rotulo: 'tela ES3C28P — conectores e área útil' },
   CONV: { tipo: 'real', chave: 'CONV', rotulo: 'conversor de nível — 2 canais' },
+  /* ⭐ 'rele' = não é placa nem módulo comprado: é um borne com componente
+     pendurado nele. O D1 e os pull-downs não apareciam em vista nenhuma
+     do painel, porque a vista do painel só sabe desenhar FIO. */
+  KA1:  { tipo: 'rele', comp: 'KA1',  rotulo: 'a base, as pontes do selo e o que se mede' },
+  KA2:  { tipo: 'rele', comp: 'KA2',  rotulo: 'a base, o selo e o diodo D1 da bobina' },
+  KA34: { tipo: 'rele', comp: 'KA34', rotulo: 'os 2 canais, os pull-downs R10/R11 e o D2' },
 };
 import {
   CAIXA, PLACA, TRILHOS, COMPONENTES, CANALETAS, CANALETAS_PORTA, LATERAIS,
@@ -853,13 +860,14 @@ export default function VistaPainelInterno() {
               {PLACAS[sel.id] && (
                 <button onClick={() => setPlaca(PLACAS[sel.id])} style={{
                   display: 'block', width: '100%', marginBottom: 13, cursor: 'pointer',
-                  background: PLACAS[sel.id].tipo === 'ilhada' ? '#5f3dc4' : '#1d3557',
+                  background: PLACAS[sel.id].tipo === 'ilhada' ? '#5f3dc4'
+                    : PLACAS[sel.id].tipo === 'rele' ? '#c2410c' : '#1d3557',
                   color: '#fff', border: 'none', borderRadius: 7, padding: '11px 12px',
                   textAlign: 'left',
                 }}>
                   <div style={{ fontSize: 13, fontWeight: 700 }}>
-                    {PLACAS[sel.id].tipo === 'ilhada'
-                      ? '🔧 Ver a placa e como soldar'
+                    {PLACAS[sel.id].tipo === 'ilhada' ? '🔧 Ver a placa e como soldar'
+                      : PLACAS[sel.id].tipo === 'rele' ? '🔌 Ver o borne e os componentes nele'
                       : '🔍 Ver o módulo e a pinagem real'}
                   </div>
                   <div style={{ fontSize: 11, opacity: 0.82, marginTop: 2 }}>
@@ -937,6 +945,8 @@ export default function VistaPainelInterno() {
           {placa.tipo === 'ilhada' ? (
             <PlacaIlhada dados={placa.dados} titulo={placa.titulo}
                          onFechar={() => setPlaca(null)} />
+          ) : placa.tipo === 'rele' ? (
+            <ConjuntoRele compId={placa.comp} onFechar={() => setPlaca(null)} />
           ) : (
             <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
               <div style={{ background: '#1d3557', color: '#fff', padding: '12px 16px',
