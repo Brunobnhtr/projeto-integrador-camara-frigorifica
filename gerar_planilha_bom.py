@@ -3,12 +3,12 @@
 """
 Gera a planilha de compras do Projeto Integrador a partir da BOM em markdown.
 
-A lista de materiais tem UMA fonte da verdade:
-    camada_0_fundamentos/03_lista_materiais.md
+A lista de compras parte da BOM em Markdown e recebe uma conferencia cruzada
+com os dados renderizados pelo React nas abas de inventario, fiacao e
+divergencias.
 
-Este script lê as tabelas daquele documento e monta o Excel. Ou seja: editou a
-BOM no markdown, rodou o script, a planilha está atualizada. Não existe lista
-duplicada para sair de sincronia.
+Este script le as tabelas daquele documento, monta a lista principal e registra
+as decisoes que ainda precisam ser reconciliadas entre BOM e React.
 
     pip install openpyxl
     python gerar_planilha_bom.py
@@ -298,6 +298,142 @@ def ler_bom(caminho: Path) -> list[dict]:
     return itens
 
 
+# Inventario conferido nos dados que o React realmente renderiza. Esta aba nao
+# substitui a BOM: ela torna visiveis as decisoes do modelo que ainda nao estao
+# representadas de forma confiavel nas tabelas Markdown.
+REACT_INVENTARIO = [
+    ("Painel", "Caixa do painel", 1, "500 x 500 x 200 mm", "painel_interativo/src/data/painel_completo.js"),
+    ("Painel", "BD-POT", 1, "24 V de potencia, 1 entrada + 4 saidas", "painel_interativo/src/data/painel.js"),
+    ("Painel", "BD-AUX", 1, "12 V auxiliar, 1 entrada + 4 saidas", "painel_interativo/src/data/painel.js"),
+    ("Painel", "BD-24V", 1, "24 V permanente, 1 entrada + 6 saidas", "painel_interativo/src/data/painel_completo.js"),
+    ("Painel", "BD-5V", 1, "5 V, 1 entrada + 8 saidas", "painel_interativo/src/data/painel_completo.js"),
+    ("Painel", "BD-0V", 1, "barra star ground, minimo 20 pontos", "painel_interativo/src/data/painel_completo.js"),
+    ("Painel", "BTS7960", 2, "1 para Peltier; 1 para PTC", "painel_interativo/src/data/painel_completo.js"),
+    ("Painel", "Rele 8 pinos + base DIN", 2, "KA1 e KA2, bobina 24 Vcc; KA2 com contato 10 A em CC", "painel_interativo/src/data/reles_fisico.js"),
+    ("Painel", "Modulo rele 1 canal 5 V", 2, "KA3 NO e KA4 NC, optoacoplados", "painel_interativo/src/data/reles_fisico.js"),
+    ("Painel", "Arduino Mega 2560", 1, "Controlador principal", "painel_interativo/src/data/painel_completo.js"),
+    ("Painel", "Placa PI-1", 1, "Placa ilhada com ULN2803A, filtros e divisor D25", "painel_interativo/src/data/pi1_fisico.js"),
+    ("Painel", "Placa PI-2", 1, "Placa ilhada com CD74HC4067, shunts e INA219", "painel_interativo/src/data/pi2_fisico.js"),
+    ("Painel", "DNLCB30 + ESP32-WROOM-32U", 1, "Supervisao Wi-Fi/MQTT; entrada 24 V", "painel_interativo/src/data/painel_completo.js"),
+    ("Painel", "ES3C28P ESP32-S3", 1, "IHM 2,8 pol, touch, microSD; alimentacao pelo Type-C", "painel_interativo/src/data/pinagens.js"),
+    ("Painel", "Conversor de nivel UART", 1, "2 canais, 5 V <-> 3,3 V", "painel_interativo/src/data/pinagens.js"),
+    ("Painel", "Sinaleiro LED 22 mm 24 V", 4, "RUN verde, COOL azul, HEAT amarelo, FAULT vermelho", "painel_interativo/src/data/painel.js"),
+    ("Painel", "Botoeiras", 4, "Emergencia, START, STOP e REARME", "painel_interativo/src/data/painel.js"),
+    ("Camara", "Peltier TEC1-12706", 2, "Ligadas em serie, carga de 24 V / aproximadamente 6 A", "painel_interativo/src/data/camara.js"),
+    ("Camara", "PTC 24 V", 1, "Aquecedor; comandado pelo BTS #2", "painel_interativo/src/data/camara.js"),
+    ("Camara", "Ventoinhas internas 12 V", 5, "4 de circulacao + 1 do PTC, em paralelo", "painel_interativo/src/data/camara_ligacoes.js"),
+    ("Fora da camara", "Cooler do radiador 3 fios", 2, "12 V, com RPM individual; lado quente", "painel_interativo/src/data/camara_ligacoes.js"),
+    ("Camara", "AM2315C", 1, "Temperatura e umidade, dentro da camara", "painel_interativo/src/data/camara.js"),
+    ("Fora da camara", "DS18B20", 1, "Temperatura do dissipador quente, 3 fios", "painel_interativo/src/data/camara_ligacoes.js"),
+    ("Camara", "Posicao de ensaio / DUT", 2, "LED + resistor; retornos individuais RET-1 e RET-2", "painel_interativo/src/data/camara.js"),
+    ("Camara", "Porta-fusivel das posicoes", 1, "2 vias, fusivel 100 mA por DUT", "painel_interativo/src/data/camara_ligacoes.js"),
+    ("Camara", "Modulo CD74HC4067", 1, "Multiplexador de 16 canais", "painel_interativo/src/data/pi2_fisico.js"),
+    ("Camara", "Modulo INA219", 1, "Medicao de referencia da posicao 1", "painel_interativo/src/data/pi2_fisico.js"),
+]
+
+REACT_FIACAO = [
+    ("127 V CA", "preto / azul / verde-amarelo", "1,5 mm2", "Tomada -> disjuntor -> fonte; PE aterra a carcaça", "painel_interativo/src/data/maquete.js"),
+    ("24 V potencia", "vermelho", "1,5 mm2", "P1/painel -> KA2 -> BD-POT -> BTS", "painel_interativo/src/data/fiacao.js"),
+    ("0 V comum", "preto ou azul escuro", "1,5 mm2", "Retorno geral e star ground BD-0V", "painel_interativo/src/data/fiacao.js"),
+    ("24 V linha R1", "vermelho rigido encapado", "1,00 mm2", "Ramal das Peltier, 6,0 A", "painel_interativo/src/data/maquete.js"),
+    ("24 V linha R2", "marrom rigido encapado", "0,50 mm2", "Ramal do T2 e 24 V de servicos", "painel_interativo/src/data/maquete.js"),
+    ("24 V linha R3", "cinza rigido encapado", "0,50 mm2", "Ramal do T3 e auxiliares", "painel_interativo/src/data/maquete.js"),
+    ("0 V linha", "azul claro rigido encapado", "1,50 mm2", "Retorno comum dos tres ramais, 6,9 A", "painel_interativo/src/data/maquete.js"),
+    ("12 V auxiliar", "amarelo / preto", "0,75 mm2", "T3/BD-AUX -> ventoinhas", "painel_interativo/src/data/fiacao.js"),
+    ("5 V logica", "violeta ou vermelho / preto", "0,50 mm2", "T2/BD-5V -> Arduino, IHM e modulos", "painel_interativo/src/data/fiacao.js"),
+    ("Sinais", "cinza, azul, amarelo ou verde", "0,25 mm2", "Sensores, RPM, I2C, UART e comandos", "painel_interativo/src/data/fiacao_etapa4.js"),
+    ("I2C / 1-Wire", "par trançado blindado", "2 x 0,25 mm2", "Painel <-> camara; blindagem aterrada em um ponto", "painel_interativo/src/data/fiacao_etapa4.js"),
+]
+
+DIVERGENCIAS = [
+    ("Critica", "Dimensao do painel", "BOM: 400 x 500 x 200 mm", "React: 500 x 500 x 200 mm", "Comprar/fabricar com 500 mm de largura; o layout atual precisa disso."),
+    ("Critica", "PI-2 e ensaio", "BOM descreve itens espalhados e ainda cita 4 em alguns trechos", "React: 2 DUTs, CD74HC4067 e 1 INA219", "Comprar para 2 posicoes; manter 1 mux e 1 INA219."),
+    ("Critica", "Ventoinhas internas", "BOM separa 2 fans de 60 mm e 2 fans de 40 mm", "React: 5 internas no mesmo grupo: 4 de circulacao + 1 do PTC", "Conferir fisicamente o tamanho das 5; a fiação atual trata as cinco em paralelo."),
+    ("Alta", "BD-5V e BD-24V", "Trechos antigos do BOM/React antigo mostram 6 e 4 saidas", "React atual: BD-5V com 8 e BD-24V com 6", "Comprar os blocos maiores da aba Inventario React."),
+    ("Alta", "IHM", "BOM antiga ainda cita Nextion e modulo SD separado em partes do texto", "React: ES3C28P com microSD integrado", "Nao comprar Nextion nem modulo SD separado; comprar conversor de nivel e rabicho Type-C."),
+    ("Media", "Cores de fiação", "BOM resume positivos/negativos por cor", "React usa cor funcional: 24 V permanente laranja, 5 V violeta, sinal cinza/verde", "Seguir a aba Fiacao React e identificar cada cabo com anilha."),
+    ("Media", "Geometria da camara", "BOM/documentos têm dimensoes revisadas diferentes", "React ainda conserva constantes antigas em camara.js, enquanto montagem/ligacoes refletem a revisao", "Nao cortar acrilico sem confirmar a lista de corte e o desenho final."),
+]
+
+
+def adicionar_aba_tabela(wb, nome, cabecalho, linhas, larguras=None):
+    ws = wb.create_sheet(nome)
+    for coluna, titulo in enumerate(cabecalho, start=1):
+        c = ws.cell(row=1, column=coluna, value=titulo)
+        c.font = Font(bold=True, color="FFFFFF")
+        c.fill = PatternFill("solid", fgColor=AZUL_ESCURO)
+        c.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+        c.border = BORDA
+        if larguras:
+            ws.column_dimensions[get_column_letter(coluna)].width = larguras[coluna - 1]
+    for linha, valores in enumerate(linhas, start=2):
+        for coluna, valor in enumerate(valores, start=1):
+            c = ws.cell(row=linha, column=coluna, value=valor)
+            c.border = BORDA
+            c.alignment = Alignment(vertical="top", wrap_text=True)
+            if linha % 2 == 0:
+                c.fill = PatternFill("solid", fgColor=CINZA_CLARO)
+    ws.freeze_panes = "A2"
+    ws.auto_filter.ref = f"A1:{get_column_letter(len(cabecalho))}{max(1, len(linhas) + 1)}"
+    return ws
+
+
+def aplicar_react_como_fonte(itens: list[dict]) -> list[dict]:
+    """Corrige a lista principal para seguir o inventario efetivo do React."""
+    corrigidos = []
+    for reg in itens:
+        item = reg["item"].lower().translate(ACENTOS)
+        if "fan 60" in item or "fan 40" in item:
+            continue
+        if "caixa de comando ou mdf" in item:
+            reg["espec"] = "500 x 500 x 200 mm — dimensao exigida pelo layout React"
+        elif "arduino mega 2560" in item:
+            reg["qtd"] = "1"
+            reg["espec"] = "1 controlador em uso; reserva opcional"
+        elif "ka1 e ka2" in item:
+            reg["qtd"] = "2"
+            reg["espec"] = "2 conjuntos em uso; 24 Vcc, 2 contatos reversiveis, KA2 com 10 A em CC"
+        elif "modulo rele 1 canal 5 v" in item:
+            reg["qtd"] = "2"
+            reg["espec"] = "KA3 (NO) e KA4 (NC), optoacoplados; reservas opcionais"
+        elif item.startswith("sensor ds18b20"):
+            reg["espec"] = "1-Wire, 3 fios, colado no dissipador quente; nao fica no centro da camara"
+        elif "placa ilhada (padrao" in item:
+            reg["item"] = "Placa ilhada 9 x 15 cm para PI-1 + PI-2"
+            reg["espec"] = "1 placa de 34 x 58 furos, cortada ao meio para formar as duas placas"
+        elif "resistor 47" in item:
+            reg["qtd"] = "2"
+            reg["espec"] = "47 ohm, 1%, 1/4 W; R1 e R2 ativos na PI-2"
+        elif "fusivel mini automotivo 500" in item:
+            reg["qtd"] = "2"
+            reg["espec"] = "100 mA por DUT; F-P1 e F-P2"
+        elif "resistor 1,2" in item or "resistor 2,2" in item:
+            reg["qtd"] = "1"
+        elif "led 5 mm" in item:
+            reg["qtd"] = "2"
+        elif "micro-chave ou jumper" in item:
+            reg["qtd"] = "2"
+        elif "diodo 1n4007" in item:
+            reg["qtd"] = "2"
+        elif "ci uln2803a" in item:
+            reg["qtd"] = "1"
+        elif "cabo flexivel 1,5 mm² preto" in item:
+            reg["item"] = "Cabo flexivel 1,5 mm² azul escuro"
+            reg["espec"] = "750 V; 0 V comum conforme a codificacao do React"
+        corrigidos.append(reg)
+
+    corrigidos.append({
+        "secao": "L.3 — Atuadores térmicos e ventilação",
+        "item": "Ventoinha interna 12 V — grupo React",
+        "qtd": "5",
+        "espec": "Cinco unidades compatíveis com a geometria atual: 2 frias, 2 dos dutos e 1 do PTC; ligadas em paralelo",
+        "obs": "Confirmar dimensao fisica antes da compra",
+        "link_manual": "", "busca_ml": "", "busca_amz": "", "termo": "ventoinha 12v 40mm",
+        "termo_en": "", "busca_ali": "",
+    })
+    return corrigidos
+
+
 def gerar(itens: list[dict], destino: Path) -> None:
     wb = Workbook()
 
@@ -405,6 +541,28 @@ def gerar(itens: list[dict], destino: Path) -> None:
 
     ws.auto_filter.ref = f"A{linha_cab}:K{linha - 1}"
 
+    adicionar_aba_tabela(
+        wb,
+        "Inventario React",
+        ["Grupo", "Componente", "Qtd", "Especificacao conferida", "Fonte React"],
+        REACT_INVENTARIO,
+        [18, 34, 8, 64, 48],
+    )
+    adicionar_aba_tabela(
+        wb,
+        "Fiacao React",
+        ["Circuito", "Cor(es)", "Bitola", "Uso", "Fonte React"],
+        REACT_FIACAO,
+        [22, 32, 16, 62, 48],
+    )
+    adicionar_aba_tabela(
+        wb,
+        "Divergencias",
+        ["Prioridade", "Tema", "BOM/Documentacao", "React atual", "Decisao para compra"],
+        DIVERGENCIAS,
+        [14, 24, 52, 56, 64],
+    )
+
     # ───────────────────────── aba 2: ordem de construção ──────────────────
     ws2 = wb.create_sheet("Ordem de Construção")
     ws2.merge_cells("A1:D1")
@@ -492,4 +650,4 @@ def gerar(itens: list[dict], destino: Path) -> None:
 
 
 if __name__ == "__main__":
-    gerar(ler_bom(BOM_MD), SAIDA)
+    gerar(aplicar_react_como_fonte(ler_bom(BOM_MD)), SAIDA)
