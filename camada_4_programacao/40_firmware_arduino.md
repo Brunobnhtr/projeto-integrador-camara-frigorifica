@@ -185,14 +185,25 @@ E existe uma regra que atravessa tudo:
 //   corrente no D3. Quem chaveia e o CONTATO do KA4,
 //   e um contato seco nao tem lado alto nem lado baixo -- basta poe-lo
 //   no fio POSITIVO. O preto fica em 0 V de verdade, sempre.
-//   Ver Doc 31 §31.14.
-#define VENT_RADIADOR 30   // gatilho do KA4 (modulo de rele)
+//
+//   ⭐ E O CONTATO E O NF, AO CONTRARIO DO KA3. O estado seguro deste
+//     lado e VENTILANDO: rele solto (Arduino morto, fio rompido, 5 V
+//     caido) tem de deixar as ventoinhas GIRANDO, porque o dissipador
+//     quente e o que mata a pastilha. Como o rele atraca para DESLIGAR,
+//     a logica deste pino e INVERTIDA em relacao a de todos os outros.
+//     Ver Doc 31 §31.14.
+#define VENT_RADIADOR 30   // gatilho do Q4 -> bobina do KA4
+//   ⚠ HIGH  = bobina atracada = contato NF ABERTO  = ventoinhas PARADAS
+//     LOW   = bobina solta     = contato NF FECHADO = ventoinhas GIRANDO
+//   Existe UMA funcao para escrever neste pino, e e por ela que a
+//   inversao passa. Nenhum outro ponto do firmware o toca direto.
+inline void radiador(bool ligar) { digitalWrite(VENT_RADIADOR, ligar ? LOW : HIGH); }
 
 // ⭐ AUTORIZACAO DA POTENCIA -- o "veto" do firmware sobre o KA2.
-//   Comanda o KA3 (modulo de rele, caixa DIN no trilho 2), em SERIE
-//   com a bobina do KA2. HIGH = "estou saudavel, a potencia PODE ser
-//   armada". ⚠ JUMPER DO MODULO EM "H" -- assim HIGH fecha o contato e
-//   a logica do firmware fica natural, sem inversao.
+//   Comanda o KA3 (rele de 8 pinos em base PTF08A, trilho 2, pelo
+//   MOSFET Q3 colado na propria base), em SERIE com a bobina do KA2.
+//   HIGH = "estou saudavel, a potencia PODE ser armada".
+//   ⚠ CONTATO NA (11->14): rele solto = potencia cortada.
 //   Quem ARMA e o operador, no botao verde -- sao duas chaves e as
 //   duas precisam concordar. LOW derruba o SELO do KA2, e como o selo
 //   nao se refaz sozinho, o corte e RETENTIVO: so o verde religa.
@@ -234,7 +245,8 @@ inline void desabilitarDrivers() {
 //   perdeu e a potencia NAO retorna. So o botao verde religa.
 //   Funciona ate com um MOSFET do BTS7960 colado em curto, porque quem
 //   abre e um contato de rele a montante dele.
-inline void cortarPotencia()    { digitalWrite(HAB_POTENCIA, LOW);  }
+inline void cortarPotencia()    { digitalWrite(HAB_POTENCIA, LOW);
+                                  tCorte = millis(); conferirCorte = true; }
 
 // AUTORIZA -- nao arma. Depois disto o operador ainda precisa apertar
 // o botao verde para o KA2 selar.
@@ -356,6 +368,8 @@ O PWM nativo do Arduino roda a ~490 Hz ou ~980 Hz. Isso é **péssimo** para os 
 | **PTC** | A constante de tempo térmica é de vários segundos — chavear a 1 kHz não muda nada, só gera EMI |
 
 Com **1 Hz**, cada ciclo dura 1 s: a Peltier fica ligada por `duty%` de cada segundo. A inércia térmica da câmara (constante de tempo de minutos) filtra completamente essa ondulação.
+
+> ⚠️ **Esta justificativa está sob revisão, e o [Doc 43](43_analise_modelo_termico.md) explica por quê.** Em resumo: a 490 Hz a massa térmica da pastilha filtra tudo e a junção **não cicla** — quem a faz ciclar termicamente é justamente 1 Hz. E o ganho real não está na frequência: está em **reduzir a corrente em vez de picotá-la**, o que vale ~17 W de frio e um dissipador 8,7 K mais frio. **O código não mudou** — a decisão está registrada no Doc 43 §43.6.
 
 ### Código
 
@@ -523,13 +537,29 @@ void medirRPM() {
     rpmAtual1 = (p1 * 60) / 2;    // 2 pulsos por rotação
     rpmAtual2 = (p2 * 60) / 2;
 
-    // Só protege quando as Peltier estão ativas há tempo suficiente
-    // para as fans já terem acelerado (evita falso trip na partida)
-    if (modo == RESFRIAMENTO && estado == RODANDO &&
-        (millis() - inicioModoFrio > TEMPO_PARTIDA_FAN)) {
+    // ⭐ A VIGILÂNCIA SEGUE O RADIADOR, NÃO O MODO. Enquanto o firmware
+    //   mandar ventilar, ele confere se está ventilando — e isso inclui
+    //   a PÓS-VENTILAÇÃO, que antes ficava sem ninguém olhando.
+    //   O tempo de partida conta do COMANDO do radiador, não do início
+    //   do resfriamento: é a ventoinha que precisa acelerar.
+    if (!radiadorLigado || estado == EMERGENCIA) return;
+    if (millis() - inicioRadiador < TEMPO_PARTIDA_FAN) return;
 
-        if (rpmAtual1 < RPM_MINIMA) dispararTrip("FAN1_PARADA");
-        if (rpmAtual2 < RPM_MINIMA) dispararTrip("FAN2_PARADA");
+    bool parada1 = (rpmAtual1 < RPM_MINIMA);
+    bool parada2 = (rpmAtual2 < RPM_MINIMA);
+    if (!parada1 && !parada2) return;
+
+    if (modo == RESFRIAMENTO && estado == RODANDO) {
+        // A pastilha está gerando calor AGORA: corta.
+        if (parada1) dispararTrip("FAN1_PARADA");
+        if (parada2) dispararTrip("FAN2_PARADA");
+    } else {
+        // ⭐ PÓS-VENTILAÇÃO: não há o que cortar — a potência já caiu.
+        //   Mas o dissipador está quente e o calor está voltando pela
+        //   pastilha desligada. Isso é ALARME, e tem de aparecer.
+        strncpy(alerta, parada1 ? "FAN1_POSVENT" : "FAN2_POSVENT",
+                sizeof(alerta) - 1);
+        digitalWrite(LED_FAULT, HIGH);
     }
 }
 ```
@@ -542,6 +572,7 @@ void medirRPM() {
 void dispararTrip(const char* motivo) {
     desabilitarDrivers();              // 1º — corta o comando dos dois drivers
     cortarPotencia();                  // 2º — ⚡ e ABRE O KA2: corte FÍSICO
+                                       //      ⭐ e agenda a CONFERÊNCIA pelo D25
     desligarTudo();
     digitalWrite(LED_RUN, LOW);
     digitalWrite(LED_FAULT, HIGH);
@@ -552,7 +583,51 @@ void dispararTrip(const char* motivo) {
 }
 ```
 
-> ### 🔧 Correção — este comentário prometia um relé que não existia
+> ### ⭐ E o corte agora é CONFERIDO, não suposto
+
+Mandar cortar e acreditar que cortou são coisas diferentes — e o painel já tinha
+o fio que responde: o **`D25`** lê se os 24 V continuam no BD-POT. Ele era usado
+só como pré-condição do START; passa a fechar a malha também no corte.
+
+```cpp
+unsigned long tCorte = 0;
+bool          conferirCorte = false;
+
+// ⚠ CHAMADA EM TODO LOOP. O KA3 desatraca em ~10 ms e o KA2 em ~20 ms;
+//   150 ms é folga generosa para os dois, sem travar nada esperando.
+void conferirCortePotencia() {
+    if (!conferirCorte || millis() - tCorte < 150) return;
+    conferirCorte = false;
+
+    if (potenciaDisponivel()) {          // ⛔ mandei cortar e a energia FICOU
+        strncpy(alerta, "CORTE_FALHOU", sizeof(alerta) - 1);
+        digitalWrite(LED_FAULT, HIGH);
+        // Nao ha segundo canal: o firmware ja fez tudo o que podia.
+        // O que ele pode e MANDAR ALGUEM SOCAR O COGUMELO.
+    }
+}
+```
+
+> 🎯 **O que isso detecta que nada mais detectava.** O contato do KA3 soldado, o
+> contato do KA2 soldado, um borne solto na malha da bobina — os três fazem o veto
+> do firmware desaparecer **em silêncio**. O pior deles é o par: um BTS7960 com
+> MOSFET em curto (que é o que disparou o trip) mais um KA3 colado. Sem esta
+> conferência, a Peltier fica a 100 %, a tela mostra `FALHA` e o firmware acredita
+> que cortou.
+>
+> 🎓 **E a distinção vale ponto na banca:** o firmware não ganhou **tolerância** a
+> falha — ele ganhou **detecção** de falha. Tolerar exigiria um segundo canal de
+> corte, que este painel não tem e nem precisa ter. Detectar custa oito linhas e
+> um fio que já estava lá. É essa a diferença que a ISO 13849 cobra quando fala em
+> *diagnostic coverage*.
+>
+> 🧪 **Ensaie no simulador antes da bancada:** marque `Contato do KA3 soldado` com
+> o ensaio rodando e force um trip. Sem esta função o painel mente; com ela, o
+> alerta `CORTE_FALHOU` aparece em 150 ms.
+
+---
+
+### 🔧 Correção — este comentário prometia um relé que não existia
 >
 > A versão anterior dizia: *"Agora o firmware **abre um relé**, e o corte é físico."* **Era falso.** A função chamava `desabilitarDrivers()` e `desligarTudo()`, e as duas só fazem `digitalWrite` em pinos de sinal. **O firmware não tinha relé nenhum sob comando** — o KA1 e o KA2 respondiam apenas às botoeiras.
 >
@@ -894,6 +969,7 @@ void pararProcesso() {
 const float         MARGEM_AMBIENTE = 5.0;       // °C acima da ambiente
 bool                dissipadorQuente = false;
 bool                radiadorLigado   = false;    // estado comandado, p/ o trip
+unsigned long       inicioRadiador   = 0;        // ⭐ quando ele foi mandado ligar
 ```
 
 ```cpp
@@ -915,8 +991,15 @@ void gerenciarVentoinhas(float tDissipador, float tAmbiente) {
     dissipadorQuente = !sensorOK || (tDissipador > tAmbiente + MARGEM_AMBIENTE);
 
     bool peltierAtiva = (estado == RODANDO && modo == RESFRIAMENTO);
+    bool antes        = radiadorLigado;
     radiadorLigado    = peltierAtiva || dissipadorQuente;
-    digitalWrite(VENT_RADIADOR, radiadorLigado ? HIGH : LOW);
+
+    // ⭐ Marca QUANDO o radiador foi mandado ligar. E deste instante,
+    //   e nao do inicio do resfriamento, que a vigilancia de RPM conta
+    //   o tempo de partida da ventoinha.
+    if (radiadorLigado && !antes) inicioRadiador = millis();
+
+    radiador(radiadorLigado);   // ⚠ a inversao do KA4 mora la dentro
 
     // ── ⭐ INTERNAS (2 frias + 2 do duto + a do PTC) — uma condição só ──
     //   Ensaio rodando, em qualquer modo. Param junto com ele.
@@ -939,20 +1022,17 @@ void gerenciarVentoinhas(float tDissipador, float tAmbiente) {
 >
 > ⚠️ **A linha do sensor com defeito é a mais importante do bloco.** `DallasTemperature` devolve **−127 °C** quando o sensor some do barramento, e −127 é menor que qualquer ambiente — a comparação ingênua concluiria "está frio, pode desligar" **justamente quando o firmware perdeu a capacidade de saber**. Fio solto num sensor **nunca** pode autorizar o desligamento de uma proteção térmica. Por isso o `!sensorOK` entra com **OU**, forçando "quente".
 
-> ### ⚡ O trip por RPM continua coerente — e ganhou uma guarda
+> ### ⭐ E a vigilância de RPM passou a seguir o RADIADOR, não o modo
 >
-> A ventoinha agora pode estar legitimamente parada, e o alarme `FAN_PARADA` existe para detectar exatamente "parada". Sem cuidado, o novo controle criaria alarme falso.
+> A versão anterior só vigiava em `modo == RESFRIAMENTO`. Parecia suficiente — é quando a pastilha gera calor. **Mas deixava a pós-ventilação inteira sem ninguém olhando**, e a pós-ventilação é exatamente a fase em que o dissipador está a 60 °C e o calor volta **através da pastilha desligada** — o que este documento chama, quatro parágrafos abaixo, de "o que mais encurta a vida dela".
 >
-> Só que os dois casos não se cruzam: o trip só arma em `modo == RESFRIAMENTO`, e em `RESFRIAMENTO` a regra acima **sempre** liga o radiador. Mesmo assim, vale explicitar em vez de depender da coincidência:
+> A condição certa é **`radiadorLigado`**: enquanto o firmware mandar ventilar, ele confere se está ventilando. E o tempo de partida passa a contar do **comando do radiador**, não do início do resfriamento — quem precisa acelerar é a ventoinha.
 >
-> ```cpp
-> // Em medirRPM(), na condição de trip:
-> if (radiadorLigado && modo == RESFRIAMENTO && estado == RODANDO &&
->     (millis() - inicioModoFrio > TEMPO_PARTIDA_FAN)) {
->     if (rpmAtual1 < RPM_MINIMA) dispararTrip("FAN1_PARADA");
->     if (rpmAtual2 < RPM_MINIMA) dispararTrip("FAN2_PARADA");
-> }
-> ```
+> | Fase | Ventoinha parada → | Por quê |
+> |---|---|---|
+> | `RESFRIAMENTO` rodando | ⚡ **trip** — corta a potência | a pastilha está gerando calor agora |
+> | **Pós-ventilação** | 🟡 **alarme** `FANn_POSVENT` | não há o que cortar, a potência já caiu — mas alguém precisa saber |
+> | `EMERGENCIA` | — | o cogumelo já é o alarme |
 >
 > 📌 **`radiadorLigado` é o estado COMANDADO, não o medido.** A diferença é toda a função do alarme: comparar "mandei ligar" com "está girando" é o que detecta a ventoinha travada. Se a condição usasse a própria RPM, o alarme provaria a si mesmo e nunca dispararia.
 
@@ -982,7 +1062,7 @@ void gerenciarVentoinhas(float tDissipador, float tAmbiente) {
 >
 > **A causa nunca foi térmica, foi topológica:** o MV-1 chaveia o **negativo**, e o tacômetro da ventoinha é referenciado nesse mesmo negativo. Cortar o canal levantava o preto para perto de 12 V, injetava corrente no diodo de proteção do `D3` e, antes disso, já fazia a leitura mentir — canal desligado lia "ventoinha parada", que é justamente o alarme que existe para salvar a pastilha.
 >
-> ✅ **A correção não é trocar a ventoinha: é trocar o lado que se chaveia.** O **contato do KA4** — um módulo de relé de 1 canal — corta o **positivo** dos 12 V. O preto das ventoinhas fica em **0 V de verdade, permanentemente**:
+> ✅ **A correção não é trocar a ventoinha: é trocar o lado que se chaveia.** O **contato NF do KA4** — um relé de 8 pinos, o mesmo do KA1/KA2 — corta o **positivo** dos 12 V. O preto das ventoinhas fica em **0 V de verdade, permanentemente**:
 >
 > | | Chaveando o NEGATIVO (o que quebrou) | **Contato do KA4 no POSITIVO** |
 > |---|---|---|
@@ -993,20 +1073,35 @@ void gerenciarVentoinhas(float tDissipador, float tAmbiente) {
 >
 > 🎯 **Um contato seco não tem lado alto nem lado baixo — e é essa frase que apaga o problema inteiro.** O MV-1 é um MOSFET canal N: ele só sabe puxar para 0 V, e por isso era obrigado a chavear o negativo. Um relé apenas abre e fecha, e **você escolhe em que fio pô-lo**. O canal 1 do MV-1 continua livre.
 >
-> ⚡ **E o custo do comando de volta são três componentes:** o KA4, um resistor de 10 kΩ e um diodo de roda-livre — cerca de **R$ 3,50**. Montagem em [Doc 31 §31.14](../camada_3_eletrica/31_comando_e_protecoes.md).
+> ⚡ **E o custo do comando de volta é um relé e um punhado de centavos:** o KA4 (o mesmo modelo de 8 pinos do KA1, KA2 e KA3), mais o conjunto Q4 — um MOSFET 2N7000, um resistor de 10 kΩ e um diodo 1N4007 num termorretrátil preso na própria base. Montagem em [Doc 31 §31.14](../camada_3_eletrica/31_comando_e_protecoes.md).
 
-> ### ⚠️ O que se perde, e por que é aceitável
+> ### ⭐ O contato NF, e por que o KA4 é o oposto do KA3
 >
-> Antes, as ventoinhas do radiador giravam **mesmo com o Arduino morto**. Agora dependem dele. Vale encarar isso de frente:
+> A primeira versão deste comando usava o **NA**, copiando a regra do KA3. Estava errada, e o erro era de sinal: **os dois relés têm estados seguros opostos.**
 >
-> | Falha | O que acontece |
-> |---|---|
-> | **Firmware trava** | O watchdog reseta em 2 s e o `setup()` liga o radiador antes de qualquer outra coisa. **2 segundos sem ventilação** — irrelevante para a inércia de um dissipador de alumínio |
-> | **Arduino morre de vez** | Sem ventilação. **Mas também sem Peltier:** o `R_EN` cai pelos pull-downs e o **KA3** corta os 24 V. Não há geração de calor, só o residual, que se dissipa por convecção natural |
-> | **DS18B20 solta o fio** | ⭐ **A ventoinha LIGA e fica ligada.** O `!sensorOK` força "quente" |
-> | **Contato do KA4 falha aberto** | Sem ventilação — e sem alarme. É o pior caso, e é o que o **trip por RPM = 0** já detectava antes de tudo isso existir |
+> | | Desenergizado significa | Isso é seguro? |
+> |---|---|---|
+> | **KA3** | contato NA abre → potência cortada | ✅ |
+> | **KA4 no NA** *(como estava)* | contato abre → **ventoinha para com o dissipador quente** | ❌ |
+> | **KA4 no NF** *(como ficou)* | contato fecha → **ventoinha gira** | ✅ |
 >
-> 📌 **A dependência do Arduino não é nova, é a mesma de sempre.** Ele já era o único que sabia parar a Peltier por RPM. O que mudou foi a ventilação passar a depender dele também — e como as duas dependem do mesmo componente, uma falha dele derruba as duas juntas, que é a ordem correta: **primeiro para de gerar calor, depois para de tirar.**
+> Trocar `NA` por `NF` e inverter uma linha do firmware muda todos os modos de falha de lado:
+>
+> | Falha | Antes (NA) | **Agora (NF)** |
+> |---|---|---|
+> | **Firmware trava** | 2 s sem ventilação até o watchdog resetar | ⭐ **o pino vai a Hi-Z no reset → ventila durante o reset inteiro** |
+> | **Arduino morre de vez** | sem ventilação | ⭐ **ventila, e continua ventilando.** O KA3 já cortou a potência: para de gerar calor e segue tirando o que sobrou |
+> | **Fio do `D30` rompido** | sem ventilação, sem alarme | ⭐ **ventila** (o R11 solta a bobina) |
+> | **BD-5V cai** | sem ventilação | ⭐ **ventila** — o BD-AUX é outro ramal e sobrevive |
+> | **DS18B20 solta o fio** | ventila (o `!sensorOK` força "quente") | igual — ✅ |
+> | **Contato falha ABERTO** | 🔥 sem ventilação e sem alarme — **o pior caso do projeto** | agora ele é o único caso ruim que sobrou, e o **alarme de RPM na pós-ventilação** passou a cobri-lo |
+> | **Contato falha FECHADO** | ventoinha nunca desliga | idem — **e era o comportamento anterior do projeto, que já se considerava seguro** |
+>
+> 🎯 **A propriedade que fecha o argumento é a mesma do §31.13, aplicada ao contrário.** Lá, nenhuma falha do KA3 deixa o painel pior do que era antes de ele existir. Aqui, com o NF, o **pior caso vira o comportamento antigo** — ventoinha sempre ligada, que custava 5 W e nunca custou uma pastilha. Uma correção que troca o pior caso pelo estado que você já aceitava é uma correção de graça.
+>
+> ⚠️ **O preço, e ele é pequeno:** a bobina do KA4 fica atracada sempre que as ventoinhas estão **desligadas** — ou seja, a maior parte do tempo. São ~37 mA contínuos no BD-24V. É o custo de ter o fail-safe apontando para o lado certo.
+>
+> 🧪 **Dá para provar no simulador:** o cenário 34 mata o Arduino com o ensaio rodando e confere que o BD-POT vai a zero **e** que o radiador continua girando. O cenário 33 abre o contato do KA4 e mostra o trip por RPM acusando — uma falha que, até esta revisão, o simulador nem sabia representar.
 
 > ### ⛔ O único caso em que o resfriamento realmente para: a chave geral
 >
@@ -1107,7 +1202,7 @@ void setup() {
     // ⚠ O radiador NASCE LIGADO. Enquanto o primeiro lerSensores() nao
     //   rodar nao ha leitura do dissipador, e "nao sei" tem que valer
     //   como "pode estar quente". Sao ~2 s de ventilacao a mais no boot.
-    pinMode(VENT_RADIADOR, OUTPUT); digitalWrite(VENT_RADIADOR, HIGH);
+    pinMode(VENT_RADIADOR, OUTPUT); radiador(true);   // ⭐ ventila desde o boot
 
     desligarTudo();
     setupRPM();
@@ -1127,6 +1222,7 @@ void loop() {
     wdt_reset();                       // ⚡ "estou vivo" — some daqui e o Mega reseta
     processarComandoRemoto();          // START/STOP/receita vindos da IHM
     maquinaDeEstados();
+    conferirCortePotencia();           // ⭐ mandei cortar — caiu mesmo? (D25)
     medirRPM();
     lerSensores();                         // entrada, umidade, temperatura de referência
 

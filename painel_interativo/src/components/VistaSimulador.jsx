@@ -730,6 +730,8 @@ const FALHAS = [
   ['fanTravada', 'Ventoinha travada', 'RPM = 0 → trip em 5 s, com corte físico'],
   ['ds18Solto', 'DS18B20 solto', 'lê −127 °C → conta como QUENTE e a ventoinha LIGA'],
   ['ka3Colado', 'Contato do KA3 soldado', 'o veto do firmware some; as botoeiras seguem'],
+  ['ka4Aberto', '🔥 Contato do KA4 aberto', 'o radiador nunca ventila — só o trip por RPM acusa'],
+  ['ka4Colado', 'Contato do KA4 soldado', 'ventoinha do radiador sempre ligada: seguro, gasta 5 W à toa'],
   ['ka2Colado', '🔥 Contato do KA2 soldado', 'nem o STOP nem a emergência cortam. Só a chave geral'],
   ['geralDesligada', 'Chave geral desligada', 'tudo morre, inclusive a eletrônica'],
 ];

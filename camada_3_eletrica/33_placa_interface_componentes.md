@@ -376,7 +376,7 @@ Chegou a ser projetado aqui: um **MOSFET 2N7000** com resistor e diodo, dando ao
 
 A PI-1 está no trilho 3 e o KA2 no trilho 1. Com o MOSFET na placa, o **circuito da bobina** teria de subir três trilhos e voltar — dois fios de bobina atravessando o painel, um deles pela canaleta de **sinal**, colado ao `IS` analógico e ao 1-Wire. É o contrário da regra de [§31.4](31_comando_e_protecoes.md), que foi quem decidiu em que trilho os relés moram.
 
-✅ **A função virou o `KA3`**, um **módulo de relé de 1 canal, 5 V**, pronto, numa caixa DIN de 4 módulos no **trilho 2** — onde a canaleta de baixo (CH-2x1) já é de potência e serve o trilho 1 diretamente. Circuito completo em [Doc 31 §31.13](31_comando_e_protecoes.md).
+✅ **A função virou o `KA3`**, um **relé de 8 pinos com bobina de 24 V** — o mesmo modelo do KA1/KA2 — em base PTF08A no **trilho 2**, com o MOSFET `Q3` num termorretrátil preso à própria base — onde a canaleta de baixo (CH-2x1) já é de potência e serve o trilho 1 diretamente. Circuito completo em [Doc 31 §31.13](31_comando_e_protecoes.md).
 
 > 🎓 **Duas lições que valem a defesa.** A primeira: **componente de ancoragem é de proximidade** — é a mesma razão pela qual os pull-downs de 10 kΩ do `R_EN` são soldados nos próprios BTS7960, logo acima. A segunda: um script de validação escrito por você mesmo reprovando uma decisão sua é o argumento mais forte que existe a favor de ter escrito o script.
 
@@ -1066,7 +1066,7 @@ Os dois pull-downs **não vão na placa PI-1**, pelo motivo explicado na §33.2:
 
 | Componente | Quantidade na BOM | Destino |
 |---|---:|---|
-| **Diodo 1N4007** | 4 | 🗑️ **Sai do painel.** Ele existiria como diodo de roda-livre das bobinas dos relés — mas **KA1 e KA2 são relés de interface com o roda-livre já embutido no módulo**. Os 4 diodos vão para o saquinho de sobressalentes, não para o projeto |
+| **Diodo 1N4007** | 4 | 🔄 **Não vai na PI-1, mas VOLTOU ao painel.** As bobinas do **KA3** e do **KA4** precisam de roda-livre próprio (`D3` e `D4`), senão o MOSFET do conjunto morre no primeiro desligamento — e há ainda o `D1` (bobina do KA2) e o `D2` (ventoinhas). Todos vão **nos bornes do componente**, nunca na placa |
 | ~~Diodo Zener 5V6 / 13 V / 15 V~~ | ~~6~~ | 🗑️ Já eliminados na revisão do Plano B — proteção nativa do LM2596. Ver [Doc 02 §2.6](../camada_0_fundamentos/02_arquitetura_de_energia.md) |
 
 > 💡 **Repare no padrão:** os componentes que saíram são justamente os da categoria "proteção" — e saíram porque **os módulos realmente já protegem**. Os que ficaram são todos de **interface**. A sua intuição sobre proteção estava correta; ela só não se aplicava a estes nove componentes, porque eles nunca foram proteção.

@@ -171,7 +171,7 @@ Esta é a confusão mais fácil de ter, e vale deixar explícita: **potência e 
 
 > 🎯 **O Arduino não tem nenhum pino ligado ao KA1** — e essa é a regra que não se negocia. Se o software pudesse refazer o selo, a emergência dependeria dele, e aí não seria emergência.
 >
-> 🔧 **No KA2 ele tem, e apenas em série:** o `D27` comanda o **KA3**, um módulo de relé no caminho da bobina ([§31.13](#3113--o-veto-do-firmware-sobre-a-potência-ka3)). Isso lhe dá poder de **derrubar** a potência, nunca de segurá-la contra uma botoeira. Ele continua **lendo** pelo `D25` se a potência chegou.
+> 🔧 **No KA2 ele tem, e apenas em série:** o `D27` comanda o **KA3**, um relé de 8 pinos no caminho da bobina ([§31.13](#3113--o-veto-do-firmware-sobre-a-potência-ka3)). Isso lhe dá poder de **derrubar** a potência, nunca de segurá-la contra uma botoeira. Ele continua **lendo** pelo `D25` se a potência chegou.
 
 ### Dicionário rápido
 
@@ -265,17 +265,55 @@ O acionamento precisa satisfazer quatro exigências **ao mesmo tempo**:
 >
 > **Não é inconsistência, é a norma.** Uma parada operacional pela tela não precisa obrigar ninguém a caminhar até o painel; uma parada por **falha**, sim — é o que garante que alguém olhe a máquina antes de religá-la. E o botão físico corta em hardware porque é o único que precisa funcionar com o firmware em qualquer estado.
 
-### O componente: um módulo de relé pronto
+### O componente: o mesmo relé do resto do painel
 
-Nada de soldar. **Módulo de relé de 1 canal, 5 V, com optoacoplador e jumper de nível** — a placa azul de R$ 10 que todo mundo usa com Arduino, e que aqui faz um serviço industrial de verdade.
+⭐ **O MESMO RELÉ DO KA1 E DO KA2** — 8 pinos, bobina **24 Vcc**, base PTF08A no trilho DIN. Não é módulo de Arduino, não é placa azul, não fica pendurado em canto nenhum: é relé de painel, parafusado no trilho, do lado do KA2.
 
 | Ref | Peça | Onde | Preço |
 |---|---|---|---|
-| **KA3** | Módulo relé 1 canal **5 V**, optoacoplado, jumper H/L, contato 10 A | caixa DIN 4M, **trilho 2** | R$ 10–15 |
-| **R10** | Resistor **10 kΩ** entre o `IN` e o 0 V | no borne do próprio módulo | R$ 0,10 |
-| **D1** | Diodo **1N4007** sobre a bobina do KA2 | nos bornes `A1`/`A2` | R$ 0,20 |
+| **KA3** | Relé **8 pinos, bobina 24 Vcc**, 2 contatos reversíveis 10 A + base PTF08A | trilho 2, ao lado do KA4 | ~R$ 20 |
+| **Q3** | MOSFET **2N7000** — o driver, entre o `A2` da bobina e o 0 V | termorretrátil na própria base | R$ 0,60 |
+| **R10** | Resistor **10 kΩ** do gate do Q3 ao 0 V | dentro do mesmo termorretrátil | R$ 0,10 |
+| **D3** | Diodo **1N4007** sobre a bobina do KA3 — catodo no `A1` | nos bornes `A1`/`A2` | R$ 0,20 |
+| **D1** | Diodo **1N4007** sobre a bobina do **KA2** | nos bornes `A1`/`A2` do KA2 | R$ 0,20 |
 
-**Buscar:** `modulo rele 1 canal 5v optoacoplador` — e prefira o anúncio que oferece **jumper de gatilho alto/baixo**.
+**Buscar:** `relé 8 pinos 24v 10a base din` · `JQX-13F 24VDC` · `LY2N 24VDC` — exatamente o mesmo anúncio do KA1/KA2.
+
+> ### 🔄 Por que saiu o módulo azul de 5 V
+>
+> A primeira versão usava um **módulo de relé de 1 canal, 5 V, optoacoplado**, dentro de uma caixa DIN de 4 módulos. Funcionava, e o argumento era bom: zero solda e um LED que mostra o veto sem instrumento. Cinco coisas mudaram a conta:
+>
+> | | Módulo azul de 5 V | **Relé de 8 pinos (escolhido)** |
+> |---|---|---|
+> | Modelos de relé no painel | **dois** (8 pinos + módulo) | ⭐ **um só** — uma reserva cobre os quatro |
+> | Contatos disponíveis | 1 reversível | ⭐ **2 reversíveis** — e é o segundo que dá o `NF` ao KA4 |
+> | Consumo | **130 mA no BD-5V** (os dois) | ~37 mA cada no BD-24V, que tinha folga |
+> | Montagem | caixa de plástico de 70 mm no trilho 2 | ⭐ direto no trilho, como o resto do painel |
+> | Solda | nenhuma | 3 peças num termorretrátil por relé |
+> | Estado visível | LED vermelho | o clique e o próprio KA2 — ou um sinaleiro no contato de reserva |
+>
+> 🎯 **O que decidiu foi o segundo contato.** O KA4 precisa de um `NF` para que o Arduino morto deixe a ventoinha do radiador **girando** (§31.14), e o módulo de 1 canal só tem um contato — gastá-lo no `NF` deixaria o relé sem reserva nenhuma. O de 8 pinos resolve os dois e ainda sobra.
+>
+> 📌 **E a padronização vale mais do que parece numa maquete que viaja.** Um único relé sobressalente na caixa de ferramentas cobre KA1, KA2, KA3 e KA4. Com dois modelos diferentes, são duas reservas — e a que faltar é sempre a do relé que queimou.
+
+> ### ⚙️ As quatro coisas que precisam estar certas
+>
+> | # | O quê | Por quê |
+> |---|---|---|
+> | 1 | **Contato `11`→`14` (NA)**, nunca o `12` (NF) | Relé solto = contato aberto = potência cortada. No `NF` um Arduino desligado **armaria** a potência. ⚠ **O KA4 faz o contrário de propósito** — §31.14 |
+> | 2 | **R10 (10 kΩ) colado ao gate**, dentro do termorretrátil | Fio do `D27` rompido → gate em 0 V → potência cortada. Fosse o R10 na PI-1, este trecho ficaria alto-impedante e o KA3 poderia atracar por ruído |
+> | 3 | **D3 na bobina, catodo no `A1`** | Sem ele o Q3 morre no primeiro desligamento: 650 Ω de bobina jogam centenas de volts no dreno, contra os 60 V do 2N7000 |
+> | 4 | **Bobina de 24 V**, confirmada no corpo do relé | O mesmo anúncio vende 12 e 24 V. Um de 12 V atraca nos 24 V do BD-24V e queima a bobina em minutos |
+>
+> 🔎 **Ensaio obrigatório, 30 segundos:** painel de comando alimentado, **fio do `D27` desconectado** → KA3 desatracado, sem clique, e continuidade **aberta** entre `11` e `14`. Se estiver fechado, o painel arma a potência sozinha no boot.
+
+> ### 📌 Não há isolação galânica aqui — e não precisa haver
+>
+> Com o módulo azul dava para dizer "tem optoacoplador", e valia a ressalva de que optoacoplador não é isolação quando o `DC−` partilha o 0 V do Arduino. Com o 2N7000 a conversa fica mais honesta: **a fonte do Q3 está no mesmo 0 V do Mega, e ponto**. O gate é comandado por tensão, referenciada nesse 0 V.
+>
+> **E isso não é perda nenhuma**, porque a isolação de verdade já estava do outro lado: **o contato do KA3 é seco**. Entre o circuito do Arduino e a bobina de 24 V do KA2 há um entreferro de ar, que é melhor isolação do que qualquer optoacoplador de R$ 0,80. O painel tem um ponto único de terra por projeto (§31.5), então do lado do sinal não há diferença de potencial para isolar.
+>
+> 🎓 **Diga isso na defesa.** "Onde está a isolação do seu comando?" — no contato do relé, não no driver. Saber apontar a barreira certa é o que separa quem projetou de quem copiou.
 
 > ### ⚙️ As quatro coisas que precisam estar certas
 >
@@ -296,22 +334,27 @@ Nada de soldar. **Módulo de relé de 1 canal, 5 V, com optoacoplador e jumper d
 >
 > 🎓 **Diga isso na defesa em vez de repetir o anúncio.** Saber que "tem optoacoplador" não é o mesmo que "está isolado" é exatamente o tipo de leitura crítica de folha de dados que a banca procura.
 
-### Por que um relé e não o MOSFET discreto
+### Por que relé **e** MOSFET, e não um ou outro
 
-Foi a alternativa considerada — **2N7000 + resistor + diodo, R$ 1,10**, montado num conjunto termorretrátil no próprio KA2. Tecnicamente é melhor: não desgasta, não consome corrente e fica a 3 cm da bobina.
+Esta é a pergunta que a banca faz, e a resposta é que os dois fazem serviços diferentes — não competem.
 
-| | Módulo de relé | 2N7000 discreto |
+| | O que o **Q3** faz | O que o **KA3** faz |
 |---|---|---|
-| Preço | R$ 10 | **R$ 1,10** |
-| Solda | **nenhuma** | 3 componentes |
-| Consumo no 5 V | 65 mA | **~0** |
-| Desgaste | contato mecânico | **nenhum** |
-| Estado visível | **LED vermelho** | multímetro |
-| Chaveia lado alto? | **sim, é contato seco** | não, precisa de canal P |
+| Papel | adapta nível: 5 V do Mega → bobina de 24 V | isola e chaveia sem lado alto/baixo |
+| Corrente | 37 mA, contínuos | 37 mA no contato (0,37 % dos 10 A) |
+| Desgaste | nenhum | contato mecânico — e ver a nota abaixo |
+| Podia fazer o serviço do outro? | ❌ não chaveia lado alto sem canal P | ❌ não pode ser comandado direto por um pino de 5 V |
 
-**O módulo venceu por três razões práticas:** zero solda, o LED que mostra o veto sem instrumento, e — decisiva para o KA4 — **um contato seco não tem lado alto nem lado baixo**, o que apaga um problema inteiro de projeto.
+**Um pino do Mega não aciona uma bobina de 24 V** — são 37 mA em 24 V contra um pino que dá 20 mA em 5 V. Alguma coisa tem de estar no meio, e essa é a função clássica do **relé de interposição** entre CLP e contator: o Q3 é a versão de três centavos dela.
 
-> ⚠️ **E o desgaste não é objeção aqui:** o KA3 atua num trip, num boot e pouco mais — talvez cinco vezes por dia. A vida elétrica típica é de **100.000 operações**. São décadas. Se ele fosse chavear o PWM, como o KA2 não pode, a conta seria outra (§31.0).
+E o contato do relé tem duas propriedades que nenhum semicondutor barato entrega:
+
+1. **Não tem lado alto nem lado baixo.** Um MOSFET canal N só sabe puxar para 0 V. É por isso que o MV-1 não podia comandar as ventoinhas do radiador (§31.14) e por isso que o KA4 existe. O contato do KA3, do mesmo jeito, pode ficar em qualquer perna da bobina do KA2.
+2. **Falha aberto, e não em curto.** O modo de falha típico de MOSFET de potência é dreno-fonte em curto — exatamente o que acontece com o BTS7960 e o motivo de o KA3 existir. Pendurar o veto num segundo semicondutor seria repetir o problema que ele foi criado para resolver.
+
+> ⚠️ **E o desgaste não é objeção aqui:** o KA3 atua num trip, num boot e pouco mais — talvez cinco vezes por dia. A vida elétrica típica é de **100.000 operações**. São décadas. E o contato dele conduz **37 mA**, não 10 A: nessa corrente não há erosão de contato para falar. Se ele fosse chavear o PWM, como o KA2 não pode, a conta seria outra (§31.0).
+
+> 📌 **O Q3 chaveia o lado do 0 V da bobina, e isso é de propósito.** Canal N só sabe fazer isso, e aqui não custa nada: a bobina do KA3 é um circuito nosso, criado agora, sem tacômetro nem referência pendurada nela. O caso em que chavear o negativo quebra alguma coisa é o das ventoinhas de 3 fios — e é justamente lá que entra o **contato** do KA4, não um MOSFET.
 
 ### Cálculo — só para o relatório
 
@@ -321,11 +364,16 @@ Foi a alternativa considerada — **2N7000 + resistor + diodo, R$ 1,10**, montad
       Contato nominal: 10 A em 30 Vcc  →  usa 0,37 % da capacidade ✅
 
    Corrente que o pino D27 fornece:
-      5 mA para o LED do optoacoplador  (limite do Mega: 40 mA) ✅
+      ~0 — gate de MOSFET é capacitivo, só pede pico de carga  ✅
+      (era 5 mA no LED do optoacoplador do módulo antigo)
 
-   Consumo dos DOIS módulos no barramento de 5 V:
-      2 × 65 mA = 130 mA
-      ⚠ Some com o Arduino, a tela e o ESP32 antes de fechar o Doc 02.
+   Corrente que o Q3 chaveia (a bobina do próprio KA3):
+      I = 24 V / 650 Ω = 37 mA   ·  2N7000 aguenta 200 mA  ✅
+      Rds(on) ~5 Ω a Vgs=5 V  →  queda de 0,19 V, nada de calor
+
+   Consumo dos DOIS relés, agora no barramento de 24 V:
+      2 × 37 mA = 74 mA no BD-24V
+      ⭐ e 130 mA SAÍRAM do BD-5V, que ganhou a primeira reserva real
 ```
 
 ### O que muda no comportamento
@@ -359,13 +407,16 @@ Dois fios novos podem falhar. Vale saber para onde cada falha leva:
 
 Com o BD-POT **desconectado** e só a cadeia de comando alimentada:
 
-- [ ] **Jumper em `H`** nos dois módulos, e o fio no **`NO`** — não no `NC`
-- [ ] **Sem o Arduino ligado**, medir o `IN` contra o 0 V → **0 V** (o R10 trabalhando), relé **aberto**
-- [ ] Medir entre `IN` e 0 V com o ohmímetro → **~10 kΩ**
-- [ ] Ligar o Arduino e forçar `digitalWrite(27, HIGH)` → **clique, LED vermelho acende**
+- [ ] O fio do KA2 · `A2` está no **`11`** do KA3 e o do BD-0V no **`14` (NA)** — não no `12`
+- [ ] O corpo do relé diz **24VDC** (o mesmo anúncio vende 12 V)
+- [ ] **Sem o Arduino ligado**, medir o gate do Q3 contra o 0 V → **0 V** (o R10 trabalhando)
+- [ ] Ohmímetro entre o gate e o 0 V → **~10 kΩ**
+- [ ] **Sem o Arduino**, continuidade entre `11` e `14` → **aberta**, relé mudo
+- [ ] Ligar o Arduino e forçar `digitalWrite(27, HIGH)` → **clique**, e `11`–`14` fecha
 - [ ] Com o KA1 selado e o STOP solto, apertar o **verde** → o KA2 atraca
 - [ ] Forçar `digitalWrite(27, LOW)` → o KA2 solta **e não volta** quando o pino voltar a HIGH ⭐ *(é o selo do KA2 trabalhando — só o verde religa)*
-- [ ] Teste de diodo entre `A1` e `A2` do KA2: conduz num sentido só
+- [ ] ⭐ **E a tela acusa `CORTE_FALHOU`?** Forçar `LOW` com o KA3 propositalmente em curto (uma ponte entre `11` e `14`) tem de fazer o alerta aparecer em ~150 ms. É o ensaio da conferência pelo `D25` ([Doc 40 §40.7](../camada_4_programacao/40_firmware_arduino.md))
+- [ ] Teste de diodo entre `A1` e `A2` do **KA2** e do **KA3**: conduz num sentido só
 
 > 📋 **Filme o ensaio 6d.** Apertar o STOP uma vez, soltar, e mostrar o multímetro cravado em 0 V no BD-POT é a demonstração mais direta de que o painel tem selo — e é o tipo de evidência que vale mais que três páginas de texto na apresentação.
 
@@ -386,16 +437,39 @@ A decisão anterior foi tirar o comando e deixá-las **sempre ligadas**. Seguro,
 | Ventilação sem ninguém para resfriar | **~5 W** girando o dia inteiro com o painel energizado |
 | **Fuga térmica durante o aquecimento** | **~2,5 W** — o dissipador ventilado puxa calor da câmara **através da pastilha desligada**, contra o próprio PTC |
 
-### A correção: chavear o positivo
+### A correção: chavear o positivo — e pelo contato **NF**
 
 ```
-   BD-AUX · O2 ──► COM │ KA4 │ NO ──► X5 ──► ventoinhas do radiador +
-      (+12 V)          └──┬──┘                (2 em paralelo, 0,36 A)
-                          │ gatilho
-                   Mega · D30 ──[ R11 · 10 kΩ ]── 0 V
+                      ⭐ NF (12), não NA — fechado com a bobina SOLTA
+                            │
+   BD-AUX · O2 ──► 11 │ KA4 │ 12 ──► X5 ──► ventoinhas do radiador +
+      (+12 V)             └──┬──┘               (2 em paralelo, 0,36 A)
+                             │
+          BD-24V · O6 ──► A1 [bobina 24 V] A2 ──► dreno do Q4
+                             │  └─ D4 (1N4007), catodo no A1
+                       Mega · D30 ──► gate do Q4 (2N7000)
+                                        └─[ R11 · 10 kΩ ]── 0 V
 
    X6 ── ventoinhas − ──► BD-0V · R20      ⭐ NUNCA chaveado
 ```
+
+> ### 🔥 O contato é o NF, e essa é a diferença mais importante entre o KA4 e o KA3
+>
+> A primeira versão deste comando mandava usar o `NO`, copiando a regra do §31.13. **Estava errada**, e o erro era de sinal — os dois relés têm estados seguros **opostos**:
+>
+> | | Desenergizado significa | É o estado seguro? |
+> |---|---|---|
+> | **KA3** | contato `NA` abre → potência cortada | ✅ |
+> | **KA4 no `NA`** *(como estava)* | contato abre → **ventoinha para com o dissipador a 60 °C** | ❌ |
+> | **KA4 no `NF`** *(como ficou)* | contato fecha → **ventoinha gira** | ✅ |
+>
+> Com o `NF`, **Arduino morto, fio do `D30` rompido, R11 solto ou BD-5V caído** deixam as ventoinhas do radiador **girando** — que é exatamente o que um dissipador quente precisa. E o KA3, no mesmo instante, já cortou a potência: **primeiro para de gerar calor, depois continua tirando o que sobrou.** É a ordem certa, e ela sai de graça.
+>
+> 🎯 **O argumento que fecha é o mesmo do §31.13, virado do avesso.** Lá: nenhuma falha do KA3 deixa o painel pior do que era antes de ele existir. Aqui: com o `NF`, o **pior caso vira o comportamento antigo do projeto** — ventoinha sempre ligada, que custava ~5 W e nunca custou uma pastilha. Uma correção que troca o pior caso pelo estado que você já aceitava não tem contra.
+>
+> ⚠️ **A lógica do `D30` fica invertida em relação à do `D27`, e isso é deliberado:** `HIGH` atraca a bobina, o `NF` abre e as ventoinhas **param**. Existe **uma única função** no firmware que escreve neste pino, e a inversão mora só lá dentro ([Doc 40 §40.10](../camada_4_programacao/40_firmware_arduino.md)). Nenhum outro ponto do código toca o `D30` direto — é assim que uma inversão deixa de ser armadilha.
+>
+> 💸 **O preço, e ele é pequeno:** a bobina fica atracada sempre que as ventoinhas estão **desligadas**, que é a maior parte do tempo. São ~37 mA contínuos no BD-24V.
 
 > ### 🎯 Um contato seco não tem lado alto nem lado baixo
 >
@@ -414,11 +488,24 @@ A decisão anterior foi tirar o comando e deixá-las **sempre ligadas**. Seguro,
 
 | Ref | Peça | Onde | Preço |
 |---|---|---|---|
-| **KA4** | Módulo relé 1 canal **5 V**, optoacoplado, jumper H/L | mesma caixa DIN 4M do KA3, **trilho 2** | R$ 10–15 |
-| **R11** | Resistor **10 kΩ** entre o `IN` e o 0 V | no borne do módulo | R$ 0,10 |
-| **D2** | Diodo **1N4007** sobre as ventoinhas, catodo no **+** | junto às ventoinhas | R$ 0,20 |
+| **KA4** | Relé **8 pinos, bobina 24 Vcc** + base PTF08A — **o mesmo do KA1/KA2/KA3** | trilho 2, ao lado do KA3 | ~R$ 20 |
+| **Q4** | MOSFET **2N7000** entre o `A2` da bobina e o 0 V | termorretrátil na própria base | R$ 0,60 |
+| **R11** | Resistor **10 kΩ** do gate do Q4 ao 0 V | dentro do mesmo termorretrátil | R$ 0,10 |
+| **D4** | Diodo **1N4007** sobre a **bobina do KA4** — catodo no `A1` | nos bornes `A1`/`A2` | R$ 0,20 |
+| **D2** | Diodo **1N4007** sobre as **ventoinhas**, catodo no **+** | junto às ventoinhas | R$ 0,20 |
 
-⚠️ **Valem as mesmas quatro regras do §31.13:** jumper em `H`, contato `COM`+`NO`, pull-down de 10 kΩ, bobina de 5 V confirmada no corpo do relé.
+⚠️ **NÃO CONFUNDA O D2 COM O D4.** Os dois são 1N4007 e têm funções diferentes: o **D2** grampeia o motor das ventoinhas (carga indutiva, nada mais a segura) e mora lá na câmara; o **D4** grampeia a bobina do relé e mora nos bornes dele, protegendo o Q4.
+
+⭐ **Das quatro regras do §31.13, três valem igual e UMA se inverte:**
+
+| # | §31.13 (KA3) | **§31.14 (KA4)** |
+|---|---|---|
+| 1 | contato **`NA`** (`11`→`14`) | 🔥 **`NF`** (`11`→`12`) — estado seguro oposto |
+| 2 | R10 de 10 kΩ colado ao gate | igual (R11) |
+| 3 | diodo na bobina, catodo no `A1` | igual (D4) |
+| 4 | bobina de **24 V** confirmada no corpo | igual |
+
+📌 **Os dois relés ficam lado a lado no trilho 2**, e o `A1` de um faz ponte curta até o `A1` do outro: sai **um** fio do BD-24V · O6 para as duas bobinas, e **um** fio da fonte dos dois MOSFET até o BD-0V · R21.
 
 > 📌 **Os dois módulos moram na mesma caixa DIN de 4 módulos**, no trilho 2, com o `DC+` e o `DC−` pontelhados entre eles lá dentro — sai **um** par de fios para o BD-5V e o BD-0V. São 51 × 25,5 mm cada; empilhados cabem nos 70 mm da caixa, e o trilho 2 tinha 94 mm livres.
 
@@ -440,11 +527,71 @@ A decisão anterior foi tirar o comando e deixá-las **sempre ligadas**. Seguro,
 
 ### 🔎 Comissionamento do KA4
 
-- [ ] Com o Arduino desligado, o LED vermelho do KA4 **apagado** e as ventoinhas **paradas**
-- [ ] Forçar `digitalWrite(30, HIGH)` num sketch → clique, LED aceso, as duas **partem**
-- [ ] Forçar `LOW` → **param**, e o **preto delas continua em 0 V** — é o ensaio que prova a correção
+⚠️ **Repare que a primeira linha é o INVERSO da do KA3** — e é esse o ensaio que prova o contato NF.
+
+- [ ] O fio do BD-AUX · O2 está no **`11`** e o do X5 no **`12` (NF)** — **não no `14`**
+- [ ] O corpo do relé diz **24VDC**
+- [ ] ⭐ **Com o Arduino DESLIGADO, as ventoinhas do radiador GIRAM.** Se estiverem paradas, o fio está no `14` — volte e troque, porque é o fail-safe inteiro que está invertido
+- [ ] Ligar o Arduino e forçar `digitalWrite(30, HIGH)` → **clique, e elas PARAM**
+- [ ] Forçar `LOW` → **voltam a girar**, e o **preto delas continua em 0 V** — é o ensaio que prova o chaveamento pelo positivo
 - [ ] Com elas paradas, medir o `D3` e o `A8` → **~5 V, estáveis**. Tensão no preto significa que o contato está no fio errado
 - [ ] Desconectar o DS18B20 com o sistema parado e frio → **as ventoinhas devem LIGAR** ⭐
+- [ ] Puxar o fio do `D30` com o ensaio rodando → **elas continuam girando** (o R11 solta a bobina)
+- [ ] Teste de diodo entre `A1` e `A2` do KA4: conduz num sentido só
+
+---
+
+## 31.15 ⭐ O diodo da bobina do KA2 — e o preço escondido que ele cobra
+
+> Seção curta, e ela existe porque o **D1 protege um componente prejudicando outro**. Saber disso é exatamente o tipo de leitura que separa montar de projetar.
+
+### O que o D1 faz de bom
+
+O **D1** (1N4007, catodo no `A1`) fica em antiparalelo com a bobina do KA2. Quando o contato do KA3 abre, o campo magnético da bobina colapsa e induz uma tensão reversa de **centenas de volts**. Sem o diodo, esse pico aparece **no contato do KA3** e abre arco. Contato que arca, pita; contato que pita, solda — e um KA3 soldado é o veto do firmware perdido em silêncio ([§31.13](#3113--o-veto-do-firmware-sobre-a-potência-ka3)). O diodo grampeia o pico em ~24,7 V e o contato interrompe limpo.
+
+**Isso está certo e o D1 fica.** O que segue é o outro lado da conta.
+
+### O que ele cobra em troca
+
+Um diodo puro em antiparalelo faz a corrente da bobina circular em roda-livre por um caminho de resistência quase nula. O campo **demora a colapsar** — e o tempo de desatracamento do relé sobe tipicamente de **2 a 5 vezes**.
+
+```
+   sem diodo   →  ~8 ms para desatracar   · pico de centenas de V no KA3
+   com diodo   →  ~25 ms                  · pico limitado a ~24,7 V
+```
+
+Relé que desatraca devagar tem **contato que se separa devagar**. E contato que se separa devagar **arca por mais tempo**.
+
+> 🔥 **E aqui isso importa mais do que o normal, porque o KA2 interrompe 6 A em CORRENTE CONTÍNUA.** Em CA o arco se apaga sozinho na passagem por zero, 120 vezes por segundo. Em CC não há passagem por zero: o arco só morre quando o entreferro fica grande o bastante. É o mesmo motivo pelo qual o [Doc 30 §30.2](30_forca_e_distribuicao.md) exige o contato do KA2 declarado **em CC**, e não só os "10 A / 250 VAC" do anúncio.
+
+### A saída, se você quiser os dois lados
+
+Trocar o D1 por **1N4007 em série com um zener de 24 a 33 V**, o conjunto em antiparalelo com a bobina:
+
+```
+      A1 ──┬────────────────────┐
+            │                      │
+        [ bobina KA2 ]      ▲ 1N4007  (catodo no A1)
+            │                 │
+            │              ▼ zener 27 V
+            │                 │
+      A2 ───┴────────────────────┘
+```
+
+| | D1 sozinho | **D1 + zener 27 V** |
+|---|---|---|
+| Pico no contato do KA3 | ~24,7 V ✅ | ~52 V — ainda longíssimo dos 250 V do contato ✅ |
+| Desatracamento do KA2 | ~25 ms ⚠️ | ⭐ **~10 ms** |
+| Arco no contato de 6 A CC | mais longo | ⭐ **mais curto** |
+| Custo | R$ 0,20 | R$ 0,50 |
+
+**Como funciona:** a tensão de grampeamento passa de 0,7 V para ~27,7 V, e a energia armazenada na bobina se dissipa numa tensão 40 vezes maior — ou seja, num tempo 40 vezes menor. O contato do KA3 continua protegido (52 V não abre arco), e o KA2 volta a desatracar depressa.
+
+> 📌 **Vale a pena aqui?** Honestamente: **provavelmente não é obrigatório.** O KA2 abre sob 6 A poucas dezenas de vezes na vida deste projeto ([Doc 03](../camada_0_fundamentos/03_lista_materiais.md) faz essa conta), e o contato de 10 A aguenta isso mesmo desatracando devagar. **Mas é uma decisão de projeto que vale ser TOMADA em vez de ignorada**, e explicá-la mostra que você entendeu o que o diodo faz — e não só que "tem de pôr um diodo na bobina".
+>
+> 🎓 **Se a banca perguntar por que há um diodo ali**, a resposta completa é: *"para proteger o contato do KA3 do pico indutivo — e o preço é um desatracamento mais lento do KA2, que eu aceitei porque ele interrompe 6 A poucas dezenas de vezes; num equipamento que partisse o dia inteiro, eu teria posto um zener em série."*
+>
+> ⚠️ **Isto vale só para o KA2.** Nas bobinas do KA3 e do KA4 o diodo puro basta e sobra: quem elas comandam é um contato conduzindo 37 mA e 0,36 A, correntes em que arco não é assunto. E lá o diodo protege um MOSFET de 60 V, que precisa mesmo do grampeamento baixo.
 
 ---
 

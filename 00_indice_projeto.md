@@ -171,7 +171,7 @@ npx remotion render Camada1-Doc10-Base out/aula.mp4
 | Tensões derivadas | **24,0 V (potência, direto)** · 12,0 V (auxiliar) · 5,10 V (comando) · 3,3 V (ESP32) |
 | Fusíveis dos ramais | **F1 = 10 A · F2 = 2 A · F3 = 2 A** (sem F4/F5, sem crowbar) |
 | Níveis de proteção | **5** (do disjuntor ao intertravamento por software) |
-| Acionamento | **2 relés de interface** (KA1 selo + KA2 potência, 24 V) — emergência em hardware |
+| Acionamento | **4 relés de 8 pinos, um modelo só** — KA1 (selo/emergência) + KA2 (potência) + KA3 (veto do firmware, NA) + KA4 (ventoinhas do radiador, **NF**) — emergência em hardware |
 | Volume útil da câmara | 5,0 litros |
 | Carga térmica calculada | **≈ 9,5 W** |
 | Refrigeração | **2× TEC1-12706 em SÉRIE** · 24 V · 6,0 A · 144 W |

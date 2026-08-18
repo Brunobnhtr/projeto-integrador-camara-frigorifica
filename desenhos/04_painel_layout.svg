@@ -24,51 +24,48 @@
     <rect x="110" y="530" width="340" height="40"/>
   </g>
 
-  <!-- ===== TRILHO 1 — DISTRIBUIÇÃO (Y=385 -> svg 225) ===== -->
+  <!-- ===== TRILHO 1 — GERADO por scripts/gera_trilhos_svg.mjs, NÃO EDITE À MÃO ===== -->
   <rect x="110" y="221" width="340" height="8" fill="#b2bec3" stroke="#2d3436" stroke-width="1.5"/>
   <text x="118" y="196" font-size="11" font-weight="700" fill="#2d3436">TRILHO DIN 1 — DISTRIBUIÇÃO E PROTEÇÃO</text>
-  <g>
-    <rect x="120" y="196" width="18" height="56" fill="#ffe066" stroke="#b8860b" stroke-width="1.3"/>
-    <text x="129" y="228" font-size="8" fill="#5c4a00" text-anchor="middle" transform="rotate(-90 129 228)">(livre)</text>
-    <rect x="138" y="196" width="18" height="56" fill="#ffa8a8" stroke="#c92a2a" stroke-width="1.3"/>
-    <text x="147" y="228" font-size="8" fill="#7a0b0b" text-anchor="middle" transform="rotate(-90 147 228)">(livre)</text>
-    <rect x="161" y="196" width="45" height="56" fill="#d0ebff" stroke="#1971c2" stroke-width="1.3"/>
-    <text x="183" y="222" font-size="9" fill="#0b4a86" text-anchor="middle">(livre)</text>
-    <text x="183" y="236" font-size="8" fill="#0b4a86" text-anchor="middle">expansão</text>
-    <rect x="211" y="196" width="11" height="56" fill="#e9ecef" stroke="#495057" stroke-width="1"/>
-    <rect x="222" y="196" width="11" height="56" fill="#e9ecef" stroke="#495057" stroke-width="1"/>
-    <text x="222" y="268" font-size="8" fill="#495057" text-anchor="middle">24V-POT</text>
-    <rect x="233" y="196" width="11" height="56" fill="#fff9db" stroke="#495057" stroke-width="1"/>
-    <rect x="244" y="196" width="11" height="56" fill="#fff9db" stroke="#495057" stroke-width="1"/>
-    <text x="249" y="188" font-size="8" fill="#495057" text-anchor="middle">12V-AUX</text>
-    <rect x="255" y="196" width="16" height="56" fill="#ffe8cc" stroke="#495057" stroke-width="1"/>
-    <text x="263" y="268" font-size="8" fill="#495057" text-anchor="middle">+5V</text>
-    <rect x="271" y="196" width="11" height="56" fill="#ffc9c9" stroke="#495057" stroke-width="1"/>
-    <text x="277" y="188" font-size="8" fill="#495057" text-anchor="middle">+24V</text>
-    <rect x="287" y="196" width="14" height="56" fill="#495057" stroke="#000" stroke-width="1.5"/>
-    <text x="294" y="268" font-size="8" font-weight="700" fill="#111" text-anchor="middle">0V-CENTRAL</text>
-    <rect x="301" y="196" width="32" height="56" fill="#ced4da" stroke="#495057" stroke-width="1"/>
-    <text x="317" y="188" font-size="8" fill="#495057" text-anchor="middle">0V (6×)</text>
+  <g data-gerado="trilho1">
+    <rect x="100.2" y="196" width="29.4" height="56" fill="#c92a2a22" stroke="#c92a2a" stroke-width="1.3"/>
+    <text x="114.9" y="224" font-size="9.5" font-weight="700" fill="#c92a2a" text-anchor="middle" transform="rotate(-90 114.9 224)">BD-POT</text>
+    <rect x="134.5" y="196" width="29.4" height="56" fill="#fab00522" stroke="#fab005" stroke-width="1.3"/>
+    <text x="149.2" y="224" font-size="9.5" font-weight="700" fill="#fab005" text-anchor="middle" transform="rotate(-90 149.2 224)">BD-AUX</text>
+    <rect x="168.8" y="196" width="36.8" height="56" fill="#e8590c22" stroke="#e8590c" stroke-width="1.3"/>
+    <text x="187.2" y="224" font-size="9.5" font-weight="700" fill="#e8590c" text-anchor="middle" transform="rotate(-90 187.2 224)">BD-24V</text>
+    <rect x="210.5" y="196" width="71.1" height="56" fill="#f08c0022" stroke="#f08c00" stroke-width="1.3"/>
+    <text x="246.1" y="220" font-size="10" font-weight="700" fill="#f08c00" text-anchor="middle">BD-5V</text>
+    <text x="246.1" y="235" font-size="8" fill="#f08c00" text-anchor="middle">5,10 V</text>
+    <rect x="286.5" y="196" width="85.8" height="56" fill="#21252922" stroke="#212529" stroke-width="1.3"/>
+    <text x="329.4" y="220" font-size="10" font-weight="700" fill="#212529" text-anchor="middle">BD-0V</text>
+    <text x="329.4" y="235" font-size="8" fill="#212529" text-anchor="middle">star ground</text>
+    <rect x="371.5" y="196" width="27.8" height="56" fill="#7048e822" stroke="#7048e8" stroke-width="1.3"/>
+    <text x="385.4" y="224" font-size="9.5" font-weight="700" fill="#7048e8" text-anchor="middle" transform="rotate(-90 385.4 224)">KA1</text>
+    <rect x="404.2" y="196" width="27.8" height="56" fill="#7048e822" stroke="#7048e8" stroke-width="1.3"/>
+    <text x="418.1" y="224" font-size="9.5" font-weight="700" fill="#7048e8" text-anchor="middle" transform="rotate(-90 418.1 224)">KA2</text>
   </g>
 
-  <!-- ===== TRILHO 2 — POTÊNCIA (Y=255 -> svg 355) ===== -->
+  <!-- ===== TRILHO 2 — GERADO por scripts/gera_trilhos_svg.mjs, NÃO EDITE À MÃO ===== -->
   <rect x="110" y="351" width="340" height="8" fill="#b2bec3" stroke="#2d3436" stroke-width="1.5"/>
-  <text x="118" y="326" font-size="11" font-weight="700" fill="#2d3436">TRILHO DIN 2 — POTÊNCIA</text>
-  <g>
-    <rect x="120" y="326" width="105" height="58" fill="#c3e6cb" stroke="#1e7e34" stroke-width="1.5"/>
-    <text x="172" y="350" font-size="11" font-weight="700" fill="#155724" text-anchor="middle">BTS7960 #1</text>
-    <text x="172" y="366" font-size="9" fill="#155724" text-anchor="middle">FRIO · 2x Peltier</text>
-    <text x="172" y="379" font-size="8" fill="#155724" text-anchor="middle">D5 / D4 / A0</text>
-    <rect x="230" y="326" width="105" height="58" fill="#f8d7da" stroke="#c92a2a" stroke-width="1.5"/>
-    <text x="282" y="350" font-size="11" font-weight="700" fill="#7a0b0b" text-anchor="middle">BTS7960 #2</text>
-    <text x="282" y="366" font-size="9" fill="#7a0b0b" text-anchor="middle">QUENTE · PTC 24V</text>
-    <text x="282" y="379" font-size="8" fill="#7a0b0b" text-anchor="middle">D6 / D7 / A1</text>
-    <rect x="340" y="326" width="27" height="58" fill="#e0cffc" stroke="#6741d9" stroke-width="1.5"/>
-    <text x="353" y="358" font-size="10" font-weight="700" fill="#3b1a94" text-anchor="middle" transform="rotate(-90 353 358)">K1 · 4PDT</text>
-    <rect x="372" y="326" width="50" height="58" fill="#d3f9d8" stroke="#2b8a3e" stroke-width="1.5"/>
-    <text x="397" y="352" font-size="10" font-weight="700" fill="#1b4332" text-anchor="middle">K0</text>
-    <text x="397" y="368" font-size="8" fill="#1b4332" text-anchor="middle">relé 5 V</text>
-    <text x="397" y="380" font-size="8" fill="#1b4332" text-anchor="middle">trip D26</text>
+  <text x="118" y="326" font-size="11" font-weight="700" fill="#2d3436">TRILHO DIN 2 — POTÊNCIA E COMANDO</text>
+  <g data-gerado="trilho2">
+    <rect x="103.5" y="326" width="40.9" height="56" fill="#c92a2a22" stroke="#c92a2a" stroke-width="1.3"/>
+    <text x="123.9" y="354" font-size="9.5" font-weight="700" fill="#c92a2a" text-anchor="middle" transform="rotate(-90 123.9 354)">BTS #1</text>
+    <rect x="150.9" y="326" width="40.9" height="56" fill="#c92a2a22" stroke="#c92a2a" stroke-width="1.3"/>
+    <text x="171.3" y="354" font-size="9.5" font-weight="700" fill="#c92a2a" text-anchor="middle" transform="rotate(-90 171.3 354)">BTS #2</text>
+    <rect x="198.3" y="326" width="53.9" height="56" fill="#0ca67822" stroke="#0ca678" stroke-width="1.3"/>
+    <text x="225.2" y="350" font-size="10" font-weight="700" fill="#0ca678" text-anchor="middle">MV-1</text>
+    <text x="225.2" y="365" font-size="8" fill="#0ca678" text-anchor="middle">5 fans int.</text>
+    <rect x="258.8" y="326" width="29.4" height="56" fill="#fab00522" stroke="#fab005" stroke-width="1.3"/>
+    <text x="273.5" y="354" font-size="9.5" font-weight="700" fill="#fab005" text-anchor="middle" transform="rotate(-90 273.5 354)">F-P</text>
+    <rect x="294.7" y="326" width="78.5" height="56" fill="#1971c222" stroke="#1971c2" stroke-width="1.3"/>
+    <text x="333.9" y="350" font-size="10" font-weight="700" fill="#1971c2" text-anchor="middle">ESP32</text>
+    <text x="333.9" y="365" font-size="8" fill="#1971c2" text-anchor="middle">DNLCB30 · MQTT</text>
+    <rect x="381.3" y="326" width="27.8" height="56" fill="#e8590c22" stroke="#e8590c" stroke-width="2.2"/>
+    <text x="395.2" y="354" font-size="9.5" font-weight="700" fill="#e8590c" text-anchor="middle" transform="rotate(-90 395.2 354)">KA3</text>
+    <rect x="412.4" y="326" width="27.8" height="56" fill="#e8590c22" stroke="#e8590c" stroke-width="2.2"/>
+    <text x="426.3" y="354" font-size="9.5" font-weight="700" fill="#e8590c" text-anchor="middle" transform="rotate(-90 426.3 354)">KA4</text>
   </g>
   <!-- cooler -->
   <circle cx="230" cy="290" r="15" fill="none" stroke="#0b7285" stroke-width="2"/>
@@ -76,21 +73,21 @@
   <path d="M230 308 L230 318 M224 312 L230 306 L236 312" stroke="#0b7285" stroke-width="2" fill="none"/>
   <text x="258" y="294" font-size="10" font-weight="700" fill="#0b7285">cooler 40 mm ↑ (obrigatório)</text>
 
-  <!-- ===== TRILHO 3 — CONTROLE (Y=125 -> svg 485) ===== -->
+  <!-- ===== TRILHO 3 — GERADO por scripts/gera_trilhos_svg.mjs, NÃO EDITE À MÃO ===== -->
   <rect x="110" y="481" width="340" height="8" fill="#b2bec3" stroke="#2d3436" stroke-width="1.5"/>
   <text x="118" y="456" font-size="11" font-weight="700" fill="#2d3436">TRILHO DIN 3 — CONTROLE</text>
-  <g>
-    <rect x="120" y="456" width="110" height="58" fill="#cfe2ff" stroke="#0b4a86" stroke-width="1.5"/>
-    <text x="175" y="480" font-size="11" font-weight="700" fill="#0b4a86" text-anchor="middle">ARDUINO MEGA</text>
-    <text x="175" y="496" font-size="9" fill="#0b4a86" text-anchor="middle">2560 + Shield</text>
-    <text x="175" y="509" font-size="8" fill="#0b4a86" text-anchor="middle">alimentação: pino 5V</text>
-    <rect x="235" y="456" width="90" height="58" fill="#ffe3e3" stroke="#a61e4d" stroke-width="1.5"/>
-    <text x="280" y="480" font-size="11" font-weight="700" fill="#7a0b3a" text-anchor="middle">DNLCB30</text>
-    <text x="280" y="496" font-size="9" fill="#7a0b3a" text-anchor="middle">+ ESP32</text>
-    <text x="280" y="509" font-size="8" fill="#7a0b3a" text-anchor="middle">alimentação: 24 V</text>
-    <rect x="330" y="456" width="60" height="58" fill="#fff3bf" stroke="#b8860b" stroke-width="1.5"/>
-    <text x="360" y="482" font-size="10" font-weight="700" fill="#5c4a00" text-anchor="middle">SD + RTC</text>
-    <text x="360" y="498" font-size="8" fill="#5c4a00" text-anchor="middle">SPI / I²C</text>
+  <g data-gerado="trilho3">
+    <rect x="101.8" y="456" width="109.5" height="56" fill="#0ca67822" stroke="#0ca678" stroke-width="1.3"/>
+    <text x="156.6" y="480" font-size="10" font-weight="700" fill="#0ca678" text-anchor="middle">ARDUINO MEGA</text>
+    <text x="156.6" y="495" font-size="8" fill="#0ca678" text-anchor="middle">2560 + Shield</text>
+    <rect x="219.5" y="456" width="85.8" height="56" fill="#f08c0022" stroke="#f08c00" stroke-width="1.3"/>
+    <text x="262.4" y="480" font-size="10" font-weight="700" fill="#f08c00" text-anchor="middle">PI-1</text>
+    <text x="262.4" y="495" font-size="8" fill="#f08c00" text-anchor="middle">filtros · ULN</text>
+    <rect x="313.5" y="456" width="85.8" height="56" fill="#ae3ec922" stroke="#ae3ec9" stroke-width="1.3"/>
+    <text x="356.4" y="480" font-size="10" font-weight="700" fill="#ae3ec9" text-anchor="middle">PI-2</text>
+    <text x="356.4" y="495" font-size="8" fill="#ae3ec9" text-anchor="middle">mux · INA219</text>
+    <rect x="404.2" y="456" width="28.6" height="56" fill="#0ca67822" stroke="#0ca678" stroke-width="1.3"/>
+    <text x="418.5" y="484" font-size="9.5" font-weight="700" fill="#0ca678" text-anchor="middle" transform="rotate(-90 418.5 484)">RTC</text>
   </g>
 
   <!-- prensa-cabos -->
@@ -149,7 +146,7 @@
   <rect x="771" y="206" width="98" height="57" fill="#212529" stroke="#000" stroke-width="2"/>
   <text x="820" y="228" font-size="12" font-weight="700" fill="#8ce99a" text-anchor="middle">5.2 °C</text>
   <text x="820" y="245" font-size="9" fill="#63e6be" text-anchor="middle">FRIO · SP 5.0</text>
-  <text x="820" y="282" font-size="10" fill="#495057" text-anchor="middle">NEXTION 3.2" — recorte 98 × 57</text>
+  <text x="820" y="282" font-size="10" fill="#495057" text-anchor="middle">ES3C28P (ESP32-S3) — recorte 98 × 57</text>
 
   <!-- LEDs y=275 -> svg 335 -->
   <g>

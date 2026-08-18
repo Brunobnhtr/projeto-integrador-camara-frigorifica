@@ -549,6 +549,31 @@ cenario('32 · Receita SO FRIO e SO QUENTE nao alternam');
   conferir('e o PTC e quem trabalha', quente.renPtc || quente.naFaixa, true);
 }
 
+cenario('33 · 🔥 Contato do KA4 ABERTO — o pior caso, agora simulável');
+{
+  const sim = armar(ligarPainel({ tCamara: 25 }));
+  sim.falhas.ka4Aberto = true;
+  iniciarPelaIHM(sim); avancar(sim, 2000);
+  conferir('o firmware MANDOU ventilar', foto(sim).ventRadiador, true);
+  conferir('⭐ mas nada gira — o contato não fecha', foto(sim).radiadorGirando, false);
+  avancar(sim, 20000, 200);
+  const f = foto(sim);
+  conferir('⭐ e quem acusa é o trip por RPM', f.estado, ESTADO.FALHA);
+  conferir('com a potencia cortada de verdade', f.bdPot, 0);
+}
+
+cenario('34 · ⭐ Arduino morto: o KA3 abre a potencia E o KA4 FECHA a ventoinha');
+{
+  const sim = armar(ligarPainel({ tCamara: 25 }));
+  iniciarPelaIHM(sim); avancar(sim, 60000, 200);
+  sim.falhas.arduinoMorto = true; avancar(sim, 1000);
+  const f = foto(sim);
+  conferir('a potencia caiu', f.bdPot, 0);
+  conferir('⭐ e o radiador CONTINUA GIRANDO — e o NF do KA4', f.radiadorGirando, true);
+  conferir('o BD-AUX nao passa pelo KA2, por isso ele pode', f.bdAux, 12);
+}
+
+
 // ════════════════════════════════════════════════════════════════════
 console.log(`\n${'═'.repeat(62)}`);
 if (falhas === 0) {

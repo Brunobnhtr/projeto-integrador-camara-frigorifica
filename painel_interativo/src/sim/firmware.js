@@ -184,9 +184,15 @@ function gerenciarVentoinhas(f, ent) {
 /** Um passo da máquina de estados. `ent` são os pinos de entrada. */
 export function passoFirmware(f, ent, dt = 50) {
   // ── Arduino morto: os pinos viram entrada e os pull-downs mandam ──
+  //   ⭐ E OS DOIS RELÉS VÃO PARA LADOS OPOSTOS, que é o ponto inteiro do
+  //     projeto do KA4. O R10 solta a bobina do KA3 e o contato NA abre
+  //     → potência cortada. O R11 solta a bobina do KA4 e o contato NF
+  //     FECHA → ventoinha do radiador GIRANDO. Primeiro para de gerar
+  //     calor, depois continua tirando o que sobrou.
   if (!f.vivo) {
-    f.habPotencia = false;    // KA3 abre → a potência cai e NÃO volta
-    f.ventRadiador = false;   // KA4 abre
+    f.habPotencia = false;    // KA3 (NA) abre → a potência cai e NÃO volta
+    f.ventRadiador = true;    // ⭐ KA4 (NF) fecha → o radiador ventila
+    f.radiadorLigado = true;
     f.ventInternas = false;
     f.renPeltier = false; f.renPtc = false; f.duty = 0;
     return f;

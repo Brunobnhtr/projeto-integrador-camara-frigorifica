@@ -447,7 +447,7 @@ Esta seção descrevia uma placa com três diodos Zener (5V6 / 13 V / 15 V) que 
 
 > ⚠️ **Os coolers externos das Peltier NÃO passam pelos BTS.** Vêm do ramal auxiliar, então **sobrevivem ao STOP e à emergência** — se dependessem do BTS, ao desligar a Peltier os dissipadores parariam de ser ventilados justamente quando ainda estão cheios de calor.
 >
-> 🔧 **Mas eles já não ficam ligados o tempo todo.** A revisão de [Doc 31 §31.14](31_comando_e_protecoes.md) devolveu o comando: o **contato do KA4** (um módulo de relé) chaveia o **lado positivo** dos 12 V — nunca o negativo, que é a referência do tacômetro e foi o que quebrou antes. A regra é uma só: **ligados enquanto a Peltier resfria OU enquanto o DS18B20 disser que o dissipador está quente.** Eles param apenas depois de a pós-ventilação terminar, e o `!sensorOK` conta sensor com defeito como *quente*. Economiza ~5 W de marcha lenta e os ~2,5 W de fuga térmica que atrapalhavam o PTC.
+> 🔧 **Mas eles já não ficam ligados o tempo todo.** A revisão de [Doc 31 §31.14](31_comando_e_protecoes.md) devolveu o comando: o **contato NF do KA4** (relé de 8 pinos, igual ao KA1/KA2) chaveia o **lado positivo** dos 12 V — nunca o negativo, que é a referência do tacômetro e foi o que quebrou antes. A regra é uma só: **ligados enquanto a Peltier resfria OU enquanto o DS18B20 disser que o dissipador está quente.** Eles param apenas depois de a pós-ventilação terminar, e o `!sensorOK` conta sensor com defeito como *quente*. Economiza ~5 W de marcha lenta e os ~2,5 W de fuga térmica que atrapalhavam o PTC.
 
 ### Distribuição dentro da câmara
 

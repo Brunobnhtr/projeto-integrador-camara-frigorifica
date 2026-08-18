@@ -87,8 +87,15 @@ export function criarSimulador(opts = {}) {
       btsPeltierEmCurto: false, // MOSFET colado: conduz ignorando o R_EN
       ds18Solto: false,        // sensor fora do barramento → −127 °C
       fanTravada: false,       // RPM = 0 com a ventoinha comandada
-      ka3Colado: false,        // contato do módulo de relé soldado fechado
+      ka3Colado: false,        // contato do KA3 soldado fechado: o veto some
       ka2Colado: false,        // contato de potência do KA2 soldado
+      // ⭐ O KA4 tem os DOIS sentidos de falha, e eles não são simétricos.
+      //   Com o contato NF, COLADO = ventoinha sempre girando (o velho
+      //   comportamento "sem comando", que já era seguro) e ABERTO =
+      //   ventoinha nunca girando, que era o pior caso do projeto e que
+      //   até aqui não dava para simular.
+      ka4Colado: false,        // contato NF soldado: ventoinha nunca desliga
+      ka4Aberto: false,        // contato NF não fecha: ventoinha nunca liga
       geralDesligada: false,   // alguém cortou a chave geral
     },
     eletrica: eletricaInicial(),
@@ -114,8 +121,15 @@ export function passo(sim, dt = 50) {
   // ── 2. OS PINOS DE ENTRADA ───────────────────────────────────────
   //   ⭐ Repare que NÃO existe entrada vinda dos relés. O firmware não
   //     pergunta "o KA2 fechou?"; ele mede se os 24 V chegaram.
-  const radiadorGirando = (sim.falhas.ka3Colado || f.ventRadiador) &&
+  // ⭐ O CONTATO DO KA4 É NF: ele conduz quando a bobina está SOLTA.
+  //   Então "o firmware quer ventilar" (f.ventRadiador) = bobina solta =
+  //   contato fechado. Colado, conduz sempre; aberto, nunca.
+  const contatoKa4 = sim.falhas.ka4Colado ? true
+    : sim.falhas.ka4Aberto ? false
+    : f.ventRadiador;
+  const radiadorGirando = contatoKa4 &&
     barras['BD-AUX'] > 0 && !sim.falhas.fanTravada;
+  sim.radiadorGirando = radiadorGirando;   // o que GIRA, não o que foi mandado
   const entradas = {
     stop: sim.botoes.s2Stop,                         // D23 · bloco NA de 5 V
     emergencia: sim.botoes.s0Emergencia,             // D24 · bloco NF de 5 V
@@ -197,7 +211,13 @@ function termico(sim, barras, dt) {
   if (sim.tCamaraFixa !== null) sim.tCamara = sim.tCamaraFixa;
 
   // ── Dissipador do lado quente ────────────────────────────────────
-  const ventilando = (sim.falhas.ka3Colado || f.ventRadiador) &&
+  // ⭐ MESMA REGRA DO CONTATO NF DO KA4 usada lá em cima: quem ventila é o
+  //   contato, não a ordem. Aqui isso decide o UA do dissipador — 4,0 W/K
+  //   ventilado contra 0,8 W/K em convecção natural.
+  const contatoKa4t = sim.falhas.ka4Colado ? true
+    : sim.falhas.ka4Aberto ? false
+    : f.ventRadiador;
+  const ventilando = contatoKa4t &&
     barras['BD-AUX'] > 0 && !sim.falhas.fanTravada;
   const ua = ventilando ? TERMICO.UA_DISSIP_COM_FAN : TERMICO.UA_DISSIP_SEM_FAN;
   const qDissip = (sim.tAmbiente - sim.tDissipador) * ua + qh;
@@ -245,7 +265,8 @@ export function foto(sim) {
     modo: f.modo,
     alerta: f.alerta,
     ka3: f.habPotencia,
-    ventRadiador: f.ventRadiador,
+    ventRadiador: f.ventRadiador,          // a ORDEM do firmware
+    radiadorGirando: !!sim.radiadorGirando, // ⭐ o que de fato gira
     ventInternas: f.ventInternas,
     ventPtc: f.ventInternas,   // no canal 3, junto com as outras internas
     renPeltier: f.renPeltier,

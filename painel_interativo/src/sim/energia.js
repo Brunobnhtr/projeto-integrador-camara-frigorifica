@@ -79,7 +79,11 @@ export function consumo(sim) {
   // ── BD-AUX (12 V) ────────────────────────────────────────────────
   let i12 = 0;
   if (haAux) {
-    if (f.ventRadiador || sim.falhas.ka3Colado) i12 += 2 * CARGAS.radiadorCada;
+    // ⭐ quem gasta é o CONTATO do KA4, não a ordem do firmware
+    const contatoKa4 = sim.falhas.ka4Colado ? true
+      : sim.falhas.ka4Aberto ? false
+      : f.ventRadiador;
+    if (contatoKa4) i12 += 2 * CARGAS.radiadorCada;
     if (f.ventInternas) i12 += 5 * CARGAS.internaCada;
     i12 += CARGAS.coolerBts;      // sem comando: enquanto houver 12 V
   }

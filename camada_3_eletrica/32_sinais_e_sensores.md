@@ -190,9 +190,9 @@ Duas armadilhas do Arduino Mega estão documentadas aqui, e as duas eram silenci
 | **D23** | Botão STOP — bloco NA de 5 V | `INPUT_PULLUP` | `LOW` = pressionado |
 | **D24** | Emergência — bloco **NF** de 5 V | `INPUT_PULLUP` | `HIGH` = **acionada** |
 | **D25** | Presença dos **24 V** no BD-POT (divisor **22 k / 4,7 k** + 100 nF) | `INPUT` (**sem** pull-up) | `HIGH` = **potência disponível** |
-| **D27** | ⭐ **`HAB_POTENCIA`** → gatilho do **KA3** → bobina do **KA2** | `OUTPUT` | `HIGH` = potência **autorizada** · `LOW` = **selo do KA2 cai, 0 V no BD-POT** |
+| **D27** | ⭐ **`HAB_POTENCIA`** → gatilho do **KA3** (via Q3) → bobina do **KA2** | `OUTPUT` | `HIGH` = potência **autorizada** · `LOW` = **selo do KA2 cai, 0 V no BD-POT**. Contato **NA** — o oposto do KA4, de propósito |
 | **D29** | ⭐ MV-1 canal 3 → **as 5 ventoinhas internas** (2 frias + 2 do duto + PTC) | `OUTPUT` | `HIGH` = ligadas |
-| **D30** | ⭐ Gatilho do **KA4** → **ventoinhas do radiador** | `OUTPUT` | `HIGH` = ligadas. O contato chaveia o **positivo** — ver §31.14 |
+| **D30** | ⭐ Gatilho do **KA4** (via Q4) → **ventoinhas do radiador** | `OUTPUT` | 🔥 **LÓGICA INVERTIDA:** `HIGH` = bobina atracada = contato **NF** aberto = ventoinhas **PARADAS**. `LOW` ou Hi-Z = ventoinhas **GIRANDO**. O contato chaveia o **positivo** e é o **NF** — ver §31.14 |
 
 > ### 🔧 Simplificação — três pinos e um canal do MV-1 devolvidos
 >
@@ -247,7 +247,7 @@ Este documento colocava as duas no **canal 1 do MV-1** (`D27`). Estava errado, e
 
 #### ⭐ E o `D27` foi reaproveitado: ele virou o veto do firmware sobre a potência
 
-O pino que vagou aqui é o mesmo que resolve o maior buraco do projeto: o firmware não tinha como **cortar** a potência, só como desabilitar os drivers. Hoje ele comanda o **KA3**, um módulo de relé em série com a bobina do KA2 ([Doc 31 §31.13](31_comando_e_protecoes.md)).
+O pino que vagou aqui é o mesmo que resolve o maior buraco do projeto: o firmware não tinha como **cortar** a potência, só como desabilitar os drivers. Hoje ele comanda o **KA3**, um relé de 8 pinos em série com a bobina do KA2 ([Doc 31 §31.13](31_comando_e_protecoes.md)).
 
 ```
    TRILHO 3                     TRILHO 2                   TRILHO 1

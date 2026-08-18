@@ -382,108 +382,48 @@ O projeto declarava um **PG9** ali, com "capacidade: 14 fios" escrito à mão. R
 
 ## 20.3 Ocupação de cada trilho
 
+> 🤖 **Esta seção é GERADA** por `npm run trilhos` a partir de
+> [`painel_completo.js`](../painel_interativo/src/data/painel_completo.js), que é o
+> mesmo modelo que o `npm run valida` confere. **Não edite à mão** — edite o modelo
+> e rode o gerador. Ela existe assim porque a versão escrita à mão tinha derivado:
+> falava em `K0`/`K1`, punha o KA1 e o KA2 no trilho errado e não conhecia o KA3
+> nem o KA4.
+
 ### TRILHO 1 — Distribuição e proteção (Y = 385)
 
-| Ordem | Componente | Largura | X inicial |
-|---:|---|---:|---:|
-| 1 | **BD-POT** — bloco de distribuição **24 V de potência** (comutado pelo KA2) · 1 entrada + **4 saídas** | 36 mm | 40 |
-| 2 | **BD-AUX** — bloco de distribuição 12 V auxiliar · 1 entrada + **4 saídas** | 36 mm | 76 |
-| 3 | **BD-5V** — bloco de distribuição 5 V · 1 entrada + **6 saídas** | 36 mm | 112 |
-| 4 | **BD-24V** — bloco de distribuição **24 V permanente** (serviços) · 1 entrada + **4 saídas** | 36 mm | 148 |
-| 5 | Separador | 5 mm | 184 |
-| 6 | **BD-0V** — bloco de distribuição do retorno (**star ground**) · 1 entrada 10 mm² + **8 saídas** | 46 mm | 189 |
-| 7 | Separador | 5 mm | 235 |
-| 8 | 🔄 **RTC DS3231** em suporte DIN (só o relógio) | 35 mm | 240 |
-| 9 | Trava-fim de trilho | 10 mm | 275 |
-| | **Ocupação total** | **~245 mm** | **livre até 360 — sobram 85 mm** |
+| # | Componente | X | Largura | Termina em |
+|---:|---|---:|---:|---:|
+| 1 | **BD-POT** — 24 V COMUTADO (morre na emergência) | 30 | 36 mm | 66 |
+| 2 | **BD-AUX** — 12 V das ventoinhas (permanente) | 72 | 36 mm | 108 |
+| 3 | **BD-24V** — 24 V PERMANENTE (comando e sinaleiros) | 114 | 45 mm | 159 |
+| 4 | **BD-5V** — 5,10 V da eletrônica (permanente) | 165 | 87 mm | 252 |
+| 5 | **BD-0V** — retorno único de tudo (star ground) | 258 | 105 mm | 363 |
+| 6 | **KA1** — SEGURANÇA: cai na emergência, rearme azul | 362 | 34 mm | 396 |
+| 7 | **KA2** — PROCESSO: cai no STOP, religa no verde | 402 | 34 mm | 436 |
+| | **Ocupação total** | | **406 mm** | livre até 458 — sobram **22 mm** |
 
-> 🔄 **Só o RTC ficou aqui; o cartão SD foi para o trilho 3, junto do ESP32.** O DS3231 é **I²C**, protocolo lento e tolerante — atravessar o painel não o incomoda. Já o SPI do cartão exigia proximidade.
->
-> ⚠️ **Recalcule as larguras dos blocos antes de posicionar.** Com o BD-24V indo a 6 vias, o BD-5V a 8 e o BD-0V virando uma barra de 20 pontos, as larguras deste trilho mudam — ver a tabela de conferência no [Doc 03](../camada_0_fundamentos/03_lista_materiais.md).
+### TRILHO 2 — Potência e comando (Y = 255)
 
-> 🔄 **O trilho 1 encolheu 91 mm** com a revisão "Potência em 24 V": saíram os porta-fusíveis **F4** e **F5** e a **placa de proteção Zener**, que existiam por causa do circuito crowbar. Os fusíveis de ramal **F1, F2 e F3 continuam na subestação**, não no painel. Ver [Doc 02 §2.6](../camada_0_fundamentos/02_arquitetura_de_energia.md).
->
-> ⚠️ **BD-POT e BD-24V são os dois barramentos de 24 V, e não são a mesma coisa.** O **BD-POT** vem do ramal R1 e **passa pelo KA2** — cai com a emergência. O **BD-24V** vem do ramal R3 e é **permanente** — é ele que mantém o ESP32 vivo para publicar o evento de emergência por MQTT. **Identifique os dois com anilhas de cores diferentes**, porque trocá-los faz a emergência deixar de derrubar a potência.
-
-### 📌 Blocos de distribuição — por que não usar bornes soltos
-
-Você precisa puxar **vários fios da mesma tensão** dentro do painel: os 5 V vão para o Arduino, a a tela ES3C28P, o RTC, a lógica dos dois BTS e os LEDs. Se cada um desses for um borne separado, você acaba com um emaranhado de "rabichos" ligando borne em borne — feio, frágil e impossível de manter.
-
-**O bloco de distribuição resolve:** é um componente DIN com **uma entrada grossa e várias saídas finas**, internamente todas ligadas entre si.
-
-```
-                   BD-5V
-      entrada          saídas
-    ──────►┌────────────────────────┐
-     5,10 V│ ●   ● ● ● ● ● ●        │──► Arduino
-           │ │   │ │ │ │ │ │        │──► tela
-           │ └───┴─┴─┴─┴─┴─┘        │──► SD + RTC
-           │   (barramento interno)  │──► lógica BTS #1
-           └────────────────────────┘──► lógica BTS #2
-                                      ──► LEDs
-```
-
-| Bloco | Tensão | Entrada | Saídas | Alimenta |
-|---|---|---|---:|---|
-| **BD-POT** | **24 V potência** (comutado pelo KA2) | 4 mm² | 4 | BTS #1 (B+), BTS #2 (B+), realimentação D25 (via PI-1), reserva |
-| **BD-AUX** | 12 V auxiliar | 2,5 mm² | 4 | cooler dos BTS, **2× cooler externo das Peltier**, fans internas, iluminação |
-| **BD-5V** | 5,10 V | 2,5 mm² | 6 | Arduino, tela ES3C28P, RTC, lógica BTS ×2, **placa PI-1** |
-| **BD-24V** | **24 V permanente** (serviços) | 2,5 mm² | 4 | DNLCB30/ESP32 · cadeia de comando (S0 → KA1 → KA2) · **positivo comum dos 4 sinaleiros** · 1 reserva |
-| **BD-0V** | retorno 0 V | **10 mm²** | **8** | ⭐ **star ground** — todos os retornos convergem aqui |
-
-> 💡 **Alternativa mais barata:** bornes comuns de 2,5 mm² lado a lado + uma **ponte de interligação (pente)** encaixada por cima, que liga todos internamente. Funciona igual, custa menos e é igualmente industrial. Só é menos prático para trocar depois.
->
-> ⚠️ **O BD-0V não é "mais um bloco".** Ele **é** o ponto único de aterramento do projeto (star ground). Por isso a entrada é de 10 mm²: ele conduz a soma de todas as correntes de retorno. Ver [Doc 31 §31.5](../camada_3_eletrica/31_comando_e_protecoes.md).
-
-### TRILHO 2 — Potência (Y = 255)
-
-| Ordem | Componente | Largura | X inicial |
-|---:|---|---:|---:|
-| 1 | **BTS7960 #1** (Peltier / frio) no suporte SPCI4 | 105 mm | 40 |
-| 2 | **BTS7960 #2** (PTC / quente) no suporte SPCI4 | 105 mm | 150 |
-| 3 | **KA1** — relé de interface 24 Vcc, 2 contatos (selo) | 16 mm | 260 |
-| 4 | **KA2** — relé de interface 24 Vcc, contato de 10 A | 16 mm | 280 |
-| 5 | Espaço livre para expansão | 44 mm | 300 |
-| | **Ocupação total** | **~244 mm** | sobra espaço para expansão |
-
-> 🌬️ **Cooler de 40 mm** fixado na canaleta logo abaixo, soprando **para cima** contra os dois BTS7960. Alimentado pelo ramal 12 V auxiliar (T3), **sempre ligado** enquanto o painel estiver energizado.
+| # | Componente | X | Largura | Termina em |
+|---:|---|---:|---:|---:|
+| 1 | **BTS1** — driver de potência da PELTIER (frio) | 34 | 50 mm | 84 |
+| 2 | **BTS2** — driver de potência do PTC (quente) | 92 | 50 mm | 142 |
+| 3 | **MV-1** — liga as 5 ventoinhas INTERNAS da câmara | 150 | 66 mm | 216 |
+| 4 | **F-P** — fusíveis das 2 posições de ensaio | 224 | 36 mm | 260 |
+| 5 | **ESP32** — Wi-Fi, MQTT e dashboard remoto | 268 | 96 mm | 364 |
+| 6 | **KA3** — VETO DO FIRMWARE: a única mão do software na potência | 374 | 34 mm | 408 |
+| 7 | **KA4** — VENTOINHAS DO RADIADOR: chaveia o lado positivo | 412 | 34 mm | 446 |
+| | **Ocupação total** | | **412 mm** | livre até 458 — sobram **12 mm** |
 
 ### TRILHO 3 — Controle (Y = 125)
 
-| Ordem | Componente | Largura | X inicial |
-|---:|---|---:|---:|
-| 1 | **Arduino Mega 2560 + Sensor Shield** em suporte DIN | 110 mm | 40 |
-| 2 | ⭐ **Placa de Interface PI-1** em caixa modular DIN de **4M** | **70 mm** | **155** |
-| 3 | **DNLCB30 + ESP32** | 90 mm | 230 |
-| 4 | 🔄 **Módulo Micro SD** em caixa DIN de 2M — **ligado ao ESP32** | **35 mm** | **322** |
-| | **Ocupação total** | **~317 mm** | livre até 360 — sobram 43 mm |
-
-> ### 🔄 O cartão SD passou do Arduino para o ESP32
->
-> A PI-1 cresceu de 52,5 para 70 mm e o conjunto não cabia mais. A primeira solução foi mandar o SD para o trilho 1 — mas isso criava um **cabo SPI de ~450 mm**, e SPI não gosta de distância. A solução certa é outra: **trocar quem manda no cartão**.
->
-> | | Antes (SD no Arduino) | **Agora (SD no ESP32)** |
-> |---|---|---|
-> | Comprimento do SPI | 450 mm ⚠️ | **~40 mm** ✅ |
-> | Quem grava | Arduino | ESP32 |
-> | De onde vêm os dados | leitura direta | **já chegam pela Serial1** — são os mesmos que ele publica por MQTT |
-> | Sobrevive à emergência? | ❌ | ✅ o ESP32 está no **24 V permanente** |
->
-> **O ganho que não é óbvio:** o ESP32 já recebe tudo do Arduino pela Serial1 para publicar no MQTT. Gravar no cartão passa a ser *escrever o que ele já ia mandar* — some um caminho de dados inteiro. E como ele fica no barramento permanente, **continua registrando durante a emergência**, que é justamente o instante mais importante do log.
->
-> 📌 **O DS3231 pode ficar no trilho 1.** Ele é **I²C**, e I²C tolera distância muito melhor que SPI. Só o cartão precisava estar perto.
-
-> ⭐ **A PI-1 fica encostada no Arduino, e a posição não é arbitrária.** Ela concentra os 9 componentes discretos do projeto — filtros dos pinos IS, divisor de realimentação, pull-up do 1-Wire e limitadores dos LEDs — e **todos eles precisam estar eletricamente junto ao Arduino** para cumprirem a função. Montagem detalhada, borne por borne, no [Doc 33 §33.3](../camada_3_eletrica/33_placa_interface_componentes.md).
->
-> ✅ **Os vãos de 5 mm voltaram a caber neste trilho** com a saída do SD/RTC. Não precisa mais encaixar tudo justo.
->
-> ⚠️ **O cabo SPI do SD ficou longo (~450 mm) e isso tem preço.** Use cabo **flat (ribbon) intercalando um fio de 0 V entre os sinais**, ou par trançado, e passe-o pela canaleta **mais afastada dos BTS7960**. Se aparecer erro de gravação no cartão, **reduza a velocidade do SPI** no firmware antes de suspeitar do módulo — `SD.begin(CS, SPI_HALF_SPEED)` resolve a maioria dos casos.
->
-> 📌 **Os 2 resistores de 10 kΩ de pull-down NÃO ficam na PI-1** — vão soldados dentro dos próprios BTS7960, no trilho 2. Motivo em [Doc 33 §33.4](../camada_3_eletrica/33_placa_interface_componentes.md).
-
-> 📡 **O ESP32 fica ao lado do Arduino** para que o cabo Serial1 tenha menos de 150 mm. Cabo de UART longo dentro de um painel com dois BTS chaveando = comunicação corrompida.
-
----
+| # | Componente | X | Largura | Termina em |
+|---:|---|---:|---:|---:|
+| 1 | **MEGA** — o cérebro: PID, proteções e intertravamento | 32 | 134 mm | 166 |
+| 2 | **PI1** — PI-1 — filtros, divisores e driver dos sinaleiros | 176 | 105 mm | 281 |
+| 3 | **PI-2** — mede a corrente das 2 posições de ensaio | 291 | 105 mm | 396 |
+| 4 | **RTC** — RTC DS3231 — data e hora reais para o log | 402 | 35 mm | 437 |
+| | **Ocupação total** | | **405 mm** | livre até 458 — sobram **21 mm** |
 
 ## 20.4 Layout da porta (vista externa)
 
