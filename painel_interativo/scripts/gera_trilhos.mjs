@@ -51,7 +51,12 @@ for (const tr of [1, 2, 3]) {
 }
 
 const novo = linhas.join('\n');
-const doc = readFileSync(DOC, 'utf8');
+/* CRLF x LF: estes arquivos sao escritos com LF, mas num checkout Windows o
+   git pode entrega-los com CRLF. Comparar byte a byte reprovaria o deploy
+   por um motivo que nada tem a ver com o projeto. */
+const lf = (s) => s.split(String.fromCharCode(13)).join('');
+
+const doc = lf(readFileSync(DOC, 'utf8'));
 const ini = doc.indexOf('## 20.3 Ocupação de cada trilho');
 const prox = doc.indexOf('\n## 20.4', ini);
 if (ini < 0 || prox < 0) { console.error('não achei os limites da §20.3'); process.exit(1); }

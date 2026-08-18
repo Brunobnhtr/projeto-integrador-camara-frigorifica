@@ -228,7 +228,12 @@ const svg = [
   '',
 ].join('\n');
 
-const igual = existsSync(SAIDA) && readFileSync(SAIDA, 'utf8') === svg;
+/* CRLF x LF: estes arquivos sao escritos com LF, mas num checkout Windows o
+   git pode entrega-los com CRLF. Comparar byte a byte reprovaria o deploy
+   por um motivo que nada tem a ver com o projeto. */
+const lf = (s) => s.split(String.fromCharCode(13)).join('');
+
+const igual = existsSync(SAIDA) && lf(readFileSync(SAIDA, 'utf8')) === lf(svg);
 if (igual) { console.log('11_reles_ligacao.svg já está em dia'); process.exit(0); }
 if (!process.argv.includes('--escreve')) {
   console.log('⚠️  o 11_reles_ligacao.svg está diferente do modelo. Rode com --escreve.');

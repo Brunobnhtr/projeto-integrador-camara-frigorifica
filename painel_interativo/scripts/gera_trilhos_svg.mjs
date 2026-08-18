@@ -86,7 +86,12 @@ function grupo(tr) {
   return out.join('\n');
 }
 
-const doc = readFileSync(SVG, 'utf8');
+/* CRLF x LF: estes arquivos sao escritos com LF, mas num checkout Windows o
+   git pode entrega-los com CRLF. Comparar byte a byte reprovaria o deploy
+   por um motivo que nada tem a ver com o projeto. */
+const lf = (s) => s.split(String.fromCharCode(13)).join('');
+
+const doc = lf(readFileSync(SVG, 'utf8'));
 let novo = doc;
 for (const tr of [1, 2, 3]) {
   const marca = new RegExp(
