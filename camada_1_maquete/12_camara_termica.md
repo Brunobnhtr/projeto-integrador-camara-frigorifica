@@ -306,7 +306,7 @@ PORTA DUPLA (5 + ar 10 + 5 mm):
 >
 > ⚠️ Suspenso por fio de nylon ou haste fina. **Nada de parafusar na parede** — o acrílico conduz a temperatura da parede direto para o corpo do sensor.
 
-📐 **Confira o posicionamento na aba "❄️ Dentro da câmara"** do painel interativo. O script `npm run valida:camara` cobra que nenhum componente invada a parede, que nenhum encoste no outro, que o sensor esteja mesmo no centro geométrico e que **todo fio que a câmara recebe tenha borne de verdade no painel**.
+📐 **O posicionamento continua verificado por script**, mesmo depois de a aba "Dentro da câmara" sair do aplicativo: o `npm run valida:camara` cobra que nenhum componente invada a parede, que nenhum encoste no outro, que o sensor esteja mesmo no centro geométrico e que **todo fio que a câmara recebe tenha borne de verdade no painel**.
 
 ---
 
@@ -671,7 +671,7 @@ Não é preferência — é a única parede que sobra:
 | **Base** | é onde a bandeja de condensado desliza |
 | ✅ **Fundo** | **livre — é por aqui** |
 
-📐 **Veja girando:** na aba "❄️ Dentro da câmara", botão **"🧊 3D girável"**. Arraste para girar, e use o preset **"🔌 De trás"** para ver os dois prensa-cabos em cantos opostos. Clicando num deles, só os cabos que passam por ele ficam acesos.
+🔧 **A vista 3D girável saiu do aplicativo** na enxugada de agosto/2026, junto com as abas "Dentro da câmara" e "Detecção de falha". **Os dados e os validadores ficaram**: `npm run valida:camara` e `valida:camara:rotas` continuam provando que os dois prensa-cabos estão em cantos opostos, que nenhum componente invade a parede e que todo fio que entra na câmara tem borne de verdade no painel. O que se perdeu foi a ilustração, não a verificação.
 
 ---
 
