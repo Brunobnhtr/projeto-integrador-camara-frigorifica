@@ -265,6 +265,11 @@ O acionamento precisa satisfazer quatro exigências **ao mesmo tempo**:
 >
 > **Não é inconsistência, é a norma.** Uma parada operacional pela tela não precisa obrigar ninguém a caminhar até o painel; uma parada por **falha**, sim — é o que garante que alguém olhe a máquina antes de religá-la. E o botão físico corta em hardware porque é o único que precisa funcionar com o firmware em qualquer estado.
 
+> 📐 **O desenho de ligação dos quatro relés** — a base vista de cima, parafuso por
+> parafuso — está em [`desenhos/11_reles_ligacao.svg`](../desenhos/11_reles_ligacao.svg).
+> Ele é **gerado** do `painel_completo.js`, então não pode divergir do que os validadores
+> conferem.
+
 ### O componente: o mesmo relé do resto do painel
 
 ⭐ **O MESMO RELÉ DO KA1 E DO KA2** — 8 pinos, bobina **24 Vcc**, base PTF08A no trilho DIN. Não é módulo de Arduino, não é placa azul, não fica pendurado em canto nenhum: é relé de painel, parafusado no trilho, do lado do KA2.

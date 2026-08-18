@@ -1,0 +1,294 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 1070" width="1280" height="1070" font-family="Segoe UI, Arial, sans-serif">
+  <rect width="1280" height="1070" fill="#ffffff"/>
+  <!-- GERADO por painel_interativo/scripts/gera_reles_svg.mjs — NÃO EDITE À MÃO -->
+  <text x="40" y="38" font-size="22" font-weight="700" fill="#111">LIGAÇÃO DOS RELÉS KA1 A KA4 — vista de cima da base</text>
+  <text x="40" y="60" font-size="12" fill="#555">Os quatro são o MESMO relé: 8 pinos, bobina 24 Vcc, 2 contatos reversíveis de 10 A, em base PTF08A de trilho DIN · Projeto Integrador CF-01</text>
+  <text x="40" y="80" font-size="11.5" font-weight="700" fill="#c2410c">⚠ O número GRAVADO na base e o nome do desenho são coisas diferentes: o diagrama diz KA1·14, o parafuso tem gravado 5. É o erro de montagem mais comum.</text>
+  <g data-rele="KA1">
+    <rect x="40" y="100" width="600" height="470" fill="#ffffff" stroke="#5f3dc4" stroke-width="2"/>
+    <rect x="40" y="100" width="600" height="30" fill="#5f3dc4"/>
+    <text x="54" y="121" font-size="15" font-weight="700" fill="#fff">KA1</text>
+    <text x="96" y="121" font-size="10.5" fill="#fff">SEGURANÇA — cai na emergência, só o REARME azul devolve</text>
+    <text x="628" y="121" font-size="9.5" fill="#ffffffcc" text-anchor="end">trilho 1 · X = 362 mm</text>
+    <rect x="132" y="296" width="416" height="76" fill="#f1f3f5" stroke="#868e96" stroke-width="1.6" rx="3"/>
+    <text x="340" y="326" font-size="12" font-weight="700" fill="#868e96" text-anchor="middle">BASE PTF08A · trilho DIN</text>
+    <text x="340" y="344" font-size="9.5" fill="#adb5bd" text-anchor="middle">o relé encaixa por cima e sai puxando · a base fica parafusada</text>
+    <text x="124" y="290" font-size="9" fill="#868e96" text-anchor="end">fileira</text>
+    <text x="124" y="300" font-size="9" fill="#868e96" text-anchor="end">de cima</text>
+    <text x="124" y="376" font-size="9" fill="#868e96" text-anchor="end">fileira</text>
+    <text x="124" y="386" font-size="9" fill="#868e96" text-anchor="end">de baixo</text>
+    <circle cx="184" cy="308" r="13" fill="#f8f9fa" stroke="#ced4da" stroke-width="1.3"/>
+    <path d="M177 308 L191 308" stroke="#ced4da" stroke-width="2"/>
+    <text x="184" y="288" font-size="13" font-weight="700" fill="#ced4da" text-anchor="middle">22</text>
+    <text x="201" y="312" font-size="9" fill="#868e96">nº 4</text>
+    <text x="184" y="274" font-size="8.5" fill="#adb5bd" text-anchor="middle">livre · NF do contato 2</text>
+    <circle cx="288" cy="308" r="13" fill="#5f3dc422" stroke="#5f3dc4" stroke-width="2.2"/>
+    <path d="M281 308 L295 308" stroke="#5f3dc4" stroke-width="2"/>
+    <text x="288" y="288" font-size="13" font-weight="700" fill="#5f3dc4" text-anchor="middle">24</text>
+    <text x="305" y="312" font-size="9" fill="#868e96">nº 8</text>
+    <path d="M288 295 L288 178" stroke="#5f3dc4" stroke-width="2.4"/>
+    <circle cx="288" cy="178" r="3.2" fill="#5f3dc4"/>
+    <text x="288" y="166" font-size="9.5" fill="#343a40" text-anchor="middle">ponte curta até o A1</text>
+    <text x="288" y="153" font-size="8" fill="#5f3dc4" text-anchor="middle">NA do contato 2</text>
+    <circle cx="392" cy="308" r="13" fill="#5f3dc422" stroke="#5f3dc4" stroke-width="2.2"/>
+    <path d="M385 308 L399 308" stroke="#5f3dc4" stroke-width="2"/>
+    <text x="392" y="288" font-size="13" font-weight="700" fill="#5f3dc4" text-anchor="middle">21</text>
+    <text x="409" y="312" font-size="9" fill="#868e96">nº 12</text>
+    <path d="M392 295 L392 178" stroke="#5f3dc4" stroke-width="2.4"/>
+    <circle cx="392" cy="178" r="3.2" fill="#5f3dc4"/>
+    <text x="392" y="166" font-size="9.5" fill="#343a40" text-anchor="middle">ponte curta do 11</text>
+    <text x="392" y="153" font-size="8" fill="#5f3dc4" text-anchor="middle">comum 2</text>
+    <circle cx="496" cy="308" r="13" fill="#5f3dc422" stroke="#5f3dc4" stroke-width="2.2"/>
+    <path d="M489 308 L503 308" stroke="#5f3dc4" stroke-width="2"/>
+    <text x="496" y="288" font-size="13" font-weight="700" fill="#5f3dc4" text-anchor="middle">A2</text>
+    <text x="513" y="312" font-size="9" fill="#868e96">nº 14</text>
+    <path d="M496 295 L496 178" stroke="#5f3dc4" stroke-width="2.4"/>
+    <circle cx="496" cy="178" r="3.2" fill="#5f3dc4"/>
+    <text x="496" y="166" font-size="9.5" fill="#343a40" text-anchor="middle">BD-0V · R11</text>
+    <text x="496" y="153" font-size="8" fill="#5f3dc4" text-anchor="middle">bobina</text>
+    <circle cx="184" cy="360" r="13" fill="#f8f9fa" stroke="#ced4da" stroke-width="1.3"/>
+    <path d="M177 360 L191 360" stroke="#ced4da" stroke-width="2"/>
+    <text x="184" y="390" font-size="13" font-weight="700" fill="#ced4da" text-anchor="middle">12</text>
+    <text x="201" y="364" font-size="9" fill="#868e96">nº 1</text>
+    <text x="184" y="404" font-size="8.5" fill="#adb5bd" text-anchor="middle">livre · NF do contato 1</text>
+    <circle cx="288" cy="360" r="13" fill="#5f3dc422" stroke="#5f3dc4" stroke-width="2.2"/>
+    <path d="M281 360 L295 360" stroke="#5f3dc4" stroke-width="2"/>
+    <text x="288" y="390" font-size="13" font-weight="700" fill="#5f3dc4" text-anchor="middle">14</text>
+    <text x="305" y="364" font-size="9" fill="#868e96">nº 5</text>
+    <path d="M288 373 L288 492" stroke="#5f3dc4" stroke-width="2.4"/>
+    <circle cx="288" cy="492" r="3.2" fill="#5f3dc4"/>
+    <text x="288" y="508" font-size="9.5" fill="#343a40" text-anchor="middle">S2-11 (bloco NF do STOP)</text>
+    <text x="288" y="520" font-size="9.5" fill="#343a40" text-anchor="middle">→ daí para o KA2 · A1</text>
+    <text x="288" y="533" font-size="8" fill="#5f3dc4" text-anchor="middle">NA do contato 1</text>
+    <circle cx="392" cy="360" r="13" fill="#5f3dc422" stroke="#5f3dc4" stroke-width="2.2"/>
+    <path d="M385 360 L399 360" stroke="#5f3dc4" stroke-width="2"/>
+    <text x="392" y="390" font-size="13" font-weight="700" fill="#5f3dc4" text-anchor="middle">11</text>
+    <text x="409" y="364" font-size="9" fill="#868e96">nº 9</text>
+    <path d="M392 373 L392 492" stroke="#5f3dc4" stroke-width="2.4"/>
+    <circle cx="392" cy="492" r="3.2" fill="#5f3dc4"/>
+    <text x="392" y="508" font-size="9.5" fill="#343a40" text-anchor="middle">nó CMD</text>
+    <text x="392" y="521" font-size="8" fill="#5f3dc4" text-anchor="middle">comum 1</text>
+    <circle cx="496" cy="360" r="13" fill="#5f3dc422" stroke="#5f3dc4" stroke-width="2.2"/>
+    <path d="M489 360 L503 360" stroke="#5f3dc4" stroke-width="2"/>
+    <text x="496" y="390" font-size="13" font-weight="700" fill="#5f3dc4" text-anchor="middle">A1</text>
+    <text x="513" y="364" font-size="9" fill="#868e96">nº 13</text>
+    <path d="M496 373 L496 492" stroke="#5f3dc4" stroke-width="2.4"/>
+    <circle cx="496" cy="492" r="3.2" fill="#5f3dc4"/>
+    <text x="496" y="508" font-size="9.5" fill="#343a40" text-anchor="middle">do REARME (S3-14) OU do</text>
+    <text x="496" y="520" font-size="9.5" fill="#343a40" text-anchor="middle">próprio selo (24)</text>
+    <text x="496" y="533" font-size="8" fill="#5f3dc4" text-anchor="middle">bobina</text>
+  </g>
+  <g data-rele="KA2">
+    <rect x="660" y="100" width="600" height="470" fill="#ffffff" stroke="#5f3dc4" stroke-width="2"/>
+    <rect x="660" y="100" width="600" height="30" fill="#5f3dc4"/>
+    <text x="674" y="121" font-size="15" font-weight="700" fill="#fff">KA2</text>
+    <text x="716" y="121" font-size="10.5" fill="#fff">PROCESSO — cai no STOP, só o START verde devolve · ⚡ contato de 6 A</text>
+    <text x="1248" y="121" font-size="9.5" fill="#ffffffcc" text-anchor="end">trilho 1 · X = 402 mm</text>
+    <rect x="752" y="296" width="416" height="76" fill="#f1f3f5" stroke="#868e96" stroke-width="1.6" rx="3"/>
+    <text x="960" y="326" font-size="12" font-weight="700" fill="#868e96" text-anchor="middle">BASE PTF08A · trilho DIN</text>
+    <text x="960" y="344" font-size="9.5" fill="#adb5bd" text-anchor="middle">o relé encaixa por cima e sai puxando · a base fica parafusada</text>
+    <text x="744" y="290" font-size="9" fill="#868e96" text-anchor="end">fileira</text>
+    <text x="744" y="300" font-size="9" fill="#868e96" text-anchor="end">de cima</text>
+    <text x="744" y="376" font-size="9" fill="#868e96" text-anchor="end">fileira</text>
+    <text x="744" y="386" font-size="9" fill="#868e96" text-anchor="end">de baixo</text>
+    <circle cx="804" cy="308" r="13" fill="#f8f9fa" stroke="#ced4da" stroke-width="1.3"/>
+    <path d="M797 308 L811 308" stroke="#ced4da" stroke-width="2"/>
+    <text x="804" y="288" font-size="13" font-weight="700" fill="#ced4da" text-anchor="middle">22</text>
+    <text x="821" y="312" font-size="9" fill="#868e96">nº 4</text>
+    <text x="804" y="274" font-size="8.5" fill="#adb5bd" text-anchor="middle">livre · NF do contato 2</text>
+    <circle cx="908" cy="308" r="13" fill="#5f3dc422" stroke="#5f3dc4" stroke-width="2.2"/>
+    <path d="M901 308 L915 308" stroke="#5f3dc4" stroke-width="2"/>
+    <text x="908" y="288" font-size="13" font-weight="700" fill="#5f3dc4" text-anchor="middle">24</text>
+    <text x="925" y="312" font-size="9" fill="#868e96">nº 8</text>
+    <path d="M908 295 L908 178" stroke="#5f3dc4" stroke-width="2.4"/>
+    <circle cx="908" cy="178" r="3.2" fill="#5f3dc4"/>
+    <text x="908" y="166" font-size="9.5" fill="#343a40" text-anchor="middle">O SELO DO KA2</text>
+    <text x="908" y="153" font-size="8" fill="#5f3dc4" text-anchor="middle">NA do contato 2</text>
+    <circle cx="1012" cy="308" r="13" fill="#5f3dc422" stroke="#5f3dc4" stroke-width="2.2"/>
+    <path d="M1005 308 L1019 308" stroke="#5f3dc4" stroke-width="2"/>
+    <text x="1012" y="288" font-size="13" font-weight="700" fill="#5f3dc4" text-anchor="middle">21</text>
+    <text x="1029" y="312" font-size="9" fill="#868e96">nº 12</text>
+    <path d="M1012 295 L1012 178" stroke="#5f3dc4" stroke-width="2.4"/>
+    <circle cx="1012" cy="178" r="3.2" fill="#5f3dc4"/>
+    <text x="1012" y="166" font-size="9.5" fill="#343a40" text-anchor="middle">comum do selo</text>
+    <text x="1012" y="153" font-size="8" fill="#5f3dc4" text-anchor="middle">comum 2</text>
+    <circle cx="1116" cy="308" r="13" fill="#5f3dc422" stroke="#5f3dc4" stroke-width="2.2"/>
+    <path d="M1109 308 L1123 308" stroke="#5f3dc4" stroke-width="2"/>
+    <text x="1116" y="288" font-size="13" font-weight="700" fill="#5f3dc4" text-anchor="middle">A2</text>
+    <text x="1133" y="312" font-size="9" fill="#868e96">nº 14</text>
+    <path d="M1116 295 L1116 178" stroke="#5f3dc4" stroke-width="2.4"/>
+    <circle cx="1116" cy="178" r="3.2" fill="#5f3dc4"/>
+    <text x="1116" y="166" font-size="9.5" fill="#343a40" text-anchor="middle">KA3 · 11</text>
+    <text x="1116" y="153" font-size="8" fill="#5f3dc4" text-anchor="middle">bobina</text>
+    <circle cx="804" cy="360" r="13" fill="#f8f9fa" stroke="#ced4da" stroke-width="1.3"/>
+    <path d="M797 360 L811 360" stroke="#ced4da" stroke-width="2"/>
+    <text x="804" y="390" font-size="13" font-weight="700" fill="#ced4da" text-anchor="middle">12</text>
+    <text x="821" y="364" font-size="9" fill="#868e96">nº 1</text>
+    <text x="804" y="404" font-size="8.5" fill="#adb5bd" text-anchor="middle">livre · NF do contato 1</text>
+    <circle cx="908" cy="360" r="13" fill="#5f3dc422" stroke="#5f3dc4" stroke-width="2.2"/>
+    <path d="M901 360 L915 360" stroke="#5f3dc4" stroke-width="2"/>
+    <text x="908" y="390" font-size="13" font-weight="700" fill="#5f3dc4" text-anchor="middle">14</text>
+    <text x="925" y="364" font-size="9" fill="#868e96">nº 5</text>
+    <path d="M908 373 L908 492" stroke="#5f3dc4" stroke-width="2.4"/>
+    <circle cx="908" cy="492" r="3.2" fill="#5f3dc4"/>
+    <text x="908" y="508" font-size="9.5" fill="#343a40" text-anchor="middle">saída para o BD-POT</text>
+    <text x="908" y="521" font-size="8" fill="#5f3dc4" text-anchor="middle">NA do contato 1</text>
+    <circle cx="1012" cy="360" r="13" fill="#5f3dc422" stroke="#5f3dc4" stroke-width="2.2"/>
+    <path d="M1005 360 L1019 360" stroke="#5f3dc4" stroke-width="2"/>
+    <text x="1012" y="390" font-size="13" font-weight="700" fill="#5f3dc4" text-anchor="middle">11</text>
+    <text x="1029" y="364" font-size="9" fill="#868e96">nº 9</text>
+    <path d="M1012 373 L1012 492" stroke="#5f3dc4" stroke-width="2.4"/>
+    <circle cx="1012" cy="492" r="3.2" fill="#5f3dc4"/>
+    <text x="1012" y="508" font-size="9.5" fill="#343a40" text-anchor="middle">entrada dos 24 V do</text>
+    <text x="1012" y="520" font-size="9.5" fill="#343a40" text-anchor="middle">prensa-cabo PG9-1</text>
+    <text x="1012" y="533" font-size="8" fill="#5f3dc4" text-anchor="middle">comum 1</text>
+    <circle cx="1116" cy="360" r="13" fill="#5f3dc422" stroke="#5f3dc4" stroke-width="2.2"/>
+    <path d="M1109 360 L1123 360" stroke="#5f3dc4" stroke-width="2"/>
+    <text x="1116" y="390" font-size="13" font-weight="700" fill="#5f3dc4" text-anchor="middle">A1</text>
+    <text x="1133" y="364" font-size="9" fill="#868e96">nº 13</text>
+    <path d="M1116 373 L1116 492" stroke="#5f3dc4" stroke-width="2.4"/>
+    <circle cx="1116" cy="492" r="3.2" fill="#5f3dc4"/>
+    <text x="1116" y="508" font-size="9.5" fill="#343a40" text-anchor="middle">S1 · 14 (START verde) EM</text>
+    <text x="1116" y="520" font-size="9.5" fill="#343a40" text-anchor="middle">PARALELO com o selo…</text>
+    <text x="1116" y="533" font-size="8" fill="#5f3dc4" text-anchor="middle">bobina</text>
+  </g>
+  <g data-rele="KA3">
+    <rect x="40" y="590" width="600" height="470" fill="#ffffff" stroke="#c2410c" stroke-width="2"/>
+    <rect x="40" y="590" width="600" height="30" fill="#c2410c"/>
+    <text x="54" y="611" font-size="15" font-weight="700" fill="#fff">KA3</text>
+    <text x="96" y="611" font-size="10.5" fill="#fff">VETO DO FIRMWARE — em série com a bobina do KA2 · contato NA</text>
+    <text x="628" y="611" font-size="9.5" fill="#ffffffcc" text-anchor="end">trilho 2 · X = 374 mm</text>
+    <rect x="132" y="786" width="416" height="76" fill="#f1f3f5" stroke="#868e96" stroke-width="1.6" rx="3"/>
+    <text x="340" y="816" font-size="12" font-weight="700" fill="#868e96" text-anchor="middle">BASE PTF08A · trilho DIN</text>
+    <text x="340" y="834" font-size="9.5" fill="#adb5bd" text-anchor="middle">o relé encaixa por cima e sai puxando · a base fica parafusada</text>
+    <text x="124" y="780" font-size="9" fill="#868e96" text-anchor="end">fileira</text>
+    <text x="124" y="790" font-size="9" fill="#868e96" text-anchor="end">de cima</text>
+    <text x="124" y="866" font-size="9" fill="#868e96" text-anchor="end">fileira</text>
+    <text x="124" y="876" font-size="9" fill="#868e96" text-anchor="end">de baixo</text>
+    <circle cx="184" cy="798" r="13" fill="#f8f9fa" stroke="#ced4da" stroke-width="1.3"/>
+    <path d="M177 798 L191 798" stroke="#ced4da" stroke-width="2"/>
+    <text x="184" y="778" font-size="13" font-weight="700" fill="#ced4da" text-anchor="middle">22</text>
+    <text x="201" y="802" font-size="9" fill="#868e96">nº 4</text>
+    <text x="184" y="764" font-size="8.5" fill="#adb5bd" text-anchor="middle">livre · NF do contato 2</text>
+    <circle cx="288" cy="798" r="13" fill="#f8f9fa" stroke="#ced4da" stroke-width="1.3"/>
+    <path d="M281 798 L295 798" stroke="#ced4da" stroke-width="2"/>
+    <text x="288" y="778" font-size="13" font-weight="700" fill="#ced4da" text-anchor="middle">24</text>
+    <text x="305" y="802" font-size="9" fill="#868e96">nº 8</text>
+    <text x="288" y="764" font-size="8.5" fill="#adb5bd" text-anchor="middle">livre · NA do contato 2</text>
+    <circle cx="392" cy="798" r="13" fill="#f8f9fa" stroke="#ced4da" stroke-width="1.3"/>
+    <path d="M385 798 L399 798" stroke="#ced4da" stroke-width="2"/>
+    <text x="392" y="778" font-size="13" font-weight="700" fill="#ced4da" text-anchor="middle">21</text>
+    <text x="409" y="802" font-size="9" fill="#868e96">nº 12</text>
+    <text x="392" y="764" font-size="8.5" fill="#adb5bd" text-anchor="middle">livre · comum 2</text>
+    <circle cx="496" cy="798" r="13" fill="#c2410c22" stroke="#c2410c" stroke-width="2.2"/>
+    <path d="M489 798 L503 798" stroke="#c2410c" stroke-width="2"/>
+    <text x="496" y="778" font-size="13" font-weight="700" fill="#c2410c" text-anchor="middle">A2</text>
+    <text x="513" y="802" font-size="9" fill="#868e96">nº 14</text>
+    <path d="M496 785 L496 668" stroke="#c2410c" stroke-width="2.4"/>
+    <circle cx="496" cy="668" r="3.2" fill="#c2410c"/>
+    <text x="496" y="644" font-size="9.5" fill="#343a40" text-anchor="middle">Q3 · dreno (solda, não</text>
+    <text x="496" y="656" font-size="9.5" fill="#343a40" text-anchor="middle">fio) + o diodo D3 vin…</text>
+    <text x="496" y="631" font-size="8" fill="#c2410c" text-anchor="middle">bobina</text>
+    <circle cx="184" cy="850" r="13" fill="#f8f9fa" stroke="#ced4da" stroke-width="1.3"/>
+    <path d="M177 850 L191 850" stroke="#ced4da" stroke-width="2"/>
+    <text x="184" y="880" font-size="13" font-weight="700" fill="#ced4da" text-anchor="middle">12</text>
+    <text x="201" y="854" font-size="9" fill="#868e96">nº 1</text>
+    <text x="184" y="894" font-size="8.5" fill="#adb5bd" text-anchor="middle">livre · NF do contato 1</text>
+    <circle cx="288" cy="850" r="13" fill="#c2410c22" stroke="#c2410c" stroke-width="2.2"/>
+    <path d="M281 850 L295 850" stroke="#c2410c" stroke-width="2"/>
+    <text x="288" y="880" font-size="13" font-weight="700" fill="#c2410c" text-anchor="middle">14</text>
+    <text x="305" y="854" font-size="9" fill="#868e96">nº 5</text>
+    <path d="M288 863 L288 982" stroke="#c2410c" stroke-width="2.4"/>
+    <circle cx="288" cy="982" r="3.2" fill="#c2410c"/>
+    <text x="288" y="998" font-size="9.5" fill="#343a40" text-anchor="middle">BD-0V · R12</text>
+    <text x="288" y="1011" font-size="8" fill="#c2410c" text-anchor="middle">NA do contato 1</text>
+    <circle cx="392" cy="850" r="13" fill="#c2410c22" stroke="#c2410c" stroke-width="2.2"/>
+    <path d="M385 850 L399 850" stroke="#c2410c" stroke-width="2"/>
+    <text x="392" y="880" font-size="13" font-weight="700" fill="#c2410c" text-anchor="middle">11</text>
+    <text x="409" y="854" font-size="9" fill="#868e96">nº 9</text>
+    <path d="M392 863 L392 982" stroke="#c2410c" stroke-width="2.4"/>
+    <circle cx="392" cy="982" r="3.2" fill="#c2410c"/>
+    <text x="392" y="998" font-size="9.5" fill="#343a40" text-anchor="middle">KA2 · A2</text>
+    <text x="392" y="1011" font-size="8" fill="#c2410c" text-anchor="middle">comum 1</text>
+    <circle cx="496" cy="850" r="13" fill="#c2410c22" stroke="#c2410c" stroke-width="2.2"/>
+    <path d="M489 850 L503 850" stroke="#c2410c" stroke-width="2"/>
+    <text x="496" y="880" font-size="13" font-weight="700" fill="#c2410c" text-anchor="middle">A1</text>
+    <text x="513" y="854" font-size="9" fill="#868e96">nº 13</text>
+    <path d="M496 863 L496 982" stroke="#c2410c" stroke-width="2.4"/>
+    <circle cx="496" cy="982" r="3.2" fill="#c2410c"/>
+    <text x="496" y="998" font-size="9.5" fill="#343a40" text-anchor="middle">BD-24V · O6</text>
+    <text x="496" y="1011" font-size="8" fill="#c2410c" text-anchor="middle">bobina</text>
+  </g>
+  <g data-rele="KA4">
+    <rect x="660" y="590" width="600" height="470" fill="#ffffff" stroke="#c2410c" stroke-width="2"/>
+    <rect x="660" y="590" width="600" height="30" fill="#c2410c"/>
+    <text x="674" y="611" font-size="15" font-weight="700" fill="#fff">KA4</text>
+    <text x="716" y="611" font-size="10.5" fill="#fff">VENTOINHAS DO RADIADOR — chaveia o +12 V · contato NF ⭐</text>
+    <text x="1248" y="611" font-size="9.5" fill="#ffffffcc" text-anchor="end">trilho 2 · X = 412 mm</text>
+    <rect x="752" y="786" width="416" height="76" fill="#f1f3f5" stroke="#868e96" stroke-width="1.6" rx="3"/>
+    <text x="960" y="816" font-size="12" font-weight="700" fill="#868e96" text-anchor="middle">BASE PTF08A · trilho DIN</text>
+    <text x="960" y="834" font-size="9.5" fill="#adb5bd" text-anchor="middle">o relé encaixa por cima e sai puxando · a base fica parafusada</text>
+    <text x="744" y="780" font-size="9" fill="#868e96" text-anchor="end">fileira</text>
+    <text x="744" y="790" font-size="9" fill="#868e96" text-anchor="end">de cima</text>
+    <text x="744" y="866" font-size="9" fill="#868e96" text-anchor="end">fileira</text>
+    <text x="744" y="876" font-size="9" fill="#868e96" text-anchor="end">de baixo</text>
+    <circle cx="804" cy="798" r="13" fill="#f8f9fa" stroke="#ced4da" stroke-width="1.3"/>
+    <path d="M797 798 L811 798" stroke="#ced4da" stroke-width="2"/>
+    <text x="804" y="778" font-size="13" font-weight="700" fill="#ced4da" text-anchor="middle">22</text>
+    <text x="821" y="802" font-size="9" fill="#868e96">nº 4</text>
+    <text x="804" y="764" font-size="8.5" fill="#adb5bd" text-anchor="middle">livre · NF do contato 2</text>
+    <circle cx="908" cy="798" r="13" fill="#f8f9fa" stroke="#ced4da" stroke-width="1.3"/>
+    <path d="M901 798 L915 798" stroke="#ced4da" stroke-width="2"/>
+    <text x="908" y="778" font-size="13" font-weight="700" fill="#ced4da" text-anchor="middle">24</text>
+    <text x="925" y="802" font-size="9" fill="#868e96">nº 8</text>
+    <text x="908" y="764" font-size="8.5" fill="#adb5bd" text-anchor="middle">livre · NA do contato 2</text>
+    <circle cx="1012" cy="798" r="13" fill="#f8f9fa" stroke="#ced4da" stroke-width="1.3"/>
+    <path d="M1005 798 L1019 798" stroke="#ced4da" stroke-width="2"/>
+    <text x="1012" y="778" font-size="13" font-weight="700" fill="#ced4da" text-anchor="middle">21</text>
+    <text x="1029" y="802" font-size="9" fill="#868e96">nº 12</text>
+    <text x="1012" y="764" font-size="8.5" fill="#adb5bd" text-anchor="middle">livre · comum 2</text>
+    <circle cx="1116" cy="798" r="13" fill="#c2410c22" stroke="#c2410c" stroke-width="2.2"/>
+    <path d="M1109 798 L1123 798" stroke="#c2410c" stroke-width="2"/>
+    <text x="1116" y="778" font-size="13" font-weight="700" fill="#c2410c" text-anchor="middle">A2</text>
+    <text x="1133" y="802" font-size="9" fill="#868e96">nº 14</text>
+    <path d="M1116 785 L1116 668" stroke="#c2410c" stroke-width="2.4"/>
+    <circle cx="1116" cy="668" r="3.2" fill="#c2410c"/>
+    <text x="1116" y="644" font-size="9.5" fill="#343a40" text-anchor="middle">Q4 · dreno (solda, não</text>
+    <text x="1116" y="656" font-size="9.5" fill="#343a40" text-anchor="middle">fio) + o diodo D4 vin…</text>
+    <text x="1116" y="631" font-size="8" fill="#c2410c" text-anchor="middle">bobina</text>
+    <circle cx="804" cy="850" r="13" fill="#c2410c22" stroke="#c2410c" stroke-width="2.2"/>
+    <path d="M797 850 L811 850" stroke="#c2410c" stroke-width="2"/>
+    <text x="804" y="880" font-size="13" font-weight="700" fill="#c2410c" text-anchor="middle">12</text>
+    <text x="821" y="854" font-size="9" fill="#868e96">nº 1</text>
+    <path d="M804 863 L804 982" stroke="#c2410c" stroke-width="2.4"/>
+    <circle cx="804" cy="982" r="3.2" fill="#c2410c"/>
+    <text x="804" y="998" font-size="9.5" fill="#343a40" text-anchor="middle">fio X5 → ventoinhas do</text>
+    <text x="804" y="1010" font-size="9.5" fill="#343a40" text-anchor="middle">radiador · +</text>
+    <text x="804" y="1023" font-size="8" fill="#c2410c" text-anchor="middle">NF do contato 1</text>
+    <circle cx="908" cy="850" r="13" fill="#f8f9fa" stroke="#ced4da" stroke-width="1.3"/>
+    <path d="M901 850 L915 850" stroke="#ced4da" stroke-width="2"/>
+    <text x="908" y="880" font-size="13" font-weight="700" fill="#ced4da" text-anchor="middle">14</text>
+    <text x="925" y="854" font-size="9" fill="#868e96">nº 5</text>
+    <text x="908" y="894" font-size="8.5" fill="#adb5bd" text-anchor="middle">livre · NA do contato 1</text>
+    <circle cx="1012" cy="850" r="13" fill="#c2410c22" stroke="#c2410c" stroke-width="2.2"/>
+    <path d="M1005 850 L1019 850" stroke="#c2410c" stroke-width="2"/>
+    <text x="1012" y="880" font-size="13" font-weight="700" fill="#c2410c" text-anchor="middle">11</text>
+    <text x="1029" y="854" font-size="9" fill="#868e96">nº 9</text>
+    <path d="M1012 863 L1012 982" stroke="#c2410c" stroke-width="2.4"/>
+    <circle cx="1012" cy="982" r="3.2" fill="#c2410c"/>
+    <text x="1012" y="998" font-size="9.5" fill="#343a40" text-anchor="middle">BD-AUX · O2</text>
+    <text x="1012" y="1011" font-size="8" fill="#c2410c" text-anchor="middle">comum 1</text>
+    <circle cx="1116" cy="850" r="13" fill="#c2410c22" stroke="#c2410c" stroke-width="2.2"/>
+    <path d="M1109 850 L1123 850" stroke="#c2410c" stroke-width="2"/>
+    <text x="1116" y="880" font-size="13" font-weight="700" fill="#c2410c" text-anchor="middle">A1</text>
+    <text x="1133" y="854" font-size="9" fill="#868e96">nº 13</text>
+    <path d="M1116 863 L1116 982" stroke="#c2410c" stroke-width="2.4"/>
+    <circle cx="1116" cy="982" r="3.2" fill="#c2410c"/>
+    <text x="1116" y="998" font-size="9.5" fill="#343a40" text-anchor="middle">ponte curta do KA3 · A1</text>
+    <text x="1116" y="1011" font-size="8" fill="#c2410c" text-anchor="middle">bobina</text>
+  </g>
+  <rect x="40" y="982" width="1200" height="66" fill="#f8f9fa" stroke="#adb5bd" stroke-width="1.3"/>
+  <text x="54" y="1004" font-size="11.5" font-weight="700" fill="#212529">O KA3 usa o NA e o KA4 usa o NF — e isso não é descuido.</text>
+  <text x="54" y="1022" font-size="10.5" fill="#495057">KA3: relé solto = contato aberto = potência cortada. Estado seguro é DESLIGADO. · KA4: relé solto = contato fechado = ventoinha girando. Estado seguro é LIGADO.</text>
+  <text x="54" y="1039" font-size="10.5" fill="#495057">Arduino morto, os dois caem juntos e para lados opostos: o KA3 corta a potência e o KA4 mantém o radiador. Primeiro para de gerar calor, depois continua tirando o que sobrou.</text>
+</svg>
