@@ -19,10 +19,9 @@ const C = { tinta: '#212529', fraco: '#6c757d', linha: '#dee2e6', fundo: '#eef1f
 /* as cinco famílias, na ordem em que se monta: primeiro o que se prepara
    na bancada, por último o que fica dentro da câmara */
 const FAMILIAS = [
-  { id: 'placa',  nome: 'Na placa de interface (PI-1)', icone: '🟫',
-    diz: 'Placa ilhada de 22 × 22 furos, em caixa DIN de 4 módulos, ao lado do Arduino. Cada perna tem o seu furo.' },
-  { id: 'borne',  nome: 'Nos bornes dos relés', icone: '🔩',
-    diz: 'Sem placa nenhuma: as pernas dobradas em U entram direto no parafuso.' },
+  { id: 'borne',  nome: 'Parafusados em borne', icone: '🔩',
+    diz: '⭐ Sem placa nenhuma, e sem solda: as pernas dobradas em U entram direto no parafuso, '
+       + 'junto com o fio. Hoje é assim que TODO componente discreto do painel é montado.' },
   { id: 'modulo', nome: 'Soldados dentro de módulo comprado', icone: '🔧',
     diz: '⚠️ Ficam invisíveis depois de montado — fotografe antes de fechar.' },
   { id: 'maquete', nome: 'Fora do painel, na maquete', icone: '🏙️',
