@@ -3,7 +3,6 @@ import PlacaIlhada from './PlacaIlhada';
 import ConjuntoRele from './ConjuntoRele';
 import PlacaReal from './PlacaReal';
 import * as PI1 from '../data/pi1_fisico';
-import * as PI2 from '../data/pi2_fisico';
 import { PINAGENS } from '../data/pinagens';
 import { PRENSAS_PAINEL, FIOS, ETAPAS, CORES } from '../data/fiacao';
 import CamaraNoPainel from './CamaraNoPainel';
@@ -21,8 +20,6 @@ import { conferePrensa } from '../lib/prensas';
 const PLACAS = {
   PI1:  { tipo: 'ilhada', dados: PI1, titulo: 'Placa PI-1',
           rotulo: 'a placa que você vai montar — 10 jumpers, 3 circuitos' },
-  'PI-2': { tipo: 'ilhada', dados: PI2, titulo: 'Placa PI-2',
-          rotulo: 'a placa que você vai montar — shunts, mux e INA219' },
   BTS1: { tipo: 'real', chave: 'BTS1', rotulo: 'módulo comprado — pinagem tirada da foto' },
   BTS2: { tipo: 'real', chave: 'BTS1', rotulo: 'módulo comprado — igual ao BTS #1' },
   ESP32:{ tipo: 'real', chave: 'ESP32', rotulo: 'placa DNLCB30 — 32 bornes de parafuso' },

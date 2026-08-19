@@ -10,7 +10,6 @@
  * mão, que pedia 2 bornes de 8 vias quando o projeto já precisava de 32.
  */
 import * as PI1 from '../src/data/pi1_fisico.js';
-import * as PI2 from '../src/data/pi2_fisico.js';
 
 const PASSO_BORNE = 5.08;   // mm — exatamente 2 furos de 2,54
 
@@ -26,7 +25,7 @@ const blocos = n => {
 let T = 0, D = 0, vias = 0, erros = 0;
 const larguras = [];
 
-for (const [nome, m] of [['PI-1', PI1], ['PI-2', PI2]]) {
+for (const [nome, m] of [['PI-1', PI1]]) {
   console.log(`\n${nome} — ${m.PLACA.larguraMm.toFixed(1)} mm de largura útil`);
   for (const b of m.BORNES) {
     const n = b.vias.length;
@@ -43,7 +42,7 @@ for (const [nome, m] of [['PI-1', PI1], ['PI-2', PI2]]) {
 
 /* os bornes de uma mesma borda não podem estourar a largura da placa */
 const porBorda = new Map();
-for (const [nome, m] of [['PI-1', PI1], ['PI-2', PI2]])
+for (const [nome, m] of [['PI-1', PI1]])
   for (const b of m.BORNES) {
     const k = `${nome}|${b.linha}`;
     porBorda.set(k, (porBorda.get(k) ?? 0) + b.vias.length * PASSO_BORNE);
@@ -51,7 +50,7 @@ for (const [nome, m] of [['PI-1', PI1], ['PI-2', PI2]])
 console.log('\nLargura ocupada em cada borda:');
 for (const [k, mm] of porBorda) {
   const [nome, linha] = k.split('|');
-  const util = (nome === 'PI-1' ? PI1 : PI2).PLACA.larguraMm;
+  const util = PI1.PLACA.larguraMm;
   const ok = mm <= util;
   if (!ok) erros++;
   console.log(`  ${ok ? '.' : 'X'} ${nome} fileira ${linha}: `

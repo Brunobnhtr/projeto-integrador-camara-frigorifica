@@ -163,7 +163,7 @@ Duas armadilhas do Arduino Mega estão documentadas aqui, e as duas eram silenci
 > ⭐ **O segundo DS18B20 não custa pino.** O 1-Wire é um barramento: cada sensor tem um endereço de 64 bits gravado de fábrica, então vários convivem no mesmo par de fios. Colando um deles no dissipador do lado quente, o firmware passa a saber quando pode desligar a ventoinha — sem gastar entrada nenhuma do Arduino.
 | **D3** | **RPM do cooler externo #1 (INT1)** ⚠️ *corrigido* | `INPUT_PULLUP` + interrupção `FALLING` |
 | **A8** | **RPM do cooler externo #2 (PCINT16)** ⭐ *novo — 2ª Peltier* | `INPUT_PULLUP` + interrupção de mudança de pino. As interrupções externas do Mega acabaram: D2 é 1-Wire, D18/19 Serial1, D20/21 I²C |
-| D20 / D21 | AM2315C + DS3231 + **2× INA219** | I²C em 5 V — 4 dispositivos no mesmo par de fios |
+| D20 / D21 | AM2315C + DS3231 | I²C em 5 V — 2 dispositivos no mesmo par de fios. ⚠️ Eram 4: os dois INA219 saíram com a detecção digital |
 | ~~D50–D53~~ | 🔧 **LIVRES** — o log passou para o microSD da ES3C28P | — |
 
 > ### 🔧 Correção — o cartão SD saiu do Arduino
@@ -205,8 +205,9 @@ Duas armadilhas do Arduino Mega estão documentadas aqui, e as duas eram silenci
 > **Também saiu o bloco NF de 24 V do STOP.** O S2 ficou com um bloco só (NA, 5 V → `D23`), e com isso sumiu o fio dele até a bobina do KA2 — e sumiu **um dos três erros de montagem catalogados em [§31.5](31_comando_e_protecoes.md)**, o de trocar os blocos e queimar o `D23`.
 >
 > 🎯 **O MV-1 usa 1 dos 4 canais** (o 3, das cinco ventoinhas internas) e o Mega tem `D22`, `D26`, `D28` e `D50–D53` livres.
-| **D31–D34** | ⭐ **PI-2 · S0–S3** — seleção de canal do multiplexador | `OUTPUT` | 4 bits = 16 canais |
-| **A2** | ⭐ **PI-2 · SIG** — a **única** entrada analógica dos 16 canais | `INPUT` | shunt 47 Ω · ~1 mA por contagem |
+| ~~D31–D34~~ | 🗑️ **livres** — eram os 4 bits de seleção do multiplexador | — | Ver [Doc 13 §13.4](../camada_1_maquete/13_posicoes_de_ensaio.md) |
+| ⭐ **D22** | **SC-1 · DOUT** — detecção de dispositivo morto | `INPUT_PULLUP` | 1 bit: nível BAIXO enquanto houver corrente. Fio partido = ALTO = falha |
+| ~~A2~~ | 🗑️ **livre** — era a entrada analógica dos 16 canais do mux | — | |
 
 #### 🔥 Correção — as ventoinhas do radiador saíram do MV-1
 
@@ -273,9 +274,7 @@ O pino que vagou aqui é o mesmo que resolve o maior buraco do projeto: o firmwa
 
 > ⭐ **Cinco pinos para dezesseis canais.** É essa a economia que o multiplexador traz — e ela não muda quando o número de posições cresce. Quatro placas de multiplexador atendem 64 canais com 8 pinos, porque os S0–S3 são compartilhados entre elas.
 >
-> 📐 **Por que o shunt é grande (47 Ω) e não pequeno (0,1 Ω):** com 0,1 Ω a tensão de 17,6 mA seria 1,8 mV, e o ADC de 10 bits do Arduino só enxerga passos de 4,88 mV — daria **zero contagem**. Com 47 Ω a leitura vai a 0,83 V, ou seja **170 contagens**, e dispensa amplificador.
->
-> ⭐ **A regra geral:** dimensione o shunt pela corrente que quer medir, mirando entre 0,5 V e 1 V no fundo de escala. `R = V_alvo ÷ I_max`. Abaixo de 0,5 V o ruído incomoda; acima de 1 V a queda começa a atrapalhar a própria carga.
+> 🗑️ **O dimensionamento do shunt saiu daqui.** Ele explicava por que 47 Ω e não 0,1 Ω para ler 17,6 mA no A/D. Com a detecção digital não há shunt nem leitura analógica — o sensor entrega a decisão pronta num pino. A regra continua válida para quem for medir corrente algum dia, e está no histórico do Git.
 
 > ### ⭐ Por que `LOW` = REMOTO, e não o contrário
 >

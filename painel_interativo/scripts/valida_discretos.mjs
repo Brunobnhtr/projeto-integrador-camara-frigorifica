@@ -15,7 +15,6 @@ import { fileURLToPath } from 'node:url';
 import { DISCRETOS, HOSTS, ARRANJOS, TOTAL_PECAS, FATOS_VIGIADOS } from '../src/data/discretos.js';
 import { COMPONENTES } from '../src/data/painel_completo.js';
 import * as PI1 from '../src/data/pi1_fisico.js';
-import * as PI2 from '../src/data/pi2_fisico.js';
 import { RELES } from '../src/data/reles_fisico.js';
 import { TODOS as PASSOS_GUIA, FASES } from '../src/data/guia.js';
 
@@ -37,7 +36,8 @@ const viasDaPlaca = (M) => {
   (M.MODULOS ?? []).forEach(m => (m.pinos ?? []).forEach(p => s.add(`${m.ref}.${p.nome}`)));
   return s;
 };
-const viasPlaca = { PI1: viasDaPlaca(PI1), PI2: viasDaPlaca(PI2) };
+/* a PI-2 saiu do projeto junto com a medição analógica (19/08/2026) */
+const viasPlaca = { PI1: viasDaPlaca(PI1) };
 
 const hostPorId = new Map(HOSTS.map(h => [h.id, h]));
 
@@ -52,7 +52,7 @@ for (const h of HOSTS) {
 /* ── 3. cada componente, campo por campo ───────────────────────────── */
 const OBRIGATORIOS = ['ref', 'peca', 'tipo', 'host', 'arranjo', 'papel', 'porque', 'ensaio', 'passo'];
 /* o tipo escolhe o SÍMBOLO do desenho — inventar um tipo novo deixaria a ficha sem figura */
-const TIPOS = ['resistor', 'capacitor', 'diodo', 'led', 'ci', 'chave'];
+const TIPOS = ['resistor', 'capacitor', 'diodo', 'led', 'ci', 'chave', 'modulo'];
 const vistos = new Set();
 
 for (const d of DISCRETOS) {
@@ -129,7 +129,6 @@ const conferePlaca = (hostId, lista, rotulo) => {
   }
 };
 conferePlaca('PI1', PI1.COMPONENTES_PI1, 'PI-1');
-conferePlaca('PI2', PI2.COMPONENTES_PI2, 'PI-2');
 if (PI1.CI1 && !idsPorRefHost.has('PI1:CI1'))
   erros.push('o CI1 da PI-1 não está no cadastro de discretos');
 

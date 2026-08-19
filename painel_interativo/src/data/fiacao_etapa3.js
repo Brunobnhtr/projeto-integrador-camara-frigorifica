@@ -73,7 +73,7 @@ export const FIOS_ETAPA3 = [
   { ...cinco('D11', { comp: 'BD-5V', via: 'O6' }, { comp: 'PI1', via: 'J1-4' },
       'O 5 V que alimenta o pull-up do 1-Wire dentro da PI-1.'),
     rota: ['CH-base', 'CV-esq', 'CH-topo'] },
-  { ...cinco('D12', { comp: 'BD-5V', via: 'O8' }, { comp: 'PI-2', via: '+5V' },
+  { ...cinco('D12', { comp: 'BD-5V', via: 'O8' }, { comp: 'SC-1', via: 'VCC' },
       'Alimenta o multiplexador e o INA219 da PI-2.'),
     rota: ['CH-base', 'CV-esq', 'CH-3x2'] },
   { ...cinco('D13', { comp: 'BD-5V', via: 'O9' }, { comp: 'MV-1', via: 'VCC' },
@@ -144,7 +144,7 @@ export const FIOS_ETAPA3 = [
          + 'optoacoplador existe para isolar o lado das ventoinhas do lado do Arduino; '
          + 'unir os dois no módulo anula esse isolamento e traz o ruído de partida das '
          + 'ventoinhas para dentro da lógica.' },
-  { ...zero('D24', { comp: 'PI-2', via: '0V' }, { comp: 'BD-0V', via: 'Z17' },
+  { ...zero('D24', { comp: 'SC-1', via: 'GND' }, { comp: 'BD-0V', via: 'Z17' },
       'Retorno das posições de ensaio, DEPOIS dos shunts.'),
     rota: ['CH-3x2', 'CV-dir', 'CH-base'],
     porque: '⭐ Este fio carrega a corrente que está sendo medida. Ele só é 0 V deste '

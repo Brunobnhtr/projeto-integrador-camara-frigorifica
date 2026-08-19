@@ -39,12 +39,6 @@ export const HOSTS = [
        + 'perna de componente ou um fio que você solda.',
   },
   {
-    id: 'PI2', tipo: 'placa', nome: 'Placa PI-2',
-    onde: 'mesma caixa DIN da PI-1',
-    compPainel: 'PI-2', geometria: 'pi2_fisico.js',
-    diz: 'O outro pedaço da mesma placa de 9 × 15 cm.',
-  },
-  {
     id: 'KA2', tipo: 'borne', nome: 'Base PTF08A do KA2',
     onde: 'trilho 1 do painel', compPainel: 'KA2',
     diz: 'Componente parafusado direto no borne da base, sem placa nenhuma. '
@@ -82,18 +76,17 @@ export const HOSTS = [
        + 'ser grampeado onde ele nasce.',
   },
   {
-    id: 'DUT1', tipo: 'camara', nome: 'Placa simuladora — posição de ensaio 1',
-    onde: 'dentro da câmara, posição 1',
-    terminais: ['+24V', 'RET-1'],
-    diz: 'Consome uma corrente conhecida (17,6 mA) para o sistema perceber '
-       + 'quando ela some.',
+    id: 'SC-1', tipo: 'modulo', nome: 'Sensor de corrente da posição de ensaio',
+    onde: 'trilho 3 do painel, ao lado da PI-1', compPainel: 'SC-1',
+    diz: '⭐ O fio de força NÃO é cortado para medir: ele passa POR DENTRO do furo do '
+       + 'sensor. Quem decide se há corrente é o módulo; o Arduino só lê a decisão.',
   },
   {
-    id: 'DUT2', tipo: 'camara', nome: 'Placa simuladora — posição de ensaio 2',
-    onde: 'dentro da câmara, posição 2',
-    terminais: ['+24V', 'RET-2'],
-    diz: 'Mesma ideia da posição 1, com corrente PROPOSITALMENTE diferente '
-       + '(9,8 mA): é o que prova que cada posição é comparada com o normal dela.',
+    id: 'DUT1', tipo: 'camara', nome: 'Placa simuladora — posição de ensaio 1',
+    onde: 'dentro da câmara, posição 1',
+    terminais: ['+24V', 'RET'],
+    diz: 'Consome uma corrente conhecida (17,6 mA) para o sistema perceber '
+       + 'quando ela some.',
   },
 ];
 
@@ -223,37 +216,6 @@ export const DISCRETOS = [
     passo: 'B-04', fonte: 'Doc 33 §33.2',
   },
   /* ───────────────────────── PLACA PI-2 ───────────────────────── */
-  {
-    id: 'PI2-R1', ref: 'RS1', peca: 'Resistor 47 Ω · 1 % · ¼ W',
-    tipo: 'resistor', valor: '47 Ω 1%', qtd: 1, host: 'PI2', arranjo: 'serie', polaridade: false,
-    pernas: [
-      { nome: 'perna de cima',  vai: { comp: 'PI2', via: 'nó RET-1' } },
-      { nome: 'perna de baixo', vai: { comp: 'PI2', via: 'barramento 0V' } },
-    ],
-    papel: 'Shunt da posição de ensaio 1 — transforma corrente em tensão',
-    porque: 'A corrente do DUT ATRAVESSA este resistor para chegar ao 0 V, e cria sobre ele '
-          + '17,6 mA × 47 Ω = 0,83 V, que o multiplexador lê. Sem o shunt não existe nada para medir.',
-    seFaltar: 'A posição 1 fica sem retorno: o DUT não acende e a medição não existe.',
-    ensaio: 'Com a posição 1 energizada, medir sobre o shunt → ~0,83 V.',
-    passo: 'B-10', fonte: 'Doc 33 §33.5 · Doc 13 §13.3b',
-    aviso: '⚠️ Esta ref colide com o R1 da PI-1, que é outro componente (22 kΩ). Ver §renomear.',
-  },
-  {
-    id: 'PI2-R2', ref: 'RS2', peca: 'Resistor 47 Ω · 1 % · ¼ W',
-    tipo: 'resistor', valor: '47 Ω 1%', qtd: 1, host: 'PI2', arranjo: 'serie', polaridade: false,
-    pernas: [
-      { nome: 'perna de cima',  vai: { comp: 'PI2', via: 'nó RET-2' } },
-      { nome: 'perna de baixo', vai: { comp: 'PI2', via: 'barramento 0V' } },
-    ],
-    papel: 'Shunt da posição de ensaio 2',
-    porque: 'Mesmo valor do shunt 1, de propósito: a posição 2 consome menos (9,8 mA) e entrega '
-          + '0,46 V. A diferença entre as duas leituras é o que prova que cada posição é comparada '
-          + 'com o normal DELA.',
-    seFaltar: 'A posição 2 fica sem retorno.',
-    ensaio: 'Com a posição 2 energizada, medir sobre o shunt → ~0,46 V.',
-    passo: 'B-10', fonte: 'Doc 33 §33.5 · Doc 13 §13.3b',
-    aviso: '⚠️ Esta ref colide com o R2 da PI-1, que é outro componente (4,7 kΩ).',
-  },
 
   /* ─────────────────── NOS BORNES DOS RELÉS ──────────────────── */
   {
@@ -385,6 +347,39 @@ export const DISCRETOS = [
     passo: 'A-04', fonte: 'Doc 03 M.4 · Doc 30 fio 54b',
   },
 
+  /* ────────── A DETECÇÃO DE DISPOSITIVO MORTO (no painel) ────────── */
+  {
+    id: 'SC1-SENSOR', ref: 'SC-1', peca: 'Sensor de corrente WCS2702 (Hall, saída digital)',
+    tipo: 'modulo', valor: '±2 A · 1,0 mV/mA', qtd: 1, host: 'SC-1',
+    arranjo: 'serie', polaridade: true,
+    comoIdentificar: '⭐ O FURO tem sentido: o fio entra por um lado e sai pelo outro. Como as '
+                   + '10 voltas são todas no mesmo sentido, basta enrolar sempre para o mesmo '
+                   + 'lado — se uma volta vier ao contrário, ela CANCELA outra.',
+    seInverter: 'Voltas em sentidos misturados fazem o sensor enxergar menos corrente do que '
+              + 'existe — no limite, zero, e o sistema acusa falha com o equipamento ligado.',
+    pernas: [
+      { nome: 'VCC', vai: { comp: 'SC-1', via: 'VCC' } },
+      { nome: 'GND', vai: { comp: 'SC-1', via: 'GND' } },
+      { nome: 'DOUT (saída digital)', vai: { comp: 'SC-1', via: 'DOUT' } },
+    ],
+    papel: 'Responde se ainda passa corrente pelo equipamento da posição de ensaio',
+    porque: '⭐ A pergunta do ensaio sempre foi binária: o dispositivo está vivo ou morreu? '
+          + 'Medir 17,6 mA com shunt de 1 %, multiplexador e conversor A/D era caminho longo '
+          + 'para uma resposta de um bit. O sensor decide sozinho e entrega o bit pronto.',
+    seFaltar: 'Sem ele o sistema não sabe que uma posição parou — que é a única coisa que o '
+            + 'ensaio precisa detectar.',
+    ensaio: 'Com o equipamento ligado, o DOUT fica em nível BAIXO (LED do módulo aceso). '
+          + 'Desligue a chave do F-P: em menos de 1 s o monitor serial acusa '
+          + '"FALHA: Corrente Zero detectada".',
+    montagem: '⚠️ 10 VOLTAS DO FIO DE +24 V PELO FURO, todas no mesmo sentido, antes de o fio '
+            + 'seguir para a câmara. Com uma volta só o sensor veria 17,6 mA — 17,6 mV de '
+            + 'sinal, dentro do ruído. Com 10, ele vê 176 mA e o trimpot ajusta com folga.',
+    passo: 'A-06', fonte: 'Doc 13 §13.4',
+    aviso: '⚠️ A SZC23 (a opção para corrente alternada) NÃO serve nesta posição: ela só fecha '
+         + 'o contato a partir de 0,5 A. Ela é para os equipamentos reais da planta, de '
+         + 'amperes — não para o DUT de bancada.',
+  },
+
   /* ───────────────── FORA DO PAINEL — CÂMARA ─────────────────── */
   {
     id: 'VENT-D2', ref: 'D2', peca: 'Diodo 1N4007',
@@ -410,7 +405,7 @@ export const DISCRETOS = [
     tipo: 'resistor', valor: '1,2 kΩ', qtd: 1, host: 'DUT1', arranjo: 'serie', polaridade: false,
     pernas: [
       { nome: 'perna 1', vai: { comp: 'DUT1', via: '+24V' } },
-      { nome: 'perna 2', vai: { comp: 'DUT1', via: 'RET-1' } },
+      { nome: 'perna 2', vai: { comp: 'DUT1', via: 'RET' } },
     ],
     papel: 'Fixa a corrente da posição de ensaio 1 em 17,6 mA',
     porque: 'É esse valor constante que o sistema aprende como "normal" — e cuja ausência denuncia '
@@ -429,69 +424,27 @@ export const DISCRETOS = [
               + 'de "dispositivo morto". É o erro mais confuso possível aqui.',
     pernas: [
       { nome: 'perna longa (ânodo)', vai: { comp: 'DUT1', via: '+24V' } },
-      { nome: 'perna curta (catodo)', vai: { comp: 'DUT1', via: 'RET-1' } },
+      { nome: 'perna curta (catodo)', vai: { comp: 'DUT1', via: 'RET' } },
     ],
     papel: 'Sinal visual de que a posição 1 está energizada, visível pela porta da câmara',
     porque: 'Deixa a demonstração de detecção de falha acontecer aos olhos da banca.',
     seFaltar: '—',
     ensaio: 'Aceso com a posição energizada; apaga ao abrir o jumper de ensaio.',
-    passo: 'A-06', fonte: 'Doc 13 §13.3',
+    passo: 'A-06b', fonte: 'Doc 13 §13.3',
   },
   {
     id: 'DUT1-J', ref: 'J-DUT1', peca: 'Micro-chave ou jumper de 2 vias',
     tipo: 'chave', valor: '—', qtd: 1, host: 'DUT1', arranjo: 'serie', polaridade: false,
     pernas: [
       { nome: 'via 1', vai: { comp: 'DUT1', via: '+24V' } },
-      { nome: 'via 2', vai: { comp: 'DUT1', via: 'RET-1' } },
+      { nome: 'via 2', vai: { comp: 'DUT1', via: 'RET' } },
     ],
     papel: 'Abre o circuito da posição 1 para simular um dispositivo morto',
     porque: '⭐ É a melhor demonstração do projeto: tira-se o jumper e, em menos de 2 segundos, o '
           + 'alarme aparece na IHM e no dashboard.',
     seFaltar: 'A falha só poderia ser demonstrada desligando fio — feio e arriscado na apresentação.',
     ensaio: 'Abrir o jumper com o ensaio rodando → alarme da posição 1 em menos de 2 s.',
-    passo: 'A-06', fonte: 'Doc 13 §13.3',
-  },
-  {
-    id: 'DUT2-R', ref: 'R-DUT2', peca: 'Resistor 2,2 kΩ · ½ W',
-    tipo: 'resistor', valor: '2,2 kΩ', qtd: 1, host: 'DUT2', arranjo: 'serie', polaridade: false,
-    pernas: [
-      { nome: 'perna 1', vai: { comp: 'DUT2', via: '+24V' } },
-      { nome: 'perna 2', vai: { comp: 'DUT2', via: 'RET-2' } },
-    ],
-    papel: 'Fixa a corrente da posição de ensaio 2 em 9,8 mA',
-    porque: 'Corrente PROPOSITALMENTE diferente da posição 1: prova que o sistema compara cada '
-          + 'posição com o normal dela, e não com um limiar único.',
-    seFaltar: 'Sem ele o LED queima e a posição não tem referência.',
-    ensaio: 'Amperímetro em série na volta da posição 2 → 9,8 mA ± 1 mA.',
-    passo: 'A-07', fonte: 'Doc 13 §13.3b',
-  },
-  {
-    id: 'DUT2-LED', ref: 'LED-DUT2', peca: 'LED 5 mm verde',
-    tipo: 'led', valor: 'verde', qtd: 1, host: 'DUT2', arranjo: 'serie', polaridade: true,
-    comoIdentificar: 'Perna longa = ânodo (+), do lado do resistor.',
-    seInverter: 'Mesmo sintoma do LED da posição 1: parece dispositivo morto.',
-    pernas: [
-      { nome: 'perna longa (ânodo)', vai: { comp: 'DUT2', via: '+24V' } },
-      { nome: 'perna curta (catodo)', vai: { comp: 'DUT2', via: 'RET-2' } },
-    ],
-    papel: 'Sinal visual da posição 2',
-    porque: 'Cor diferente da posição 1 para as duas serem distinguíveis pela porta.',
-    seFaltar: '—',
-    ensaio: 'Aceso com a posição energizada.',
-    passo: 'A-07', fonte: 'Doc 13 §13.3',
-  },
-  {
-    id: 'DUT2-J', ref: 'J-DUT2', peca: 'Micro-chave ou jumper de 2 vias',
-    tipo: 'chave', valor: '—', qtd: 1, host: 'DUT2', arranjo: 'serie', polaridade: false,
-    pernas: [
-      { nome: 'via 1', vai: { comp: 'DUT2', via: '+24V' } },
-      { nome: 'via 2', vai: { comp: 'DUT2', via: 'RET-2' } },
-    ],
-    papel: 'Simula dispositivo morto na posição 2',
-    porque: 'Duas posições com jumper permitem mostrar que o alarme identifica QUAL posição caiu.',
-    seFaltar: 'Só uma posição demonstrável.',
-    ensaio: 'Abrir o jumper → alarme da posição 2, e só dela.',
-    passo: 'A-07', fonte: 'Doc 13 §13.3',
+    passo: 'A-06b', fonte: 'Doc 13 §13.3',
   },
 ];
 

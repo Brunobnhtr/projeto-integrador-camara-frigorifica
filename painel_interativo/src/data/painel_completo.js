@@ -220,7 +220,7 @@ export const COMPONENTES = [
         via('D30', 1, '⭐ Gatilho do KA4 → ventoinhas do RADIADOR'), via('D29', 1, '⭐ MV-1 canal 3 → as 5 ventoinhas INTERNAS (4 de circulação + a do PTC)'), via('D28'),
         via('D27', 1, '⭐ HAB_POTENCIA → gatilho do KA3. HIGH autoriza a potência; LOW derruba o selo e corta'),
         via('D26'), via('D25', 1, 'PI-1 J2-8 — vigia se os 24 V caíram'), via('D24', 1, 'Emergência — bloco NF de 5 V'), via('D23', 1, 'Botão STOP (NA, 5 V)'),
-        via('D22'), via('+5V', 1, 'BD-5V saída 1'), via('D21', 1, 'I²C SCL — o mesmo barramento'), via('D20', 1, 'I²C SDA — AM2315C (câmara), DS3231 e 2× INA219'),
+        via('D22', 1, 'SC-1 · DOUT — detecção de dispositivo morto'), via('+5V', 1, 'BD-5V saída 1'), via('D21', 1, 'I²C SCL — o mesmo barramento'), via('D20', 1, 'I²C SDA — AM2315C (câmara), DS3231 e 2× INA219'),
         via('D19', 1, 'Serial1 RX ← DNLCB30/ESP32'), via('D18', 1, 'Serial1 TX → DNLCB30/ESP32'), via('D17', 1, 'Serial2 RX ← conversor ← tela'), via('D16', 1, 'Serial2 TX → conversor → tela'),
         via('D15'), via('D14'), via('D0'), via('D1'),
         via('D2', 1, 'PI-1 J2-3 — 1-Wire do DS18B20 do RADIADOR'), via('D3', 1, 'RPM da ventoinha do radiador #1'), via('D4', 1, 'BTS #1 · R_EN e L_EN juntos'), via('D5', 1, 'BTS #1 · RPWM (frio)'),
@@ -229,10 +229,10 @@ export const COMPONENTES = [
         via('GND1'), via('D21/SCL'), via('D20/SDA'),
       ]},
       { ref: 'ESQ', lado: 'esquerda', legenda: 'Borda esquerda — 13 bornes (D31–D43)', pinos: [
-        via('D31', 1, 'PI-2 · S0 — seleção do canal do mux'),
-        via('D32', 1, 'PI-2 · S1'),
-        via('D33', 1, 'PI-2 · S2'),
-        via('D34', 1, 'PI-2 · S3'),
+        via('D31'),
+        via('D32'),
+        via('D33'),
+        via('D34'),
         via('D35'), via('D36'), via('D37'), via('D38'),
         via('D39'), via('D40'), via('D41'), via('D42'),
         via('D43'),
@@ -244,7 +244,7 @@ export const COMPONENTES = [
         via('A13'), via('A12'), via('A11'), via('A10'),
         via('A9'), via('A8', 1, 'RPM da ventoinha do radiador #2'), via('A7'), via('A6'),
         via('A5'), via('A4'), via('A3'),
-        via('A2', 1, '⭐ PI-2 · SIG — os 16 canais entram por aqui'),
+        via('A2'),
         via('A1', 1, 'PI-1 J2-2 — corrente do BTS #2'), via('A0', 1, 'PI-1 J2-1 — corrente do BTS #1'), via('GND2', 1, 'retorno dos 4 sinaleiros da porta — mesma referência do pino que os acende'), via('IOREF'),
         via('AREF'), via('RESET'), via('+3V3'),
         via('GND3', 1, '⭐ BD-0V · Z5 — o retorno da alimentação, no bloco POWER'),
@@ -352,75 +352,39 @@ export const COMPONENTES = [
   },
 
   {
-    id: 'PI-2', nome: 'PI-2 — mede a corrente das 2 posições de ensaio', trilho: 3,
-    resumoFuncao: '🔎 O QUE ELA FAZ: mede quanta corrente cada uma das 2 posicoes de ensaio esta consumindo. Um shunt de 47 Ω por posicao vira tensao, e um multiplexador de 16 canais leva as duas para UMA unica entrada analogica (A2) — economizando entradas do Mega. O Arduino escolhe o canal pelos bits D31 a D34.',
-    x: 291, largura: 105, altura: 62, cor: '#ae3ec9',
-    nota: 'Caixa DIN de 6 módulos, igual à PI-1 — as duas saem da MESMA placa de 9 × 15 cm cortada ao meio. Dentro dela ficam soldados o multiplexador, os '
-        + 'resistores shunt e o INA219 de referência. Os bornes abaixo são os FIOS que '
-        + 'chegam e saem — não os pinos dos componentes.',
-    interno: '1 × módulo CD74HC4067 (16 canais) · 2 × shunt 47 Ω 1% · 1 × INA219 '
-           + '(referência) · o pino EN do mux vai soldado ao 0 V dentro da placa. '
-           + '🔧 Clique no botão acima para ver o desenho furo por furo.',
+    id: 'SC-1', nome: 'SC-1 — sensor de corrente da posição de ensaio', trilho: 3,
+    resumoFuncao: '🔎 O QUE ELE FAZ: responde UMA pergunta — passa corrente pelo equipamento da posicao de ensaio? Se passa, ele esta vivo. Se nao passa, ou queimou, ou o fusivel abriu, ou alguem desligou a chave. ⭐ Ele nao MEDE: ele DECIDE, e entrega a decisao num fio, direto num pino digital do Mega. O fio da posicao passa POR DENTRO do furo do sensor — o circuito de ensaio nao e aberto para medir.',
+    x: 291, largura: 40, altura: 44, cor: '#ae3ec9',
+    nota: '⭐ O fio do +24 V da posição dá 10 VOLTAS pelo furo antes de seguir para a '
+        + 'câmara. O sensor enxerga 10 × a corrente (176 mA em vez de 17,6 mA) e o '
+        + 'comparador sai do ruído — é o mesmo princípio de espiras de um TC.',
     grupos: [
-      { ref: 'J1', lado: 'cima', legenda: 'RETORNOS que voltam da câmara (4 vias)', pinos: [
-        { nome: 'RET-1', usa: true, para: 'volta do DUT da posição 1 — o shunt dela está aqui dentro' },
-        { nome: 'RET-2', usa: true, para: 'volta do DUT da posição 2' },
-        { nome: 'RET-3' }, { nome: 'RET-4' },
+      { ref: 'ALIM', lado: 'baixo', legenda: 'Alimentação do módulo (2)', pinos: [
+        { nome: 'VCC', usa: true, para: 'BD-5V saída 8' },
+        { nome: 'GND', usa: true, para: 'BD-0V · Z17' },
       ]},
-      { ref: 'J2', lado: 'baixo', legenda: 'Alimentação (2 vias) — divide a borda de baixo com o J3', pinos: [
-        { nome: '0V', usa: true, para: 'BD-0V — o comum, DEPOIS dos shunts' },
-        { nome: '+5V', usa: true, para: 'BD-5V saída 8 — alimenta o mux e o INA219' },
-      ]},
-      { ref: 'J3', lado: 'baixo', legenda: 'Sinais para o Arduino (7 vias)', pinos: [
-        { nome: 'S0', usa: true, para: 'Mega D31 — seleção de canal, bit 0' },
-        { nome: 'S1', usa: true, para: 'Mega D32 — bit 1' },
-        { nome: 'S2', usa: true, para: 'Mega D33 — bit 2' },
-        { nome: 'S3', usa: true, para: 'Mega D34 — bit 3' },
-        { nome: 'SIG', usa: true, para: 'Mega A2 — a leitura dos 16 canais sai por aqui' },
-        { nome: 'SDA', usa: true, para: 'I²C SDA — chega do RTC · SDA. É barramento: o '
-        + 'mesmo par serve o RTC, o INA219 daqui e o AM2315C da câmara' },
-        { nome: 'SCL', usa: true, para: 'I²C SCL — chega do RTC · SCL, mesmo barramento' },
+      { ref: 'SIG', lado: 'baixo', legenda: 'Saída digital (1)', pinos: [
+        { nome: 'DOUT', usa: true, para: 'Mega D22 — nível baixo enquanto houver corrente' },
       ]},
     ],
-    avisos: [
-      '🔥 O QUE CHEGA AQUI É O RETORNO, NÃO O POSITIVO. O shunt fica no lado de baixo, '
-      + 'entre o retorno do DUT e o 0 V — só assim a tensão sobre ele fica referenciada '
-      + 'ao 0 V e o mux consegue lê-la. O positivo vai do fusível direto para a câmara e '
-      + 'nunca passa por esta placa.',
-      '🔌 SÃO 4 FIOS PARA A CÂMARA: 2 positivos (dos fusíveis) e 2 retornos INDIVIDUAIS. '
-      + 'Os retornos não podem ser comuns — se fossem, as correntes se somariam antes do '
-      + 'shunt e não daria para separar quem é quem.',
-      '📍 COM 50 POSIÇÕES ESTA PLACA MUDA DE LUGAR, não de projeto. Ela sai do painel e '
-      + 'vai para junto da câmara, em 4 cópias de 16 posições cada. Aí os 100 fios dos '
-      + 'DUTs ficam curtos e só 9 sinais voltam ao painel. Ver Doc 14.',
-      '📌 O pino EN do multiplexador NÃO tem borne: vai soldado ao 0 V dentro da placa. '
-      + 'O datasheet confirma que o enable é ativo em nível BAIXO.',
-      '📐 O mux tem 70 Ω de resistência quando ligado, e isso não atrapalha: a entrada '
-      + 'analógica do Arduino não puxa corrente, então não há queda sobre eles.',
-      '🔬 O INA219 de referência fica em série com o retorno da posição 1, antes do shunt '
-      + 'dela. Os dois medem a mesma corrente — é assim que se prova que o mux acerta.',
-    ],
+    avisos: ['⚠️ AJUSTE O TRIMPOT NA BANCADA, com o equipamento ligado e depois desligado. '
+           + 'É ele que decide onde fica a fronteira entre "tem corrente" e "não tem".',
+           '⭐ O pino do Mega fica em INPUT_PULLUP: fio arrancado = nível alto = FALHA. '
+           + 'O defeito cai do lado do alarme, nunca do lado do silêncio.'],
   },
   {
-    id: 'F-P', nome: 'F-P — fusíveis das 2 posições de ensaio', trilho: 2,
-    resumoFuncao: '🔎 O QUE ELE FAZ: dois porta-fusiveis, um para cada posicao de ensaio. Se o dispositivo sob teste entrar em curto, o fusivel dele abre e a OUTRA posicao continua o ensaio. Sem eles, um curto numa posicao derrubaria o ramal inteiro e perderia o ensaio todo.',
-    x: 224, largura: 36, altura: 46, cor: '#fab005',
-    nota: '1 porta-fusível de 2 vias COM INTERRUPTOR — um fusível e uma chave por posição.',
+    id: 'F-P', nome: 'F-P — fusível e chave da posição de ensaio', trilho: 2,
+    resumoFuncao: '🔎 O QUE ELE FAZ: e o disjuntor da posicao de ensaio, em miniatura. O fusivel abre se o dispositivo entrar em curto, e o interruptor liga e desliga a posicao a mao — e e com ele que se DEMONSTRA a deteccao de falha na apresentacao: desliga a chave, e em menos de 1 segundo o alarme aparece.',
+    x: 224, largura: 26, altura: 46, cor: '#fab005',
+    nota: '⭐ UM porta-fusível de 1 via COM INTERRUPTOR. Eram dois, um por posição de '
+        + 'ensaio; com a detecção digital o protótipo passou a ter uma posição só.',
     grupos: [
-      { ref: 'IN', lado: 'cima', legenda: 'Entrada comum (1)', pinos: [
+      { ref: 'IN', lado: 'cima', legenda: 'Entrada (1)', pinos: [
         { nome: 'V+', usa: true, para: 'BD-24V saída 4' },
       ]},
-      { ref: 'OUT', lado: 'baixo', legenda: 'Saídas com fusível de 100 mA (2)', pinos: [
-        { nome: 'F-P1', usa: true, para: 'DUT da posição 1, na câmara — direto, sem passar pela PI-2' },
-        { nome: 'F-P2', usa: true, para: 'DUT da posição 2, na câmara' },
+      { ref: 'OUT', lado: 'baixo', legenda: 'Saída com fusível de 100 mA (1)', pinos: [
+        { nome: 'F-P1', usa: true, para: 'sensor SC-1 (10 voltas no furo) → DUT da posição 1, na câmara' },
       ]},
-    ],
-    avisos: [
-      '⭐ CADA VIA FAZ DUAS COISAS. O fusível de 100 mA protege contra curto; o '
-      + 'interruptor permite DESLIGAR a posição na frente da banca e mostrar o sistema '
-      + 'detectando a falha em segundos, com a outra posição seguindo normal.',
-      '📌 Fusível de 100 mA para uma carga de 17,6 mA. Ele existe para curto, não para '
-      + 'sobrecarga leve — nenhum fusível detecta um dispositivo que simplesmente parou.',
     ],
   },
 
@@ -748,8 +712,9 @@ export const COMPONENTES = [
     id: 'BD-0V', nome: 'BD-0V — retorno único de tudo (star ground)', trilho: 1,
     resumoFuncao: '🔎 O QUE ELE E: o ponto onde TODO retorno do painel se encontra, um parafuso por dispositivo. ⭐ Estrela, nunca em cadeia: pendurar um retorno no outro faz a corrente de um virar erro de medicao do outro — e como os BTS chaveiam, esse erro PISCA no ritmo do PWM. Chama-se acoplamento por impedancia comum e e a causa numero 1 de medicao ruim em painel.',
     x: 258, largura: 105, altura: 58, cor: '#212529',
-    nota: '⭐ O ÚNICO 0 V do projeto. Barra de 20 pontos — ou dois blocos de 8 mais '
-        + 'um de 4, ligados por ponte de 4 mm².',
+    nota: '⭐ O ÚNICO 0 V do projeto. Barra de 24 pontos — três blocos de 8, ligados por '
+        + 'ponte de 4 mm². ⭐ Subiu de 20 para 24 quando o retorno da posição de ensaio '
+        + 'passou a vir direto para cá, em vez de atravessar o shunt da PI-2.',
     grupos: [
       { ref: 'IN', lado: 'cima', legenda: 'Entrada 10 mm² (1)', pinos: [via('IN', 1, 'retorno do padrão de entrada')] },
       { ref: 'R', lado: 'baixo', legenda: 'Retornos (20 pontos)', pinos: [
@@ -769,6 +734,8 @@ export const COMPONENTES = [
         via('Z19', 1, 'DS18B20 do radiador · GND'),
         via('Z20', 1, '⭐ retorno das ventoinhas do radiador — referência dos 2 RPM'),
         via('Z21', 1, '⭐ KA3 + KA4 · DC− — retorno dos dois módulos de relé'),
+        via('Z22', 1, 'retorno do DUT da posição de ensaio — direto, sem shunt'),
+        via('Z23'), via('Z24'),
       ]},
     ],
     avisos: ['🔥 É o componente mais fácil de subdimensionar. Chegam 18 retornos + a '

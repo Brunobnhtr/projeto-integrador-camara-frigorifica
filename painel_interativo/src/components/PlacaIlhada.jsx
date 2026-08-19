@@ -384,7 +384,7 @@ function Face({
 /* ── a tela ────────────────────────────────────────────────────────── */
 export default function PlacaIlhada({ dados, titulo, onFechar }) {
   const { PLACA, BORNES, BARRAMENTO_0V, NOS, JUMPERS, CIRCUITOS, ORDEM_MONTAGEM } = dados;
-  const DISCRETOS = dados.COMPONENTES_PI1 ?? dados.COMPONENTES_PI2 ?? [];
+  const DISCRETOS = dados.COMPONENTES_PI1 ?? [];
   const CI = dados.CI1 ?? null;
   const MODULOS = dados.MODULOS ?? [];
 

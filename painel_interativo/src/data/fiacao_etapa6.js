@@ -99,20 +99,13 @@ export const FIOS_ETAPA6 = [
   { ...kabo('X11', { comp: 'F-P', via: 'F-P1' }, naCamara('DUT1', '+24 V'), 0.5,
       'srv24', 'alim', 'Positivo da posição 1, já depois do fusível e da chave.'),
     nome: 'posição 1 +', prensa: 'PG13-2', rota: ['CH-2x1', 'CV-esq', 'CH-base'] },
-  { ...kabo('X12', { comp: 'F-P', via: 'F-P2' }, naCamara('DUT2', '+24 V'), 0.5,
-      'srv24', 'alim', 'Positivo da posição 2.'),
-    nome: 'posição 2 +', prensa: 'PG13-2', rota: ['CH-2x1', 'CV-esq', 'CH-base'] },
-  { ...kabo('X13', naCamara('DUT1', 'retorno'), { comp: 'PI-2', via: 'RET-1' }, 0.5,
-      'medida', 'sinal', 'A volta da posição 1, que vai atravessar o shunt na PI-2.'),
-    nome: 'posição 1 · retorno', prensa: 'PG9-3', rota: ['CV-dir', 'CH-topo'],
-    aviso: '🔥 ESTE FIO É A MEDIÇÃO. Ele carrega os 17,6 mA que o sistema está medindo, e '
-         + 'só vira 0 V depois do shunt. Ele NÃO pode dividir prensa-cabo com a saída '
-         + 'dos BTS — por isso sai pelo PG9-3, e não pelo PG13-2.' },
-  { ...kabo('X14', naCamara('DUT2', 'retorno'), { comp: 'PI-2', via: 'RET-2' }, 0.5,
-      'medida', 'sinal', 'A volta da posição 2, individual.'),
-    nome: 'posição 2 · retorno', prensa: 'PG9-3', rota: ['CV-dir', 'CH-topo'],
-    porque: '⭐ Individual, e não comum com o da posição 1. Se voltassem juntos as duas '
-          + 'correntes se somariam antes do shunt e não daria para saber qual parou.' },
+  { ...kabo('X13', naCamara('DUT1', 'retorno'), { comp: 'BD-0V', via: 'Z22' }, 0.5,
+      'zero', 'comum', 'A volta da posição 1 — agora vai direto ao 0 V.'),
+    nome: 'posição 1 · retorno', prensa: 'PG9-3', rota: ['CV-dir', 'CH-base'],
+    porque: '⭐ ANTES ELE ERA A MEDIÇÃO: passava pelo shunt da PI-2, onde os 17,6 mA '
+          + 'viravam 0,83 V para o multiplexador ler. Com a detecção digital ninguém '
+          + 'precisa medir essa corrente — quem responde "tem corrente?" é o sensor, no '
+          + 'painel. O retorno virou um 0 V comum, com parafuso próprio na barra.' },
 
   /* ── O SENSOR DA CÂMARA ───────────────────────────────────────────── */
   { ...kabo('X15', { comp: 'BD-5V', via: 'O10' }, naCamara('SENS', 'VCC'), 0.25,
@@ -121,12 +114,12 @@ export const FIOS_ETAPA6 = [
   { ...kabo('X16', naCamara('SENS', 'GND'), { comp: 'BD-0V', via: 'Z15' }, 0.25,
       'zero', 'comum', 'Retorno do sensor.'),
     nome: 'AM2315C · GND', prensa: 'PG9-3', rota: ['CV-dir', 'CH-base'] },
-  { ...kabo('X17', { comp: 'PI-2', via: 'SDA' }, naCamara('SENS', 'SDA'), 0.25,
+  { ...kabo('X17', { comp: 'RTC', via: 'SDA' }, naCamara('SENS', 'SDA'), 0.25,
       'digital', 'sinal', 'O I²C continua da PI-2 até o sensor, dentro da câmara.'),
     nome: 'I²C SDA → câmara', prensa: 'PG9-3', rota: ['CH-3x2', 'CV-dir'],
     porque: '⭐ Terceira parada do MESMO barramento: Mega → RTC → PI-2 → AM2315C. Três '
           + 'endereços, um par de fios.' },
-  { ...kabo('X18', { comp: 'PI-2', via: 'SCL' }, naCamara('SENS', 'SCL'), 0.25,
+  { ...kabo('X18', { comp: 'RTC', via: 'SCL' }, naCamara('SENS', 'SCL'), 0.25,
       'digital', 'sinal', 'Idem para o clock.'),
     nome: 'I²C SCL → câmara', prensa: 'PG9-3', rota: ['CH-3x2', 'CV-dir'] },
 

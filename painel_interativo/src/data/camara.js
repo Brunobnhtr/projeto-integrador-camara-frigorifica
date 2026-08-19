@@ -170,31 +170,19 @@ export const COMPONENTES = [
     porque: 'É o dispositivo sob ensaio — o motivo de a câmara existir. Consome 17,6 mA '
           + 'constantes, e é o sumiço dessa corrente que denuncia a falha.',
     terminais: [
-      { t: '+24 V', de: 'F-P1 (fusível 100 mA)', ref: ['F-P', 'F-P1'], fio: '0,5 mm² vermelho' },
-      { t: 'retorno', de: 'PI-2 · RET-1', ref: ['PI-2', 'RET-1'], fio: '0,5 mm² azul' },
+      { t: '+24 V', de: 'F-P1 — fusível 100 mA + chave, e 10 voltas no sensor SC-1',
+        ref: ['F-P', 'F-P1'], fio: '0,5 mm² vermelho' },
+      { t: 'retorno', de: 'BD-0V · Z22', ref: ['BD-0V', 'Z22'], fio: '0,5 mm² azul' },
     ],
     avisos: [
-      '⚡ O RETORNO NÃO É O 0 V. Ele volta ao painel por um fio próprio e só vira 0 V '
-      + 'depois de atravessar o shunt de 47 Ω dentro da PI-2 — é essa travessia que a '
-      + 'medição enxerga.',
+      '⭐ O RETORNO VIROU 0 V COMUM. Ele ia para o shunt da PI-2, onde os 17,6 mA '
+      + 'viravam tensão para o multiplexador ler; hoje quem responde "tem corrente?" é o '
+      + 'sensor SC-1, no painel, e o retorno é um 0 V com parafuso próprio na barra.',
       '⭐ LED VERMELHO + RESISTOR DE 1,2 kΩ. O LED é só o indicador visual; quem fixa a '
       + 'corrente é o resistor.',
-    ],
-  },
-  {
-    id: 'DUT2', pc: 'PC-2', nome: 'Posição de ensaio 2', tipo: 'dut',
-    x: 508, y: 420, w: 76, h: 56, cor: '#2f9e44', dut: 2,
-    onde: 'Na base interna, à direita.',
-    porque: 'Consome 9,8 mA — propositalmente DIFERENTE da posição 1. É o que prova que '
-          + 'o sistema compara cada posição com o normal dela, e não com um limiar único.',
-    terminais: [
-      { t: '+24 V', de: 'F-P2 (fusível 100 mA)', ref: ['F-P', 'F-P2'], fio: '0,5 mm² vermelho' },
-      { t: 'retorno', de: 'PI-2 · RET-2', ref: ['PI-2', 'RET-2'], fio: '0,5 mm² verde' },
-    ],
-    avisos: [
-      '⚡ RETORNO INDIVIDUAL, obrigatoriamente. Se os dois retornos fossem um fio só, as '
-      + 'correntes se somariam antes do shunt e não daria para saber qual posição parou.',
-      '⭐ LED VERDE + RESISTOR DE 2,2 kΩ.',
+      '⚠️ QUEM DETECTA A FALHA NÃO ESTÁ AQUI DENTRO. O sensor fica no painel, e o fio '
+      + 'que sai daqui passa 10 vezes pelo furo dele antes de seguir — é o que faz o '
+      + 'sensor enxergar 176 mA em vez de 17,6 mA.',
     ],
   },
 ];
@@ -250,8 +238,8 @@ export const TRAVESSIA = [
   { pc: 'PC-1', g: 'Potência',   n: 2, o: 'Peltier + e −', de: 'BTS #1', mm: '1,5 mm²' },
   { pc: 'PC-1', g: 'Potência',   n: 2, o: 'PTC + e −', de: 'BTS #2', mm: '1,5 mm²' },
   { pc: 'PC-1', g: 'Ventilação', n: 2, o: '⭐ as 5 internas (4 de circulação + a do PTC, em paralelo)', de: 'MV-1 · O3', mm: '0,5 mm²' },
-  { pc: 'PC-2', g: 'Ensaio',     n: 2, o: 'positivos das posições', de: 'F-P1 e F-P2', mm: '0,5 mm²' },
-  { pc: 'PC-2', g: 'Ensaio',     n: 2, o: 'retornos individuais', de: 'PI-2 · RET-1/2', mm: '0,5 mm²' },
+  { pc: 'PC-2', g: 'Ensaio',     n: 1, o: 'positivo da posição de ensaio', de: 'F-P1', mm: '0,5 mm²' },
+  { pc: 'PC-2', g: 'Ensaio',     n: 1, o: 'retorno da posição de ensaio', de: 'BD-0V · Z22', mm: '0,5 mm²' },
   { pc: 'PC-2', g: 'Sinal',      n: 4, o: 'AM2315C (VCC GND SDA SCL)', de: 'Mega + BD-5V', mm: '0,25 mm²' },
 ];
 
@@ -306,9 +294,6 @@ export const PECAS3D = [
   { id: 'DUT1', bornes: [{ b:'+24 V', lado:'base', t:0.35 }, { b:'retorno', lado:'topo', t:0.75 }], nome: 'Posição 1', cor: '#c92a2a', pc: 'PC-2',
     caixa: [22, 25, 24, 62, 75, 58],
     diz: 'LED vermelho + 1,2 kΩ — 17,6 mA.' },
-  { id: 'DUT2', bornes: [{ b:'+24 V', lado:'base', t:0.35 }, { b:'retorno', lado:'topo', t:0.75 }], nome: 'Posição 2', cor: '#2f9e44', pc: 'PC-2',
-    caixa: [138, 25, 24, 178, 75, 58],
-    diz: 'LED verde + 2,2 kΩ — 9,8 mA.' },
   { id: 'VD1', bornes: [{ b:'+', lado:'topo', t:0.35 }, { b:'−', lado:'topo', t:0.70 }], nome: 'vent. entrada duto esq.', cor: '#74c0fc', pc: 'PC-1', fora: true,
     caixa: [-32, 35, 108, -6, 65, 138],
     diz: 'Dentro do duto lateral, FORA do volume útil. Sopra para CIMA.' },
@@ -352,12 +337,10 @@ export const ROTAS_CAMARA = {
   X9:  { alvo:'VF.+', pc:'PC-1', gx:42.3, lane:10.9, sobe: 9.2, crz:202 },  // circulação +
   X10: { alvo:'VF.−', pc:'PC-1', gx:41.4, lane:12.2, sobe:11.8, crz:198 },  // circulação −
   X11: { alvo:'DUT1.+24 V', pc:'PC-1', gx:38.7, lane:16.1 },              // posição 1 +
-  X12: { alvo:'DUT2.+24 V', pc:'PC-1', gx:45.9, lane:17.4 },              // posição 2 +
   X4:  { alvo:'PTC.−', pc:'PC-1', gx:46.8, lane:18.7 },              // PTC −
   X3:  { alvo:'PTC.+', pc:'PC-1', gx:47.7, lane:20.0 },              // PTC +
 
   /* ── PC-2 · sinal, entra no alto à direita ───────────────────────── */
-  X14: { alvo:'DUT2.retorno', pc:'PC-2', gx:157.0, lane:227.0, sobe:197.0, crz: 88 }, // retorno 2
   X13: { alvo:'DUT1.retorno', pc:'PC-2', gx:156.1, lane:225.7, sobe:195.6, crz: 94 }, // retorno 1
   X15: { alvo:'SENS.VCC', pc:'PC-2', gx:155.2, lane:224.4, sobe:194.2 },          // AM2315C VCC
   X16: { alvo:'SENS.GND', pc:'PC-2', gx:154.3, lane:223.1, sobe:192.8 },          // AM2315C GND

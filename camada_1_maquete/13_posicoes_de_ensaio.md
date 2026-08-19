@@ -112,20 +112,14 @@ O edital diz que os dispositivos ficam *"energizados e operando em modo de simul
 
 **As correntes são propositalmente diferentes.** Com dois valores distintos, fica provado que o sistema compara cada posição **com o normal dela** — e não com um limiar único. Numa fábrica, as 50 placas nunca consomem igual.
 
-### ⚡ E isso obriga a mudar o shunt
+### ~~E isso obriga a mudar o shunt~~ — não obriga mais
 
-Com a corrente caindo de 127 mA para 17,6 mA, um shunt de 4,7 Ω entregaria só 83 mV — **17 contagens** do conversor A/D, perto demais do ruído.
+Esta seção dimensionava o shunt de 47 Ω para que 17,6 mA virassem 0,83 V legíveis pelo conversor
+A/D. **Com a detecção digital não há shunt nenhum:** ninguém precisa saber que a corrente é
+17,6 mA, só que ela não é zero. Ver [§13.4](#134--a-detecção-virou-digital--o-que-mudou-e-por-quê).
 
-A correção é subir o shunt na mesma proporção:
-
-| Shunt | Tensão com 17,6 mA | Contagens do ADC | Veredito |
-|---|---:|---:|---|
-| 4,7 Ω | 0,083 V | **17** | ruim |
-| **47 Ω** | **0,83 V** | **170** | ✅ |
-
-`P = I² × R = 0,0176² × 47 = 0,015 W` — o shunt nem esquenta, e um resistor de 1/4 W sobra.
-
-> ⭐ **A regra:** o shunt se dimensiona pela corrente que se quer medir, não por um valor de tabela. Alvo entre **0,5 V e 1 V** no fundo de escala — abaixo disso o ruído incomoda, acima disso a queda começa a atrapalhar a carga.
+⚠️ O que a corrente do DUT ainda decide é **outra coisa**: se o sensor consegue enxergá-la. É por
+isso que o fio dá 10 voltas no furo do WCS2702.
 
 ### Por que continua em 24 V, e não 12 V
 
@@ -147,116 +141,194 @@ Vale registrar, porque a banca pode perguntar: os simuladores geram 0,6 W no tot
 Isso **não invalida a demonstração** — o que está sendo provado é a detecção de falha, não o desempenho térmico. Mas convém dizer na apresentação que, com placas reais dentro, o ciclo de resfriamento seria um pouco mais lento.
 
 
-## 13.4 O sensor INA219 — o que ele faz e por que este
+## 13.4 ⭐ A detecção virou digital — o que mudou, e por quê
 
-| | |
+> 📌 **Decisão de 19/08/2026.** A versão anterior media a corrente de cada posição com shunt de
+> 47 Ω, multiplexador CD74HC4067 e um INA219 de referência, tudo numa placa própria (a PI-2). Isso
+> **saiu inteiro**. Em lugar dele entra um sensor de corrente com **saída digital**, lido por um
+> pino do Arduino.
+
+### A pergunta sempre foi de um bit
+
+O ensaio precisa saber uma coisa só: **aquela posição ainda está funcionando?**
+
+| Resposta | O que aconteceu |
 |---|---|
-| **O que é** | Sensor de corrente e tensão com interface I²C |
-| **Como mede** | Um resistor *shunt* de 0,1 Ω em série com a carga; ele lê a queda de tensão sobre esse resistor e converte em corrente |
-| **Faixa** | ±3,2 A com resolução de 0,8 mA. ⚠️ Para 17,6 mA convém programar o ganho para a escala de ±400 mA, onde a resolução vai a 0,1 mA |
-| **Endereços** | **4 selecionáveis** por jumpers: 0x40 e 0x41 |
-| **Ligação** | 2 fios de dados (SDA/SCL) compartilhados + alimentação |
+| Passa corrente | o dispositivo está vivo |
+| Corrente zero | ou ele queimou, ou o fusível/disjuntor abriu, ou alguém desligou a chave |
 
-**Por que o INA219 e não um ACS712:** o ACS712 é analógico — cada sensor ocuparia **um pino de entrada analógica** do Arduino e traria ruído pelo cabo. O INA219 é digital: **4 sensores no mesmo par de fios**, sem consumir pino nenhum além do I²C que o projeto já usa para o AM2315C e o RTC.
+Para o registro do ensaio, os três casos da segunda linha são a mesma coisa: **aquela posição
+parou de ensaiar, e isso tem que aparecer**. Medir 17,6 mA com 1 % de precisão para no fim
+comparar com zero era um caminho longo para uma resposta binária.
 
-> 📌 **O barramento I²C já existe no projeto** (D20/D21). Acrescentar os 2 INA219 não exige nenhum pino novo — só derivar o mesmo par de fios. É por isso que essa escolha "custa barato" em termos de projeto.
+### O que saiu, e o que entrou
+
+| | Antes | Agora |
+|---|---|---|
+| Peças | 2 shunts 47 Ω 1 % · mux CD74HC4067 · INA219 · placa PI-2 inteira | **1 sensor com saída digital** |
+| Pinos do Mega | 4 bits de seleção + 1 entrada analógica + I²C | **1 pino digital** |
+| Fios no painel | 6 (4 bits, o analógico e o par I²C) | **1** |
+| O que o firmware faz | escolhe canal, lê A/D, converte, compara com faixa | `digitalRead()` |
+| Onde mora a decisão | no software, depois de converter | **no sensor, ajustado por trimpot** |
+
+### Os dois sensores, e onde cada um serve
+
+| | **WCS2702** (efeito Hall) | **SZC23** (chave de corrente) |
+|---|---|---|
+| Para | equipamento em **corrente contínua** | equipamento em **corrente alternada** |
+| Como lê | o fio passa por dentro do furo | o cabo passa pela janela, sem abrir o circuito |
+| Alimentação | 5 V do Arduino | **nenhuma** — ela se alimenta do campo do próprio cabo |
+| Saída | `DOUT`, ajustável no trimpot | **contato seco**, isolado da rede |
+| Sensibilidade | 1,0 mV/mA | fecha a partir de **0,5 ± 0,2 A** |
+
+> ⚠️ **A SZC23 não enxerga o DUT desta maquete.** O simulador de posição consome 17,6 mA, e o
+> mínimo dela é 0,5 A — **trinta vezes mais**. Ela é o sensor da planta real, onde os equipamentos
+> puxam amperes de 127 V. Para o protótipo de bancada, o sensor é o WCS2702.
+
+### ⭐ E o truque que faz o WCS2702 enxergar 17,6 mA
+
+Com 1,0 mV/mA, 17,6 mA produzem **17,6 mV** — dentro do ruído e da deriva térmica do próprio
+sensor. A saída não é trocar o sensor: é **dar voltas no furo**.
+
+```
+    fio do +24 V, vindo do fusível
+              │
+              │   ╭───────────╮
+              ╰──▶│ ()()()()  │  10 voltas pelo mesmo furo,
+                  │  WCS2702  │  TODAS no mesmo sentido
+              ╭───│           │
+              │   ╰───────────╯
+              ▼
+       para a posição de ensaio, na câmara
+
+    o sensor enxerga  10 × 17,6 mA = 176 mA  →  176 mV
+```
+
+O campo magnético é proporcional ao produto **corrente × número de espiras**. É o mesmo princípio
+de um transformador de corrente com relação de espiras — só que aqui a relação é feita à mão, com
+o fio que já ia passar por ali.
+
+⚠️ **Todas as voltas no mesmo sentido.** Uma volta invertida cancela outra, e o sensor passa a ver
+menos corrente do que existe.
 
 ---
 
-## 13.5 Esquema elétrico de uma posição
+## 13.5 Esquema elétrico — passo a passo da fiação
 
-```
-                         ┌─── porta-fusível DIN ───┐
-   BD-24V ───────────────┤  F-P1 · fusível 100 mA  ├──────┐
-   (24 V permanente)     └─────────────────────────┘      │
-                                                           │
-                        ┌──────────────────────────────────┴──┐
-                        │  INA219  ·  endereço 0x40           │
-                        │  VIN+ ──[ shunt 0,1 Ω ]── VIN−      │
-                        └────┬──────────────────────────┬─────┘
-                             │ SDA · SCL                │
-                             │ (para o Arduino)          ▼
-                             │                    PLACA SIMULADORA
-                             │                     (dentro da câmara)
-                             │                           │
-   BD-0V ────────────────────┴───────────────────────────┘
-```
+> 🧾 **Este é o roteiro de bancada.** A versão com caixa de conferido está na aba
+> **Guia de montagem → fase A → passo A-06** do aplicativo.
 
-| Posição | Fusível | Endereço INA219 | Jumper A0 | Jumper A1 |
-|---|---|---|---|---|
-| **P-1** | F-P1 · 100 mA | **0x40** | — | — |
-| **P-2** | F-P2 · 100 mA | **0x41** | ponte | — |
-| ~~P-3~~ | ~~F-P3~~ | ~~0x44~~ | — | **reserva** — endereço livre para crescer |
-| ~~P-4~~ | ~~F-P4~~ | ~~0x45~~ | — | **reserva** |
+### A · Circuito de força da posição (o que se liga primeiro)
 
-> ⚠️ **Configure os endereços ANTES de montar.** Dois sensores com o mesmo endereço no barramento fazem os dois responderem juntos e a leitura vira lixo — e o sintoma (valores que pulam sem sentido) leva horas para ser diagnosticado se você não desconfiar do endereço.
->
-> **Teste de aceitação:** rode um *scanner* I²C. Devem aparecer **4 endereços**: 0x38 (AM2315C), 0x68 (DS3231) e os dois dos INA219. Se aparecerem menos, há endereço repetido ou ligação errada.
+| # | De | Para | Fio | Cuidado |
+|---:|---|---|---|---|
+| 1 | **BD-24V · saída 4** | entrada `V+` do porta-fusível **F-P** | 0,5 mm² vermelho | ⭐ 24 V **permanente**: a posição continua energizada na emergência, e é isso que permite registrar o que aconteceu |
+| 2 | **F-P · F-P1** (saída, depois do fusível de 100 mA e da chave) | **10 voltas no furo do SC-1** | 0,5 mm² vermelho | ⚠️ todas no mesmo sentido |
+| 3 | saída das voltas | borne **+24 V** da posição, dentro da câmara | 0,5 mm² vermelho | sai pelo prensa-cabo PG13-2 |
+| 4 | borne **retorno** da posição | **BD-0V · Z22** | 0,5 mm² azul | parafuso **próprio** na barra — retorno pendurado no do vizinho vira erro de medição do vizinho |
 
-> 🔌 **Por que as posições vêm do BD-24V permanente, e não do BD-POT:** os dispositivos sob ensaio devem continuar energizados mesmo quando a climatização é interrompida. Se a emergência derrubasse também os DUTs, você perderia o estado do ensaio — e o registro de qual deles já havia falhado.
+### B · Circuito de sinal (o que diz ao Arduino)
+
+| # | De | Para | Fio | Cuidado |
+|---:|---|---|---|---|
+| 5 | **BD-5V · saída 8** | `VCC` do SC-1 | 0,25 mm² violeta | o módulo aceita 3 a 12 V; aqui são 5 V |
+| 6 | **BD-0V · Z17** | `GND` do SC-1 | 0,25 mm² azul | |
+| 7 | `DOUT` do SC-1 | **Mega · D22** | 0,25 mm² cinza | ⭐ **nada no meio**: sem resistor, sem divisor. O pino usa o pull-up interno |
+
+### C · Ajuste e prova (com o firmware já gravado)
+
+1. Grave `firmware/detector_corrente/detector_corrente.ino` e abra o monitor serial em **115200**.
+2. Ligue a chave do porta-fusível. O LED da posição acende.
+3. Gire o **trimpot** do sensor devagar até o serial dizer `Equipamento em funcionamento`.
+4. **Desligue a chave.** Em menos de 1 s: `FALHA: Corrente Zero detectada`.
+5. **Religue.** Em 0,2 s volta para `Equipamento em funcionamento`.
+6. ⭐ **Teste do fio partido:** com tudo ligado, desconecte o fio do `D22`. Tem que dar **FALHA**.
+   Se disser "funcionando", o pull-up não está ativo ou a polaridade está trocada — e o sistema
+   ficaria cego justamente quando um cabo se soltasse.
+
+### D · Se o equipamento for de corrente alternada (a planta real)
+
+A SZC23 é **não-invasiva e sem alimentação**: o cabo de fase passa pela janela e ela entrega um
+contato seco.
+
+| # | Ligação | Cuidado |
+|---:|---|---|
+| 1 | Passe **apenas a fase** pela janela da SZC23 | ⚠️ Fase e neutro juntos = campo se cancela = ela nunca fecha |
+| 2 | Um fio do contato seco no **pino digital** do Arduino | sem polaridade |
+| 3 | O outro fio do contato seco no **GND** do Arduino | |
+| 4 | Ajuste o potenciômetro dela para a corrente do equipamento | faixa 0,2 a 30 A |
+
+> 🔥 **É o contato seco que mantém os 127 V longe do Arduino.** Ele é galvanicamente isolado do
+> cabo medido. Nunca substitua essa ligação por "um fio no vivo com divisor de tensão": em AC,
+> divisor não isola, e o que chega no pino é a rede com outra amplitude.
+
+> ⚡ **Segurança na bancada com AC:** trabalhe desenergizado, monte a SZC23 antes de energizar, e
+> mantenha o cabo de 127 V dentro da caixa fechada. O painel deste projeto foi desenhado com os
+> 127 V confinados na subestação justamente para que a bancada inteira seja SELV.
 
 ---
 
 ## 13.6 Como o firmware detecta a falha
 
-A lógica é deliberadamente simples — e a simplicidade é o que a torna confiável:
+O código completo, comentado, está em
+[`firmware/detector_corrente/detector_corrente.ino`](../firmware/detector_corrente/detector_corrente.ino).
+A lógica cabe em cinco linhas de descrição:
 
-| Corrente lida | Interpretação | Ação |
+| Passo | O que faz | Por quê |
 |---|---|---|
-| **entre 85% e 115%** da referência | Normal | Nada |
-| **< 50%** da referência por mais de 2 s | **Dispositivo morto ou fusível aberto** | Alarme `DUT_n_MORTO` · registra no SD · publica por MQTT · LED FAULT |
-| **> 150%** da referência | Consumo anormal (pré-falha) | Alerta `DUT_n_SOBRECARGA` |
-| **queda em TODAS as posições ao mesmo tempo** | Provavelmente o barramento caiu, não várias falhas simultâneas | Alarme de **sistema**, não de dispositivo |
-
-> ⭐ **Os limiares são percentuais, não valores fixos** — e é isso que faz a solução escalar. A posição 1 consome 17,6 mA e a posição 2 consome 9,8 mA; um limiar único de "20 mA" acusaria a posição 2 como morta o tempo todo. **Cada posição é comparada com o normal dela**, aprendido na primeira partida com a câmara em temperatura ambiente.
->
-> 📐 Com o shunt de 47 Ω, cada contagem do ADC vale `4,88 mV ÷ 47 Ω = 0,104 mA`. A posição 2, a mais fraca, é lida em 94 contagens — resolução de sobra para distinguir 50% de 100%.
-
-> 💡 **A última linha é o tipo de detalhe que separa um projeto pensado de um projeto copiado.** Se todas as posições zeram ao mesmo tempo, a causa quase certamente é comum — fusível geral, cabo solto, fonte. Reportar "4 dispositivos falharam" seria tecnicamente verdade e praticamente inútil.
-
-**O atraso de 2 segundos é proposital:** evita alarme falso por ruído de leitura ou por transitório no momento em que a Peltier chaveia.
+| `pinMode(D22, INPUT_PULLUP)` | liga o resistor interno | ⭐ pino solto vira nível ALTO = FALHA. O defeito cai do lado do alarme |
+| amostra a cada 5 ms | 200 leituras por segundo | barato, e dá margem para o filtro |
+| guarda **quando viu corrente pela última vez** | | em AC a corrente cruza o zero 120×/s: sem isso, o sistema alarmaria sozinho |
+| **1 s sem nenhuma amostra com corrente** → FALHA | tempo de confirmação | o Doc 13 exige alarme em menos de 2 s |
+| **0,2 s com corrente** → volta a funcionar | | religar é boa notícia, e pode chegar rápido |
 
 ### O que vai para o registro
 
-```
-2026-08-13 14:32:07 | ENSAIO #14 | T=-2.1C | SP=-2.0 | DUT1=17.6mA (100%)
-                                                       DUT2= 0.0mA ** FALHA **
-```
+Cada mudança de estado é impressa com o instante em que ocorreu, e a mesma informação alimenta o
+log em SD e o JSON do ESP32 — que já existiam. **A detecção mudou; o que se faz com ela, não.**
 
-Cada linha traz **o instante, a temperatura da câmara e a corrente de cada posição**. É isso que permite responder, depois do ensaio: *"a posição 3 parou aos 47 minutos, quando a câmara passava por −2 °C descendo"* — que é uma informação de engenharia, não um "deu erro".
-
----
 
 ## 13.7 Lista de materiais desta camada
 
 | Item | Qtd | Especificação | Custo aprox. |
 |---|---:|---|---:|
-| **Sensor INA219** (módulo I²C) | **2** ⬇ | Corrente/tensão, ±3,2 A, endereço selecionável | R$ 60 |
-| **Porta-fusível DIN 2 vias com interruptor** | 1 | Trilho DIN 35 mm — **F-P1 e F-P2** | R$ 25 |
-| Fusível tubular 5×20 mm · 100 mA | 8 | 4 usos + 4 reservas | R$ 10 |
-| Placa ilhada pequena | 4 | ~30 × 40 mm — placas simuladoras de DUT | R$ 8 |
-| Resistor 1,2 kΩ e 2,2 kΩ · 1/2 W | 4 | Limitador de cada simulador | R$ 2 |
-| Resistor 1,2 kΩ 1/4 W | 4 | Limitador do LED indicador | R$ 2 |
-| LED 5 mm difuso | 4 | Indicação visual "posição viva" | R$ 2 |
-| Micro-chave ou jumper | 4 | **Simulação de falha** para a demonstração | R$ 8 |
-| Borne DIN 2,5 mm² | 8 | Entrada/saída de cada posição | R$ 16 |
-| **Total** | | | **~R$ 154** |
+| ⭐ **Sensor de corrente WCS2702** | 1 | Hall, ±2 A, 1,0 mV/mA, saída digital com trimpot | R$ 25 |
+| **Porta-fusível DIN 1 via com interruptor** | 1 | Trilho DIN 35 mm — o `F-P` | R$ 15 |
+| Fusível tubular 5×20 mm · 100 mA | 4 | 1 uso + 3 reservas | R$ 6 |
+| Placa ilhada pequena | 2 | ~30 × 40 mm — corpo da placa simuladora (sai das sobras da PI-1) | R$ 4 |
+| Resistor 1,2 kΩ · 1/2 W | 2 | Limitador do LED da posição | R$ 2 |
+| LED 5 mm difuso vermelho | 2 | Indicação visual "posição viva" | R$ 2 |
+| Micro-chave ou jumper | 2 | **Simulação de falha** para a demonstração | R$ 4 |
+| Borne DIN 2,5 mm² | 4 | Entrada e retorno da posição | R$ 8 |
+| **Total** | | | **~R$ 66** |
+
+| 🗑️ Saiu da lista | Por quê |
+|---|---|
+| ~~2 × INA219~~ (R$ 60) | Media a corrente que ninguém mais precisa medir |
+| ~~Multiplexador CD74HC4067~~ | Existia para levar 16 canais analógicos a uma entrada A/D |
+| ~~2 × shunt 47 Ω 1 %~~ | Convertia corrente em tensão para o A/D ler |
+| ~~Placa PI-2 inteira~~ | Era a casa dos três acima |
+| ~~1 fusível e 1 posição de ensaio~~ | O protótipo passou a ter **um** canal de teste |
+
+> 💰 **A troca economizou ~R$ 88 e uma placa inteira** — mas o que mais pesa não é o dinheiro: são
+> 6 fios, 5 pinos do Arduino e uma placa a menos para soldar e depurar.
 
 ---
 
 ## 13.8 ✅ Checklist de aceitação
 
-- [ ] 2 posições montadas, cada uma com **fusível próprio** de 100 mA
-- [ ] Os 2 INA219 com **endereços diferentes** (0x40 e 0x41 — o 0x44 e o 0x45 ficam de reserva), configurados antes da montagem
-- [ ] Scanner I²C encontra **6 dispositivos** no barramento
-- [ ] Posição 1 consome **17,6 mA ± 1 mA** e posição 2 **9,8 mA ± 1 mA**, medidos com multímetro
-- [ ] ⭐ As duas leituras **anotadas** — são elas que o firmware vai usar como referência de cada posição
-- [ ] LED de cada posição aceso com a alimentação ligada
-- [ ] Posições alimentadas pelo **BD-24V permanente** — continuam energizadas com a emergência acionada
-- [ ] **Ensaio de detecção:** abrir o jumper de cada posição, uma por vez, e confirmar o alarme em **menos de 3 s** na IHM e no dashboard
-- [ ] **Ensaio de falha comum:** retirar o fusível geral e confirmar que o sistema reporta **falha de sistema**, não 4 falhas de dispositivo
-- [ ] Log em SD registrando corrente de todas as posições a cada ciclo
-- [ ] Carga térmica adicional (~12 W) incluída no balanço do [Doc 12](12_camara_termica.md)
+- [ ] 1 posição de ensaio montada, com **fusível de 100 mA e chave** no `F-P`
+- [ ] ⭐ **10 voltas** do fio de +24 V pelo furo do WCS2702, todas no mesmo sentido
+- [ ] Sensor alimentado com 5 V (BD-5V saída 8) e GND no BD-0V · Z17
+- [ ] `DOUT` do sensor no **D22** do Mega, **sem nada no meio**
+- [ ] Retorno da posição no **BD-0V · Z22**, com parafuso próprio
+- [ ] Posição alimentada pelo **BD-24V permanente** — continua energizada com a emergência acionada
+- [ ] Trimpot ajustado: com o equipamento ligado o serial diz `Equipamento em funcionamento`
+- [ ] **Ensaio de detecção:** desligar a chave → `FALHA: Corrente Zero detectada` em **menos de 1 s**
+- [ ] **Ensaio de recuperação:** religar → volta a `Equipamento em funcionamento` em 0,2 s
+- [ ] ⭐ **Ensaio do fio partido:** com tudo ligado, desconectar o fio do `D22` → tem que dar **FALHA**
+- [ ] LED da posição aceso com a alimentação ligada
+- [ ] Log em SD registrando a mudança de estado com a hora do RTC
 
 ---
 
@@ -266,7 +338,24 @@ Cada linha traz **o instante, a temperatura da câmara e a corrente de cada posi
 
 ## 13.9 ⭐ E na empresa, com 50 placas? — a pergunta da escala
 
-Esta seção existe porque a banca vai perguntar, e porque a resposta é o que separa um protótipo escolar de um projeto de engenharia: **a bancada tem 2 posições, mas a empresa tem 50.** Ninguém coloca 50 módulos INA219 dentro de um painel.
+Esta seção existe porque a banca vai perguntar, e porque a resposta é o que separa um protótipo escolar de um projeto de engenharia: **a bancada tem 1 posição, mas a empresa tem 50.**
+
+> 📌 **A mudança para detecção digital muda a resposta desta seção, e para melhor.** O que vem
+> abaixo foi escrito quando cada posição era MEDIDA por um INA219 — e a discussão era como
+> multiplexar 50 medições. Com um bit por posição, o problema deixa de ser de instrumentação e
+> vira de **entrada digital**, que é bem mais barato de escalar:
+>
+> | Como | Pinos gastos | Canais |
+> |---|---|---|
+> | Direto no Mega | 1 por canal | ~29 sobrando neste projeto |
+> | 74HC165 (registrador de deslocamento) | 3 no total | 8 por CI |
+> | **MCP23017 (expansor I²C)** | **2 no total** | **16 por CI** |
+>
+> ⭐ **Quatro MCP23017 no mesmo par I²C que já existe** (por causa do RTC) dão **64 canais com 2
+> pinos**. E o cálculo de tempo de varredura abaixo continua valendo — a falha continua sem pressa.
+>
+> O texto original fica porque a **lógica de escala** que ele ensina (a unidade não é o sensor, é
+> o suporte instrumentado) não mudou, e porque mostra o caminho percorrido.
 
 ### Primeiro, um acerto: o INA219 tem 16 endereços, não 4
 

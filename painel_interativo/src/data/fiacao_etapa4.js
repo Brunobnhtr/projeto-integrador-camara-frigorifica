@@ -161,17 +161,23 @@ export const FIOS_ETAPA4 = [
          + 'PG13-2 — a ventoinha do PTC passou a entrar em paralelo com as outras, '
          + 'dentro da câmara.' },
 
-  /* ── o multiplexador da PI-2 ──────────────────────────────────────── */
-  ...[['S20', 'D31', 'S0', 0], ['S21', 'D32', 'S1', 1],
-      ['S22', 'D33', 'S2', 2], ['S23', 'D34', 'S3', 3]]
-    .map(([n, d, s, b]) => sig(n, meg(d), { comp: 'PI-2', via: s },
-      `Bit ${b} da seleção de canal do multiplexador.`,
-      { rota: ['CH-3x2'], nome: `seleção do mux · bit ${b}` })),
-  { ...ana('S24', { comp: 'PI-2', via: 'SIG' }, meg('A2'),
-      'A saída do multiplexador: os 16 canais chegam ao Arduino por este fio só.'),
-    nome: 'SIG do mux → A2', rota: ['CH-3x2'],
-    porque: '⭐ É o fio que faz a economia toda valer: 16 posições, uma entrada '
-          + 'analógica. Como o Arduino escolheu o canal, ele sabe de quem é a leitura.' },
+  /* ── a detecção de dispositivo morto ────────────────────────────────
+     ⭐ ERAM SEIS FIOS AQUI: quatro bits para escolher o canal do
+        multiplexador, o sinal analógico do canal escolhido e o par I²C do
+        INA219 de referência. Todos existiam para MEDIR a corrente e só
+        então decidir se ela era zero.
+
+        A pergunta sempre foi binária — "passa corrente ou não?" — e o
+        sensor responde isso sozinho. Sobrou um fio. */
+  { ...sig('S20', { comp: 'SC-1', via: 'DOUT' }, meg('D22'),
+      'A resposta do sensor: nível baixo enquanto houver corrente na posição.'),
+    nome: 'sensor de corrente → D22', rota: ['CH-3x2', 'CV-dir', 'CH-topo'],
+    porque: '⭐ O pino fica em INPUT_PULLUP. Fio partido, sensor sem alimentação ou '
+          + 'módulo queimado deixam o pino em nível ALTO — que é o estado de FALHA. '
+          + 'O defeito cai do lado do alarme, nunca do lado do silêncio.',
+    aviso: '⚠️ Confira a polaridade do DOUT na bancada antes de confiar nele: há módulos '
+         + 'que aterram a saída com corrente e outros que a levantam. O firmware tem uma '
+         + 'constante para isso (NIVEL_COM_CORRENTE em detector_corrente.ino).' },
 
   /* ── o barramento I²C ─────────────────────────────────────────────── */
   { ...sig('S25', meg('D20'), { comp: 'RTC', via: 'SDA' },
@@ -180,16 +186,6 @@ export const FIOS_ETAPA4 = [
   { ...sig('S26', meg('D21'), { comp: 'RTC', via: 'SCL' },
       'SCL do I²C.'), nome: 'I²C SCL · Mega → RTC',
     rota: ['CH-topo', 'CV-dir', 'CH-3x2'] },
-  { ...sig('S27', { comp: 'RTC', via: 'SDA' }, { comp: 'PI-2', via: 'SDA' },
-      'O I²C segue do RTC para o INA219 da PI-2.'), nome: 'I²C SDA · RTC → PI-2',
-    rota: ['CH-3x2'],
-    porque: '⭐ AQUI PENDURAR É O CERTO, ao contrário do 0 V. I²C é um BARRAMENTO: '
-          + 'todo mundo no mesmo par de fios, cada um com o seu endereço. Puxar um par '
-          + 'do Arduino para cada módulo criaria vários barramentos com um dispositivo '
-          + 'cada — e nenhum deles funcionaria melhor por isso.' },
-  { ...sig('S28', { comp: 'RTC', via: 'SCL' }, { comp: 'PI-2', via: 'SCL' },
-      'Idem para o SCL.'), nome: 'I²C SCL · RTC → PI-2', rota: ['CH-3x2'] },
-
   /* ── a serial do ESP32 ────────────────────────────────────────────── */
   { ...sig('S29', meg('D18'), { comp: 'ESP32', via: 'RX0' },
       'Serial1: o Arduino fala, o ESP32 escuta.'), nome: 'UART Mega TX → ESP32 RX',

@@ -129,7 +129,34 @@ export const PASSOS = [
     seErrar: 'Invertido, ele curto-circuita os 12 V assim que a ventoinha liga, e o fusível F3 desarma. Confira a faixa antes de energizar.',
   },
   {
-    id: 'A-06', fase: 'A', titulo: 'Montar a placa simuladora da posição 1', tempo: '25 min',
+    id: 'A-06', fase: 'A', titulo: 'Montar o canal detector: fusível, chave e sensor', tempo: '40 min',
+    pegue: ['1 sensor WCS2702', '1 porta-fusível DIN com interruptor', '1 fusível de 100 mA',
+            'fio 0,5 mm² vermelho', 'multímetro', 'chave de fenda pequena'],
+    antes: 'Painel DESENERGIZADO. Este é o circuito que prova a detecção de dispositivo morto.',
+    discretos: ['SC1-SENSOR'],
+    faca: [
+      'Encaixe o porta-fusível com interruptor no trilho 2 e o sensor no trilho 3.',
+      'Alimente o sensor: VCC no BD-5V (saída 8) e GND no BD-0V (Z17).',
+      'Ligue o DOUT do sensor ao pino D22 do Arduino — um fio, sem nada no meio.',
+      '⭐ Pegue o fio de +24 V que sai do fusível e dê 10 VOLTAS pelo furo do sensor, TODAS no '
+      + 'mesmo sentido, antes de mandá-lo para a câmara.',
+      'Só então leve esse fio ao borne +24 V da posição de ensaio, e traga o retorno dela ao '
+      + 'BD-0V · Z22.',
+      'Grave o firmware `firmware/detector_corrente/detector_corrente.ino` e abra o monitor '
+      + 'serial em 115200.',
+      'Ligue a chave do porta-fusível e ajuste o trimpot do sensor até o serial dizer '
+      + '"Equipamento em funcionamento".',
+    ],
+    confira: 'Desligue a chave: em menos de 1 s aparece "FALHA: Corrente Zero detectada". '
+           + 'Religue: em 0,2 s volta "Equipamento em funcionamento". ⭐ E o teste que mais '
+           + 'importa: com tudo ligado, desconecte o fio do D22 — tem que dar FALHA, nunca '
+           + '"funcionando".',
+    seErrar: 'Serial sempre em FALHA com o equipamento ligado: ou faltam voltas no furo (com 1 '
+           + 'volta o sinal é 10× menor), ou o trimpot está fora do ponto, ou a polaridade do '
+           + 'DOUT é invertida — troque NIVEL_COM_CORRENTE no firmware e grave de novo.',
+  },
+  {
+    id: 'A-06b', fase: 'A', titulo: 'Montar a placa simuladora da posição 1', tempo: '25 min',
     pegue: ['1 placa ilhada pequena', '1 LED vermelho', '1 resistor 1,2 kΩ ½ W', '1 micro-chave ou barra de 2 pinos', 'ferro de solda'],
     antes: 'Passo A-01 (sobras de placa servem aqui).',
     discretos: ['DUT1-R', 'DUT1-LED', 'DUT1-J'],
@@ -140,18 +167,6 @@ export const PASSOS = [
     ],
     confira: 'Ligando 24 V na bancada: LED aceso e amperímetro em série marcando 17,6 mA ± 1 mA.',
     seErrar: 'Corrente muito diferente de 17,6 mA: é o resistor errado. O de 2,2 kΩ é da posição 2, e dá 9,8 mA.',
-  },
-  {
-    id: 'A-07', fase: 'A', titulo: 'Montar a placa simuladora da posição 2', tempo: '25 min',
-    pegue: ['1 placa ilhada pequena', '1 LED verde', '1 resistor 2,2 kΩ ½ W', '1 micro-chave', 'ferro de solda'],
-    antes: 'Passo A-06 — faça igual, trocando LED e resistor.',
-    discretos: ['DUT2-R', 'DUT2-LED', 'DUT2-J'],
-    faca: [
-      'Mesma montagem da posição 1, com LED verde e resistor de 2,2 kΩ.',
-      'Etiquete como POSIÇÃO 2.',
-    ],
-    confira: '9,8 mA ± 1 mA — e o valor TEM que ser diferente do da posição 1: é isso que prova que cada posição é comparada com o normal dela.',
-    seErrar: 'Se as duas derem a mesma corrente, os resistores foram trocados. Meça cada um antes de soldar.',
   },
 
   /* ═══ FASE B · AS DUAS PLACAS ════════════════════════════════════ */
@@ -227,40 +242,6 @@ export const PASSOS = [
     ],
     confira: 'Todas as ligações da lista apitando, e nenhum curto entre vias vizinhas ou para o 0 V.',
     seErrar: 'Curto entre o 24 V e o 0 V: procure solda escorrida entre fileiras vizinhas, olhando contra a luz.',
-  },
-  {
-    id: 'B-09', fase: 'B', titulo: 'PI-2: barramento, bornes e barras de pinos', tempo: '45 min',
-    pegue: ['o outro pedaço da placa', 'bornes KF301', 'barras de pinos fêmea', 'ferro de solda'],
-    antes: 'Passo A-01.',
-    faca: [
-      'Mesma sequência da PI-1: barramento de 0 V (fileira 11) primeiro, depois os bornes J1, J2 e J3.',
-      '⭐ Solde as BARRAS DE PINOS fêmea, não os módulos: o mux e o INA219 entram e saem depois.',
-    ],
-    confira: 'Barras alinhadas — encaixe o módulo a seco para conferir antes de soldar tudo.',
-    seErrar: 'Barra torta não aceita o módulo. Solde um pino de cada ponta, confira o encaixe e só então complete.',
-  },
-  {
-    id: 'B-10', fase: 'B', titulo: 'PI-2: os dois shunts de 47 Ω', tempo: '15 min',
-    pegue: ['2 resistores 47 Ω 1 %', 'ferro de solda', 'multímetro'],
-    antes: 'Passo B-09.',
-    discretos: ['PI2-R1', 'PI2-R2'],
-    faca: [
-      '⚠️ Use os de 1 % de tolerância: a medição de corrente é tão boa quanto o shunt.',
-      'Monte EM PÉ, entre o nó de retorno e o barramento de 0 V.',
-    ],
-    confira: 'Ohmímetro: 47 Ω ± 1 Ω em cada um, do nó de retorno ao 0 V.',
-    seErrar: 'Shunt de valor errado desloca todas as leituras de corrente daquela posição.',
-  },
-  {
-    id: 'B-11', fase: 'B', titulo: 'PI-2: encaixar o mux e o INA219', tempo: '5 min',
-    pegue: ['CD74HC4067', 'INA219 (GY-219)'],
-    antes: 'Passo B-10.',
-    faca: [
-      'Encaixe os dois nas barras, conferindo a orientação pelo silk da placa.',
-      'Confirme se o INA219 veio com borne de parafuso para VIN+/VIN− ou com furos.',
-    ],
-    confira: 'Módulos assentados, sem pino fora da barra.',
-    seErrar: 'Módulo invertido na barra pode alimentar o chip ao contrário. Confira VCC e GND antes de energizar.',
   },
 
   /* ═══ FASE C · PAINEL E FIAÇÃO ═══════════════════════════════════

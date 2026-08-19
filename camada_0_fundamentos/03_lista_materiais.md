@@ -446,7 +446,7 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 | **Sinaleiros LED 22 mm ⭐ 5 V** | 4 | Verde (RUN), Azul (COOL), Amarelo (HEAT), Vermelho (FAULT). ⭐ **5 V, e não mais 24 V** — cada um é aceso DIRETO por um pino do Arduino (D9 a D12), sem CI, sem relé e sem resistor externo: o resistor já vem dentro do sinaleiro. ⚠️ **Confirme ~20 mA no anúncio e MEÇA ao receber** (passo A-02) — 20 mA é o limite recomendado do pino do Mega. O vermelho de FALHA continua aceso na emergência porque quem o segura é o Arduino, alimentado pelo BD-5V, que não cai | |
 | **Prensa-cabo PG9** | 3 | Entrada **24 V de potência** (vindo do P1) · saída de potência para a câmara · saída de sinais | |
 | **Prensa-cabo PG7** | 2 | Entrada 5 V (do T2) e entrada 12 V auxiliar + 24 V (do T3) | |
-| ⭐ **Placa ilhada (padrão) 9 × 15 cm** | 3 | 2 em uso + 1 reserva. ⭐ **Cada placa rende AS DUAS**: um corte reto no meio dá dois pedaços de 34 × 29 furos — um vira a PI-1, o outro a PI-2. ⚠️ Conte os furos: há versões 34 × 58 e 35 × 59 | |
+| ⭐ **Placa ilhada (padrão) 9 × 15 cm** | 2 | 1 em uso + 1 reserva. Dela sai a **PI-1** (22 × 22 furos) e ainda sobra material para as placas simuladoras de DUT. ⚠️ Conte os furos: há versões 34 × 58 e 35 × 59 | |
 | ⭐ **Prensa-cabo PG9 — parede da CÂMARA** | 2 | **PC-1 (potência)** e **PC-2 (medição e sinal)**, um em cada canto da parede traseira. ⚠️ **Não é economia juntar num só:** os BTS chaveiam 6 A e induziriam transiente nos retornos de 17,6 mA e no I²C. Ver Doc 12 §12.7 | |
 | Bolsa porta-documentos p/ porta | 1 | Guarda o diagrama elétrico — **padrão em painel industrial** | |
 
@@ -796,8 +796,8 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 > ⚠️ **Confira a serigrafia do borne azul de 3 vias** antes de ligar: a ordem `V+ / L− / GND` varia entre fabricantes.
 | 🔄 **DS18B20 à prova d'água** | 1 | **Mudou de lugar:** saiu de dentro da câmara e foi para o **dissipador do lado quente**. É ele que diz quando a pós-ventilação pode parar | |
 | 🔄 **AM2315C** | 1 | **Passou a ser o único sensor de dentro da câmara.** Mede temperatura **e umidade** no mesmo encapsulamento, e já estava no barramento I²C | |
-| ⭐ **PI-2 — caixa DIN 4 módulos** | 1 | Abriga o multiplexador CD74HC4067, os resistores shunt e o INA219 de referência. Sem ela, ficariam pendurados no chicote | |
-| ⭐ **Porta-fusível DIN 2 vias COM INTERRUPTOR** | 1 | Para as 2 posições de ensaio, com fusível tubular de **100 mA**. ⭐ **O interruptor é a demonstração:** desligando a chave na frente da banca, o INA219 vê a corrente cair a zero e o sistema acusa a falha em segundos | |
+| ~~PI-2 — caixa DIN 4 módulos~~ | ~~1~~ | 🗑️ **NÃO COMPRE.** Ela abrigava o multiplexador, os shunts e o INA219 — as três peças saíram com a detecção digital ([Doc 13 §13.4](../camada_1_maquete/13_posicoes_de_ensaio.md)) | |
+| ⭐ **Porta-fusível DIN 1 via COM INTERRUPTOR** | 1 | Para a posição de ensaio, com fusível tubular de **100 mA**. ⭐ **O interruptor é a demonstração:** desligando a chave na frente da banca, o sensor vê a corrente sumir e o sistema acusa a falha em menos de 1 s. ⚠️ Era de 2 vias, para 2 posições; o protótipo passou a ter **um** canal de teste | |
 | **Aquecedor PTC cerâmico 24 V / 80 W** | 1 | Com aletas e ventilador, **versão de 24 V** (~3,3 A) para ligar direto no barramento. ⚠️ **60 W não existe no mercado brasileiro** — as versões reais são **80 W, 100 W e 150 W**. Use a de **80 W**: fica bem equilibrada contra os ~60 W de capacidade de refrigeração das 2 Peltier, e mantém a corrente em 3,3 A (metade da Peltier). A de 150 W passaria a ser o pior caso do ramal (6,25 A) e desequilibra o controle. Buscar `aquecedor ptc 24v ventilador` | |
 | ⚠️ **Ventoinha de reposição do RADIADOR — 3 fios** | 2 | ⭐ **A troca mais importante do kit.** As originais são de **2 fios** e não informam rotação. Têm que ser **as do radiador (lado quente)** — se elas param, a Peltier queima em < 1 min. As dos **blocos frios** podem continuar de 2 fios. Medir o tamanho no kit antes de comprar | |
 | Pasta térmica | 1 | Seringa 5 g. **O kit já vem com a junta térmica montada** — a pasta é só para retrabalho, se você abrir para trocar uma pastilha | |
@@ -872,7 +872,7 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 
 | Item | Qtd | Especificação | Link |
 |---|---:|---|---|
-| ⭐ **Módulo multiplexador 16 canais CD74HC4067** — ⚠️ **a versão em PLACA, com pinos** | 1 (vem em pacote de 5) | **O coração da detecção de falha.** Varre até 16 posições com uma única entrada analógica do Arduino. Buscar `modulo multiplexador analogico 16 canais CD74HC4067` | |
+| ~~Módulo multiplexador 16 canais CD74HC4067~~ | ~~1~~ | 🗑️ **NÃO COMPRE.** Ele levava 16 canais analógicos a uma entrada A/D — e não há mais canal analógico para levar: a detecção virou um bit por posição | |
 
 > ### ✅ Placa com pinos, não o CI avulso
 >
@@ -893,8 +893,8 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 > ⚠️ **Confira o pino `EN` (enable) na montagem.** O multiplexador só conduz com o EN em nível baixo. A maioria das placas já traz um resistor puxando para o GND, mas algumas deixam o pino solto — e aí nenhum canal funciona, o que parece defeito da placa.
 
 
-| ⭐ **Resistor 47 Ω · 1% · 1/4 W** (shunt de medição) | 4 | 2 em uso + 2 reserva. Com 17,6 mA dá 0,83 V, lido direto pelo ADC do Arduino — sem amplificador. ⚠️ **1% de tolerância é obrigatório:** o valor do shunt entra direto na conta da corrente | |
-| **Sensor INA219** (módulo I²C) | **1** ⬇ | 🔬 **Passou a ser o instrumento de REFERÊNCIA**, não o sensor de produção. Mede a mesma posição 1 que o multiplexador mede, para provar que as duas leituras batem. Sem referência, "funcionou" é opinião | |
+| ~~Resistor 47 Ω · 1% (shunt de medição)~~ | ~~4~~ | 🗑️ **NÃO COMPRE.** O shunt existia para transformar 17,6 mA em 0,83 V legíveis pelo A/D. Ninguém mede mais essa corrente | |
+| ⭐ **Sensor de corrente WCS2702** | 1 | 🔎 **A detecção de dispositivo morto inteira, num módulo.** Hall, ±2 A, 1,0 mV/mA, com saída digital ajustável por trimpot. O fio de força passa pelo furo — **10 voltas**, para o sensor enxergar 176 mA em vez de 17,6 mA. Buscar `sensor de corrente WCS2702 hall`. ⚠️ **Para equipamento em CA** (a planta real, não a maquete) o sensor é a **SZC23**, que fecha a partir de 0,5 A | |
 | **Porta-fusível DIN 2 vias COM INTERRUPTOR** | 1 | **F-P1 e F-P2** — proteção individual de cada posição, com fusível tubular de **100 mA**. ⭐ O interruptor é o que permite simular a falha ao vivo | |
 | Fusível mini automotivo 500 mA | 8 | 4 usos + 4 reservas | |
 | Placa ilhada pequena | 4 | ~30 × 40 mm — corpo de cada placa simuladora de dispositivo | |
@@ -913,7 +913,7 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 | Item | Qtd | Especificação | Link |
 |---|---:|---|---|
 | **Placa ilhada (padrão furos isolados)** | 1 | ~5 × 7 cm. ⚠️ **Ilhada, não de barramento** — na de barramento você acaba tendo que cortar trilha, e é dali que saem os curtos difíceis de achar | |
-| ⭐ **Caixa modular para trilho DIN — 6 módulos (105 mm)** | 2 | Invólucros da PI-1 e da PI-2, no trilho 3. ⚠️ **6 módulos, não 4:** as placas passaram a 86,4 mm de largura, e uma caixa de 4M só comporta 61 mm. A largura extra é o que permite rotear os fios em canais separados por baixo. Buscar `caixa para trilho din 6m modular` | |
+| ⭐ **Caixa modular para trilho DIN — 4 módulos (70 mm)** | 1 | Invólucro da PI-1, no trilho 3. ⚠️ **Era 6M e eram duas:** a PI-1 encolheu quando o ULN2803A saiu, e a PI-2 deixou de existir quando a detecção virou digital | |
 | ⭐ **Borne KF301 / KRE passo 5,08 mm — 3 vias** | 10 | 6 em uso + 4 reserva. **Encaixam lado a lado** — não se compra bloco de 11 vias, montam-se 3+3+3+2 | |
 | ⭐ **Borne KF301 / KRE passo 5,08 mm — 2 vias** | 12 | 7 em uso + 5 reserva. Junto com os de 3 vias formam as **32 vias** das duas placas | |
 | ~~CI ULN2803A (DIP 18 pinos)~~ | ~~2~~ | 🗑️ **NÃO COMPRE MAIS.** Ele existia para adaptar 5 V do pino a 24 V do sinaleiro. Com o sinaleiro de 5 V, o pino aciona direto e o CI perdeu a função — junto com o soquete DIP-18, 9 vias de borne da PI-1, 10 jumpers e 5 fios do painel. Ver [Doc 33 §33.8](../camada_3_eletrica/33_placa_interface_componentes.md) | |
