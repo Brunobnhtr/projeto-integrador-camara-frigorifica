@@ -14,7 +14,6 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DISCRETOS, HOSTS, ARRANJOS, TOTAL_PECAS, FATOS_VIGIADOS } from '../src/data/discretos.js';
 import { COMPONENTES } from '../src/data/painel_completo.js';
-import * as PI1 from '../src/data/pi1_fisico.js';
 import { RELES } from '../src/data/reles_fisico.js';
 import { TODOS as PASSOS_GUIA, FASES } from '../src/data/guia.js';
 
@@ -27,17 +26,10 @@ const viasDoPainel = new Map(
   COMPONENTES.map(c => [c.id, new Set((c.grupos ?? []).flatMap(g => g.pinos.map(p => p.nome)))]),
 );
 
-/** vias de uma placa ilhada: nós + barramento + vias de borne + pinos do CI */
-const viasDaPlaca = (M) => {
-  const s = new Set(['barramento 0V']);
-  (M.NOS ?? []).forEach(n => s.add(n.ref));
-  (M.BORNES ?? []).forEach(b => b.vias.forEach(v => s.add(`${b.ref}-${v.n}`)));
-  (M.CI1?.pinos ?? []).forEach(p => s.add(`CI1.${p.nome}`));
-  (M.MODULOS ?? []).forEach(m => (m.pinos ?? []).forEach(p => s.add(`${m.ref}.${p.nome}`)));
-  return s;
-};
-/* a PI-2 saiu do projeto junto com a medição analógica (19/08/2026) */
-const viasPlaca = { PI1: viasDaPlaca(PI1) };
+/* ⭐ NÃO HÁ MAIS PLACA ILHADA NO PROJETO. A PI-2 saiu com a medição
+   analógica e a PI-1 com os módulos comprados (19/08/2026): todo
+   componente discreto mora agora em BORNE ou dentro de módulo. */
+const viasPlaca = {};
 
 const hostPorId = new Map(HOSTS.map(h => [h.id, h]));
 
@@ -120,17 +112,6 @@ for (const [ref, lista] of porRef)
 /* ── 5. nada pode existir só nos cadastros antigos ─────────────────── */
 const idsPorRefHost = new Map(DISCRETOS.map(d => [`${d.host}:${d.ref}`, d]));
 
-const conferePlaca = (hostId, lista, rotulo) => {
-  for (const c of lista) {
-    const d = idsPorRefHost.get(`${hostId}:${c.ref}`);
-    if (!d) { erros.push(`${rotulo} ${c.ref} está na placa e NÃO está no cadastro de discretos`); continue; }
-    if (c.valor && d.valor && c.valor !== d.valor)
-      erros.push(`${rotulo} ${c.ref}: a placa diz "${c.valor}" e o cadastro diz "${d.valor}"`);
-  }
-};
-conferePlaca('PI1', PI1.COMPONENTES_PI1, 'PI-1');
-if (PI1.CI1 && !idsPorRefHost.has('PI1:CI1'))
-  erros.push('o CI1 da PI-1 não está no cadastro de discretos');
 
 /* os discretos pendurados nos relés — o D2 é o caso especial: o verbete do
    relé já avisa que ele NÃO fica lá, então o cadastro tem que confirmar isso */

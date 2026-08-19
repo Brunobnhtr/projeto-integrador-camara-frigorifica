@@ -263,31 +263,67 @@ export const COMPONENTES = [
     ],
   },
   {
-    id: 'PI1', nome: 'PI-1 — filtros, divisor e pull-up', trilho: 3,
-    resumoFuncao: '🔎 O QUE ELA FAZ: limpa e adapta sinais entre o Arduino e o mundo. 1) filtra com 100 nF a leitura de corrente dos dois BTS; 2) divide os 24 V do BD-POT para 4,22 V, que e como o D25 sabe se a potencia chegou; 3) da o pull-up de 4,7 kΩ ao 1-Wire do DS18B20. Nao comanda potencia nenhuma. ⭐ O DRIVER DOS SINALEIROS SAIU DAQUI: com sinaleiro de 5 V o pino do Arduino aciona direto, e o ULN2803 perdeu a razao de existir (Doc 33 §33.8).',
-    x: 176, largura: 70, altura: 62, cor: '#f08c00',
-    nota: 'Caixa DIN de 4 módulos. A placa encolheu para 56 × 56 mm quando o CI, o '
-        + 'soquete e as 9 vias dos sinaleiros saíram. J1 só entra, J2 só sai.',
+    id: 'SV-1', nome: 'SV-1 — módulo sensor de tensão (vigia do 24 V)', trilho: 3,
+    resumoFuncao: '🔎 O QUE ELE FAZ: divide por 5 a tensao do BD-POT para o Arduino poder olhar. 24 V viram 4,8 V, que o pino D25 le como "a potencia chegou". ⭐ E o mesmo divisor 22k/4,7k que estava soldado na PI-1 — comprado pronto, com borne de parafuso na entrada. Nao alimenta nada: e instrumento de medida.',
+    x: 176, largura: 30, altura: 30, cor: '#f08c00',
+    nota: '⚠️ Ele divide por 5, e o divisor soldado dividia por 5,68. Com 24 V a saída passa de '
+        + '4,22 V para 4,8 V — folgado para uma entrada DIGITAL como o D25, apertado se um dia '
+        + 'alguém ligá-lo numa entrada analógica com a fonte acima de 25 V.',
     grupos: [
-      { ref: 'J1', lado: 'cima', legenda: 'ENTRADAS (6 vias · KF301 5,08 mm)', pinos: [
-        via('J1-1', 1, 'BTS #1 · R_IS'), via('J1-2', 1, 'BTS #2 · R_IS'),
-        via('J1-3', 1, 'DS18B20 do radiador · DATA'), via('J1-4', 1, 'BD-5V saída 6'),
-        via('J1-5', 1, 'BD-0V'), via('J1-6', 1, 'BD-POT saída 3'),
+      { ref: 'IN', lado: 'cima', legenda: 'Entrada medida — borne de parafuso (2)', pinos: [
+        { nome: 'VCC', usa: true, para: 'BD-POT saída 3 — os 24 V que se quer vigiar' },
+        { nome: 'GND', usa: true, para: 'BD-0V-B · Z25' },
       ]},
-      { ref: 'J2', lado: 'baixo', legenda: 'SAÍDAS (4 vias · KF301 5,08 mm)', pinos: [
-        via('J2-1', 1, 'Mega A0'), via('J2-2', 1, 'Mega A1'),
-        via('J2-3', 1, 'Mega D2'), via('J2-4', 1, 'Mega D25'),
+      { ref: 'OUT', lado: 'baixo', legenda: 'Saída — barra de 3 pinos (3)', pinos: [
+        { nome: 'S', usa: true, para: 'Mega D25 — 4,8 V com o BD-POT vivo' },
+        { nome: '+', para: 'não usado: o módulo é passivo, não precisa de alimentação' },
+        { nome: '−', usa: true, para: 'BD-0V-B · Z23 — referência da medida' },
       ]},
     ],
-    avisos: ['✅ 10 vias, 10 usadas, ZERO reserva — e é assim de propósito. A PI-1 é '
-           + 'uma placa feita à mão para este projeto: se um dia precisar de outro '
-           + 'sinal, ela é refeita de qualquer jeito. Borne sobrando só ocuparia '
-           + 'espaço no trilho.',
-           '⭐ ELA JÁ FOI QUASE O DOBRO. Tinha 19 vias, um ULN2803A em soquete e 20 '
-           + 'jumpers — tudo por causa de uma diferença de tensão: sinaleiro de 24 V, '
-           + 'pino de 5 V. Trocado o sinaleiro por um de 5 V, metade da placa deixou de '
-           + 'ter função. Vale como lição de projeto: antes de adaptar dois lados, '
-           + 'pergunte se eles não podem falar a mesma língua.'],
+    avisos: ['⭐ MEÇA A SAÍDA ANTES DE LIGAR NO D25. Com o BD-POT em 24 V ela deve dar ~4,8 V. '
+           + 'Se der mais que 5,0 V, a fonte está alta demais ou o módulo não é o de 5×.',
+           '⚠️ A saída é barra de pinos, não borne. Use cabo com conector e prenda com abraçadeira: '
+           + 'Dupont solto em painel que é transportado se desconecta sozinho.'],
+  },
+  {
+    id: 'AD-1', nome: 'AD-1 — adaptador do DS18B20 (com pull-up)', trilho: 3,
+    resumoFuncao: '🔎 O QUE ELE FAZ: e a ponta do barramento 1-Wire. Traz o resistor de pull-up de 4,7 kΩ ja montado — aquele SEM O QUAL o sensor nao responde — e transforma os tres fios da sonda em tres bornes de parafuso.',
+    x: 210, largura: 32, altura: 30, cor: '#0ca678',
+    nota: '⚠️ CONFIRA O PULL-UP AO RECEBER: ohmímetro entre DAT e VCC deve dar ~4,7 kΩ. Há '
+        + 'adaptadores vendidos como "com pull-up" que vêm sem o resistor — e aí o sensor '
+        + 'simplesmente não responde, sem nenhum outro sintoma.',
+    grupos: [
+      { ref: 'SONDA', lado: 'cima', legenda: 'Vem da sonda (3)', pinos: [
+        { nome: 'DAT', usa: true, para: 'fio amarelo da sonda DS18B20' },
+        { nome: 'VCC', usa: true, para: 'fio vermelho da sonda' },
+        { nome: 'GND', usa: true, para: 'fio preto da sonda' },
+      ]},
+      { ref: 'MEGA', lado: 'baixo', legenda: 'Vai para o painel (3)', pinos: [
+        { nome: 'S', usa: true, para: 'Mega D2 — o 1-Wire, já levantado pelo pull-up interno' },
+        { nome: '+', usa: true, para: 'BD-5V saída 6' },
+        { nome: '−', usa: true, para: 'BD-0V-B · Z24' },
+      ]},
+    ],
+  },
+  {
+    id: 'BS-1', nome: 'BS-1 — bornes dos filtros de corrente', trilho: 3,
+    resumoFuncao: '🔎 O QUE ELE E: tres bornes de trilho onde os dois capacitores de 100 nF ficam PARAFUSADOS, sem solda nenhuma. Cada IS dos BTS entra num borne, sai dali para o Arduino, e o capacitor desce desse mesmo ponto ate o borne de 0 V.',
+    x: 246, largura: 24, altura: 30, cor: '#1971c2',
+    nota: '⭐ Bornes de passagem 2,5 mm² no trilho. A perna do capacitor entra no parafuso junto '
+        + 'com o fio — é a mesma montagem do D1 na bobina do KA2, e pelo mesmo motivo: componente '
+        + 'no borne é medível, trocável e visível.',
+    grupos: [
+      { ref: 'NOS', lado: 'cima', legenda: 'Os dois nós de medição (2)', pinos: [
+        { nome: 'A0', usa: true, para: 'IS do BTS #1 + fio para o Mega A0 + perna do C1' },
+        { nome: 'A1', usa: true, para: 'IS do BTS #2 + fio para o Mega A1 + perna do C2' },
+      ]},
+      { ref: 'ZERO', lado: 'baixo', legenda: 'Retorno (1)', pinos: [
+        { nome: '0V', usa: true, para: 'as outras pernas do C1 e do C2 + fio ao BD-0V · Z6' },
+      ]},
+    ],
+    avisos: ['⚠️ TRÊS CONDUTORES NUM PARAFUSO SÓ (fio que chega, fio que sai e perna do '
+           + 'capacitor). Use borne de 2,5 mm² e dê o aperto final com os três dentro — apertar '
+           + 'em dois tempos deixa um deles frouxo.'],
   },
   {
     id: 'ESP32', nome: 'ESP32 — Wi-Fi, MQTT e dashboard remoto', trilho: 2,
@@ -356,14 +392,14 @@ export const COMPONENTES = [
   {
     id: 'SC-1', nome: 'SC-1 — sensor de corrente da posição de ensaio', trilho: 3,
     resumoFuncao: '🔎 O QUE ELE FAZ: responde UMA pergunta — passa corrente pelo equipamento da posicao de ensaio? Se passa, ele esta vivo. Se nao passa, ou queimou, ou o fusivel abriu, ou alguem desligou a chave. ⭐ Ele nao MEDE: ele DECIDE, e entrega a decisao num fio, direto num pino digital do Mega. O fio da posicao passa POR DENTRO do furo do sensor — o circuito de ensaio nao e aberto para medir.',
-    x: 291, largura: 40, altura: 44, cor: '#ae3ec9',
+    x: 274, largura: 40, altura: 44, cor: '#ae3ec9',
     nota: '⭐ O fio do +24 V da posição dá 10 VOLTAS pelo furo antes de seguir para a '
         + 'câmara. O sensor enxerga 10 × a corrente (176 mA em vez de 17,6 mA) e o '
         + 'comparador sai do ruído — é o mesmo princípio de espiras de um TC.',
     grupos: [
       { ref: 'ALIM', lado: 'baixo', legenda: 'Alimentação do módulo (2)', pinos: [
         { nome: 'VCC', usa: true, para: 'BD-5V saída 8' },
-        { nome: 'GND', usa: true, para: 'BD-0V · Z17' },
+        { nome: 'GND', usa: true, para: 'BD-0V-B · Z17' },
       ]},
       { ref: 'SIG', lado: 'baixo', legenda: 'Saída digital (1)', pinos: [
         { nome: 'DOUT', usa: true, para: 'Mega D22 — nível baixo enquanto houver corrente' },
@@ -523,7 +559,7 @@ export const COMPONENTES = [
     grupos: [
       { ref: 'ALIM', lado: 'baixo', legenda: 'Alimentação dos dois módulos (2)', pinos: [
         via('+5V', 1, 'BD-5V saída 12 — DC+ dos dois, em ponte interna'),
-        via('0V', 1, 'BD-0V · Z21 — DC− dos dois, em ponte interna'),
+        via('0V', 1, 'BD-0V-B · Z21 — DC− dos dois, em ponte interna'),
       ]},
       { ref: 'CMD', lado: 'cima', legenda: 'Gatilhos, vindos do Arduino (2)', pinos: [
         via('IN3', 1, '⭐ Mega D27 — KA3, autoriza a potência'),
@@ -704,7 +740,7 @@ export const COMPONENTES = [
         via('O8', 1, 'SC-1 · VCC — o sensor de corrente da posição de ensaio'),
         via('O9', 1, 'MV-1 · VCC do lado do comando'),
         via('O10', 1, '⭐ AM2315C · VCC — o sensor DENTRO da câmara'),
-        via('O11', 1, 'DS18B20 do radiador · VCC'), via('O12', 1, '⭐ KA3 + KA4 · DC+ — alimenta os dois módulos de relé'), via('O13'),
+        via('O11'), via('O12', 1, '⭐ KA3 + KA4 · DC+ — alimenta os dois módulos de relé'), via('O13'),
       ]},
     ],
     avisos: ['📌 Cresceu de 10 para 12 pontos quando o AM2315C ganhou saída própria. '
@@ -713,13 +749,16 @@ export const COMPONENTES = [
   {
     id: 'BD-0V', nome: 'BD-0V — retorno único de tudo (star ground)', trilho: 1,
     resumoFuncao: '🔎 O QUE ELE E: o ponto onde TODO retorno do painel se encontra, um parafuso por dispositivo. ⭐ Estrela, nunca em cadeia: pendurar um retorno no outro faz a corrente de um virar erro de medicao do outro — e como os BTS chaveiam, esse erro PISCA no ritmo do PWM. Chama-se acoplamento por impedancia comum e e a causa numero 1 de medicao ruim em painel.',
-    x: 242, largura: 126, altura: 58, cor: '#212529',
-    nota: '⭐ O ÚNICO 0 V do projeto. Barra de 24 pontos — três blocos de 8, ligados por '
-        + 'ponte de 4 mm². ⚠️ 126 mm: com 24 saídas ele é o componente mais largo do painel. ⭐ Subiu de 20 para 24 quando o retorno da posição de ensaio '
+    x: 242, largura: 84, altura: 58, cor: '#212529',
+    nota: '⭐ O ÚNICO 0 V do projeto — em DOIS blocos, unidos por ponte de 4 mm². Este, no '
+        + 'trilho 1, recebe os 16 retornos do lado da potência. O BD-0V-B, no trilho 3, recebe '
+        + 'os da eletrônica. ⭐ Continua sendo estrela: a ponte é curta e grossa, e todo retorno '
+        + 'tem o seu parafuso. '
+        + ''
         + 'passou a vir direto para cá, em vez de atravessar o shunt da PI-2.',
     grupos: [
       { ref: 'IN', lado: 'cima', legenda: 'Entrada 10 mm² (1)', pinos: [via('IN', 1, 'retorno do padrão de entrada')] },
-      { ref: 'R', lado: 'baixo', legenda: 'Retornos (20 pontos)', pinos: [
+      { ref: 'R', lado: 'baixo', legenda: 'Retornos do lado da potência (16)', pinos: [
         via('Z1', 1, 'BTS #1 · B−'), via('Z2', 1, 'BTS #2 · B−'),
         via('Z3', 1, 'BTS #1 · GND lógica'), via('Z4', 1, 'BTS #2 · GND lógica'),
         via('Z5', 1, 'Arduino · GND'), via('Z6', 1, 'PI-1 J1-9'),
@@ -731,22 +770,44 @@ export const COMPONENTES = [
         via('Z14', 1, 'MV-1 · GND do comando (lado isolado)'),
         via('Z15', 1, '⭐ AM2315C · GND — o sensor DENTRO da câmara'),
         via('Z16', 1, 'LEDs da maquete −'),
-        via('Z17', 1, 'SC-1 · GND — o 0 V do sensor de corrente'),
-        via('Z18', 1, 'seletora LOCAL/REMOTO — contato para o 0 V'),
-        via('Z19', 1, 'DS18B20 do radiador · GND'),
-        via('Z20', 1, '⭐ retorno das ventoinhas do radiador — referência dos 2 RPM'),
-        via('Z21', 1, '⭐ KA3 + KA4 · DC− — retorno dos dois módulos de relé'),
-        via('Z22', 1, 'retorno do DUT da posição de ensaio — direto, sem shunt'),
-        via('Z23'), via('Z24'),
       ]},
     ],
     avisos: ['🔥 É o componente mais fácil de subdimensionar. Chegam 18 retornos + a '
            + 'entrada. Um bloco comum de 8 saídas NÃO serve.'],
+  },  {
+    id: 'BD-0V-B', nome: 'BD-0V-B — retornos da eletrônica (trilho 3)', trilho: 3,
+    resumoFuncao: '🔎 O QUE ELE E: a segunda metade do MESMO 0 V, ligada a primeira por uma ponte de 4 mm². Ele existe porque a barra unica passou de 28 pontos e nao cabia mais no trilho 1 — e porque o retorno da eletronica fica melhor curto, perto de quem retorna: o Arduino, os modulos de interface e o sensor de corrente.',
+    x: 318, largura: 63, altura: 58, cor: '#212529',
+    nota: '⭐ NÃO É UM SEGUNDO TERRA. É o mesmo nó, em dois blocos: a ponte de 4 mm² tem '
+        + 'resistência desprezível perto das correntes que passam aqui (miliampères). O que '
+        + 'não se pode fazer é pendurar um retorno no outro — cada um tem o seu parafuso.',
+    grupos: [
+      { ref: 'PONTE', lado: 'cima', legenda: 'Ponte para o BD-0V (1)', pinos: [
+        { nome: 'PT', usa: true, para: 'BD-0V · Z16 — ponte de 4 mm², o mais curta possível' },
+      ]},
+      { ref: 'R', lado: 'baixo', legenda: 'Retornos da eletrônica (12)', pinos: [
+        { nome: 'Z17', usa: true, para: 'SC-1 · GND — sensor de corrente' },
+        { nome: 'Z18', usa: true, para: 'botoeira S2 (STOP) — retorno do sinal' },
+        { nome: 'Z19' },
+        { nome: 'Z20' },
+        { nome: 'Z21', usa: true, para: 'KA3/KA4 · DC−' },
+        { nome: 'Z22', usa: true, para: 'retorno da posição de ensaio' },
+        { nome: 'Z23', usa: true, para: 'SV-1 · − (saída do divisor)' },
+        { nome: 'Z24', usa: true, para: 'AD-1 · − (adaptador do 1-Wire)' },
+        { nome: 'Z25', usa: true, para: 'SV-1 · GND (referência do divisor)' },
+        { nome: 'Z26', usa: true, para: 'AM2315C da câmara · GND' },
+        { nome: 'Z27' }, { nome: 'Z28' },
+      ]},
+    ],
+    avisos: ['⚠️ A PONTE É PARTE DO CIRCUITO, não um detalhe de montagem. Se ela ficar frouxa, '
+           + 'os retornos da eletrônica passam a procurar caminho por onde não deviam — e o '
+           + 'sintoma é leitura analógica errada, não falta de energia.'],
   },
+
   {
     id: 'RTC', nome: 'RTC DS3231 — data e hora reais para o log', trilho: 3,
     resumoFuncao: '🔎 O QUE ELE FAZ: guarda data e hora reais, com pilha propria, para que cada linha do log tenha carimbo de tempo verdadeiro mesmo depois de faltar energia. Sem ele o log comecaria em 1970 a cada boot, e a rastreabilidade do ensaio morreria.',
-    x: 402, largura: 35, altura: 40, cor: '#0ca678',
+    x: 385, largura: 35, altura: 40, cor: '#0ca678',
     nota: '⭐ Subiu para o trilho 3, ao lado do Arduino: o I²C fica curto e o módulo '
         + 'sai da canaleta de potência. Abriu espaço no trilho 1 para os dois relés, '
         + 'que precisam de canaleta de POTÊNCIA nas duas bordas — e no trilho 1 as '
@@ -867,7 +928,7 @@ export const COMPONENTES = [
       via('12', 1, '⚡ HARDWARE: nó do selo do KA2 — vai ao S1 · 13 e ao KA2 · 21'),
     ]},
     { ref: 'NA5', lado: 'cima', legenda: 'Bloco NA de 5 V — contatos 13-14', pinos: [
-      via('13', 1, '⚡ 0 V comum dos comandos (vem do BD-0V · Z18)'),
+      via('13', 1, '⚡ 0 V comum dos comandos (vem do BD-0V-B · Z18)'),
       via('14', 1, 'Mega D23 — INPUT_PULLUP, LOW = apertado'),
     ]}],
     avisos: ['🔥 NÃO CONFUNDA OS DOIS BLOCOS. O de 24 V (11-12) é o que corta de verdade; '

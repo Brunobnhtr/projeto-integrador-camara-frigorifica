@@ -181,6 +181,7 @@ const noPonto = new Map();
 for (const f of FIOS) {
   if (f.para.comp !== 'BD-0V') continue;
   const k = f.para.via;
+  if (k === 'IN') continue;   /* a entrada da barra não é ponto de retorno */
   if (noPonto.has(k))
     erros.push(`${f.n} e ${noPonto.get(k)} vão os dois para o BD-0V.${k} — `
       + 'cada retorno precisa do SEU parafuso, senão um enxerga a queda do outro');
@@ -189,7 +190,10 @@ for (const f of FIOS) {
 const bd0 = COMPONENTES.find(c => c.id === 'BD-0V');
 /* Z1..Zn — os pontos de retorno. Chamavam-se R1..Rn até 18/08/2026, e o
    nome colidia com os resistores do projeto e com os ramais de energia. */
-const totPontos = bd0.grupos.flatMap(g => g.pinos).filter(p => /^Z\d+$/.test(p.nome)).length;
+const bd0b = COMPONENTES.find(c => c.id === 'BD-0V-B');
+const totPontos = [bd0, bd0b].filter(Boolean)
+  .flatMap(c => c.grupos.flatMap(g => g.pinos))
+  .filter(p => /^Z\d+$/.test(p.nome)).length;
 console.log(`  . ${noPonto.size} retornos declarados em pontos distintos, `
   + `de ${totPontos} pontos na barra`);
 if (noPonto.size > totPontos)

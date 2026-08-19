@@ -397,7 +397,7 @@ O projeto declarava um **PG9** ali, com "capacidade: 14 fios" escrito à mão. R
 | 2 | **BD-AUX** — 12 V das ventoinhas (permanente) | 68 | 36 mm | 104 |
 | 3 | **BD-24V** — 24 V PERMANENTE (comando) | 106 | 45 mm | 151 |
 | 4 | **BD-5V** — 5,10 V da eletrônica (permanente) | 153 | 87 mm | 240 |
-| 5 | **BD-0V** — retorno único de tudo (star ground) | 242 | 126 mm | 368 |
+| 5 | **BD-0V** — retorno único de tudo (star ground) | 242 | 84 mm | 326 |
 | 6 | **KA1** — SEGURANÇA: cai na emergência, rearme azul | 372 | 34 mm | 406 |
 | 7 | **KA2** — PROCESSO: cai no STOP, religa no verde | 410 | 34 mm | 444 |
 | | **Ocupação total** | | **414 mm** | livre até 458 — sobram **14 mm** |
@@ -419,10 +419,13 @@ O projeto declarava um **PG9** ali, com "capacidade: 14 fios" escrito à mão. R
 | # | Componente | X | Largura | Termina em |
 |---:|---|---:|---:|---:|
 | 1 | **MEGA** — o cérebro: PID, proteções e intertravamento | 32 | 134 mm | 166 |
-| 2 | **PI1** — PI-1 — filtros, divisor e pull-up | 176 | 70 mm | 246 |
-| 3 | **SC-1** — sensor de corrente da posição de ensaio | 291 | 40 mm | 331 |
-| 4 | **RTC** — RTC DS3231 — data e hora reais para o log | 402 | 35 mm | 437 |
-| | **Ocupação total** | | **405 mm** | livre até 458 — sobram **21 mm** |
+| 2 | **SV-1** — módulo sensor de tensão (vigia do 24 V) | 176 | 30 mm | 206 |
+| 3 | **AD-1** — adaptador do DS18B20 (com pull-up) | 210 | 32 mm | 242 |
+| 4 | **BS-1** — bornes dos filtros de corrente | 246 | 24 mm | 270 |
+| 5 | **SC-1** — sensor de corrente da posição de ensaio | 274 | 40 mm | 314 |
+| 6 | **BD-0V-B** — retornos da eletrônica (trilho 3) | 318 | 63 mm | 381 |
+| 7 | **RTC** — RTC DS3231 — data e hora reais para o log | 385 | 35 mm | 420 |
+| | **Ocupação total** | | **388 mm** | livre até 458 — sobram **38 mm** |
 
 ## 20.4 Layout da porta (vista externa)
 

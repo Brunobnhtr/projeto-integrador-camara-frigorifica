@@ -65,30 +65,30 @@ export const FIOS_ETAPA4 = [
          + 'está gerando calor.' },
 
   /* ── o que a PI-1 devolve ao Arduino ──────────────────────────────── */
-  { ...ana('S5', { comp: 'PI1', via: 'J2-1' }, meg('A0'),
+  { ...ana('S5', { comp: 'BS-1', via: 'A0' }, meg('A0'),
       'A corrente do BTS #1, já filtrada pelo C1.'),
-    nome: 'IS do BTS #1 → A0', rota: ['CH-3x2'],
+    nome: 'IS do BTS #1 → A0', rota: ['CH-topo', 'CV-dir', 'CH-3x2'],
     porque: '⭐ O sinal mais sensível do painel: 0 a 5 V analógicos que o ADC lê em '
           + 'passos de 4,88 mV. É por causa dele que a canaleta de sinal existe.' },
-  { ...ana('S6', { comp: 'PI1', via: 'J2-2' }, meg('A1'),
-      'A corrente do BTS #2.'), nome: 'IS do BTS #2 → A1', rota: ['CH-3x2'] },
-  { ...sig('S7', { comp: 'PI1', via: 'J2-3' }, meg('D2'),
+  { ...ana('S6', { comp: 'BS-1', via: 'A1' }, meg('A1'),
+      'A corrente do BTS #2.'), nome: 'IS do BTS #2 → A1', rota: ['CH-topo', 'CV-dir', 'CH-3x2'] },
+  { ...sig('S7', { comp: 'AD-1', via: 'S' }, meg('D2'),
       'O barramento 1-Wire do DS18B20 do radiador, já com o pull-up da PI-1.'),
     nome: '1-Wire → D2', rota: ['CH-3x2', 'CV-dir', 'CH-topo'],
     aviso: '⚠️ Pulsos de microssegundos. Se este fio pegar ruído o sensor some do '
          + 'barramento e o firmware acusa CARGA_ABERTA sem haver defeito nenhum.' },
-  { ...sig('S8', { comp: 'PI1', via: 'J2-4' }, meg('D25'),
+  { ...sig('S8', { comp: 'SV-1', via: 'S' }, meg('D25'),
       'Os 4,22 V do divisor, dizendo se os 24 V de potência estão presentes.'),
     nome: 'vigia do 24 V → D25', rota: ['CH-3x2', 'CV-dir', 'CH-topo'] },
 
   /* ── o IS bruto dos BTS até a PI-1 ────────────────────────────────── */
-  { ...ana('S9', { comp: 'BTS1', via: 'R_IS' }, { comp: 'PI1', via: 'J1-1' },
+  { ...ana('S9', { comp: 'BTS1', via: 'R_IS' }, { comp: 'BS-1', via: 'A0' },
       'Saída de corrente espelhada do BTS #1, indo filtrar na PI-1.'),
     nome: 'IS bruto do BTS #1', rota: ['CH-3x2', 'CV-dir', 'CH-topo'],
     aviso: '🔥 ESTE FIO NASCE AO LADO DO QUE POLUI. Ele sai do próprio BTS, a '
          + 'centímetros dos 6 A chaveados. Prenda-o na canaleta de sinal já na saída '
          + 'e nunca o deixe correr paralelo ao B+ ou ao M+.' },
-  { ...ana('S10', { comp: 'BTS2', via: 'R_IS' }, { comp: 'PI1', via: 'J1-2' },
+  { ...ana('S10', { comp: 'BTS2', via: 'R_IS' }, { comp: 'BS-1', via: 'A1' },
       'Idem para o BTS #2.'), nome: 'IS bruto do BTS #2',
     rota: ['CH-3x2', 'CV-dir', 'CH-topo'] },
 

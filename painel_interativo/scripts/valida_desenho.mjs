@@ -175,10 +175,16 @@ for (const [pe, fs] of porPeca) {
       .join(', ')}) vai num negativo CHAVEADO — a referência sobe junto e o sinal mente`);
     refRuim++;
   } else {
+    /* ⭐ O QUE VALE COMO ÂNCORA DE REFERÊNCIA:
+         · os dois blocos do 0 V — desde 19/08/2026 ele é dois blocos
+           ligados por ponte de 4 mm², e eletricamente são o mesmo nó;
+         · o AD-1, o adaptador do DS18B20: a sonda referencia nele, e ele
+           tem o próprio GND amarrado ao 0 V (fio D26b). A referência
+           existe, só que em dois saltos. */
     const ancora = fs.filter(f => [f.de, f.para]
-      .some(a => a.comp === 'BD-0V' || (a.comp === 'PI-2' && /RET/.test(a.via ?? ''))));
+      .some(a => ['BD-0V', 'BD-0V-B', 'AD-1'].includes(a.comp)));
     if (!ancora.length)
-      err(`${pe} manda sinal mas nenhum fio dele chega no BD-0V nem num shunt — `
+      err(`${pe} manda sinal mas nenhum fio dele chega no 0 V — `
         + 'não existe referência para o sinal');
     else ok(`${pe}: referência em ${ancora.map(f => f.n).join(', ')}`);
   }

@@ -169,79 +169,67 @@ export const PASSOS = [
     seErrar: 'Corrente muito diferente de 17,6 mA: é o resistor errado. O de 2,2 kΩ é da posição 2, e dá 9,8 mA.',
   },
 
-  /* ═══ FASE B · AS DUAS PLACAS ════════════════════════════════════ */
+  /* ═══ FASE B · OS MÓDULOS DE INTERFACE ══════════════════════════
+     ⭐ ESTA FASE ERA "SOLDAR A PI-1", com 8 passos e uma hora de ferro de
+        solda. A placa tinha 6 peças; o divisor virou um módulo comprado,
+        o pull-up veio dentro do adaptador do sensor, e sobraram dois
+        capacitores — que entram parafusados num borne. Sem solda. */
   {
-    id: 'B-01', fase: 'B', titulo: 'PI-1: o barramento de 0 V', tempo: '15 min',
-    pegue: ['fio de cobre NU', 'ferro de solda', 'alicate de bico'],
-    antes: 'Passo A-01. Placa cortada e lixada.',
+    id: 'B-01', fase: 'B', titulo: 'Conferir e montar o sensor de tensão', tempo: '20 min',
+    pegue: ['1 módulo sensor de tensão 0–25 V', 'multímetro', 'fonte de bancada ou o próprio painel',
+            'chave de fenda pequena'],
+    antes: 'O módulo chegou. Faça isto ANTES de ligá-lo no Arduino.',
+    discretos: ['SV1-MODULO'],
     faca: [
-      'Estique o fio nu na fileira 10, da coluna 2 até a 32.',
-      'Solde furo a furo, mantendo o fio esticado e reto.',
-      '⭐ Solde ESTE primeiro: é a referência de todo o resto e o único condutor nu da placa.',
+      'Encaixe o módulo no trilho 3 (ou numa base DIN), ao lado do Arduino.',
+      'Ligue 24 V no borne de parafuso: VCC no positivo, GND no negativo.',
+      '⭐ MEÇA A SAÍDA: ponta preta no pino −, ponta vermelha no pino S. Deve dar ~4,8 V.',
+      'Anote o valor medido — é ele que o firmware vai enxergar no D25.',
+      'Só depois disso ligue o pino S no D25 do Arduino.',
     ],
-    confira: 'Continuidade entre as duas pontas do barramento, e nenhuma solda encostando na fileira vizinha.',
-    seErrar: 'Fio frouxo encosta em furos de outras fileiras. Dessolde, estique e refaça — é mais rápido que caçar o curto depois.',
+    confira: 'Com 24 V na entrada, a saída S mede entre 4,6 e 5,0 V. Abaixo de 3 V o Arduino '
+           + 'leria "sem potência"; acima de 5,2 V ele sofre.',
+    seErrar: '⚠️ Se a saída passar de 5,0 V, a fonte está acima de 25 V ou o módulo não é o de '
+           + '5×. NÃO ligue no pino: um divisor errado destrói a entrada, e é o mesmo estrago que '
+           + 'o divisor existia para evitar.',
   },
   {
-    id: 'B-02', fase: 'B', titulo: 'PI-1: os dois bornes J1 e J2', tempo: '20 min',
-    pegue: ['bornes KF301 passo 5,08 mm', 'ferro de solda'],
-    antes: 'Passo B-01.',
+    id: 'B-02', fase: 'B', titulo: 'Conferir o pull-up do adaptador do DS18B20', tempo: '10 min',
+    pegue: ['1 adaptador DS18B20 (terminal plugável)', '1 sonda DS18B20 à prova d\'água',
+            'multímetro'],
+    antes: 'O kit chegou. Este passo existe por causa de UM resistor invisível.',
+    discretos: ['AD1-MODULO'],
     faca: [
-      '⚠️ Confirme o passo do borne: 5,08 mm = exatamente 2 furos. Os de 5,00 mm não encaixam.',
-      'J1 (11 vias, ENTRADAS) na fileira 2; J2 (8 vias, SAÍDAS) na fileira 28.',
-      'Solde primeiro os dois pinos das pontas, confira se o corpo está reto e só então solde o resto.',
+      '⭐ Ohmímetro entre o borne DAT e o borne VCC do adaptador, com ele desligado de tudo.',
+      'Tem que dar ~4,7 kΩ. É o pull-up do 1-Wire, montado de fábrica.',
+      'Se der circuito aberto, o adaptador veio SEM o resistor — solde um de 4,7 kΩ entre DAT e '
+      + 'VCC, ou o sensor nunca vai responder.',
+      'Ligue a sonda nos bornes pela cor: amarelo em DAT, vermelho em VCC, preto em GND.',
     ],
-    confira: 'Os bornes assentados na placa, sem folga, e as vias caindo em colunas pares.',
-    seErrar: 'Borne torto solda torto e não aceita o fio. Reaqueça um pino de cada vez, empurrando o corpo.',
+    confira: '~4,7 kΩ entre DAT e VCC. E, com tudo ligado, o firmware lê a temperatura em vez de '
+           + 'devolver −127 °C (que é o código de "não achei o sensor").',
+    seErrar: 'Sensor mudo com fio bom e código bom é quase sempre pull-up ausente. Meça antes de '
+           + 'trocar a sonda.',
   },
   {
-    id: 'B-04', fase: 'B', titulo: 'PI-1: os três resistores', tempo: '20 min',
-    pegue: ['R3 4,7 kΩ', 'R1 22 kΩ', 'R2 4,7 kΩ', 'ferro de solda', 'multímetro'],
-    antes: 'Passo B-02.',
-    discretos: ['PI1-R3', 'PI1-R1', 'PI1-R2'],
+    id: 'B-03', fase: 'B', titulo: 'Parafusar os dois capacitores nos bornes', tempo: '15 min',
+    pegue: ['2 capacitores 100 nF (marcados 104)', '3 bornes de passagem 2,5 mm² para trilho',
+            'alicate de bico', 'chave de fenda pequena'],
+    antes: 'Bornes já encaixados no trilho 3 e identificados: A0, A1 e 0V.',
+    discretos: ['PI1-C1', 'PI1-C2'],
     faca: [
-      '⚠️ MEÇA cada resistor antes de soldar. Faixa colorida se lê errado com facilidade, e o 22 kΩ e o 4,7 kΩ vão em circuitos diferentes.',
-      'Monte deitados, uma perna por furo — nunca duas pernas no mesmo furo.',
-      'Corte as sobras rentes depois de soldar.',
+      'Dobre as pernas de cada capacitor em U, com a distância entre os dois bornes.',
+      'No borne A0 entram TRÊS condutores: o fio que vem do IS do BTS #1, o fio que vai para o '
+      + 'A0 do Arduino, e uma perna do C1.',
+      'A outra perna do C1 vai no borne 0V.',
+      'Repita para o C2 entre o borne A1 e o 0V.',
+      '⚠️ Aperte com os três condutores dentro de uma vez. Apertar em dois tempos deixa um frouxo.',
     ],
-    confira: 'Ohmímetro nos pares de furos: 22 kΩ e 4,7 kΩ onde devem estar.',
-    seErrar: 'Trocar o R1 pelo R2 muda a conta do divisor: chegariam ~19 V no pino D25 e a entrada do Arduino morre na primeira energização.',
-  },
-  {
-    id: 'B-05', fase: 'B', titulo: 'PI-1: os três capacitores', tempo: '15 min',
-    pegue: ['3 capacitores 100 nF (marcados 104)', 'ferro de solda'],
-    antes: 'Passo B-04.',
-    discretos: ['PI1-C1', 'PI1-C2', 'PI1-C3'],
-    faca: [
-      'Cerâmico de 100 nF NÃO tem polaridade — pode entrar em qualquer sentido.',
-      'Uma perna no nó do sinal, a outra no barramento de 0 V.',
-    ],
-    confira: 'Nenhum curto entre o barramento de 0 V e os nós de sinal (ohmímetro: resistência alta, não zero).',
-    seErrar: 'Se der zero ohm para o 0 V, uma perna caiu no furo errado ou há solda escorrida entre fileiras.',
-  },
-  {
-    id: 'B-06', fase: 'B', titulo: 'PI-1: as pontes de nó e os 10 jumpers', tempo: '35 min',
-    pegue: ['fio nu curto', 'fio isolado 0,25 mm²', 'ferro de solda', 'a lista de jumpers do aplicativo'],
-    antes: 'Passos B-04 e B-05.',
-    faca: [
-      'Primeiro as pontes de nó (fio NU e curto), onde três ou quatro pernas se encontram.',
-      'Depois os 10 jumpers, por baixo, com fio ISOLADO — ele pode cruzar por cima do barramento sem problema.',
-      'Vá marcando cada jumper como soldado na tela da PI-1: são 10, e perder a conta é o normal.',
-    ],
-    confira: 'Os 10 jumpers marcados, e nenhum fio isolado passando por cima de solda quente sem proteção.',
-    seErrar: 'Jumper faltando é o defeito mais comum da placa. A tela da PI-1 mostra quais faltam.',
-  },
-  {
-    id: 'B-07', fase: 'B', titulo: 'PI-1: teste de continuidade COM O CI FORA', tempo: '30 min',
-    pegue: ['multímetro em continuidade', 'a lista de ligações'],
-    antes: 'Passo B-06.',
-    faca: [
-      'Confira cada via do borne contra o ponto onde ela deveria chegar.',
-      'Confira que nenhum par de vias vizinhas apita entre si.',
-      '⚠️ Este é o último momento em que um erro custa 5 minutos em vez de um componente.',
-    ],
-    confira: 'Todas as ligações da lista apitando, e nenhum curto entre vias vizinhas ou para o 0 V.',
-    seErrar: 'Curto entre o 24 V e o 0 V: procure solda escorrida entre fileiras vizinhas, olhando contra a luz.',
+    confira: 'Puxe cada fio e cada perna: nada sai. Ohmímetro entre A0 e 0V com o painel '
+           + 'desligado: resistência alta, nunca zero — zero é capacitor em curto ou perna '
+           + 'encostando onde não devia.',
+    seErrar: 'Perna frouxa no borne é o defeito que aparece só depois do transporte, e some '
+           + 'quando você mexe para procurar. Puxe cada uma antes de fechar o painel.',
   },
 
   /* ═══ FASE C · PAINEL E FIAÇÃO ═══════════════════════════════════

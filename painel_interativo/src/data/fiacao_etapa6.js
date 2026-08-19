@@ -75,7 +75,7 @@ export const FIOS_ETAPA6 = [
           + 'nos dissipadores. É o calor que a Peltier tirou de dentro. 🔧 O fio agora '
           + 'nasce no contato do KA4, e não mais direto no BD-AUX: é assim que o firmware '
           + 'consegue desligá-las quando o dissipador esfria.' },
-  { ...kabo('X6', naTampa('RAD', '−'), { comp: 'BD-0V', via: 'Z20' }, 0.5,
+  { ...kabo('X6', naTampa('RAD', '−'), { comp: 'BD-0V', via: 'Z15' }, 0.5,
       'zero', 'comum', 'Retorno das ventoinhas do radiador, no 0 V de verdade.'),
     nome: 'ventoinhas do radiador · 0 V', prensa: 'PG13-2', rota: ['CH-base'],
     aviso: '🔥 ESTE FIO É A REFERÊNCIA DOS DOIS TACÔMETROS. Ligado num negativo '
@@ -99,9 +99,9 @@ export const FIOS_ETAPA6 = [
   { ...kabo('X11', { comp: 'F-P', via: 'F-P1' }, naCamara('DUT1', '+24 V'), 0.5,
       'srv24', 'alim', 'Positivo da posição 1, já depois do fusível e da chave.'),
     nome: 'posição 1 +', prensa: 'PG13-2', rota: ['CH-2x1', 'CV-esq', 'CH-base'] },
-  { ...kabo('X13', naCamara('DUT1', 'retorno'), { comp: 'BD-0V', via: 'Z22' }, 0.5,
+  { ...kabo('X13', naCamara('DUT1', 'retorno'), { comp: 'BD-0V-B', via: 'Z22' }, 0.5,
       'zero', 'comum', 'A volta da posição 1 — agora vai direto ao 0 V.'),
-    nome: 'posição 1 · retorno', prensa: 'PG9-3', rota: ['CV-dir', 'CH-base'],
+    nome: 'posição 1 · retorno', prensa: 'PG9-3', rota: ['CH-3x2'],
     porque: '⭐ ANTES ELE ERA A MEDIÇÃO: passava pelo shunt da PI-2, onde os 17,6 mA '
           + 'viravam 0,83 V para o multiplexador ler. Com a detecção digital ninguém '
           + 'precisa medir essa corrente — quem responde "tem corrente?" é o sensor, no '
@@ -111,9 +111,9 @@ export const FIOS_ETAPA6 = [
   { ...kabo('X15', { comp: 'BD-5V', via: 'O10' }, naCamara('SENS', 'VCC'), 0.25,
       'log5', 'alim', 'Alimentação do AM2315C.'),
     nome: 'AM2315C · VCC', prensa: 'PG9-3', rota: ['CH-base', 'CV-dir'] },
-  { ...kabo('X16', naCamara('SENS', 'GND'), { comp: 'BD-0V', via: 'Z15' }, 0.25,
+  { ...kabo('X16', naCamara('SENS', 'GND'), { comp: 'BD-0V-B', via: 'Z26' }, 0.25,
       'zero', 'comum', 'Retorno do sensor.'),
-    nome: 'AM2315C · GND', prensa: 'PG9-3', rota: ['CV-dir', 'CH-base'] },
+    nome: 'AM2315C · GND', prensa: 'PG9-3', rota: ['CV-dir', 'CH-3x2'] },
   { ...kabo('X17', { comp: 'RTC', via: 'SDA' }, naCamara('SENS', 'SDA'), 0.25,
       'digital', 'sinal', 'O I²C continua do RTC até o sensor, dentro da câmara.'),
     nome: 'I²C SDA → câmara', prensa: 'PG9-3', rota: ['CH-3x2', 'CV-dir'],
@@ -124,7 +124,7 @@ export const FIOS_ETAPA6 = [
     nome: 'I²C SCL → câmara', prensa: 'PG9-3', rota: ['CH-3x2', 'CV-dir'] },
 
   /* ── O LADO QUENTE, NA TAMPA ──────────────────────────────────────── */
-  { ...kabo('X19', naTampa('DS18', 'DATA'), { comp: 'PI1', via: 'J1-3' }, 0.25,
+  { ...kabo('X19', naTampa('DS18', 'DATA'), { comp: 'AD-1', via: 'DAT' }, 0.25,
       'digital', 'sinal', 'O DS18B20 colado no dissipador, vigiando o lado quente.'),
     nome: 'DS18B20 do radiador', prensa: 'PG9-3', rota: ['CV-dir', 'CH-topo'],
     porque: '🔥 É O SENSOR QUE SALVA A PELTIER. Se o lado quente saturar, o calor volta '
@@ -142,16 +142,16 @@ export const FIOS_ETAPA6 = [
   /* ── ⭐ OS DOIS FIOS QUE FALTAVAM NO DS18B20 ───────────────────────
      O sensor é de TRÊS fios. O modelo declarava só o DATA, e assim o
      desenho mostrava um sensor de um fio só — que não existe. */
-  { ...kabo('X22', { comp: 'BD-5V', via: 'O11' }, naTampa('DS18', 'VCC'), 0.25,
+  { ...kabo('X22', naTampa('DS18', 'VCC'), { comp: 'AD-1', via: 'VCC' }, 0.25,
       'log5', 'alim', 'Alimentação do DS18B20 do radiador.'),
-    nome: 'DS18B20 · VCC', prensa: 'PG9-3', rota: ['CH-base', 'CV-dir'],
+    nome: 'DS18B20 · VCC', prensa: 'PG9-3', rota: ['CV-dir', 'CH-topo'],
     porque: '⭐ 5 V, e não 3,3: o pull-up de 4,7 kΩ do 1-Wire está na PI-1 puxando '
           + 'para +5 V. Sensor alimentado em 3,3 com a linha puxada para 5 leria, mas '
           + 'com o pino de dados acima da própria alimentação — que é o jeito de '
           + 'estragar um sensor devagar.' },
-  { ...kabo('X23', naTampa('DS18', 'GND'), { comp: 'BD-0V', via: 'Z19' }, 0.25,
+  { ...kabo('X23', naTampa('DS18', 'GND'), { comp: 'AD-1', via: 'GND' }, 0.25,
       'zero', 'comum', 'Retorno do DS18B20.'),
-    nome: 'DS18B20 · GND', prensa: 'PG9-3', rota: ['CV-dir', 'CH-base'],
+    nome: 'DS18B20 · GND', prensa: 'PG9-3', rota: ['CV-dir', 'CH-topo'],
     aviso: '⚠️ SEM ESTE FIO NÃO EXISTE 1-WIRE. O protocolo mede o tempo em que a linha '
          + 'fica baixa, e "baixa" é em relação a este 0 V. Sem ele o sensor não '
          + 'responde — ou pior, responde errado de vez em quando.' },

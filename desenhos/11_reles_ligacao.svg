@@ -180,7 +180,7 @@
     <text x="322" y="776" font-size="11.5" font-weight="700" fill="#c2410c" text-anchor="middle">0V</text>
     <path d="M322 781 L322 670" stroke="#c2410c" stroke-width="2.4"/>
     <circle cx="322" cy="670" r="3.2" fill="#c2410c"/>
-    <text x="322" y="658" font-size="9.5" fill="#343a40" text-anchor="middle">BD-0V · Z21</text>
+    <text x="322" y="658" font-size="9.5" fill="#343a40" text-anchor="middle">BD-0V-B · Z21</text>
     <text x="322" y="645" font-size="8" fill="#c2410c" text-anchor="middle">DC− · retorno E referência do IN</text>
     <circle cx="414" cy="794" r="11" fill="#c2410c22" stroke="#c2410c" stroke-width="2"/>
     <text x="414" y="776" font-size="11.5" font-weight="700" fill="#c2410c" text-anchor="middle">IN3</text>
@@ -231,7 +231,7 @@
     <text x="942" y="776" font-size="11.5" font-weight="700" fill="#c2410c" text-anchor="middle">0V</text>
     <path d="M942 781 L942 670" stroke="#c2410c" stroke-width="2.4"/>
     <circle cx="942" cy="670" r="3.2" fill="#c2410c"/>
-    <text x="942" y="658" font-size="9.5" fill="#343a40" text-anchor="middle">BD-0V · Z21</text>
+    <text x="942" y="658" font-size="9.5" fill="#343a40" text-anchor="middle">BD-0V-B · Z21</text>
     <text x="942" y="645" font-size="8" fill="#c2410c" text-anchor="middle">DC− · retorno E referência do IN</text>
     <circle cx="1034" cy="794" r="11" fill="#c2410c22" stroke="#c2410c" stroke-width="2"/>
     <text x="1034" y="776" font-size="11.5" font-weight="700" fill="#c2410c" text-anchor="middle">IN4</text>

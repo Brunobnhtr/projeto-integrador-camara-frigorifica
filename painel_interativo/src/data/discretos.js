@@ -13,12 +13,11 @@
  *    Parágrafo não é desenhado, não é validado e não vira passo de
  *    montagem. Por isso todos eles moram aqui agora, no mesmo formato.
  *
- * ⚠️ ESTE ARQUIVO NÃO TEM GEOMETRIA. Onde a perna entra em qual FURO
- *    continua em `pi1_fisico.js` e `pi2_fisico.js` — é lá que o desenho
- *    da placa nasce. Aqui mora o que vale para TODO componente, esteja
- *    ele numa placa, num parafuso de relé ou dentro de um poste:
- *    o que é, onde vive, como liga, por que existe e o que se mede para
- *    provar que ficou certo.
+ * ⭐ E NÃO HÁ MAIS PLACA NENHUMA. A PI-2 saiu com a medição analógica e
+ *    a PI-1 com os módulos comprados: hoje todo componente discreto do
+ *    projeto mora num BORNE ou dentro de um módulo. Aqui está o que vale
+ *    para todos eles — o que é, onde vive, como liga, por que existe e o
+ *    que se mede para provar que ficou certo.
  *
  * O `valida_discretos.mjs` confere que os dois lados concordam.
  */
@@ -32,11 +31,11 @@
    são declarados aqui mesmo, porque não há outro lugar que os conheça. */
 export const HOSTS = [
   {
-    id: 'PI1', tipo: 'placa', nome: 'Placa PI-1',
-    onde: 'caixa modular DIN de 6M, trilho 3, ao lado do Arduino',
-    compPainel: 'PI1', geometria: 'pi1_fisico.js',
-    diz: 'Placa ilhada: nenhum furo vem ligado de fábrica. Toda ligação é uma '
-       + 'perna de componente ou um fio que você solda.',
+    id: 'BS-1', tipo: 'borne', nome: 'Bornes dos filtros de corrente',
+    onde: 'trilho 3 do painel, ao lado do Arduino', compPainel: 'BS-1',
+    diz: '⭐ AQUI HAVIA UMA PLACA. A PI-1 tinha 6 peças soldadas; o divisor e o pull-up '
+       + 'viraram módulos comprados, e sobraram dois capacitores — que entram parafusados '
+       + 'no borne, junto com o fio, do mesmo jeito que o D1 entra na bobina do KA2.',
   },
   {
     id: 'KA2', tipo: 'borne', nome: 'Base PTF08A do KA2',
@@ -74,6 +73,17 @@ export const HOSTS = [
     terminais: ['+12V', '0V'],
     diz: 'O diodo vai junto das ventoinhas, e não no painel: o pico tem que '
        + 'ser grampeado onde ele nasce.',
+  },
+  {
+    id: 'SV-1', tipo: 'modulo', nome: 'Módulo sensor de tensão (vigia do 24 V)',
+    onde: 'trilho 3 do painel', compPainel: 'SV-1',
+    diz: 'Módulo comprado, com borne de parafuso na entrada e barra de pinos na saída. '
+       + 'Substituiu o divisor soldado da PI-1.',
+  },
+  {
+    id: 'AD-1', tipo: 'modulo', nome: 'Adaptador do DS18B20',
+    onde: 'trilho 3 do painel', compPainel: 'AD-1',
+    diz: 'Traz o pull-up do 1-Wire montado de fábrica e três bornes de parafuso para a sonda.',
   },
   {
     id: 'SC-1', tipo: 'modulo', nome: 'Sensor de corrente da posição de ensaio',
@@ -134,13 +144,13 @@ export const ARRANJOS = {
    para que o validador possa conferir se o parafuso existe de verdade. */
 export const DISCRETOS = [
 
-  /* ───────────────────────── PLACA PI-1 ───────────────────────── */
+  /* ────────── OS FILTROS DE CORRENTE, NOS BORNES DO BS-1 ────────── */
   {
     id: 'PI1-C1', ref: 'C1', peca: 'Capacitor cerâmico 100 nF (marcado 104)',
-    tipo: 'capacitor', valor: '100 nF', qtd: 1, host: 'PI1', arranjo: 'derivacao', polaridade: false,
+    tipo: 'capacitor', valor: '100 nF', qtd: 1, host: 'BS-1', arranjo: 'derivacao', polaridade: false,
     pernas: [
-      { nome: 'perna 1', vai: { comp: 'PI1', via: 'nó A0' } },
-      { nome: 'perna 2', vai: { comp: 'PI1', via: 'barramento 0V' } },
+      { nome: 'perna 1', vai: { comp: 'BS-1', via: 'A0' } },
+      { nome: 'perna 2', vai: { comp: 'BS-1', via: '0V' } },
     ],
     papel: 'Filtra o ruído que o cabo do BTS #1 pegou no caminho até o Arduino',
     porque: 'O sinal IS sai limpo do driver e percorre 30 cm dentro de um painel que '
@@ -148,78 +158,20 @@ export const DISCRETOS = [
           + 'alarme de falha com o sistema funcionando bem.',
     seFaltar: 'A leitura de A0 pula dezenas de contagens e o diagnóstico de corrente vira ruído.',
     ensaio: 'Sistema energizado e em repouso: A0 estável dentro de ±2 contagens de A/D.',
-    passo: 'B-05', fonte: 'Doc 33 §33.2',
+    passo: 'B-03', fonte: 'Doc 33 §33.2',
   },
   {
     id: 'PI1-C2', ref: 'C2', peca: 'Capacitor cerâmico 100 nF (marcado 104)',
-    tipo: 'capacitor', valor: '100 nF', qtd: 1, host: 'PI1', arranjo: 'derivacao', polaridade: false,
+    tipo: 'capacitor', valor: '100 nF', qtd: 1, host: 'BS-1', arranjo: 'derivacao', polaridade: false,
     pernas: [
-      { nome: 'perna 1', vai: { comp: 'PI1', via: 'nó A1' } },
-      { nome: 'perna 2', vai: { comp: 'PI1', via: 'barramento 0V' } },
+      { nome: 'perna 1', vai: { comp: 'BS-1', via: 'A1' } },
+      { nome: 'perna 2', vai: { comp: 'BS-1', via: '0V' } },
     ],
     papel: 'O mesmo do C1, para o BTS #2',
     porque: 'Mesma razão do C1 — o cabo é outro, o problema é igual.',
     seFaltar: 'A leitura de A1 fica instável.',
     ensaio: 'A1 estável dentro de ±2 contagens de A/D com o sistema em repouso.',
-    passo: 'B-05', fonte: 'Doc 33 §33.2',
-  },
-  {
-    id: 'PI1-R1', ref: 'R1', peca: 'Resistor 22 kΩ · ¼ W',
-    tipo: 'resistor', valor: '22 kΩ', qtd: 1, host: 'PI1', arranjo: 'serie', polaridade: false,
-    pernas: [
-      { nome: 'perna 1', vai: { comp: 'PI1', via: 'J1-6' } },
-      { nome: 'perna 2', vai: { comp: 'PI1', via: 'nó D25' } },
-    ],
-    papel: 'Braço de cima do divisor que mede o barramento de potência',
-    porque: 'O pino D25 aguenta 5 V e o barramento tem 24 V. O divisor entrega 4,22 V — '
-          + 'é o TP do Arduino, mesma função do transformador de potencial de uma subestação.',
-    seFaltar: '⚠️ Ligar o D25 direto nos 24 V destrói a entrada do Arduino.',
-    ensaio: 'Com o KA2 fechado, medir o nó D25 contra o 0 V → 4,2 V ± 0,3 V. Com a emergência '
-          + 'acionada → 0 V.',
-    passo: 'B-04', fonte: 'Doc 33 §33.2',
-  },
-  {
-    id: 'PI1-R2', ref: 'R2', peca: 'Resistor 4,7 kΩ · ¼ W',
-    tipo: 'resistor', valor: '4,7 kΩ', qtd: 1, host: 'PI1', arranjo: 'serie', polaridade: false,
-    pernas: [
-      { nome: 'perna 1', vai: { comp: 'PI1', via: 'nó D25' } },
-      { nome: 'perna 2', vai: { comp: 'PI1', via: 'barramento 0V' } },
-    ],
-    papel: 'Braço de baixo do divisor — 24 × 4,7/26,7 = 4,22 V',
-    porque: 'É a razão entre os dois resistores que define a tensão lida. Trocar um deles '
-          + 'muda a escala inteira da medição.',
-    seFaltar: 'Sem o braço de baixo, o D25 vai a 24 V e a entrada queima.',
-    ensaio: 'Ohmímetro com a placa fora do circuito: 4,7 kΩ entre o nó D25 e o 0 V.',
-    passo: 'B-04', fonte: 'Doc 33 §33.2',
-  },
-  {
-    id: 'PI1-C3', ref: 'C3', peca: 'Capacitor cerâmico 100 nF (marcado 104)',
-    tipo: 'capacitor', valor: '100 nF', qtd: 1, host: 'PI1', arranjo: 'derivacao', polaridade: false,
-    pernas: [
-      { nome: 'perna 1', vai: { comp: 'PI1', via: 'nó D25' } },
-      { nome: 'perna 2', vai: { comp: 'PI1', via: 'barramento 0V' } },
-    ],
-    papel: 'Segura o nó do divisor, que é de alta impedância e capta ruído',
-    porque: 'Sem ele o pino pode oscilar entre HIGH e LOW e o firmware enxergar a potência '
-          + '"piscando". Custa centavos e elimina a classe inteira de problema.',
-    seFaltar: 'Leitura de potência intermitente, sem causa aparente.',
-    ensaio: 'Junto com o ensaio do divisor: 4,2 V estáveis, sem tremer no multímetro.',
-    passo: 'B-05', fonte: 'Doc 33 §33.2',
-  },
-  {
-    id: 'PI1-R3', ref: 'R3', peca: 'Resistor 4,7 kΩ · ¼ W',
-    tipo: 'resistor', valor: '4,7 kΩ', qtd: 1, host: 'PI1', arranjo: 'paralelo', polaridade: false,
-    pernas: [
-      { nome: 'perna 1', vai: { comp: 'PI1', via: 'nó 1-Wire' } },
-      { nome: 'perna 2', vai: { comp: 'PI1', via: 'J1-4' } },
-    ],
-    papel: 'Pull-up do barramento 1-Wire dos DS18B20',
-    porque: '⭐ O sensor só sabe PUXAR a linha para 0 V — ele não tem como levantá-la. Quem '
-          + 'levanta é este resistor. SEM ele não existe barramento: o sensor não responde, '
-          + 'nem com fio perfeito e código perfeito.',
-    seFaltar: 'O DS18B20 não responde. Não é leitura instável — é leitura nenhuma.',
-    ensaio: 'Ohmímetro entre o D2 e o +5 V → ~4,7 kΩ.',
-    passo: 'B-04', fonte: 'Doc 33 §33.2',
+    passo: 'B-03', fonte: 'Doc 33 §33.2',
   },
 
   /* ─────────────────── NOS BORNES DOS RELÉS ──────────────────── */
@@ -350,6 +302,58 @@ export const DISCRETOS = [
     ensaio: 'Com o BD-5V energizado, os 4 acendem juntos e continuam acesos na emergência (eles '
           + 'são alimentados pelo permanente).',
     passo: 'A-04', fonte: 'Doc 03 M.4 · Doc 30 fio 54b',
+  },
+
+  /* ─────────── OS MÓDULOS QUE SUBSTITUÍRAM A PLACA PI-1 ──────────── */
+  {
+    id: 'SV1-MODULO', ref: 'SV-1', peca: 'Módulo sensor de tensão 0–25 V (divisor 5:1)',
+    tipo: 'modulo', valor: '30 kΩ / 7,5 kΩ', qtd: 1, host: 'SV-1',
+    arranjo: 'derivacao', polaridade: true,
+    comoIdentificar: '⭐ O borne de parafuso tem VCC e GND marcados na placa: VCC é o positivo '
+                   + 'que se quer medir. Do outro lado, a barra de 3 pinos traz S (sinal), + e −.',
+    seInverter: 'Trocar VCC com GND no borne não queima o módulo (é só um divisor resistivo), '
+              + 'mas a saída fica em 0 V e o firmware conclui que a potência caiu — alarme com '
+              + 'tudo certo.',
+    pernas: [
+      { nome: 'VCC (entrada medida)', vai: { comp: 'SV-1', via: 'VCC' } },
+      { nome: 'GND (referência)',     vai: { comp: 'SV-1', via: 'GND' } },
+      { nome: 'S (saída)',            vai: { comp: 'SV-1', via: 'S' } },
+    ],
+    papel: 'Divide os 24 V do BD-POT por 5 para o Arduino poder olhar sem morrer',
+    porque: '⭐ Substituiu o divisor R1 + R2 + C3 que era soldado na PI-1. O princípio é o mesmo '
+          + '— dois resistores em série, e o Arduino lê o ponto do meio —, só que comprado pronto '
+          + 'e com borne de parafuso.',
+    seFaltar: 'Ligar o D25 direto nos 24 V destrói a entrada do Arduino.',
+    ensaio: 'Com o BD-POT energizado, medir S contra o 0 V → **~4,8 V**. Com a emergência '
+          + 'acionada → 0 V.',
+    montagem: '⚠️ MEÇA ANTES DE LIGAR NO D25. O módulo divide por 5 (24 V → 4,8 V), e não por '
+            + '5,68 como o divisor soldado (que dava 4,22 V). Para o D25, que é entrada DIGITAL, '
+            + '4,8 V é folgado; mas se a fonte estiver acima de 25 V a saída passa dos 5 V.',
+    passo: 'B-01', fonte: 'Doc 33 §33.4',
+    aviso: '⚠️ A saída é barra de pinos, não borne: use cabo com conector e prenda com '
+         + 'abraçadeira. Dupont solto em maquete transportada se desconecta sozinho.',
+  },
+  {
+    id: 'AD1-MODULO', ref: 'AD-1', peca: 'Adaptador do DS18B20 com pull-up (terminal plugável)',
+    tipo: 'modulo', valor: 'pull-up 4,7 kΩ embutido', qtd: 1, host: 'AD-1',
+    arranjo: 'paralelo', polaridade: true,
+    comoIdentificar: 'Os três bornes vêm marcados DAT, VCC e GND — e a sonda tem as cores '
+                   + 'amarelo (DAT), vermelho (VCC) e preto (GND).',
+    seInverter: '🔥 Trocar VCC com GND alimenta a sonda ao contrário. O DS18B20 aguenta por '
+              + 'alguns segundos e esquenta; não conte com isso.',
+    pernas: [
+      { nome: 'DAT (da sonda)', vai: { comp: 'AD-1', via: 'DAT' } },
+      { nome: 'VCC (da sonda)', vai: { comp: 'AD-1', via: 'VCC' } },
+      { nome: 'GND (da sonda)', vai: { comp: 'AD-1', via: 'GND' } },
+    ],
+    papel: 'Traz o pull-up de 4,7 kΩ do 1-Wire já montado, e transforma a sonda em três bornes',
+    porque: '⭐ Substituiu o R3 que era soldado na PI-1. O resistor continua existindo — ele só '
+          + 'não é mais nosso: vem dentro do adaptador. E ele continua sendo o barramento: sem '
+          + 'ele o sensor não responde.',
+    seFaltar: 'O DS18B20 não responde — nem com sonda boa, fio bom e código bom.',
+    ensaio: '⚠️ AO RECEBER: ohmímetro entre DAT e VCC deve dar **~4,7 kΩ**. Há adaptadores '
+          + 'anunciados "com pull-up" que vêm sem o resistor, e o sintoma é sensor mudo.',
+    passo: 'B-02', fonte: 'Doc 33 §33.4',
   },
 
   /* ────────── A DETECÇÃO DE DISPOSITIVO MORTO (no painel) ────────── */

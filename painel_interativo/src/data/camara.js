@@ -172,7 +172,7 @@ export const COMPONENTES = [
     terminais: [
       { t: '+24 V', de: 'F-P1 — fusível 100 mA + chave, e 10 voltas no sensor SC-1',
         ref: ['F-P', 'F-P1'], fio: '0,5 mm² vermelho' },
-      { t: 'retorno', de: 'BD-0V · Z22', ref: ['BD-0V', 'Z22'], fio: '0,5 mm² azul' },
+      { t: 'retorno', de: 'BD-0V-B · Z22', ref: ['BD-0V-B', 'Z22'], fio: '0,5 mm² azul' },
     ],
     avisos: [
       '⭐ O RETORNO VIROU 0 V COMUM. Ele ia para o shunt da PI-2, onde os 17,6 mA '
@@ -239,7 +239,7 @@ export const TRAVESSIA = [
   { pc: 'PC-1', g: 'Potência',   n: 2, o: 'PTC + e −', de: 'BTS #2', mm: '1,5 mm²' },
   { pc: 'PC-1', g: 'Ventilação', n: 2, o: '⭐ as 5 internas (4 de circulação + a do PTC, em paralelo)', de: 'MV-1 · O3', mm: '0,5 mm²' },
   { pc: 'PC-2', g: 'Ensaio',     n: 1, o: 'positivo da posição de ensaio', de: 'F-P1', mm: '0,5 mm²' },
-  { pc: 'PC-2', g: 'Ensaio',     n: 1, o: 'retorno da posição de ensaio', de: 'BD-0V · Z22', mm: '0,5 mm²' },
+  { pc: 'PC-2', g: 'Ensaio',     n: 1, o: 'retorno da posição de ensaio', de: 'BD-0V-B · Z22', mm: '0,5 mm²' },
   { pc: 'PC-2', g: 'Sinal',      n: 4, o: 'AM2315C (VCC GND SDA SCL)', de: 'Mega + BD-5V', mm: '0,25 mm²' },
 ];
 

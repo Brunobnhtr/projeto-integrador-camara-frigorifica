@@ -1,8 +1,6 @@
 import { useState, useMemo, useRef } from 'react';
-import PlacaIlhada from './PlacaIlhada';
 import ConjuntoRele from './ConjuntoRele';
 import PlacaReal from './PlacaReal';
-import * as PI1 from '../data/pi1_fisico';
 import { PINAGENS } from '../data/pinagens';
 import { PRENSAS_PAINEL, FIOS, ETAPAS, CORES } from '../data/fiacao';
 import CamaraNoPainel from './CamaraNoPainel';
@@ -18,8 +16,6 @@ import { conferePrensa } from '../lib/prensas';
    'ilhada' = placa que VOCÊ monta furo por furo.
    'real'   = módulo comprado, desenhado a partir da foto.        */
 const PLACAS = {
-  PI1:  { tipo: 'ilhada', dados: PI1, titulo: 'Placa PI-1',
-          rotulo: 'a placa que você vai montar — 10 jumpers, 3 circuitos' },
   BTS1: { tipo: 'real', chave: 'BTS1', rotulo: 'módulo comprado — pinagem tirada da foto' },
   BTS2: { tipo: 'real', chave: 'BTS1', rotulo: 'módulo comprado — igual ao BTS #1' },
   ESP32:{ tipo: 'real', chave: 'ESP32', rotulo: 'placa DNLCB30 — 32 bornes de parafuso' },

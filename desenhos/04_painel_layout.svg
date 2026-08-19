@@ -37,9 +37,9 @@
     <rect x="200.7" y="196" width="71.1" height="56" fill="#f08c0022" stroke="#f08c00" stroke-width="1.3"/>
     <text x="236.3" y="220" font-size="10" font-weight="700" fill="#f08c00" text-anchor="middle">BD-5V</text>
     <text x="236.3" y="235" font-size="8" fill="#f08c00" text-anchor="middle">5,10 V</text>
-    <rect x="273.5" y="196" width="103.0" height="56" fill="#21252922" stroke="#212529" stroke-width="1.3"/>
-    <text x="325.0" y="220" font-size="10" font-weight="700" fill="#212529" text-anchor="middle">BD-0V</text>
-    <text x="325.0" y="235" font-size="8" fill="#212529" text-anchor="middle">star ground</text>
+    <rect x="273.5" y="196" width="68.7" height="56" fill="#21252922" stroke="#212529" stroke-width="1.3"/>
+    <text x="307.8" y="220" font-size="10" font-weight="700" fill="#212529" text-anchor="middle">BD-0V</text>
+    <text x="307.8" y="235" font-size="8" fill="#212529" text-anchor="middle">star ground</text>
     <rect x="379.7" y="196" width="27.8" height="56" fill="#7048e822" stroke="#7048e8" stroke-width="1.3"/>
     <text x="393.6" y="224" font-size="9.5" font-weight="700" fill="#7048e8" text-anchor="middle" transform="rotate(-90 393.6 224)">KA1</text>
     <rect x="410.8" y="196" width="27.8" height="56" fill="#7048e822" stroke="#7048e8" stroke-width="1.3"/>
@@ -78,13 +78,18 @@
     <rect x="101.8" y="456" width="109.5" height="56" fill="#0ca67822" stroke="#0ca678" stroke-width="1.3"/>
     <text x="156.6" y="480" font-size="10" font-weight="700" fill="#0ca678" text-anchor="middle">ARDUINO MEGA</text>
     <text x="156.6" y="495" font-size="8" fill="#0ca678" text-anchor="middle">2560 + Shield</text>
-    <rect x="219.5" y="456" width="57.2" height="56" fill="#f08c0022" stroke="#f08c00" stroke-width="1.3"/>
-    <text x="248.1" y="480" font-size="10" font-weight="700" fill="#f08c00" text-anchor="middle">PI-1</text>
-    <text x="248.1" y="495" font-size="8" fill="#f08c00" text-anchor="middle">filtros · ULN</text>
-    <rect x="313.5" y="456" width="32.7" height="56" fill="#ae3ec922" stroke="#ae3ec9" stroke-width="1.3"/>
-    <text x="329.9" y="484" font-size="9.5" font-weight="700" fill="#ae3ec9" text-anchor="middle" transform="rotate(-90 329.9 484)">SC-1</text>
-    <rect x="404.2" y="456" width="28.6" height="56" fill="#0ca67822" stroke="#0ca678" stroke-width="1.3"/>
-    <text x="418.5" y="484" font-size="9.5" font-weight="700" fill="#0ca678" text-anchor="middle" transform="rotate(-90 418.5 484)">RTC</text>
+    <rect x="219.5" y="456" width="24.5" height="56" fill="#f08c0022" stroke="#f08c00" stroke-width="1.3"/>
+    <text x="231.8" y="484" font-size="9.5" font-weight="700" fill="#f08c00" text-anchor="middle" transform="rotate(-90 231.8 484)">SV-1</text>
+    <rect x="247.3" y="456" width="26.2" height="56" fill="#0ca67822" stroke="#0ca678" stroke-width="1.3"/>
+    <text x="260.4" y="484" font-size="9.5" font-weight="700" fill="#0ca678" text-anchor="middle" transform="rotate(-90 260.4 484)">AD-1</text>
+    <rect x="276.7" y="456" width="19.6" height="56" fill="#1971c222" stroke="#1971c2" stroke-width="1.3"/>
+    <text x="286.5" y="484" font-size="9.5" font-weight="700" fill="#1971c2" text-anchor="middle" transform="rotate(-90 286.5 484)">BS-1</text>
+    <rect x="299.6" y="456" width="32.7" height="56" fill="#ae3ec922" stroke="#ae3ec9" stroke-width="1.3"/>
+    <text x="316.0" y="484" font-size="9.5" font-weight="700" fill="#ae3ec9" text-anchor="middle" transform="rotate(-90 316.0 484)">SC-1</text>
+    <rect x="335.6" y="456" width="51.5" height="56" fill="#21252922" stroke="#212529" stroke-width="1.3"/>
+    <text x="361.3" y="480" font-size="10" font-weight="700" fill="#212529" text-anchor="middle">BD-0V-B</text>
+    <rect x="390.3" y="456" width="28.6" height="56" fill="#0ca67822" stroke="#0ca678" stroke-width="1.3"/>
+    <text x="404.6" y="484" font-size="9.5" font-weight="700" fill="#0ca678" text-anchor="middle" transform="rotate(-90 404.6 484)">RTC</text>
   </g>
 
   <!-- prensa-cabos -->

@@ -121,8 +121,8 @@ export const FIOS_ETAPA5 = [
 
   /* ── os blocos de 5 V dos comandos ────────────────────────────────── */
   { n: 'P20', etapa: 5, classe: 'comum', func: 'zero', mm2: 0.25,
-    de: { comp: 'BD-0V', via: 'Z18' }, para: { comp: 'S2', via: '13' },
-    nome: '0 V dos comandos → porta', rota: ['CH-base', 'CV-dir', 'CP-vsin', 'CP-2x3'],
+    de: { comp: 'BD-0V-B', via: 'Z18' }, para: { comp: 'S2', via: '13' },
+    nome: '0 V dos comandos → porta', rota: ['CH-3x2', 'CV-dir', 'CP-vsin', 'CP-2x3'],
     diz: 'UM fio de 0 V cruza a dobradiça e serve os dois comandos de 5 V.',
     porque: '⭐ Aqui pendurar É o certo. O limiar do Arduino fica em 2,5 V e o pull-up '
           + 'interno dá 0,25 mA — alguns milivolts de queda não mudam nada. 🔧 Eram '

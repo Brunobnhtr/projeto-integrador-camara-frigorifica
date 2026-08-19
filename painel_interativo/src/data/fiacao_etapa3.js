@@ -39,7 +39,7 @@ export const FIOS_ETAPA3 = [
   { ...pot('D2', { comp: 'BD-POT', via: 'O2' }, { comp: 'BTS2', via: 'B+' }, 1.5,
       'Idem para o BTS do PTC.'),
     rota: ['CH-base', 'CV-esq', 'CH-2x1'] },
-  { ...pot('D3', { comp: 'BD-POT', via: 'O3' }, { comp: 'PI1', via: 'J1-6' }, 0.5,
+  { ...pot('D3', { comp: 'BD-POT', via: 'O3' }, { comp: 'SV-1', via: 'VCC' }, 0.5,
       'Amostra dos 24 V comutados, para a PI-1 vigiar.'),
     classe: 'alim', rota: ['CH-base', 'CV-esq', 'CH-topo'],
     porque: '⭐ Não alimenta nada: entra no divisor 22 k / 4,7 k e vira 4,22 V no D25. '
@@ -70,9 +70,9 @@ export const FIOS_ETAPA3 = [
          + 'Ligar 24 V no VCC destrói o módulo na hora.' },
   { ...cinco('D10', { comp: 'BD-5V', via: 'O5' }, { comp: 'BTS2', via: 'VCC' },
       'Idem para o BTS #2.'), rota: ['CH-base', 'CV-esq', 'CH-2x1'] },
-  { ...cinco('D11', { comp: 'BD-5V', via: 'O6' }, { comp: 'PI1', via: 'J1-4' },
+  { ...cinco('D11', { comp: 'BD-5V', via: 'O6' }, { comp: 'AD-1', via: '+' },
       'O 5 V que alimenta o pull-up do 1-Wire dentro da PI-1.'),
-    rota: ['CH-base', 'CV-esq', 'CH-topo'] },
+    rota: ['CH-base', 'CV-esq', 'CH-3x2'] },
   { ...cinco('D12', { comp: 'BD-5V', via: 'O8' }, { comp: 'SC-1', via: 'VCC' },
       'Alimenta o sensor de corrente da posição de ensaio.'),
     rota: ['CH-base', 'CV-esq', 'CH-3x2'] },
@@ -110,9 +110,9 @@ export const FIOS_ETAPA3 = [
     rota: ['CH-base', 'CV-esq', 'CH-2x1'], nome: '5 V dos módulos KA3/KA4',
     aviso: '⚠️ 65 mA CADA, com o relé fechado. São 130 mA a mais no ramal T2 — some com '
          + 'o Arduino, a tela e o ESP32 antes de fechar o projeto de energia.' },
-  { ...zero('D20b', { comp: 'KA34', via: '0V' }, { comp: 'BD-0V', via: 'Z21' },
+  { ...zero('D20b', { comp: 'KA34', via: '0V' }, { comp: 'BD-0V-B', via: 'Z21' },
       '⭐ O DC− dos dois módulos, em ponto próprio da barra.'),
-    rota: ['CH-2x1', 'CV-esq', 'CH-base'],
+    rota: ['CH-2x1', 'CV-dir', 'CH-3x2'],
     porque: '📌 PONTO PRÓPRIO, e não pendurado. O DC− carrega os 130 mA das duas bobinas '
           + 'e é também a referência do sinal de gatilho — a entrada do módulo tem só '
           + 'três bornes, então o DC− É o 0 V do IN. Pendurá-lo num retorno de medição '
@@ -122,14 +122,14 @@ export const FIOS_ETAPA3 = [
     classe: 'alim', func: 'aux12', rota: ['CH-base', 'CV-esq', 'CH-2x1'],
     nome: '12 V → contato do KA4',
     porque: '⭐ O KA4 fica EM SÉRIE com o lado POSITIVO das ventoinhas do radiador. O '
-          + 'negativo delas (X6) vai direto ao BD-0V · Z20 e NUNCA é chaveado — é a '
+          + 'negativo delas (X6) vai direto ao BD-0V-B · Z20 e NUNCA é chaveado — é a '
           + 'referência dos dois tacômetros, e mexer nela foi o erro que tirou o comando '
           + 'destas ventoinhas na primeira versão.',
     aviso: '🔥 A SAÍDA É O CONTATO NC4, NÃO O NO4. Ao contrário do KA3, aqui o estado '
          + 'seguro é FECHADO: módulo sem energia, ventoinha girando (§31.14).' },
-  { ...zero('D20', { comp: 'PI1', via: 'J1-5' }, { comp: 'BD-0V', via: 'Z6' },
+  { ...zero('D20', { comp: 'BS-1', via: '0V' }, { comp: 'BD-0V', via: 'Z6' },
       'O 0 V da PI-1, que lá dentro vira o barramento de fio nu.'),
-    rota: ['CH-topo', 'CV-dir', 'CH-base'] },
+    rota: ['CH-3x2', 'CV-dir', 'CH-base'] },
   { ...zero('D21', { comp: 'ESP32', via: '−' }, { comp: 'BD-0V', via: 'Z7' },
       'Retorno do DNLCB30.'), rota: ['CH-2x1', 'CV-esq', 'CH-base'] },
   { ...zero('D22', { comp: 'RTC', via: 'GND' }, { comp: 'BD-0V', via: 'Z8' },
@@ -144,9 +144,40 @@ export const FIOS_ETAPA3 = [
          + 'optoacoplador existe para isolar o lado das ventoinhas do lado do Arduino; '
          + 'unir os dois no módulo anula esse isolamento e traz o ruído de partida das '
          + 'ventoinhas para dentro da lógica.' },
-  { ...zero('D24', { comp: 'SC-1', via: 'GND' }, { comp: 'BD-0V', via: 'Z17' },
+  { ...zero('D24', { comp: 'SC-1', via: 'GND' }, { comp: 'BD-0V-B', via: 'Z17' },
       'O 0 V do sensor de corrente.'),
-    rota: ['CH-3x2', 'CV-dir', 'CH-base'],
+    rota: ['CH-3x2'],
     porque: '⭐ Este fio carrega a corrente que está sendo medida. Ele só é 0 V deste '
           + '0 V do sensor — o mesmo retorno comum do painel.' },
+  /* ── o que a PI-1 fazia por dentro, e agora é fio ────────────────────
+     ⭐ Trocar a placa soldada por módulos com borne tem um preço, e ele é
+        este: três ligações que eram trilha de cobre viraram três fios. É
+        um preço barato — fio em borne se mede, trilha soldada não. */
+  { ...pot('D25b', { comp: 'SV-1', via: 'GND' }, { comp: 'BD-0V-B', via: 'Z25' }, 0.25,
+      'A referência do divisor: sem ela o módulo mede contra o nada.'),
+    classe: 'comum', func: 'zero', rota: ['CH-topo', 'CV-dir', 'CH-3x2'],
+    nome: 'referência do sensor de tensão',
+    porque: '⚠️ Este fio parece dispensável e não é. O divisor precisa de um caminho de volta '
+          + 'para o 0 V; sem ele a saída flutua e o D25 lê qualquer coisa.' },
+  { ...pot('D25c', { comp: 'SV-1', via: '−' }, { comp: 'BD-0V-B', via: 'Z23' }, 0.25,
+      'O 0 V do lado da saída, que acompanha o sinal até o Arduino.'),
+    classe: 'comum', func: 'zero', rota: ['CH-3x2'],
+    nome: '0 V da saída do sensor de tensão' },
+  { ...pot('D26b', { comp: 'AD-1', via: '−' }, { comp: 'BD-0V-B', via: 'Z24' }, 0.25,
+      'O 0 V do adaptador do DS18B20.'),
+    classe: 'comum', func: 'zero', rota: ['CH-3x2'],
+    nome: '0 V do adaptador 1-Wire' },
+  /* ── a ponte entre os dois blocos de 0 V ─────────────────────────────
+     ⭐ ELA É PARTE DO CIRCUITO, não um detalhe de montagem. A barra de 0 V
+        passou de 28 pontos e não cabia num bloco só; virou dois, e é esta
+        ponte que os mantém sendo o MESMO nó. 4 mm² e o mais curta possível:
+        se ela ficar fina ou frouxa, os retornos da eletrônica passam a
+        procurar caminho por onde não deviam, e o sintoma é leitura
+        analógica errada — não falta de energia. */
+  { ...pot('D27b', { comp: 'BD-0V', via: 'Z16' }, { comp: 'BD-0V-B', via: 'PT' }, 4.0,
+      'A ponte que faz os dois blocos serem um nó só.'),
+    classe: 'comum', func: 'zero', rota: ['CH-base', 'CV-dir', 'CH-topo'],
+    nome: '⭐ ponte entre os blocos de 0 V',
+    aviso: '⚠️ 4 mm², e é a MAIOR bitola do painel depois da entrada. Não é pela corrente: '
+         + 'é para a queda ser desprezível e os dois blocos ficarem no mesmo potencial.' },
 ];
