@@ -427,7 +427,7 @@ export const COMPONENTES = [
   /* ════════════ TRILHO 2 — POTÊNCIA ════════════ */
   {
     id: 'BTS1', nome: 'BTS1 — driver de potência da PELTIER (frio)', trilho: 2,
-    resumoFuncao: '🔎 O QUE ELE FAZ: e a CHAVE DE CONTROLE da Peltier. Recebe os 24 V do BD-POT e entrega a pastilha em PWM de 1 Hz, na potencia que o PID pedir. Quem manda e o Arduino (D5 = quanto, D4 = pode ou nao). Devolve pelo R_IS uma amostra da corrente. ⚠ Ele e a chave de CONTROLE, nao a de SEGURANCA — quem corta de verdade e o KA2.',
+    resumoFuncao: '🔎 O QUE ELE FAZ: e a CHAVE DE CONTROLE da Peltier. Recebe os 24 V do BD-POT e entrega a pastilha em PWM de 20 kHz, na potencia que o PID pedir. Quem manda e o Arduino (D5 = quanto, D4 = pode ou nao). Devolve pelo R_IS uma amostra da corrente. ⚠ Ele e a chave de CONTROLE, nao a de SEGURANCA — quem corta de verdade e o KA2.',
     aConferir: '📐 NO DESENHO os 8 pinos de sinal aparecem em FILA ÚNICA, na borda. '
              + 'No módulo real eles são uma barra de 2 × 4. A ordem é a mesma; o que '
              + 'muda é só o desenho, para dar para ver qual fio entra em qual pino.',

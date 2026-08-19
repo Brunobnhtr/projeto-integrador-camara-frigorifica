@@ -140,7 +140,7 @@ eficiência.** Enquanto a corrente for uma onda quadrada, a penalidade de `I²` 
 
 | Etapa | O que fazer | Ganha | Custa |
 |---|---|---|---|
-| 1 | Chopping em **≥ 1 kHz** num Timer do Mega (⚠️ **não o Timer0**, que é do `millis()`) | acaba a ciclagem térmica da pastilha | ⚠️ **quebra a leitura do `IS`**, que hoje amostra no meio do pulso de 1 s — precisa de RC no `IS` ou amostragem sincronizada |
+| 1 ✅ | **ADOTADA em 18/08/2026** — 20 kHz nos Timers 3 e 4 ([Doc 40 §40.5](40_firmware_arduino.md)) | acaba a ciclagem térmica da pastilha | nada em componente. A leitura do `IS` deixou de ser instantânea e virou média — o RC já existia na PI-1 (1 kΩ interno do IBT-2 + 100 nF), e corta em 1,6 kHz |
 | 2 | **Filtro LC** na saída do BTS7960 — a meia-ponte com indutor e capacitor **é** um buck síncrono | os ~17 W de frio e o dissipador 8,7 K mais frio | um indutor que aguente 6 A contínuos sem saturar; recalcular L e C para ripple < 10 % |
 | 3 | Corrigir o modelo desta análise **antes** dos dois | o simulador passa a ser a evidência disso na defesa, em vez de contradizê-la | uma tarde |
 
@@ -160,8 +160,8 @@ derruba:
 - ✅ **Nada disso afeta o KA3, o KA4 nem a cadeia de segurança.** É análise de eficiência
   térmica, não de proteção.
 
-> 📌 **A decisão de projeto, registrada:** manter o modelo como está por enquanto, com esta
-> análise ao lado. O número da tabela do §40.9 é otimista em duty baixo e isso está
+> 📌 **A decisão de projeto, registrada:** a etapa 1 foi adotada (o PWM subiu de 1 Hz para
+> 20 kHz). O **modelo do simulador** continua como está por enquanto, com esta análise ao lado. O número da tabela do §40.9 é otimista em duty baixo e isso está
 > documentado aqui. Se a bancada medir o `Qc` real e ele não bater com a tabela, **esta é a
 > primeira coisa a olhar** — e a explicação já está escrita.
 

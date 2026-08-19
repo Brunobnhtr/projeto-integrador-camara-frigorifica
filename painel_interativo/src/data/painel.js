@@ -80,11 +80,11 @@ export const COMPONENTES = [
   {
     id: 'BTS1', nome: 'BTS7960 #1', trilho: 2, x: 40, categoria: 'driver',
     descricao: 'Driver de potência · FRIO (2× Peltier em série)',
-    detalhe: 'Recebe 24 V no B+ e chaveia a 1 Hz por PWM. O R_EN e o L_EN vão JUNTOS '
+    detalhe: 'Recebe 24 V no B+ e chaveia a 20 kHz por PWM. O R_EN e o L_EN vão JUNTOS '
            + 'no mesmo pino do Arduino, com pull-down de 10 kΩ soldado no próprio módulo.',
     tensao: '24V_POT', largura: 105,
     terminais: { 'B+': 'entrada 24 V', 'B-': 'retorno 0 V', 'M+': 'saída p/ Peltier',
-                 'M-': 'retorno da Peltier', 'RPWM': 'PWM 1 Hz', 'R_EN': 'habilita',
+                 'M-': 'retorno da Peltier', 'RPWM': 'PWM 20 kHz', 'R_EN': 'habilita',
                  'L_EN': 'habilita (junto com R_EN)', 'LPWM': '0 V', 'R_IS': 'diagnóstico de corrente',
                  'VCC': 'lógica 5 V', 'GND': 'lógica 0 V' },
   },
@@ -94,7 +94,7 @@ export const COMPONENTES = [
     detalhe: 'Mesmo módulo do BTS1. Intertravado por software: nunca liga junto com o frio.',
     tensao: '24V_POT', largura: 105,
     terminais: { 'B+': 'entrada 24 V', 'B-': 'retorno 0 V', 'M+': 'saída p/ PTC',
-                 'M-': 'retorno do PTC', 'RPWM': 'PWM 1 Hz', 'R_EN': 'habilita',
+                 'M-': 'retorno do PTC', 'RPWM': 'PWM 20 kHz', 'R_EN': 'habilita',
                  'L_EN': 'habilita (junto com R_EN)', 'LPWM': '0 V', 'R_IS': 'diagnóstico de corrente',
                  'VCC': 'lógica 5 V', 'GND': 'lógica 0 V' },
   },

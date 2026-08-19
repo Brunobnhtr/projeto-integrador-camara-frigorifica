@@ -1,6 +1,6 @@
 # CAMADA 4 · Doc 40 — Firmware do Arduino Mega
 
-> O software de controle em tempo real: máquina de estados, PID com PWM lento, intertravamento, START/STOP pelo botão ou pela IHM, watchdog, proteções e registro em SD.
+> O software de controle em tempo real: máquina de estados, PID com PWM de 20 kHz, intertravamento, START/STOP pelo botão ou pela IHM, watchdog, proteções e registro em SD.
 >
 > ✅ **Pré-requisito:** Camada 3 concluída e ensaiada. **Grave e teste o firmware em bancada antes de instalar tudo na maquete.**
 
@@ -36,7 +36,7 @@ O Arduino faz isso naturalmente **490 vezes por segundo**. Para a nossa Peltier,
 
 > Cada liga-desliga dá um pequeno **choque térmico** na pastilha. A 490 Hz são 490 choques por segundo — milhares de ciclos que a fadigam e descolam as junções internas. O fabricante recomenda corrente contínua ou chaveamento **muito lento**.
 
-Então usamos **1 Hz**: um ciclo por segundo. Duty de 30 % significa "ligada 0,3 s, desligada 0,7 s, e repete". Como a câmara leva **minutos** para mudar de temperatura, ela nem percebe essa ondulação — mas a pastilha agradece.
+Então chaveamos em **20 kHz** — rápido o bastante para a pastilha ver corrente constante, acima da audição e dentro do limite do BTS7960. ⚠️ **A versão anterior usava 1 Hz, e estava errada:** 1 Hz é justamente a velocidade que faz a junção da pastilha ciclar termicamente. O porquê está na §40.5.
 
 ### O que é uma máquina de estados
 
@@ -148,10 +148,10 @@ E existe uma regra que atravessa tudo:
 #include <PID_v1.h>
 
 // ---------- ATUADORES (BTS7960) — ALIMENTADOS EM 24 V ----------
-#define BTS1_RPWM     5    // 2x PELTIER EM SERIE (FRIO)  24 V / 6,0 A - PWM lento
+#define BTS1_RPWM     5    // 2x PELTIER EM SERIE (FRIO)  24 V / 6,0 A - PWM 20 kHz (Timer3)
 #define BTS1_REN      4    // Peltier  enable
 #define BTS1_IS      A0    // Peltier  diagnóstico de corrente (cap 100 nF na PI-1)
-#define BTS2_RPWM     6    // PTC 24 V (QUENTE)            24 V / 3,3 A - PWM lento
+#define BTS2_RPWM     6    // PTC 24 V (QUENTE)            24 V / 3,3 A - PWM 20 kHz (Timer4)
 #define BTS2_REN      7    // PTC      enable
 #define BTS2_IS      A1    // PTC      diagnóstico de corrente (cap 100 nF na PI-1)
 
@@ -253,7 +253,7 @@ inline void cortarPotencia()    { digitalWrite(HAB_POTENCIA, LOW);
 inline void autorizarPotencia() { digitalWrite(HAB_POTENCIA, HIGH); }
 
 // ---------- PARÂMETROS DE PROCESSO ----------
-const unsigned long JANELA_PWM_MS      = 1000;          // PWM lento de 1 Hz
+const uint16_t      PWM_TOP            = 799;           // 20 kHz nos Timers 3 e 4
 const unsigned long INTERVALO_TROCA_MS = 30000;         // 30 s entre frio<->quente
 const double        BANDA_MORTA        = 5.0;           // % de duty (~0,6 °C com Kp=8)
 const double        DUTY_MAXIMO        = 95.0;          // limite de segurança
@@ -356,58 +356,136 @@ char   alerta[24] = "";
 
 ---
 
-## 40.5 PID e PWM lento
+## 40.5 PID e PWM de 20 kHz
 
-### Por que PWM de 1 Hz
+### Por que 20 kHz — e por que 1 Hz estava errado
 
-O PWM nativo do Arduino roda a ~490 Hz ou ~980 Hz. Isso é **péssimo** para os dois atuadores:
+> ⚠️ **Esta seção foi corrigida em 18/08/2026.** O projeto usava PWM de **1 Hz**, com a
+> justificativa de que cada liga-desliga daria um choque térmico na pastilha, e que a 490 Hz
+> seriam 490 choques por segundo. **A justificativa estava invertida** — a análise completa está
+> no [Doc 43 §43.5](43_analise_modelo_termico.md).
 
-| Atuador | Problema com PWM rápido |
-|---|---|
-| **Peltier** | Cada ciclo liga/desliga provoca um micro-choque térmico na junção. Milhares de ciclos por segundo causam **fadiga mecânica e descolamento** da pastilha. Fabricantes recomendam corrente contínua ou chaveamento **muito lento** |
-| **PTC** | A constante de tempo térmica é de vários segundos — chavear a 1 kHz não muda nada, só gera EMI |
+O raciocínio certo tem duas partes, e elas respondem a perguntas diferentes:
 
-Com **1 Hz**, cada ciclo dura 1 s: a Peltier fica ligada por `duty%` de cada segundo. A inércia térmica da câmara (constante de tempo de minutos) filtra completamente essa ondulação.
+| Pergunta | Resposta | O que resolve |
+|---|---|---|
+| **Com que frequência chavear?** | **Alta** — acima da constante de tempo térmica da junção, para que ela veja corrente constante | a **fadiga** da pastilha |
+| **Chavear ou reduzir a corrente?** | Reduzir seria melhor, mas custa um filtro LC de 6 A | o **rendimento** (COP) |
 
-> ⚠️ **Esta justificativa está sob revisão, e o [Doc 43](43_analise_modelo_termico.md) explica por quê.** Em resumo: a 490 Hz a massa térmica da pastilha filtra tudo e a junção **não cicla** — quem a faz ciclar termicamente é justamente 1 Hz. E o ganho real não está na frequência: está em **reduzir a corrente em vez de picotá-la**, o que vale ~17 W de frio e um dissipador 8,7 K mais frio. **O código não mudou** — a decisão está registrada no Doc 43 §43.6.
+A 1 Hz a junção da pastilha **cicla termicamente de verdade**: 1 s é da ordem da constante de
+tempo dela, então ela esquenta e esfria a cada ciclo. As juntas internas são soldadas com BiSn a
+138 °C, e a ciclagem térmica é o principal modo de falha citado pelos fabricantes. A 20 kHz a
+massa térmica filtra completamente — a junção vê corrente eficaz constante e **não cicla**.
 
-### Código
+**O que subir a frequência NÃO resolve:** enquanto a corrente for onda quadrada, a perda Joule
+continua proporcional ao valor eficaz, e o quadrado da média é sempre menor que a média dos
+quadrados. São ~34 W de perda a mais em 60 % de duty ([Doc 43 §43.4](43_analise_modelo_termico.md)).
+Resolver isso exige **corrente contínua**: filtro LC dimensionado para 6 A, ou fonte de corrente.
+
+> 📌 **Decisão registrada:** adotamos **20 kHz** (etapa 1 da escada do Doc 43 §43.5), que custa
+> zero componente e elimina a ciclagem térmica. A etapa 2 — o filtro LC — **não foi adotada**: um
+> indutor que aguente 6 A contínuos sem saturar é caro, grande, e seria mais um componente solto
+> num projeto que está indo na direção contrária. O ganho de rendimento fica documentado como
+> trabalho futuro, com a conta pronta.
+
+### Por que exatamente 20 kHz
+
+| Limite | Valor | Por quê |
+|---|---|---|
+| Piso | ~18 kHz | **acima da audição** — a maquete é apresentada numa sala silenciosa, e chiado de PWM em 8 kHz é o tipo de coisa que a banca ouve antes de ver |
+| Teto | 25 kHz | limite de chaveamento do **BTS7960**; acima disso as perdas de comutação do próprio driver crescem |
+
+20 kHz fica no meio, e sai exato de um timer de 16 bits do Mega: `16 MHz / 20 kHz = 800`.
+
+### Configuração dos timers
+
+Os pinos de PWM dos dois drivers são o **D5** (Timer3) e o **D6** (Timer4) — dois timers de 16
+bits, cada um com o seu driver, e **nenhum deles é o Timer0**, que é do `millis()`.
+
+```cpp
+/* PWM de 20 kHz nos dois BTS7960.
+   Fast PWM com TOP em ICR (modo 14): f = F_CPU / (N x (1 + TOP))
+   16.000.000 / (1 x 800) = 20.000 Hz   ·   resolucao de 800 passos
+
+   ATENCAO: nao use analogWrite() nestes pinos depois disto — ela
+   reescreve o modo do timer e derruba a frequencia para 490 Hz. */
+const uint16_t PWM_TOP = 799;          // 800 passos, contando o zero
+
+void setupPWM20kHz() {
+    pinMode(BTS1_RPWM, OUTPUT);        // D5 · OC3A · Timer3
+    pinMode(BTS2_RPWM, OUTPUT);        // D6 · OC4A · Timer4
+
+    // Timer3 — canal A, nao-invertido, Fast PWM com TOP = ICR3
+    TCCR3A = _BV(COM3A1) | _BV(WGM31);
+    TCCR3B = _BV(WGM33)  | _BV(WGM32) | _BV(CS30);   // prescaler 1
+    ICR3   = PWM_TOP;
+    OCR3A  = 0;
+
+    // Timer4 — idem
+    TCCR4A = _BV(COM4A1) | _BV(WGM41);
+    TCCR4B = _BV(WGM43)  | _BV(WGM42) | _BV(CS40);
+    ICR4   = PWM_TOP;
+    OCR4A  = 0;
+}
+
+/* duty em 0..100 % -> contagem do timer, com RAMPA.
+   A rampa nao e estetica: partida em degrau num par de Peltier em serie
+   puxa o pico de corrente inteiro de uma vez, e e esse pico que o
+   fusivel F1 enxerga. Subir em passos de 5 % espalha isso no tempo. */
+const uint8_t PASSO_RAMPA = 5;         // % por atualizacao
+uint8_t dutyAtual[2] = { 0, 0 };
+
+void aplicarDuty(uint8_t canal, uint8_t alvo) {
+    uint8_t &atual = dutyAtual[canal];
+    if      (alvo > atual) atual = min(alvo, (uint8_t)(atual + PASSO_RAMPA));
+    else if (alvo < atual) atual = (atual > PASSO_RAMPA) ? atual - PASSO_RAMPA : 0;
+
+    uint16_t conta = (uint32_t)atual * PWM_TOP / 100;
+    if (canal == 0) OCR3A = conta;     // Peltier
+    else            OCR4A = conta;     // PTC
+}
+```
+
+### O que isso mudou na leitura de corrente
+
+O `IS` de cada BTS7960 entrega uma corrente proporcional à da carga, e o módulo IBT-2 já traz
+~1 kΩ nesse pino. Com o **100 nF** da PI-1 (C1 e C2), o filtro corta em
+`1 / (2π × 1 kΩ × 100 nF) ≈ 1,6 kHz` — doze vezes abaixo da portadora.
+
+| | PWM de 1 Hz | PWM de 20 kHz |
+|---|---|---|
+| O que o A0 lia | o valor **instantâneo**, e só valia dentro do tempo ligado | a **média** da corrente |
+| Papel do capacitor | filtrar ruído captado pelo cabo | ⭐ **integrar a corrente picotada** — virou parte da medição |
+| Cuidado no firmware | amostrar sincronizado com a janela | nenhum: pode ler a qualquer momento |
+
+> ⭐ **O C1 e o C2 ficaram mais importantes com esta mudança, não menos.** Sem eles, a 20 kHz o
+> A/D lê um pedaço qualquer da onda e o diagnóstico de corrente vira ruído.
+
+### Código do PID
 
 ```cpp
 double setpoint = 5.0;     // °C — vem da tela ou do MQTT
 double entrada  = 0.0;     // °C — DS18B20
-double saidaPID = 0.0;     // −100 (frio máximo) .. +100 (quente máximo)
+double saidaPID = 0.0;     // -100 (frio maximo) .. +100 (quente maximo)
 
 double Kp = 8.0, Ki = 0.2, Kd = 1.0;
 PID meuPID(&entrada, &saidaPID, &setpoint, Kp, Ki, Kd, DIRECT);
 
-unsigned long inicioJanela = 0;
-
 void setupPID() {
-    meuPID.SetOutputLimits(-100, 100);   // saída BIPOLAR
-    meuPID.SetSampleTime(1000);          // recalcula a 1 Hz
+    meuPID.SetOutputLimits(-100, 100);   // saida BIPOLAR
+    meuPID.SetSampleTime(1000);          // recalcula a 1 Hz — o processo e lento
     meuPID.SetMode(AUTOMATIC);
-    inicioJanela = millis();
-}
-
-// Mantém a janela de 1 s alinhada, sem acumular deriva
-void atualizarJanelaPWM() {
-    unsigned long agora = millis();
-    while (agora - inicioJanela >= JANELA_PWM_MS) inicioJanela += JANELA_PWM_MS;
-}
-
-// true enquanto estivermos dentro do tempo ligado da janela atual
-bool pwmLentoAtivo(double duty) {
-    if (duty <= 0)   return false;
-    if (duty >= 100) return true;
-    unsigned long tOn = (unsigned long)((duty / 100.0) * JANELA_PWM_MS);
-    return (millis() - inicioJanela) < tOn;
 }
 ```
 
-> 💡 **Saída bipolar:** como o PID está em modo `DIRECT`, a saída fica **positiva quando falta calor** (temperatura abaixo do setpoint → aquecer) e **negativa quando sobra** (→ resfriar). Uma única malha resolve os dois modos, e o **sinal da saída escolhe o atuador**. É mais simples e mais estável do que manter dois PIDs separados.
+> 💡 **O PID continua recalculando a 1 Hz, e isso está certo:** a constante de tempo da câmara é
+> de minutos. O que era 1 Hz e virou 20 kHz é o **chaveamento**, não o cálculo. São duas coisas
+> diferentes que a versão anterior deste documento misturava.
 
----
+> 💡 **Saída bipolar:** como o PID está em modo `DIRECT`, a saída fica **positiva quando falta
+> calor** (temperatura abaixo do setpoint) e **negativa quando sobra**. Uma única malha resolve os
+> dois modos, e o **sinal da saída escolhe o atuador**.
+
 
 ## 40.6 Intertravamento e seleção de modo
 
@@ -1295,7 +1373,7 @@ void loop() {
 - [ ] Após a emergência ser destravada, **a energia não volta** (é hardware — medir 0 V no BD-POT)
 - [ ] Após o REARME, a energia volta mas **o processo continua parado**
 - [ ] Divisor do `POTENCIA_OK` medido: ~3,8 V com o KA1 fechado, ~0 V com a emergência acionada
-- [ ] PWM lento verificado com osciloscópio ou LED: 1 Hz, duty variável
+- [ ] PWM verificado com osciloscópio: **20 kHz ± 5 %** nos dois pinos, com duty variável. Sem osciloscópio: **não pode haver chiado audível**, e o LED do driver não pode piscar
 - [ ] **Intertravamento validado:** com o osciloscópio nos dois `RPWM`, nunca há sobreposição
 - [ ] Intervalo de 30 s na troca de modo verificado com cronômetro
 - [ ] `FATOR_CORRENTE` calibrado com medição real e anotado

@@ -94,7 +94,7 @@ export const FIOS_ETAPA4 = [
 
   /* ── comando dos BTS ──────────────────────────────────────────────── */
   { ...sig('S11', meg('D5'), { comp: 'BTS1', via: 'R_PWM' },
-      'O PWM lento que comanda as Peltier.'), nome: 'PWM do frio',
+      'O PWM de 20 kHz que comanda as Peltier.'), nome: 'PWM do frio',
     rota: ['CH-topo', 'CV-dir', 'CH-3x2'],
     porque: 'Lento de propósito: cada liga-desliga é um choque térmico na pastilha.' },
   { ...sig('S12', meg('D4'), { comp: 'BTS1', via: 'R_EN' },
