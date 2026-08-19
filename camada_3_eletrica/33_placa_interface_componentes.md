@@ -373,28 +373,21 @@ projeto, com sobra:
 ⭐ **A PI-1 encolheu pela metade** quando o ULN2803A saiu: ela tinha 34 × 29 furos e uma caixa DIN
 de 6 módulos; hoje tem 22 × 22 e cabe numa de 4 módulos. A PI-2 não mudou.
 
-### Por que 29 fileiras, e não mais
+### A altura é o teto; a largura é escolha
 
-Porque **a caixa DIN limita a altura, não a largura**. Uma caixa modular aceita placa de até ~74 mm de altura, seja ela de 4, 6 ou 12 módulos — a altura é padronizada pelo trilho. Então:
+Uma caixa modular DIN aceita placa de até **~74 mm de altura**, seja ela de 4, 6 ou 12 módulos —
+a altura é padronizada pelo trilho. A largura é que muda com o número de módulos.
 
-> ⭐ **A placa cresce em largura, nunca em altura.** 29 fileiras (73,7 mm) é o teto; as colunas é que dão o espaço extra.
+| Placa | Furos | Tamanho | Caixa DIN |
+|---|---|---|---|
+| **PI-1** | 22 × 22 | 56 × 56 mm | **4 módulos** |
+| **PI-2** | 34 × 29 | 86 × 74 mm | 6 módulos |
 
-### O que a largura extra comprou
+⭐ **A PI-1 tinha 34 × 29 e uma caixa de 6 módulos** — encolheu quando o ULN2803A e as 9 vias dos
+sinaleiros saíram ([§33.8](#338--decisão-revisada--sinaleiros-de-5-v-no-painel-leds-de-5-v-na-maquete)).
+Sobrou espaço no trilho 3, que é onde o módulo do sensor de tensão caberia se um dia o divisor do
+D25 também sair da placa.
 
-| | Antes (24 col · 61 mm) | **Agora (34 col · 86 mm)** |
-|---|---|---|
-| Área | 4 500 mm² | **6 370 mm² (+42 %)** |
-| Caixa DIN | 4 módulos | **6 módulos** |
-| Fiação | fios retos, cruzando no meio | **canais separados, em ângulo reto** |
-
-⚠️ **A caixa mudou de 4M para 6M**, e isso teve consequência no painel: as duas placas de 105 mm não cabiam no trilho 3 junto com o Arduino e o DNLCB30. **O DNLCB30 desceu para o trilho 2.**
-
-| Trilho | Antes | Agora |
-|---|---|---|
-| 3 — Controle | Mega · PI-1 · DNLCB30 · PI-2 = 370 mm | Mega · PI-1 · PI-2 = **344 mm** |
-| 2 — Potência | 262 mm | + DNLCB30 = **358 mm** |
-
-📌 O DNLCB30 conversa com o Mega por UART. Descer um trilho acrescenta uns 130 mm ao par TX/RX — irrelevante a 115200 baud. Mas ele passa a ficar perto dos BTS, então **esse par vai pela canaleta de sinal, nunca junto da saída dos BTS**.
 
 ### Como cortar sem lascar
 
@@ -404,105 +397,23 @@ Porque **a caixa DIN limita a altura, não a largura**. Uma caixa modular aceita
 4. Quebre apoiando na **quina da bancada**, com a linha do risco na borda
 5. Passe uma lixa fina na aresta
 
+> 💡 **Guarde as sobras.** Elas servem de gabarito — encaixe os bornes nelas primeiro para conferir o espaçamento das vias antes de soldar na placa boa — e ainda viram o corpo das duas placas simuladoras de DUT.
+
 > ⚠️ **Conte os furos quando a placa chegar.** Há versões de 9 × 15 cm com **35 × 59**. Se a sua vier assim, sobra uma coluna e uma fileira — o layout cabe igual. O `npm run valida:pi2` compara os dois números e reprova se não couber.
 
-### 🔎 O que os desenhos do aplicativo mostram
+### 🔎 O desenho da placa está no aplicativo, e não aqui
 
-Na aba **"Dentro do painel"**, clicando na PI-1 ou na PI-2 e depois em **"Ver a placa e como soldar"**, aparecem os **dois lados separados**:
+Aba **🔧 Dentro do painel** → clique na PI-1 ou na PI-2. A tela mostra os **dois lados** da placa
+(componentes em cima, fiação por baixo), cada **furo é clicável** e diz o que existe nele e a que
+está ligado, e há uma caixa de conferido por jumper soldado. O endereço de cada furo segue a
+convenção de planilha — coluna em letra, fileira em número, e o campo *"ir para célula"* aceita
+`N6` direto.
 
-| Lado | O que tem | Como é desenhado |
-|---|---|---|
-| 🔺 **Componentes** (cima) | bornes, resistores, capacitores, CI ou módulos | como você vê na bancada |
-| 🔻 **Solda** (baixo) | barramento de 0 V, pontes de nó, **todos os fios** | ⚠️ **ESPELHADO** |
+**Por que não repetir o desenho aqui:** ele é gerado do `pi1_fisico.js` e do `pi2_fisico.js`, os
+mesmos arquivos que os validadores conferem. Um desenho em ASCII neste documento seria uma segunda
+versão da verdade — e, quando a placa mudasse, ele ficaria errado em silêncio. Foi exatamente o
+que aconteceu com a versão anterior desta seção.
 
-> 🔥 **Por que o lado de baixo é espelhado.** Porque é assim que você o enxerga quando **vira a placa na mão**: a coluna 1, que estava à esquerda, passa para a direita. Um desenho não espelhado obriga você a fazer essa inversão de cabeça a cada fio — e é a **causa número um de fio soldado no furo errado**.
->
-> Os dois desenhos trazem um **marco vermelho no furo (1,1)**. Em cima ele fica à esquerda, embaixo à direita.
-
-### 🌉 Os fios andam em ângulo reto, e a lombada diz quem passa por cima
-
-Os fios não são desenhados em linha reta de um furo ao outro. Cada um **acompanha as fileiras e colunas de furos** e ocupa um **canal horizontal só seu** — o mesmo princípio das canaletas do painel, aplicado à placa.
-
-**Onde um fio precisa cruzar outro, ele ganha uma lombada em arco.** É a convenção de esquema elétrico:
-
-```
-        ╭─╮                    quem tem a LOMBADA passa POR CIMA
-   ─────╯ ╰─────               quem passa RETO fica POR BAIXO
-         │
-         │
-```
-
-📌 Na prática os dois fios encostam mesmo — são isolados, então não há curto. A lombada existe para **você conseguir seguir um fio até o fim** sem perdê-lo no cruzamento.
-
-📋 A lateral traz a **lista dos fios** com o comprimento a cortar — que é o do **caminho em ângulo reto**, não o da linha reta, mais 15 mm para descascar e sobrar folga — e uma **caixa para riscar** conforme você solda, salva no navegador.
-
----
-
-### 🔤 A placa é endereçada como uma planilha
-
-Coluna em **letra**, fileira em **número**. O furo da coluna 11, fileira 6, é a célula **K6**. Passando de Z, continua **AA, AB, AC** — igual ao Excel.
-
-```
-      A  B  C  D  E  F  G  H  I  J  K  L  M  N ...
-   1  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·
-   2  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·
-   ...
-   6  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ●━━●━━●━━●     ← nó 1-Wire, K6 a N6
-```
-
-> ⭐ **Por que isto importa mais do que parece.** "Furo 11,6" e "furo 6,11" se trocam sozinhos na cabeça de quem está com o ferro de solda na mão — qual dos dois era a coluna? **"K6" não tem como inverter.**
-
-⚠️ **O endereço é do FURO, não da vista.** `K6` é o mesmo furo olhando a placa por cima ou por baixo. No lado da solda, o que muda é que **as letras correm ao contrário** — porque a placa virou, não porque o endereço mudou.
-
-### Clique em qualquer furo e ele se explica
-
-Escolhendo `L6` no desenho, o painel responde:
-
-```
-   CÉLULA L6                     coluna L (12) · fileira 6
-
-   O QUE TEM NESTE FURO
-     nó 1-Wire · sai o fio para J2-3 (D2)
-
-   FIOS QUE CHEGAM AQUI
-     fio 6  vai até  F28  — nó 1-Wire → sai D2
-
-   🔗 ponte de fio nu do nó 1-Wire, unindo K6 a N6
-
-   É O MESMO PONTO ELÉTRICO QUE
-     F2   J1-3 · DATA
-     F28  J2-3 · D2
-     K6   nó 1-Wire · chega o fio de J1-3 (DATA)
-     N6   R3 · 4,7 kΩ · perna 1        ⭐ É O RESISTOR
-
-   ATRAVESSANDO UM COMPONENTE, CHEGA EM
-     R3 · 4,7 kΩ  →  R6  ·  H2 J1-4 (+5 V)
-```
-
-**É essa lista que responde a pergunta difícil.** Olhando só o desenho, dá para ver que existe um nó na fileira 6 — mas não dá para saber *o que* está pendurado nele. A lista diz: o borne de entrada `J1-3`, o de saída `J2-3` e **a perna esquerda do R3**, na célula `N6`. E atravessando o R3 chega-se no `+5 V`.
-
-### Também dá para clicar na letra ou no número
-
-Clicar numa **letra** de cima acende a coluna inteira; clicar num **número** da lateral faz o mesmo com a fileira. É como selecionar a linha 6 de uma planilha para ver todas as células preenchidas dela.
-
-Selecionando a **fileira 6** da PI-1, saem os 13 pontos que existem nela:
-
-| Célula | O que é |
-|---|---|
-| `K6` `L6` `N6` | nó 1-Wire — entrada, saída e a perna do R3 |
-| `N6` `R6` | as duas pernas do **R3 · 4,7 kΩ** |
-| `Z6` `AA6` `AB6` `AC6` | nó D25 |
-| `AA6` | perna do **C3 · 100 nF** |
-| `AB6` | perna do **R2 · 4,7 kΩ** |
-| `AC6` `AG6` | as duas pernas do **R1 · 22 kΩ** |
-
-📌 Repare que a mesma célula aparece duas vezes quando ela é ao mesmo tempo ponta de nó e perna de componente — `N6` é o furo do nó 1-Wire **e** a perna 1 do R3. É exatamente essa coincidência que responde "a que o fio se liga".
-
-⌨️ Há também um campo **"ir para célula"**: digite `N6` e dê Enter.
-
-### O que saiu
-
-Duas telas foram removidas por não estarem ajudando: o "Siga o sinal" e o "Como cada perna é ligada". Ambas mostravam a informação certa **longe da placa** — e a pergunta de quem está soldando é sempre *"o que tem NESTE furo aqui"*. O inspetor de célula responde isso no lugar onde a dúvida aparece.
 
 ### 🔩 Qual borne comprar — e a armadilha dos 5,00 mm
 
@@ -541,33 +452,6 @@ Os KF301 têm **rabo de andorinha nas laterais**: blocos de 2 e de 3 vias desliz
 ⚠️ **Procure por:** `KF301-5.08 2P`, `KF301-5.08 3P`, ou no Brasil `borne KRE 5,08mm 2 vias`. Confira que o anúncio menciona **encaixável / splicable**, senão os blocos não deslizam um no outro.
 
 📌 **Corrente:** o KF301-5.08 é de 10 A / 300 V e aceita fio de 0,13 a 1,5 mm². Os fios que chegam nele são de 0,25 a 0,5 mm² e a maior corrente é de dezenas de miliampères — sobra de tudo. O que decide aqui é a **geometria**, não a corrente.
-
-### Como cortar sem lascar
-
-1. Marque a **fileira 30** — a primeira que sai
-2. Risque com **estilete apoiado numa régua de metal**, na linha **entre** furos, nunca em cima deles
-3. Risque dos **dois lados** da placa, 3 ou 4 passadas em cada
-4. Quebre apoiando na **quina da bancada**, com a linha do risco na borda
-5. Passe uma lixa fina na aresta
-
-> 💡 **Guarde a tira que sai** (24 × 7 furos). Ela serve de **gabarito**: encaixe os bornes nela primeiro para conferir o espaçamento das vias antes de soldar na placa boa. Errar o passo do borne na sobra não custa nada.
-
-### 🔎 O que os desenhos do aplicativo mostram
-
-Na aba **"Dentro do painel"**, clicando na PI-1 ou na PI-2 e depois em **"Ver a placa e como soldar"**, aparecem os **dois lados separados**:
-
-| Lado | O que tem | Como é desenhado |
-|---|---|---|
-| 🔺 **Componentes** (cima) | bornes, resistores, capacitores, CI ou módulos | como você vê na bancada |
-| 🔻 **Solda** (baixo) | barramento de 0 V, pontes de nó, **todos os fios** | ⚠️ **ESPELHADO** |
-
-> 🔥 **Por que o lado de baixo é espelhado.** Porque é assim que você o enxerga quando **vira a placa na mão**: a coluna 1, que estava à esquerda, passa para a direita. Um desenho não espelhado obriga você a fazer essa inversão de cabeça a cada fio — e é a **causa número um de fio soldado no furo errado**.
->
-> Os dois desenhos trazem um **marco vermelho no furo (1,1)**. Confira esse marco antes de soldar cada fio: em cima ele fica à esquerda, embaixo à direita. Se os dois estiverem do mesmo lado na sua cabeça, pare.
-
-📋 A lateral traz a **lista dos fios** com o comprimento a cortar (distância entre furos + 15 mm para descascar e sobrar folga) e uma **caixa para riscar** conforme você solda. As marcações ficam salvas no navegador — dá para fechar e voltar no dia seguinte.
-
----
 
 ## 33.4 A Placa de Interface PI-1 — construção
 
