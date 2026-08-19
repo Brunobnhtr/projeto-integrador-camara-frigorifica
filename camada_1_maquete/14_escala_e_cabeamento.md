@@ -10,7 +10,11 @@
 
 **Não, os 50 cabos não entram no painel.** Eles param antes, numa placa que fica **junto da câmara** — e do painel até ela vão **nove fios**, não cem.
 
-E a placa que faz isso é **a mesma PI-2** que você vai montar com 2 posições. Muda o número de canais ligados e o lugar onde ela é parafusada. **O projeto dela é o mesmo.**
+⚠️ **Na versão em que este documento foi escrito, essa placa era a PI-2** — a que media a corrente
+das posições. Ela deixou de existir: com a detecção digital, a placa junto da câmara passa a ser
+uma **régua de expansores MCP23017**, que lê os contatos e devolve tudo por 4 fios
+([Doc 13 §13.9](13_posicoes_de_ensaio.md)). **A lógica de cabeamento abaixo não muda** — muda o que
+está dentro da caixa.
 
 ---
 
@@ -121,7 +125,7 @@ Poderia-se fazer uma placa só com os 4 multiplexadores. Não se faz, por três 
 |---|---:|---:|
 | Posições | 2 | 50 |
 | Multiplexadores | **1** (14 canais livres) | **4** |
-| Placas de medição | **1 — a PI-2** | 4, mesmo projeto |
+| Placas junto da câmara | **1** (hoje: o sensor no painel) | 4 réguas de MCP23017 |
 | Onde ela fica | **no painel** | na parede da câmara |
 | Fios painel ↔ medição | **4** (2 pos. × 2) | **9** |
 | Pinos do Arduino | 5 | **8** |

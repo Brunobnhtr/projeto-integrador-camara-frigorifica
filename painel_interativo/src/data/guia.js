@@ -27,7 +27,7 @@ export const FASES = [
     onde: 'mesa de trabalho',
   },
   {
-    id: 'B', nome: 'As duas placas', icone: '🟫',
+    id: 'B', nome: 'A placa PI-1', icone: '🟫',
     resumo: 'A PI-1 sai de um canto da placa ilhada comprada. Solda-se na ordem que '
           + 'deixa cada peça acessível: o barramento reto primeiro, os componentes depois.',
     onde: 'bancada, com ferro de solda',
@@ -68,7 +68,7 @@ export const PASSOS = [
       'Risque dos DOIS lados, com o estilete apoiado na régua, na linha ENTRE furos — nunca em cima da fileira de furos.',
       'Apoie a placa na quina da bancada, alinhe o risco com a quina e quebre com um movimento firme.',
       'Corte um retângulo de 22 × 22 furos: é a PI-1 inteira. O resto é sobra, e ela tem uso.',
-      'Passe a lixa nas bordas cortadas até ficarem retas. Guarde as sobras — são o corpo das placas dos DUTs.',
+      'Passe a lixa nas bordas cortadas até ficarem retas. Guarde as sobras — são o corpo da placa do DUT.',
     ],
     confira: 'PI-1 com 22 × 22 furos, bordas retas, e as sobras guardadas.',
     seErrar: 'Cortou torto ou lascou: sobra placa de sobra — a PI-1 usa menos de um quarto da que você comprou. Corte outro retângulo e siga.',
@@ -296,7 +296,7 @@ export const PASSOS = [
     faca: [
       'Confira aperto de todos os bornes — puxando o fio, não olhando.',
       'Meça isolação entre 24 V e 0 V: tem que dar alta resistência, nunca zero.',
-      'Confira que as duas placas de interface NÃO estão encaixadas ainda.',
+      'Confira que a placa PI-1 NÃO está encaixada ainda.',
     ],
     confira: 'Nenhum curto entre barramentos, e nenhum fio solto ao puxar.',
     seErrar: 'Um curto encontrado aqui custa minutos. O mesmo curto encontrado energizado custa a fonte.',
@@ -309,7 +309,7 @@ export const PASSOS = [
       'Energize só a fonte de 24 V, com os três fusíveis de ramal ainda FORA. Meça 24 V na saída.',
       'Ponha o F2 e ajuste o LM2596 de 5 V com o multímetro ANTES de ligar qualquer eletrônica: 5,10 V.',
       'Ponha o F3 e ajuste o LM2596 de 12 V: 12,0 V.',
-      '⭐ Só depois de os dois estarem ajustados é que o Arduino, o ESP32 e as placas entram.',
+      '⭐ Só depois de os dois estarem ajustados é que o Arduino, o ESP32 e a PI-1 entram.',
       'Ponha o F1 (potência) por último.',
     ],
     confira: '5,10 V e 12,0 V medidos com carga, e 24 V no BD-24V.',

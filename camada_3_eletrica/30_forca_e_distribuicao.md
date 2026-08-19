@@ -298,7 +298,7 @@ Num painel de verdade **não existem 24 cores de fio**. A cor diz **que circuito
 | 🔴 **vermelho** | +24 V de **POTÊNCIA** | entra pelo PG9-1, passa pelo KA2, alimenta o BD-POT e os dois BTS. **Cai na emergência** |
 | 🟠 **laranja** | +24 V de **SERVIÇOS** | cadeia de comando, DNLCB30, sinaleiros, posições de ensaio. **Permanece energizado** |
 | 🟡 amarelo | +12 V auxiliar | do T3 até o MV-1 |
-| 🟣 violeta | +5 V de lógica | Arduino, tela, RTC, PI-1, PI-2, lado de comando do MV-1 |
+| 🟣 violeta | +5 V de lógica | Arduino, tela, RTC, PI-1, sensor de corrente, lado de comando do MV-1 |
 | 🔵 azul escuro | 0 V comum | todos os retornos |
 | 🟢 verde | analógico e medição | IS dos BTS, SIG do mux, retornos das posições |
 | ⚫ cinza | sinal digital | Arduino ↔ módulos |

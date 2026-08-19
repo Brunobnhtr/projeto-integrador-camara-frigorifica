@@ -73,15 +73,19 @@ Uma analogia: é a diferença entre um disjuntor e um monitor cardíaco. **O dis
 O edital diz que os dispositivos ficam *"energizados e operando em modo de simulação funcional"*. Na maquete não temos as placas reais da empresa, então construímos **simuladores**: pequenas placas que fazem o que interessa para o ensaio — **consomem uma corrente conhecida e dissipam calor**.
 
 ```
-            PLACA SIMULADORA DE DUT  (uma por posição)
+            PLACA SIMULADORA DE DUT
 
-   +24 V ──[ R · resistor ]──┤▶├── LED ──┐
-                                          │
-                                          └──► retorno, para o shunt na PI-2
+   +24 V ──[ R · 1,2 kΩ ]──┤▶├── LED ──┐
+    ↑                                    │
+    │ vem do fusível F-P, e antes         └──► retorno direto ao BD-0V · Z22
+    │ passa 10× pelo furo do sensor SC-1
 
-   POSIÇÃO 1 · LED vermelho · R = 1,2 kΩ  →  17,6 mA
-   POSIÇÃO 2 · LED verde    · R = 2,2 kΩ  →   9,8 mA
+   POSIÇÃO DE ENSAIO · LED vermelho · 17,6 mA
 ```
+
+⭐ **Repare no que mudou:** o retorno não vai mais para um shunt — ele é 0 V comum. Quem responde
+"tem corrente?" é o sensor **no painel**, e o fio que sai do fusível passa dez vezes pelo furo dele
+antes de vir para cá.
 
 | Elemento | Função no ensaio |
 |---|---|
@@ -650,7 +654,10 @@ O valor bruto da corrente continua sendo lido e gravado, mas por quem está pert
 
 É o mesmo princípio que já aplicamos no painel, na separação de canaletas de potência e sinal. Aqui ele aparece em escala maior: em vez de proteger o sinal analógico ao longo de 30 metros, **elimina-se o percurso analógico**.
 
-📌 **Repare que a nossa PI-2 já é um suporte instrumentado em miniatura** — 2 posições, medição junto da carga, e só o resultado saindo por um barramento digital (o I²C). A arquitetura da bancada e a da fábrica são a mesma; muda a contagem.
+📌 **E a nossa bancada já é um suporte instrumentado em miniatura** — a posição de ensaio, o sensor
+junto dela e só o resultado saindo em um fio digital. A arquitetura da bancada e a da fábrica são a
+mesma; muda a contagem, e na fábrica os expansores MCP23017 fazem o papel que o pino do Mega faz
+aqui ([§13.9](#139--o-projeto-em-escala-real--50-canais-com-mcp23017)).
 
 
 ### 🤔 E a alternativa mais barata de todas: perguntar à placa

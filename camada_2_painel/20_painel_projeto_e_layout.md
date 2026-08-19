@@ -304,7 +304,7 @@ O projeto declarava um **PG9** ali, com "capacidade: 14 fios" escrito à mão. R
                   └──────── por baixo da bancada ──────┴──► CÂMARA
 ```
 
-> ⭐ **O PG9-3 está embaixo da canaleta vertical de sinal de propósito.** O retorno das posições carrega os 17,6 mA que estão sendo medidos: ele desce pela `CV-dir`, atravessa o furo e vai embora — **sem entrar em nenhuma canaleta de potência em momento algum**. A segregação vale do borne da PI-2 até dentro da câmara.
+> ⭐ **O PG9-3 está embaixo da canaleta vertical de sinal de propósito.** Por ele saem os fios finos que não podem dividir percurso com a saída dos BTS: o 1-Wire, o I²C e o retorno da posição de ensaio. A segregação vale do borne até dentro da câmara.
 
 📐 **Veja no aplicativo:** aba "Dentro do painel". Botão **"🚪 Fechar a tampa"** encosta a câmara no painel e mostra os dois chicotes saindo pelo fundo e correndo por baixo até ela.
 
