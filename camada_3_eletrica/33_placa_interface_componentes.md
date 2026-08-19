@@ -509,92 +509,30 @@ o que fazer e o que medir em cada etapa. Não repetimos aqui: lista de montagem 
 lista que diverge.
 
 
-## 33.5 A Placa de Interface PI-2 — construção
+## 33.5 ~~A Placa de Interface PI-2~~ — a placa que deixou de existir
 
-> 🔧 **Veja o desenho furo por furo** na aba **"Dentro do painel"** do aplicativo: clique na PI-2 e depois em **"Ver a placa e como soldar"**.
+> 🗑️ **A PI-2 saiu do projeto em 19/08/2026**, e pelo mesmo motivo do ULN2803A: o problema que ela
+> resolvia deixou de existir.
 
-### O que muda em relação à PI-1
+Ela abrigava três peças — dois shunts de 47 Ω, um multiplexador CD74HC4067 e um INA219 de
+referência — e todas as três serviam para **medir** a corrente de cada posição de ensaio, para o
+firmware depois comparar com zero.
 
-| | PI-1 | **PI-2** |
+A pergunta do ensaio, porém, sempre foi de um bit: *a posição ainda funciona?* Com um sensor de
+corrente de **saída digital**, a resposta vem pronta num fio, e o pino do Arduino a lê direto
+([Doc 13 §13.4](../camada_1_maquete/13_posicoes_de_ensaio.md)).
+
+| | Com a PI-2 | Com o sensor digital |
 |---|---|---|
-| Componente ativo | CI **nu** num soquete DIP-18 | **2 módulos prontos**, em barra de pinos fêmea |
-| Discretos | 3 capacitores + 3 resistores | **2 shunts de 47 Ω** |
-| Bornes | 2 (11 + 8 vias) | **3 (4 + 2 + 7 vias)** |
-| Jumpers | 20 | **18** |
-| Caixa | DIN 4 módulos | DIN 4 módulos, mesma medida |
+| Peças | 2 shunts 1 % · mux 16 canais · INA219 · placa · caixa DIN | **1 módulo** |
+| Pinos do Mega | 4 de seleção + 1 analógico + I²C | **1 digital** |
+| Fios no painel | 6 | **1** |
+| O que o firmware faz | escolhe canal, lê A/D, converte, compara | `digitalRead()` |
 
-⭐ **Você não solda o CD74HC4067 nem o INA219.** Solda a **barra de pinos fêmea**; os módulos entram depois e podem sair. Isso importa na hora de testar: dá para conferir a placa toda em continuidade com os módulos fora, sem risco de queimar nada.
+> 🎓 **É a segunda vez neste documento que um circuito inteiro desaparece por causa de uma
+> pergunta.** No caso do ULN2803A foi *"e se o sinaleiro fosse de 5 V?"*; aqui foi *"para que medir,
+> se a resposta é sim ou não?"*. Nos dois casos, a peça não foi otimizada — ela perdeu a função.
 
-### Os 3 bornes
-
-| Borne | Vias | Borda | O que passa |
-|---|---:|---|---|
-| **J1** | 4 | cima | **Retornos** que voltam da câmara — RET-1 e RET-2 em uso, 2 de reserva |
-| **J2** | 2 | baixo | 0 V e +5 V |
-| **J3** | 7 | baixo | S0–S3, SIG, SDA, SCL — tudo que vai para o Arduino |
-
-📐 J2 (10,2 mm) e J3 (35,6 mm) **dividem a borda de baixo**: 45,7 mm nos 61 disponíveis.
-
-### 🔴 O caminho da corrente — leia isto antes de soldar
-
-```
-   posição 1:  J1-1 ──► INA219 VIN+ ─(por dentro)─► VIN− ──► nó RET-1 ──┐
-                                                                  │      │
-                                                       mux C0 ◄───┘   [R1 · 47 Ω]
-                                                                         │
-   posição 2:  J1-2 ─────────────────────────────────► nó RET-2 ──┐      │
-                                                            │     │      │
-                                                 mux C1 ◄───┘  [R2 · 47 Ω]
-                                                                  │      │
-                              barramento de 0 V ────────────────►─┴──────┘
-                                        │
-                                     J2-1 ──► BD-0V
-```
-
-**O que este desenho diz, em palavras:** a corrente da posição chega pelo retorno, atravessa o shunt e só então vira 0 V. A tensão que aparece **sobre o shunt** é a medição — e é o nó acima dele que o multiplexador lê.
-
-⚠️ **O positivo NUNCA entra nesta placa.** Ele vai do porta-fusível direto para a câmara.
-
-### 🔥 O jumper que não pode faltar
-
-**Jumper 10 — o pino `EN` do multiplexador ao barramento de 0 V.**
-
-O `EN` é ativo em nível **baixo**: em 0 V o mux funciona, em 5 V ele desliga todos os 16 canais. Como ele tem que ficar sempre ligado, o pino vai soldado direto no barramento — **não tem borne**, de propósito, para ninguém deixá-lo solto.
-
-> ⚠️ **Entrada CMOS solta não é "nível baixo" — ela oscila com o ruído.** O mux ligaria e desligaria sozinho, e as leituras dariam zero na maior parte do tempo. O sintoma seria **"todos os dispositivos morreram ao mesmo tempo"**, que é justamente o alarme de sistema. É o erro mais fácil de cometer e o mais difícil de diagnosticar nesta placa.
-
-O script `npm run valida:pi2` reprova o layout se este jumper não existir.
-
-### Por que só a posição 1 tem INA219
-
-Porque ele é o **instrumento de aferição**, não o método.
-
-> ⭐ **É a prova para a banca.** Se o INA219 e o canal C0 do multiplexador dão o mesmo número na posição 1, está demonstrado que o multiplexador mede certo — e portanto que as outras 15 posições, que não têm INA219 nenhum, também estão. Um instrumento calibrado validando um método barato.
-
-⚠️ A corrente passa **por dentro** do INA219, entre `VIN+` e `VIN−`. Não é um sensor que se encosta no fio: ele fica **no caminho**. Trocando VIN+ com VIN−, a leitura sai negativa.
-
-### Ordem de montagem
-
-1. Corte a placa em **24 × 29 furos** (≈ 61 × 74 mm) — mesma medida da PI-1
-2. Solde o **barramento de 0 V**: fio nu esticado na linha 11
-3. Solde os **três bornes**
-4. Solde as **barras de pinos fêmea** — sem os módulos encaixados
-5. Solde os dois **shunts em pé**: R1 em (2,6)→(2,11) e R2 em (7,6)→(7,11)
-6. Solde as **pontes de nó** dos nós RET-1 e RET-2
-7. ⚠️ Solde o **jumper 10** (EN → 0 V)
-8. Solde os outros **17 jumpers** por baixo, com fio **isolado** de 0,25 mm²
-9. Teste em continuidade **com os módulos fora**. Confira que RET-1 **não** tem continuidade com o 0 V se você tirar o R1
-10. Encaixe os módulos
-11. ⭐ **Afira:** com a posição 1 ligada, INA219 e canal C0 têm que dar a mesma corrente
-
-### 🔎 A conferir quando os módulos chegarem
-
-| O quê | Por quê |
-|---|---|
-| Comprimento da barra de 16 canais do mux | Reservei **16 furos (40,6 mm)** — de propósito generoso. Se o módulo vier menor, sobra espaço; se eu reservasse justo e viesse maior, a placa estaria errada |
-| Se o INA219 traz `VIN+/VIN−` em **borne de parafuso** | A maioria dos GY-219 traz. Nesse caso os furos (14,8) e (17,8) viram os do borne |
-
----
 
 ## 33.6 Os 10 kΩ integrados ao BTS7960
 

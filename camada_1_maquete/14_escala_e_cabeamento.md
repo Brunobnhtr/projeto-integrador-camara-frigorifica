@@ -14,6 +14,20 @@ E a placa que faz isso é **a mesma PI-2** que você vai montar com 2 posições
 
 ---
 
+> 📌 **Atenção ao ler este documento (19/08/2026).** Ele calcula quantos fios e quantos
+> multiplexadores seriam necessários para **medir** a corrente de 50 posições. A detecção passou a
+> ser **digital** — um bit por posição ([Doc 13 §13.4](13_posicoes_de_ensaio.md)) — e a conta muda
+> de natureza: em vez de multiplexar sinais analógicos, expandem-se entradas digitais.
+>
+> | Como | Pinos | Canais |
+> |---|---|---|
+> | Direto no Mega | 1 por canal | ~29 livres |
+> | 74HC165 | 3 | 8 por CI |
+> | **MCP23017 (I²C)** | **2** | **16 por CI** |
+>
+> ⭐ **Quatro MCP23017 dão 64 canais com 2 pinos**, no par I²C que já existe. O raciocínio de
+> cabeamento abaixo (quantos condutores saem da câmara, e por quê) continua valendo.
+
 ## 14.1 Quantos multiplexadores
 
 Cada CD74HC4067 atende **16 canais**.
