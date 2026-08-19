@@ -1,6 +1,12 @@
-# CAMADA 3 · Doc 33 — Placa de Interface e Componentes Discretos
+# CAMADA 3 · Doc 33 — Componentes Discretos e Módulos de Interface
 
 > **Este documento responde a uma pergunta específica:** *"se os módulos já vêm com proteção, por que ainda preciso pendurar resistor e capacitor neles?"*
+>
+> ⚠️ **E ele mudou de nome em 19/08/2026.** Chamava-se "Placa de Interface e Componentes
+> Discretos" — mas **não há mais placa**: ela foi eliminada em três etapas, cada uma porque o
+> problema que ela resolvia deixou de existir ([§33.4](#334--a-pi-1-deixou-de-existir--e-o-que-ficou-no-lugar-dela)).
+> Hoje todo componente discreto do projeto está **em borne ou dentro de módulo**, e nada é soldado
+> dentro do painel.
 >
 > A resposta curta é: **você não está adicionando proteções que faltaram. Você está construindo a interface entre dois equipamentos** — e a interface nunca vem pronta, porque o fabricante não sabe a que você vai ligar o produto dele.
 >
@@ -453,60 +459,54 @@ Os KF301 têm **rabo de andorinha nas laterais**: blocos de 2 e de 3 vias desliz
 
 📌 **Corrente:** o KF301-5.08 é de 10 A / 300 V e aceita fio de 0,13 a 1,5 mm². Os fios que chegam nele são de 0,25 a 0,5 mm² e a maior corrente é de dezenas de miliampères — sobra de tudo. O que decide aqui é a **geometria**, não a corrente.
 
-## 33.4 A Placa de Interface PI-1 — construção
+## 33.4 ⭐ A PI-1 deixou de existir — e o que ficou no lugar dela
 
-### Onde fica, e o que ela faz
+> 📌 **Decisão de 19/08/2026.** A placa que este documento ensinava a montar **não existe mais**.
+> Ela chegou ao fim de um caminho de três passos, e cada passo tirou uma peça pela mesma razão:
+> **o problema que a peça resolvia deixou de existir.**
 
-Caixa modular DIN de **4 módulos**, no trilho 3, ao lado do Arduino. A placa tem
-**22 × 22 furos** (56 × 56 mm) e faz **três** coisas — nenhuma delas é comandar potência:
-
-| Circuito | O que faz | Peças |
+| Quando | O que saiu | Por quê |
 |---|---|---|
-| **Filtros de corrente** | Limpa o sinal `IS` dos dois BTS antes de entrar em A0 e A1 | C1, C2 |
-| **Pull-up do 1-Wire** | Levanta a linha do DS18B20 — sem ele o sensor não responde | R3 |
-| **Divisor do D25** | Transforma os 24 V do BD-POT em 4,22 V, para o Arduino vigiar a emergência | R1, R2, C3 |
+| 18/08 | ULN2803A + soquete + 9 vias de borne | o sinaleiro virou de 5 V, e o pino aciona direto |
+| 19/08 | (a PI-2 inteira) | a detecção de falha virou um bit, sem medição |
+| 19/08 | R1 + R2 + C3, e o R3 | viraram **módulos comprados com borne de parafuso** |
 
-> ⭐ **Havia um quarto circuito** — o driver dos 4 sinaleiros — e ele saiu inteiro quando os
-> sinaleiros passaram para 5 V ([§33.8](#338--decisão-revisada--sinaleiros-de-5-v-no-painel-leds-de-5-v-na-maquete)).
-> Com ele foram o ULN2803A, o soquete, 9 vias de borne, 10 jumpers e 5 fios do painel.
+**Sobraram dois capacitores.** E dois capacitores não justificam uma placa: eles entram
+**parafusados num borne**, exatamente como o D1 entra na bobina do KA2.
 
-### Os dois bornes
+### O que existe hoje no lugar
 
-| Borne | Via | Sinal | De onde vem / para onde vai |
-|---|---:|---|---|
-| **J1 · ENTRADAS** | 1 | `IS#1` | BTS7960 #1 · pino `R_IS` |
-| | 2 | `IS#2` | BTS7960 #2 · pino `R_IS` |
-| | 3 | `DATA` | DS18B20 do radiador · fio de dados |
-| | 4 | `+5V` | BD-5V · saída 6 |
-| | 5 | `0V` | BD-0V |
-| | 6 | `24V-POT` ⚠️ | BD-POT · saída 3 — **comutado**, cai na emergência |
-| **J2 · SAÍDAS** | 1 | `A0` | Arduino A0 — corrente do Peltier #1 |
-| | 2 | `A1` | Arduino A1 — corrente do Peltier #2 |
-| | 3 | `D2` | Arduino D2 — 1-Wire |
-| | 4 | `D25` | Arduino D25 — vigia se o 24 V de potência caiu |
+| Era | Virou | O que muda na montagem |
+|---|---|---|
+| `R1` 22 kΩ + `R2` 4,7 kΩ + `C3` | **SV-1** — módulo sensor de tensão 0–25 V | borne de parafuso na entrada; **divide por 5**, e não por 5,68 |
+| `R3` 4,7 kΩ | **AD-1** — adaptador do DS18B20 | o pull-up vem dentro; a sonda vira três bornes |
+| `C1`, `C2` 100 nF | **BS-1** — três bornes de passagem | as pernas entram no parafuso, junto com o fio |
 
-⚠️ **O borne tem que ser de passo 5,08 mm** (KF301). O de 5,00 mm parece igual no anúncio e não
-encaixa na placa de 2,54 mm: a diferença acumula 0,4 mm a cada 5 vias e o último pino não entra.
+⚠️ **Os dois números que mudaram, e que o guia manda medir antes de ligar:**
 
-### 🔌 O 0 V é ÚNICO no projeto inteiro
+- **A saída do SV-1 dá ~4,8 V com 24 V na entrada** (o divisor soldado dava 4,22 V). Para o `D25`,
+  que é entrada **digital**, sobra folga. Para uma entrada analógica, e com a fonte acima de 25 V,
+  não sobraria — daí o passo **B-01** mandar medir.
+- **O pull-up do AD-1 tem que existir de verdade.** Há adaptadores anunciados "com pull-up" que
+  vêm sem o resistor. Ohmímetro entre `DAT` e `VCC`: **~4,7 kΩ**. Sem ele o DS18B20 fica mudo, com
+  sonda boa, fio bom e código bom — passo **B-02**.
 
-Os LM2596 **não são isolados**: o 0 V do 5 V, o do 12 V e o dos 24 V são o mesmo condutor. Por
-isso existe **um** BD-0V, e por isso o barramento de 0 V da placa é uma linha reta de fio nu, a
-primeira coisa que se solda. Não existe "terra da eletrônica" separado do "terra da potência"
-neste projeto — inventar um cria laço de terra, que é a origem clássica de leitura instável.
+### O que a troca custou, e por que valeu
 
-### 🔎 O desenho furo a furo está no aplicativo
+**Custou três fios.** Ligações que eram trilha de cobre dentro da placa viraram fio no painel: a
+referência do divisor, o 0 V da saída dele e o 0 V do adaptador. E custou espaço na barra de 0 V —
+cada módulo trouxe o seu retorno, a barra passou de 28 pontos e teve de virar **dois blocos
+ligados por ponte de 4 mm²** ([Doc 20 §20.3](../camada_2_painel/20_painel_projeto_e_layout.md)).
 
-Aba **🔧 Dentro do painel** → clique na PI-1. Lá estão, gerados do `pi1_fisico.js`:
+**Valeu porque acabou a solda no painel.** Todo componente discreto do projeto agora está em
+borne ou dentro de módulo: dá para medir, trocar e conferir sem ferro de solda — que era o pedido
+de quem vai montar, e que este documento inteiro passou a atender.
 
-- os dois lados da placa (componentes em cima, fiação por baixo);
-- cada furo clicável, dizendo o que existe nele e a que ele está ligado eletricamente;
-- os **10 jumpers** com a rota de cada um e uma caixa de conferido por solda feita;
-- os quatro **nós**, mostrando por que três pernas não entram no mesmo furo.
-
-**A ordem de montagem, passo a passo, está na aba 🧾 Guia de montagem, fase B** — com o que pegar,
-o que fazer e o que medir em cada etapa. Não repetimos aqui: lista de montagem em dois lugares é
-lista que diverge.
+> 🎓 **A frase para a defesa:** *"A placa de interface foi eliminada em três etapas, e nenhuma
+> delas foi por otimização: em cada uma, a razão de existir do componente desapareceu. Primeiro o
+> sinaleiro passou a 5 V e o driver perdeu função; depois a detecção de falha virou digital e a
+> medição inteira saiu; por fim o divisor e o pull-up viraram módulos com borne. O que sobrou —
+> dois capacitores — não justifica uma placa."*
 
 
 ## 33.5 ~~A Placa de Interface PI-2~~ — a placa que deixou de existir
