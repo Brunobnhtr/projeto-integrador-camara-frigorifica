@@ -117,7 +117,7 @@ export const COMPONENTES = [
       + 'impossível derrubam o ensaio.',
       '💧 A UMIDADE NÃO É ENFEITE. Ensaio térmico com condensação não vale — é ela que '
       + 'avisa quando é hora do ciclo de degelo.',
-      '📌 I²C no endereço 0x38, dividindo o barramento com o DS3231 e os INA219.',
+      '📌 I²C no endereço 0x38, dividindo o barramento com o DS3231.',
       '⚠️ Suspenso por fio de nylon ou haste fina — nada de parafusar na parede, que '
       + 'conduz a temperatura do acrílico para o sensor.',
     ],

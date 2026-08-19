@@ -6,7 +6,7 @@
  *    os fios que entram e saem — mas o D1, os pull-downs e as pontes na
  *    própria base não são fio nenhum. São componentes soldados ou
  *    parafusados NO BORNE, e até aqui não apareciam em lugar algum.
- *    A PI-1 e a PI-2 têm desenho de placa; o relé precisava do
+ *    A PI-1 tem desenho de placa; o relé precisava do
  *    equivalente.
  *
  * ⚠️ OS BORNES NÃO ESTÃO AQUI. Eles vêm do `painel_completo.js`, que é o

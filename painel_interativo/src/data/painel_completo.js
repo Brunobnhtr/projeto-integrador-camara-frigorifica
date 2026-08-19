@@ -12,7 +12,7 @@
  */
 
 export const CAIXA = { largura: 500, altura: 500, profundidade: 200 };
-/* ⚠️ A caixa CRESCEU de 400 para 500 mm de largura. Com o MV-1, a PI-2 e os
+/* ⚠️ A caixa CRESCEU de 400 para 500 mm de largura. Com o MV-1, as placas e os
    porta-fusíveis, o trilho mais cheio passou a precisar de 356 mm — e num
    painel de 400 mm, descontadas as canaletas verticais e as margens, só
    sobram 312 mm de trilho útil. Não cabia. */
@@ -40,7 +40,7 @@ export const REGRA_SEGREGACAO = {
   quemSofre: [
     'IS dos BTS → PI-1: sinal analógico, o mais sensível do painel',
     '1-Wire do DS18B20: pulsos de microssegundos, corrompe fácil',
-    'I²C dos INA219 e do RTC: o barramento trava se pegar ruído',
+    'I²C do RTC e do sensor da câmara: o barramento trava se pegar ruído',
   ],
   quemPolui: [
     'Saída dos BTS para a Peltier e o PTC: 6 A chaveados',
@@ -57,7 +57,7 @@ export const REGRA_SEGREGACAO = {
       quem: 'saída dos BTS, entrada de 24 V deles, bobinas dos relés',
       onde: 'só canaleta de potência' },
     { id: 'sinal', nome: 'SOFRE', cor: 'azul',
-      quem: 'IS analógico, 1-Wire, I²C, SIG do mux, retornos das posições',
+      quem: 'IS analógico, 1-Wire, I²C, saída digital do sensor de corrente',
       onde: 'só canaleta de sinal' },
     { id: 'alim', nome: 'NEM UM NEM OUTRO', cor: 'qualquer',
       quem: 'trilhos de 5 V e 12 V, amostras de 24 V para divisor, COM do ULN',
@@ -208,7 +208,7 @@ export const COMPONENTES = [
   /* ════════════ TRILHO 3 — CONTROLE ════════════ */
   {
     id: 'MEGA', nome: 'MEGA — o cérebro: PID, proteções e intertravamento', trilho: 3,
-    resumoFuncao: '❓ O QUE ELE MANDA E O QUE ELE RECEBE. MANDA (saidas): D27 -> KA3, autoriza a potencia · D30 -> KA4, fan externa · D29 -> MV-1, as 5 fans internas · D4 e D7 -> R_EN dos BTS · D5 e D6 -> PWM dos BTS · D9 a D12 -> sinaleiros · D31 a D34 -> mux da PI-2.  RECEBE (entradas): D23 <- STOP apertado · D24 <- emergencia acionada · D25 <- HA 24 V no BD-POT? · D2 <- temperatura do dissipador · D3 e A8 <- RPM dos 2 coolers · A0 e A1 <- corrente dos BTS · A2 <- corrente das posicoes · D20 e D21 <- I2C.  ⭐ Repare que ele NAO le os reles nem o botao verde: le o D25, que diz se a energia CHEGOU. Comando e verificacao sao fios diferentes.',
+    resumoFuncao: '❓ O QUE ELE MANDA E O QUE ELE RECEBE. MANDA (saidas): D27 -> KA3, autoriza a potencia · D30 -> KA4, fan externa · D29 -> MV-1, as 5 fans internas · D4 e D7 -> R_EN dos BTS · D5 e D6 -> PWM dos BTS · D9 a D12 -> sinaleiros de 5 V, direto.  RECEBE (entradas): D23 <- STOP apertado · D24 <- emergencia acionada · D25 <- HA 24 V no BD-POT? · D2 <- temperatura do dissipador · D3 e A8 <- RPM dos 2 coolers · A0 e A1 <- corrente dos BTS · D22 <- o sensor diz se a posicao de ensaio ainda consome corrente · D20 e D21 <- I2C.  ⭐ Repare que ele NAO le os reles nem o botao verde: le o D25, que diz se a energia CHEGOU. Comando e verificacao sao fios diferentes.',
     x: 32, largura: 134, altura: 96, cor: '#0ca678',
     nota: 'O Mega encaixa no meio da placa adaptadora e cada pino dele vira um borne '
         + 'de parafuso nas bordas. São 82 bornes em FILEIRA ÚNICA por borda, um ao '
@@ -220,7 +220,7 @@ export const COMPONENTES = [
         via('D30', 1, '⭐ Gatilho do KA4 → ventoinhas do RADIADOR'), via('D29', 1, '⭐ MV-1 canal 3 → as 5 ventoinhas INTERNAS (4 de circulação + a do PTC)'), via('D28'),
         via('D27', 1, '⭐ HAB_POTENCIA → gatilho do KA3. HIGH autoriza a potência; LOW derruba o selo e corta'),
         via('D26'), via('D25', 1, 'PI-1 J2-8 — vigia se os 24 V caíram'), via('D24', 1, 'Emergência — bloco NF de 5 V'), via('D23', 1, 'Botão STOP (NA, 5 V)'),
-        via('D22', 1, 'SC-1 · DOUT — detecção de dispositivo morto'), via('+5V', 1, 'BD-5V saída 1'), via('D21', 1, 'I²C SCL — o mesmo barramento'), via('D20', 1, 'I²C SDA — AM2315C (câmara), DS3231 e 2× INA219'),
+        via('D22', 1, 'SC-1 · DOUT — detecção de dispositivo morto'), via('+5V', 1, 'BD-5V saída 1'), via('D21', 1, 'I²C SCL — o mesmo barramento'), via('D20', 1, 'I²C SDA — AM2315C (câmara) e DS3231'),
         via('D19', 1, 'Serial1 RX ← DNLCB30/ESP32'), via('D18', 1, 'Serial1 TX → DNLCB30/ESP32'), via('D17', 1, 'Serial2 RX ← conversor ← tela'), via('D16', 1, 'Serial2 TX → conversor → tela'),
         via('D15'), via('D14'), via('D0'), via('D1'),
         via('D2', 1, 'PI-1 J2-3 — 1-Wire do DS18B20 do RADIADOR'), via('D3', 1, 'RPM da ventoinha do radiador #1'), via('D4', 1, 'BTS #1 · R_EN e L_EN juntos'), via('D5', 1, 'BTS #1 · RPWM (frio)'),
@@ -676,7 +676,7 @@ export const COMPONENTES = [
   },
   {
     id: 'BD-24V', nome: 'BD-24V — 24 V PERMANENTE (comando)', trilho: 1,
-    resumoFuncao: '🔎 O QUE ELE E: a barra dos 24 V que SOBREVIVE. Alimenta a cadeia de comando (o cogumelo, o rearme, os reles) e as duas posicoes de ensaio. ⭐ Tem de ser permanente: se a cadeia de comando fosse alimentada pela potencia que ela mesma comanda, nada nunca ligaria. ⭐ AS SAIDAS O3 E O5 FICARAM LIVRES quando os sinaleiros passaram para 5 V — antes elas levavam o positivo comum das lampadas e o COM do ULN2803.',
+    resumoFuncao: '🔎 O QUE ELE E: a barra dos 24 V que SOBREVIVE. Alimenta a cadeia de comando (o cogumelo, o rearme, os reles) e a posicao de ensaio. ⭐ Tem de ser permanente: se a cadeia de comando fosse alimentada pela potencia que ela mesma comanda, nada nunca ligaria. ⭐ AS SAIDAS O3 E O5 FICARAM LIVRES quando os sinaleiros passaram para 5 V — antes elas levavam o positivo comum das lampadas e o COM do ULN2803.',
     x: 114, largura: 45, altura: 58, cor: '#e8590c',
     nota: 'PERMANENTE — não cai na emergência.',
     grupos: [
@@ -699,7 +699,7 @@ export const COMPONENTES = [
         via('O3', 1, 'RTC DS3231'), via('O4', 1, 'BTS #1 · VCC'),
         via('O5', 1, 'BTS #2 · VCC'), via('O6', 1, 'PI-1 J1-4'),
         via('O7', 1, '4 LEDs da maquete'),
-        via('O8', 1, 'PI-2 — alimenta o mux e o INA219'),
+        via('O8', 1, 'SC-1 · VCC — o sensor de corrente da posição de ensaio'),
         via('O9', 1, 'MV-1 · VCC do lado do comando'),
         via('O10', 1, '⭐ AM2315C · VCC — o sensor DENTRO da câmara'),
         via('O11', 1, 'DS18B20 do radiador · VCC'), via('O12', 1, '⭐ KA3 + KA4 · DC+ — alimenta os dois módulos de relé'), via('O13'),
@@ -729,7 +729,7 @@ export const COMPONENTES = [
         via('Z14', 1, 'MV-1 · GND do comando (lado isolado)'),
         via('Z15', 1, '⭐ AM2315C · GND — o sensor DENTRO da câmara'),
         via('Z16', 1, 'LEDs da maquete −'),
-        via('Z17', 1, 'PI-2 · 0V — retorno das posições, depois dos shunts'),
+        via('Z17', 1, 'SC-1 · GND — o 0 V do sensor de corrente'),
         via('Z18', 1, 'seletora LOCAL/REMOTO — contato para o 0 V'),
         via('Z19', 1, 'DS18B20 do radiador · GND'),
         via('Z20', 1, '⭐ retorno das ventoinhas do radiador — referência dos 2 RPM'),

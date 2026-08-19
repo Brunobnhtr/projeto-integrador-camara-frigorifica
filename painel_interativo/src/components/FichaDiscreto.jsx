@@ -85,7 +85,7 @@ function Simbolo({ tipo, x, y, giro = 0 }) {
           <rect x={-46} y={-24} width={92} height={48} rx={3} fill={C.papel} {...traco} />
           <path d="M -46 -8 A 8 8 0 0 0 -46 8" {...traco} strokeWidth={1.6} />
           <text x={0} y={5} textAnchor="middle" fontSize={12} fontFamily="monospace" fill={C.tinta}>
-            ULN2803A
+            CI
           </text>
         </g>
       );

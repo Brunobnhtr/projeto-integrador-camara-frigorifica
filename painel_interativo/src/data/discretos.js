@@ -221,7 +221,6 @@ export const DISCRETOS = [
     ensaio: 'Ohmímetro entre o D2 e o +5 V → ~4,7 kΩ.',
     passo: 'B-04', fonte: 'Doc 33 §33.2',
   },
-  /* ───────────────────────── PLACA PI-2 ───────────────────────── */
 
   /* ─────────────────── NOS BORNES DOS RELÉS ──────────────────── */
   {

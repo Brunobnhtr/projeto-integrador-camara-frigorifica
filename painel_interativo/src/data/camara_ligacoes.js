@@ -96,8 +96,8 @@ export const BLOCOS_LIGACAO = [
     externo: [
       { fio: 'X15', o: 'BD-5V · O10', para: 'VCC do sensor' },
       { fio: 'X16', o: 'GND do sensor', para: 'BD-0V · Z15' },
-      { fio: 'X17', o: 'PI-2 · SDA', para: 'SDA — terceira parada do MESMO barramento I²C' },
-      { fio: 'X18', o: 'PI-2 · SCL', para: 'SCL' },
+      { fio: 'X17', o: 'RTC · SDA', para: 'SDA — segunda parada do MESMO barramento I²C' },
+      { fio: 'X18', o: 'RTC · SCL', para: 'SCL' },
     ],
     interno: [
       '📌 O AM2315C JÁ VEM COM O CABO PRESO NELE. Não há terminal no corpo do sensor — '
@@ -119,13 +119,11 @@ export const BLOCOS_LIGACAO = [
     desenho: [
       '+24 V ──[ R ]──┤▶├── LED ──► retorno',
       'posição 1 · 1,2 kΩ · LED vermelho · 17,6 mA',
-      'posição 2 · 2,2 kΩ · LED verde    ·  9,8 mA',
     ],
     externo: [
       { fio: 'X11', o: 'F-P1 (fusível 100 mA)', para: 'DUT 1 · terminal +' },
-      { fio: 'X13', o: 'DUT 1 · retorno', para: 'PI-2 · RET-1 — atravessa o shunt lá dentro' },
+      { fio: 'X13', o: 'DUT · retorno', para: 'BD-0V · Z22 — 0 V comum, com parafuso próprio' },
       { fio: 'X12', o: 'F-P2', para: 'DUT 2 · terminal +' },
-      { fio: 'X14', o: 'DUT 2 · retorno', para: 'PI-2 · RET-2' },
     ],
     interno: [
       'Dentro de cada DUT: o + entra no resistor, o resistor vai no ânodo do LED, e o '

@@ -38,12 +38,13 @@ export const PLACA = {
   bruta: {
     nome: 'Placa ilhada 9 × 15 cm (AliExpress)',
     colunas: 34, linhas: 58,   // ⚠️ conferir contando; há versões 35 × 59
-    corte: 'Primeiro corte: reto, entre as fileiras 29 e 30 — o pedaço de 34 × 29 é a PI-2. '
-         + 'Do outro pedaço, corte um retângulo de 22 × 22 furos: essa é a PI-1. Risque dos '
+    corte: 'Um corte só: um retângulo de 22 × 22 furos num canto da placa comprada. Risque dos '
          + 'dois lados com estilete apoiado numa régua de metal, na LINHA ENTRE furos, e quebre '
          + 'na quina da bancada.',
-    sobra: '⭐ Agora sobra placa — a PI-1 encolheu de 34 × 29 para 22 × 22. Guarde as sobras: '
-         + 'elas são o corpo das duas placas simuladoras de DUT (passos A-06 e A-07).',
+    sobra: '⭐ SOBRA MUITA PLACA — e é de propósito. A PI-1 usa menos de um quarto dos 34 × 58 '
+         + 'furos comprados: ela encolheu quando o ULN2803A saiu, e a PI-2 (que ocupava a outra '
+         + 'metade) deixou de existir quando a detecção de falha virou digital. Guarde as sobras: '
+         + 'são o corpo da placa simuladora de DUT e o gabarito para conferir o passo dos bornes.',
   },
   caixa: 'Caixa modular DIN de 4 módulos (70 mm)',
   nota: 'A caixa caiu de 6M para 4M junto com a placa. Sobrou um módulo de espaço no trilho 3 — '
@@ -237,8 +238,8 @@ export const CIRCUITOS = [
 ];
 
 export const ORDEM_MONTAGEM = [
-  'Corte a placa: primeiro o pedaço de 34 × 29 (a PI-2), depois um retângulo de 22 × 22 '
-  + 'para a PI-1. As sobras viram as placas dos DUTs.',
+  'Corte um retângulo de 22 × 22 furos da placa comprada — é a PI-1 inteira. '
+  + 'As sobras viram a placa do DUT e o gabarito dos bornes.',
   'Solde o BARRAMENTO DE 0 V primeiro — fio nu, esticado da coluna 2 à 20, na linha 10.',
   'Solde os dois BORNES. São eles que definem a geometria de tudo.',
   'Solde os RESISTORES deitados: R3, R1, R2.',

@@ -44,7 +44,7 @@ export function posicoes(c, g) {
   const vert = g.lado === 'esquerda' || g.lado === 'direita';
   const compr = vert ? c.altura : c.largura;
 
-  /* ⭐ DOIS BLOCOS PODEM DIVIDIR A MESMA BORDA. A PI-2 tem o J2 e o J3
+  /* ⭐ DOIS BLOCOS PODEM DIVIDIR A MESMA BORDA — foi o caso da antiga PI-2, com J2 e J3
      os dois embaixo. Calculando cada grupo centrado na largura inteira,
      eles se sobrepunham — os bornes do J2 caíam em cima dos do J3. Aqui
      a borda é REPARTIDA entre os blocos, proporcional ao nº de vias. */

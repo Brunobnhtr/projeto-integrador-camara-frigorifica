@@ -34,172 +34,16 @@ export const TENSOES = {
 // ─────────────────────────────────────────────────────────────────────
 // COMPONENTES
 // ─────────────────────────────────────────────────────────────────────
-export const COMPONENTES = [
-  // ── TRILHO 1 · distribuição ────────────────────────────────────────
-  {
-    id: 'BD-POT', nome: 'BD-POT', trilho: 1, x: 40, categoria: 'bloco',
-    descricao: 'Bloco de distribuição · 24 V de POTÊNCIA',
-    detalhe: 'Vem do ramal RM1 pelo poste P1 e passa pelo KA2. CAI NA EMERGÊNCIA.',
-    tensao: '24V_POT', largura: 36,
-    terminais: { 'IN': 'entrada 4 mm²', 'O1': 'saída 1', 'O2': 'saída 2', 'O3': 'saída 3', 'O4': 'reserva' },
-  },
-  {
-    id: 'BD-AUX', nome: 'BD-AUX', trilho: 1, x: 76, categoria: 'bloco',
-    descricao: 'Bloco de distribuição · 12 V auxiliar',
-    detalhe: 'Vem do conversor T3, no poste P3.',
-    tensao: '12V', largura: 36,
-    terminais: { 'IN': 'entrada', 'O1': 'coolers Peltier', 'O2': 'fans internas', 'O3': 'cooler BTS', 'O4': 'reserva' },
-  },
-  {
-    id: 'BD-5V', nome: 'BD-5V', trilho: 1, x: 112, categoria: 'bloco',
-    descricao: 'Bloco de distribuição · 5,10 V de comando',
-    detalhe: 'Vem do conversor T2, no poste P2.',
-    tensao: '5V', largura: 36,
-    terminais: { 'IN': 'entrada', 'O1': 'Arduino', 'O2': 'Nextion', 'O3': 'SD+RTC',
-                 'O4': 'lógica BTS1', 'O5': 'lógica BTS2', 'O6': 'PI-1' },
-  },
-  {
-    id: 'BD-24V', nome: 'BD-24V', trilho: 1, x: 148, categoria: 'bloco',
-    descricao: 'Bloco de distribuição · 24 V de SERVIÇOS',
-    detalhe: 'Vem do ramal RM3, pelo poste P3. PERMANENTE — não passa pelo KA2.',
-    tensao: '24V_SRV', largura: 36,
-    terminais: { 'IN': 'entrada', 'O1': 'DNLCB30/ESP32', 'O2': 'cadeia de comando',
-                 'O3': 'sinaleiros + COM do CI', 'O4': 'reserva' },
-  },
-  {
-    id: 'BD-0V', nome: 'BD-0V', trilho: 1, x: 189, categoria: 'bloco',
-    descricao: '⭐ STAR GROUND — o 0 V é ÚNICO no projeto',
-    detalhe: 'Todos os retornos convergem aqui, em estrela. Os LM2596 não são isolados: '
-           + 'o 0 V da entrada e o da saída são o mesmo condutor. Não existem "3 neutros".',
-    tensao: '0V', largura: 46,
-    terminais: { 'IN': 'entrada 10 mm²', 'O1': 'BTS1 B−', 'O2': 'BTS2 B−', 'O3': 'Arduino',
-                 'O4': 'Nextion', 'O5': 'SD+RTC', 'O6': 'DNLCB30', 'O7': 'PI-1', 'O8': 'coolers' },
-  },
+/* ⚠️ AQUI EXISTIAM DOIS MODELOS DO PAINEL, E ISSO É PIOR QUE NÃO TER NENHUM.
+   Este arquivo trazia um `COMPONENTES` e um `PI1_INTERNO` próprios, escritos
+   antes do `painel_completo.js` — e eles continuaram descrevendo o ULN2803A,
+   a PI-2 e as duas posições de ensaio muito depois de as três coisas saírem
+   do projeto. Ninguém os consumia; só enganavam quem lesse.
 
-  // ── TRILHO 2 · potência ────────────────────────────────────────────
-  {
-    id: 'BTS1', nome: 'BTS7960 #1', trilho: 2, x: 40, categoria: 'driver',
-    descricao: 'Driver de potência · FRIO (2× Peltier em série)',
-    detalhe: 'Recebe 24 V no B+ e chaveia a 20 kHz por PWM. O R_EN e o L_EN vão JUNTOS '
-           + 'no mesmo pino do Arduino, com pull-down de 10 kΩ soldado no próprio módulo.',
-    tensao: '24V_POT', largura: 105,
-    terminais: { 'B+': 'entrada 24 V', 'B-': 'retorno 0 V', 'M+': 'saída p/ Peltier',
-                 'M-': 'retorno da Peltier', 'RPWM': 'PWM 20 kHz', 'R_EN': 'habilita',
-                 'L_EN': 'habilita (junto com R_EN)', 'LPWM': '0 V', 'R_IS': 'diagnóstico de corrente',
-                 'VCC': 'lógica 5 V', 'GND': 'lógica 0 V' },
-  },
-  {
-    id: 'BTS2', nome: 'BTS7960 #2', trilho: 2, x: 150, categoria: 'driver',
-    descricao: 'Driver de potência · QUENTE (PTC de 24 V)',
-    detalhe: 'Mesmo módulo do BTS1. Intertravado por software: nunca liga junto com o frio.',
-    tensao: '24V_POT', largura: 105,
-    terminais: { 'B+': 'entrada 24 V', 'B-': 'retorno 0 V', 'M+': 'saída p/ PTC',
-                 'M-': 'retorno do PTC', 'RPWM': 'PWM 20 kHz', 'R_EN': 'habilita',
-                 'L_EN': 'habilita (junto com R_EN)', 'LPWM': '0 V', 'R_IS': 'diagnóstico de corrente',
-                 'VCC': 'lógica 5 V', 'GND': 'lógica 0 V' },
-  },
-  {
-    id: 'KA1', nome: 'KA1', trilho: 2, x: 260, categoria: 'rele',
-    descricao: 'Relé de habilitação — faz o SELO',
-    detalhe: 'Um contato mantém a própria bobina ligada (selo); o outro alimenta o KA2 '
-           + 'através do NF do STOP. Conduz só miliampères.',
-    tensao: '24V_SRV', largura: 16,
-    terminais: { 'A1': 'bobina +', 'A2': 'bobina −', '11': 'comum 1', '14': 'NA 1 (selo)',
-                 '21': 'comum 2', '24': 'NA 2 (saída p/ KA2)' },
-  },
-  {
-    id: 'KA2', nome: 'KA2', trilho: 2, x: 280, categoria: 'rele',
-    descricao: '⚡ Relé de POTÊNCIA — corta os 24 V em hardware',
-    detalhe: 'Contato ≥ 10 A declarado em DC. É ele que a emergência abre. '
-           + 'Fecha uma vez e fica: NÃO faz PWM (isso é trabalho do BTS7960).',
-    tensao: '24V_POT', largura: 16,
-    terminais: { 'A1': 'bobina +', 'A2': 'bobina −', '11': 'comum (entra 24 V)', '14': 'NA (sai p/ BD-POT)' },
-  },
+   O modelo do painel, único, é o `painel_completo.js`.
+   O que sobrou aqui tem dono: TENSOES e paraOndeVai (PlacaReal.jsx) e
+   CABOS (scripts/conta_blocos.mjs). */
 
-  // ── TRILHO 3 · controle ────────────────────────────────────────────
-  {
-    id: 'MEGA', nome: 'Arduino Mega', trilho: 3, x: 40, categoria: 'controlador',
-    descricao: 'Controlador em tempo real — PID, proteções, intertravamento',
-    detalhe: 'Não comanda relé nenhum: ele só LÊ (pelo D25) se a potência chegou. '
-           + 'Quem comanda KA1/KA2 são as botoeiras, em hardware.',
-    tensao: '5V', largura: 110,
-    terminais: {
-      '5V': 'alimentação', 'GND': 'retorno',
-      'A0': 'corrente do BTS1', 'A1': 'corrente do BTS2', 'A8': 'RPM cooler 2',
-      'D2': 'sensor DS18B20', 'D3': 'RPM cooler 1',
-      'D4': 'habilita BTS1', 'D5': 'PWM frio', 'D6': 'PWM quente', 'D7': 'habilita BTS2',
-      'D9': 'sinaleiro RUN', 'D10': 'sinaleiro COOL', 'D11': 'sinaleiro HEAT', 'D12': 'sinaleiro FAULT',
-      'D22': 'START', 'D23': 'STOP', 'D24': 'EMERGÊNCIA', 'D25': 'lê se há 24 V',
-    },
-  },
-  {
-    id: 'PI1', nome: 'Placa PI-1', trilho: 3, x: 150, categoria: 'placa',
-    descricao: '⭐ Placa de interface — onde moram os componentes discretos',
-    detalhe: 'Não tem função elétrica própria: é o lugar onde 7 peças ficam soldadas em vez '
-           + 'de penduradas no fio. J1 = só ENTRADAS · J2 = só SAÍDAS.',
-    tensao: 'SINAL', largura: 52,
-    ehPlaca: true,
-    terminais: {
-      'J1-1': 'entra IS#1', 'J1-2': 'entra IS#2', 'J1-3': 'entra DATA', 'J1-4': 'entra +5V',
-      'J1-5': 'entra D9', 'J1-6': 'entra D10', 'J1-7': 'entra D11', 'J1-8': 'entra D12',
-      'J1-9': 'entra 0V', 'J1-10': 'entra 24V-SRV', 'J1-11': 'entra 24V-POT',
-      'J2-1': 'sai A0', 'J2-2': 'sai A1', 'J2-3': 'sai D2',
-      'J2-4': 'sai L1−', 'J2-5': 'sai L2−', 'J2-6': 'sai L3−', 'J2-7': 'sai L4−',
-      'J2-8': 'sai D25',
-    },
-  },
-  {
-    id: 'ESP32', nome: 'DNLCB30 + ESP32', trilho: 3, x: 203, categoria: 'controlador',
-    descricao: 'Supervisão e comando remoto — Wi-Fi e MQTT',
-    detalhe: 'Alimentado em 24 V pela DNLCB30, que também converte 5 V ↔ 3,3 V. '
-           + 'Comanda só quando a chave está em REMOTO.',
-    tensao: '24V_SRV', largura: 90,
-    terminais: { 'VIN': '24 V', 'GND': '0 V', 'RX': 'do Arduino', 'TX': 'para o Arduino' },
-  },
-  {
-    id: 'SDRTC', nome: 'SD + RTC', trilho: 3, x: 293, categoria: 'modulo',
-    descricao: 'Registro dos ensaios com data e hora',
-    detalhe: 'O log fica no cartão local, não na nuvem: Wi-Fi cai, e o registro não pode ter buraco.',
-    tensao: '5V', largura: 60,
-    terminais: { 'VCC': '5 V', 'GND': '0 V', 'CS': 'D53', 'SCK': 'D52', 'MOSI': 'D51', 'MISO': 'D50',
-                 'SDA': 'D20', 'SCL': 'D21' },
-  },
-
-  // ── PORTA ──────────────────────────────────────────────────────────
-  { id: 'H1', nome: 'Sinaleiro RUN', trilho: 'porta', x: 40, categoria: 'sinaleiro',
-    descricao: 'Verde · processo rodando', tensao: '24V_SRV', largura: 40,
-    terminais: { '+': 'do BD-24V', '-': 'para a PI-1 J2-5' } },
-  { id: 'H2', nome: 'Sinaleiro COOL', trilho: 'porta', x: 90, categoria: 'sinaleiro',
-    descricao: 'Azul · resfriando', tensao: '24V_SRV', largura: 40,
-    terminais: { '+': 'do BD-24V', '-': 'para a PI-1 J2-6' } },
-  { id: 'H3', nome: 'Sinaleiro HEAT', trilho: 'porta', x: 140, categoria: 'sinaleiro',
-    descricao: 'Amarelo · aquecendo', tensao: '24V_SRV', largura: 40,
-    terminais: { '+': 'do BD-24V', '-': 'para a PI-1 J2-7' } },
-  { id: 'H4', nome: 'Sinaleiro FAULT', trilho: 'porta', x: 190, categoria: 'sinaleiro',
-    descricao: 'Vermelho · falha. Fica aceso mesmo na emergência',
-    tensao: '24V_SRV', largura: 40,
-    terminais: { '+': 'do BD-24V', '-': 'para a PI-1 J2-8' } },
-  { id: 'S0', nome: 'EMERGÊNCIA', trilho: 'porta', x: 250, categoria: 'botao',
-    descricao: 'Cogumelo com trava · corta em hardware e NÃO religa sozinho',
-    detalhe: 'Conforme ISO 13850: destravar libera, mas quem religa é o botão REARME.',
-    tensao: '24V_SRV', largura: 40,
-    terminais: { '11': 'comum NF', '12': 'NF (cadeia)', '21': 'comum NF 2', '22': 'NF 2 (avisa o Arduino)' } },
-  { id: 'S1', nome: 'START', trilho: 'porta', x: 300, categoria: 'botao',
-    descricao: 'Verde · dá partida no processo (software)', tensao: '5V', largura: 40,
-    terminais: { '13': 'comum NA', '14': 'NA (para o Arduino D22)' } },
-  { id: 'S2', nome: 'STOP', trilho: 'porta', x: 350, categoria: 'botao',
-    descricao: 'Vermelho · corta em hardware, mas NÃO trava', tensao: '24V_SRV', largura: 40,
-    terminais: { '11': 'comum NF', '12': 'NF (corta o KA2)', '13': 'comum NA', '14': 'NA (avisa o Arduino)' } },
-  { id: 'S3', nome: 'REARME', trilho: 'porta', x: 400, categoria: 'botao',
-    descricao: 'Azul · refaz o selo do KA1 depois de uma emergência',
-    tensao: '24V_SRV', largura: 40,
-    terminais: { '13': 'comum NA', '14': 'NA (para a bobina do KA1)' } },
-];
-
-// ─────────────────────────────────────────────────────────────────────
-// CABOS — de onde sai, para onde vai
-// A numeração segue a lista do Doc 30.
-// ─────────────────────────────────────────────────────────────────────
 export const CABOS = [
   // potência 24 V
   { n: 34, de: 'ENTRADA:PG9', para: 'KA2:11', tensao: '24V_POT', bitola: '1,5 mm²', cor: 'vermelho',
@@ -287,28 +131,6 @@ export const CABOS = [
 // ─────────────────────────────────────────────────────────────────────
 // O QUE HÁ DENTRO DA PLACA PI-1 (para o zoom)
 // ─────────────────────────────────────────────────────────────────────
-export const PI1_INTERNO = {
-  componentes: [
-    { ref: 'C1', tipo: 'capacitor', valor: '100 nF', entre: ['J1-1 / J2-1', '0 V'],
-      papel: 'Filtra o ruído que o cabo do BTS captou' },
-    { ref: 'C2', tipo: 'capacitor', valor: '100 nF', entre: ['J1-2 / J2-2', '0 V'],
-      papel: 'Idem, para o BTS #2' },
-    { ref: 'R3', tipo: 'resistor', valor: '4,7 kΩ', entre: ['J1-11 (+5V)', 'J1-3 / J2-3'],
-      papel: 'Pull-up do 1-Wire. SEM ele não existe barramento — o sensor só sabe puxar para 0 V' },
-    { ref: 'R1', tipo: 'resistor', valor: '22 kΩ', entre: ['J1-4 (24V-POT)', 'nó D25'],
-      papel: 'Braço superior do divisor' },
-    { ref: 'R2', tipo: 'resistor', valor: '4,7 kΩ', entre: ['nó D25', '0 V'],
-      papel: 'Braço inferior. 24 × 4,7/26,7 = 4,22 V' },
-    { ref: 'C3', tipo: 'capacitor', valor: '100 nF', entre: ['nó D25', '0 V'],
-      papel: 'Filtra o nó de alta impedância' },
-    { ref: 'CI1', tipo: 'ci', valor: 'ULN2803A', entre: ['J1-5..8 (D9..D12)', 'J2-5..8 (L1..L4)'],
-      papel: 'Deixa o Arduino (5 V) comandar sinaleiros de 24 V. É o "relé de interface" dos sinaleiros' },
-  ],
-  nota: 'Os 2 resistores de 10 kΩ (pull-down do R_EN) NÃO ficam aqui — vão soldados '
-      + 'dentro dos próprios BTS7960, para que um rompimento de cabo ainda deixe o driver desligado.',
-};
-
-/** Índice: terminal "COMP:TERM" → lista de cabos que chegam nele. */
 export function indiceDeCabos() {
   const idx = {};
   for (const c of CABOS) {

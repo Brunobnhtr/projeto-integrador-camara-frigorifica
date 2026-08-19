@@ -115,9 +115,9 @@ export const FIOS_ETAPA6 = [
       'zero', 'comum', 'Retorno do sensor.'),
     nome: 'AM2315C · GND', prensa: 'PG9-3', rota: ['CV-dir', 'CH-base'] },
   { ...kabo('X17', { comp: 'RTC', via: 'SDA' }, naCamara('SENS', 'SDA'), 0.25,
-      'digital', 'sinal', 'O I²C continua da PI-2 até o sensor, dentro da câmara.'),
+      'digital', 'sinal', 'O I²C continua do RTC até o sensor, dentro da câmara.'),
     nome: 'I²C SDA → câmara', prensa: 'PG9-3', rota: ['CH-3x2', 'CV-dir'],
-    porque: '⭐ Terceira parada do MESMO barramento: Mega → RTC → PI-2 → AM2315C. Três '
+    porque: '⭐ Segunda parada do MESMO barramento: Mega → RTC → AM2315C. Dois '
           + 'endereços, um par de fios.' },
   { ...kabo('X18', { comp: 'RTC', via: 'SCL' }, naCamara('SENS', 'SCL'), 0.25,
       'digital', 'sinal', 'Idem para o clock.'),

@@ -28,7 +28,7 @@ export const FASES = [
   },
   {
     id: 'B', nome: 'As duas placas', icone: '🟫',
-    resumo: 'A PI-1 e a PI-2 saem do mesmo pedaço de placa ilhada. Solda-se na ordem que '
+    resumo: 'A PI-1 sai de um canto da placa ilhada comprada. Solda-se na ordem que '
           + 'deixa cada peça acessível: o barramento reto primeiro, os componentes depois.',
     onde: 'bancada, com ferro de solda',
   },
@@ -67,11 +67,11 @@ export const PASSOS = [
       'Conte as fileiras e confirme: são 58 (há versões com 59 — se for a sua, o corte fica entre a 29 e a 30 mesmo assim).',
       'Risque dos DOIS lados, com o estilete apoiado na régua, na linha ENTRE furos — nunca em cima da fileira de furos.',
       'Apoie a placa na quina da bancada, alinhe o risco com a quina e quebre com um movimento firme.',
-      'Do pedaço de 34 × 29, essa é a PI-2. Do outro, corte um retângulo de 22 × 22: essa é a PI-1.',
+      'Corte um retângulo de 22 × 22 furos: é a PI-1 inteira. O resto é sobra, e ela tem uso.',
       'Passe a lixa nas bordas cortadas até ficarem retas. Guarde as sobras — são o corpo das placas dos DUTs.',
     ],
-    confira: 'PI-2 com 34 × 29 furos, PI-1 com 22 × 22, e sobra guardada.',
-    seErrar: 'Cortou torto ou lascou: a placa ainda serve se as fileiras inteiras sobraram. Se quebrou uma fileira de furos, use o lado bom para a PI-2, que é a mais cheia.',
+    confira: 'PI-1 com 22 × 22 furos, bordas retas, e as sobras guardadas.',
+    seErrar: 'Cortou torto ou lascou: sobra placa de sobra — a PI-1 usa menos de um quarto da que você comprou. Corte outro retângulo e siga.',
   },
   {
     id: 'A-02', fase: 'A', titulo: 'Conferir os módulos comprados, um por um', tempo: '20 min',

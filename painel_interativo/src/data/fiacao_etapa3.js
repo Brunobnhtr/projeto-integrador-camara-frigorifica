@@ -74,7 +74,7 @@ export const FIOS_ETAPA3 = [
       'O 5 V que alimenta o pull-up do 1-Wire dentro da PI-1.'),
     rota: ['CH-base', 'CV-esq', 'CH-topo'] },
   { ...cinco('D12', { comp: 'BD-5V', via: 'O8' }, { comp: 'SC-1', via: 'VCC' },
-      'Alimenta o multiplexador e o INA219 da PI-2.'),
+      'Alimenta o sensor de corrente da posição de ensaio.'),
     rota: ['CH-base', 'CV-esq', 'CH-3x2'] },
   { ...cinco('D13', { comp: 'BD-5V', via: 'O9' }, { comp: 'MV-1', via: 'VCC' },
       'Lado do COMANDO do módulo MOSFET, opticamente isolado.'),
@@ -145,8 +145,8 @@ export const FIOS_ETAPA3 = [
          + 'unir os dois no módulo anula esse isolamento e traz o ruído de partida das '
          + 'ventoinhas para dentro da lógica.' },
   { ...zero('D24', { comp: 'SC-1', via: 'GND' }, { comp: 'BD-0V', via: 'Z17' },
-      'Retorno das posições de ensaio, DEPOIS dos shunts.'),
+      'O 0 V do sensor de corrente.'),
     rota: ['CH-3x2', 'CV-dir', 'CH-base'],
     porque: '⭐ Este fio carrega a corrente que está sendo medida. Ele só é 0 V deste '
-          + 'lado do shunt — do outro lado é o nó de medição.' },
+          + '0 V do sensor — o mesmo retorno comum do painel.' },
 ];

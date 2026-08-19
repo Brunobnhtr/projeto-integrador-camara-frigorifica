@@ -165,7 +165,7 @@ export const ETAPAS = [
   { n: 3, nome: 'Distribuição — dos barramentos aos consumidores', feito: true,
     resumo: '24 fios saindo dos quatro barramentos para quem consome, dentro '
           + 'da placa de montagem. A porta fica para a etapa 5.' },
-  { n: 4, nome: 'Sinais — Arduino, PI-1, PI-2 e sensores', feito: true,
+  { n: 4, nome: 'Sinais — Arduino, PI-1 e sensores', feito: true,
     resumo: '30 fios de sinal, todos em canaleta azul. É a etapa que a regra '
           + 'de segregação existe para proteger.' },
   { n: 5, nome: 'Porta — tela, botões e sinaleiros', feito: true,
