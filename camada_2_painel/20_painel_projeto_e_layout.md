@@ -395,7 +395,7 @@ O projeto declarava um **PG9** ali, com "capacidade: 14 fios" escrito à mão. R
 |---:|---|---:|---:|---:|
 | 1 | **BD-POT** — 24 V COMUTADO (morre na emergência) | 30 | 36 mm | 66 |
 | 2 | **BD-AUX** — 12 V das ventoinhas (permanente) | 72 | 36 mm | 108 |
-| 3 | **BD-24V** — 24 V PERMANENTE (comando e sinaleiros) | 114 | 45 mm | 159 |
+| 3 | **BD-24V** — 24 V PERMANENTE (comando) | 114 | 45 mm | 159 |
 | 4 | **BD-5V** — 5,10 V da eletrônica (permanente) | 165 | 87 mm | 252 |
 | 5 | **BD-0V** — retorno único de tudo (star ground) | 258 | 105 mm | 363 |
 | 6 | **KA1** — SEGURANÇA: cai na emergência, rearme azul | 362 | 34 mm | 396 |
@@ -409,7 +409,7 @@ O projeto declarava um **PG9** ali, com "capacidade: 14 fios" escrito à mão. R
 | 1 | **BTS1** — driver de potência da PELTIER (frio) | 34 | 50 mm | 84 |
 | 2 | **BTS2** — driver de potência do PTC (quente) | 92 | 50 mm | 142 |
 | 3 | **MV-1** — liga as 5 ventoinhas INTERNAS da câmara | 150 | 66 mm | 216 |
-| 4 | **F-P** — fusíveis das 2 posições de ensaio | 224 | 36 mm | 260 |
+| 4 | **F-P** — fusível e chave da posição de ensaio | 224 | 26 mm | 250 |
 | 5 | **ESP32** — Wi-Fi, MQTT e dashboard remoto | 268 | 96 mm | 364 |
 | 6 | **KA34** — KA3 (POTÊNCIA) + KA4 (FAN EXTERNA DA PELTIER) — módulos de relé | 374 | 70 mm | 444 |
 | | **Ocupação total** | | **410 mm** | livre até 458 — sobram **14 mm** |
@@ -419,8 +419,8 @@ O projeto declarava um **PG9** ali, com "capacidade: 14 fios" escrito à mão. R
 | # | Componente | X | Largura | Termina em |
 |---:|---|---:|---:|---:|
 | 1 | **MEGA** — o cérebro: PID, proteções e intertravamento | 32 | 134 mm | 166 |
-| 2 | **PI1** — PI-1 — filtros, divisores e driver dos sinaleiros | 176 | 105 mm | 281 |
-| 3 | **PI-2** — mede a corrente das 2 posições de ensaio | 291 | 105 mm | 396 |
+| 2 | **PI1** — PI-1 — filtros, divisor e pull-up | 176 | 70 mm | 246 |
+| 3 | **SC-1** — sensor de corrente da posição de ensaio | 291 | 40 mm | 331 |
 | 4 | **RTC** — RTC DS3231 — data e hora reais para o log | 402 | 35 mm | 437 |
 | | **Ocupação total** | | **405 mm** | livre até 458 — sobram **21 mm** |
 

@@ -43,7 +43,7 @@
     <text x="513" y="308" font-size="9" fill="#868e96">nº 14</text>
     <path d="M496 291 L496 180" stroke="#5f3dc4" stroke-width="2.4"/>
     <circle cx="496" cy="180" r="3.2" fill="#5f3dc4"/>
-    <text x="496" y="168" font-size="9.5" fill="#343a40" text-anchor="middle">BD-0V · R11</text>
+    <text x="496" y="168" font-size="9.5" fill="#343a40" text-anchor="middle">BD-0V · Z11</text>
     <text x="496" y="155" font-size="8" fill="#5f3dc4" text-anchor="middle">bobina</text>
     <circle cx="184" cy="356" r="13" fill="#f8f9fa" stroke="#ced4da" stroke-width="1.3"/>
     <path d="M177 356 L191 356" stroke="#ced4da" stroke-width="2"/>
@@ -180,7 +180,7 @@
     <text x="322" y="776" font-size="11.5" font-weight="700" fill="#c2410c" text-anchor="middle">0V</text>
     <path d="M322 781 L322 670" stroke="#c2410c" stroke-width="2.4"/>
     <circle cx="322" cy="670" r="3.2" fill="#c2410c"/>
-    <text x="322" y="658" font-size="9.5" fill="#343a40" text-anchor="middle">BD-0V · R21</text>
+    <text x="322" y="658" font-size="9.5" fill="#343a40" text-anchor="middle">BD-0V · Z21</text>
     <text x="322" y="645" font-size="8" fill="#c2410c" text-anchor="middle">DC− · retorno E referência do IN</text>
     <circle cx="414" cy="794" r="11" fill="#c2410c22" stroke="#c2410c" stroke-width="2"/>
     <text x="414" y="776" font-size="11.5" font-weight="700" fill="#c2410c" text-anchor="middle">IN3</text>
@@ -198,7 +198,7 @@
     <text x="372" y="872" font-size="11.5" font-weight="700" fill="#c2410c" text-anchor="middle">NO3</text>
     <path d="M372 859 L372 960" stroke="#c2410c" stroke-width="2.4"/>
     <circle cx="372" cy="960" r="3.2" fill="#c2410c"/>
-    <text x="372" y="976" font-size="9.5" fill="#343a40" text-anchor="middle">BD-0V · R12</text>
+    <text x="372" y="976" font-size="9.5" fill="#343a40" text-anchor="middle">BD-0V · Z12</text>
     <text x="372" y="989" font-size="8" fill="#c2410c" text-anchor="middle">NO — aberto em repouso</text>
     <circle cx="490" cy="846" r="11" fill="#f8f9fa" stroke="#ced4da" stroke-width="1.3"/>
     <text x="490" y="872" font-size="11.5" font-weight="700" fill="#ced4da" text-anchor="middle">NC3</text>
@@ -231,7 +231,7 @@
     <text x="942" y="776" font-size="11.5" font-weight="700" fill="#c2410c" text-anchor="middle">0V</text>
     <path d="M942 781 L942 670" stroke="#c2410c" stroke-width="2.4"/>
     <circle cx="942" cy="670" r="3.2" fill="#c2410c"/>
-    <text x="942" y="658" font-size="9.5" fill="#343a40" text-anchor="middle">BD-0V · R21</text>
+    <text x="942" y="658" font-size="9.5" fill="#343a40" text-anchor="middle">BD-0V · Z21</text>
     <text x="942" y="645" font-size="8" fill="#c2410c" text-anchor="middle">DC− · retorno E referência do IN</text>
     <circle cx="1034" cy="794" r="11" fill="#c2410c22" stroke="#c2410c" stroke-width="2"/>
     <text x="1034" y="776" font-size="11.5" font-weight="700" fill="#c2410c" text-anchor="middle">IN4</text>
