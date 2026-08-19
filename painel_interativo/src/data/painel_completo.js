@@ -33,10 +33,12 @@ export const CANALETAS = [
 
 export const REGRA_SEGREGACAO = {
   titulo: 'Por que potência e sinal não podem dividir canaleta',
-  texto: 'Os BTS chaveiam 6 ampères a cada segundo. Cada chaveamento gera um pulso '
-       + 'eletromagnético que o fio ao lado capta por indução — é o mesmo princípio de '
-       + 'um transformador, só que indesejado. Num cabo de potência isso não faz '
-       + 'diferença; num cabo que leva 0 a 5 V analógicos, vira leitura falsa.',
+  texto: '⭐ Os BTS chaveiam 6 ampères VINTE MIL VEZES POR SEGUNDO. Cada chaveamento gera '
+       + 'um pulso eletromagnético que o fio ao lado capta por indução — é o mesmo princípio '
+       + 'de um transformador, só que indesejado. Num cabo de potência isso não faz '
+       + 'diferença; num cabo que leva 0 a 5 V analógicos, vira leitura falsa. ⚠️ E a conta '
+       + 'piorou de propósito: com o PWM de 1 Hz eram 2 pulsos por segundo, agora são 40 mil. '
+       + 'A segregação das canaletas deixou de ser boa prática e virou requisito.',
   quemSofre: [
     'IS dos BTS → PI-1: sinal analógico, o mais sensível do painel',
     '1-Wire do DS18B20: pulsos de microssegundos, corrompe fácil',
