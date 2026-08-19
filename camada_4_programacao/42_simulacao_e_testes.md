@@ -159,16 +159,16 @@ Nenhuma ferramenta simula tudo. Cada uma resolve uma parte:
 
 | O que você quer testar | Ferramenta | Custo |
 |---|---|---|
-| **Ajustar Kp, Ki, Kd** e ver a curva de temperatura | **`simulacao/simulador.py`** (feito para este projeto) | grátis |
-| Validar o **modo ciclo**, tempos e nº de ciclos | `simulador.py --cenario ciclo` | grátis |
-| Estimar a **duração real do ensaio** | `simulador.py` | grátis |
+| **Ajustar Kp, Ki, Kd** e ver a curva de temperatura | **Simulador do aplicativo** — aba ▶️ Simulador, ou `npm run simula` | grátis |
+| Validar o **modo ciclo**, tempos e nº de ciclos | Simulador do aplicativo, cenário de ciclagem | grátis |
+| Estimar a **duração real do ensaio** | Simulador do aplicativo | grátis |
 | **Rodar o código C++ de verdade** (o mesmo que vai para o Mega) | **Wokwi** — extensão do VS Code (já instalada) ou [wokwi.com](https://wokwi.com) | grátis |
 | Ver o **PWM lento piscando**, testar botões e interrupção de RPM | Wokwi | grátis |
 | Simular o **circuito de comando** (KA1, KA2, selo, emergência) | **Falstad** — [falstad.com/circuit](https://www.falstad.com/circuit/) | grátis |
 | Simular relés, transistores e o lado **eletrônico analógico** | **SimulIDE** (desktop) | grátis |
 | Simulação completa com **BTS7960, motores e cargas reais** | **Proteus** (Labcenter) | pago |
 
-> 📌 **Comece pelo `simulador.py`.** Ele responde a pergunta mais cara do projeto — "meus ganhos de PID estão bons?" — em 3 segundos, sem hardware nenhum.
+> 📌 **Comece pelo simulador do aplicativo** (§42.0). Ele responde a pergunta mais cara do projeto — "meus ganhos de PID estão bons?" — em segundos, sem hardware nenhum, e ainda confere o resultado contra a tabela de estados do Doc 31.
 
 ---
 
@@ -180,21 +180,10 @@ Nenhuma ferramenta simula tudo. Cada uma resolve uma parte:
 
 ### O modelo físico que foi reaproveitado
 
-Simula a câmara **e** a lógica de controle. Não precisa de biblioteca nenhuma além do Python padrão.
-
-```powershell
-cd simulacao
-python simulador.py                       # curva de pull-down (padrão)
-python simulador.py --cenario ciclo       # ensaio de ciclagem térmica
-python simulador.py --cenario falha-fan   # a fan do dissipador para
-python simulador.py --cenario emergencia  # emergência, destrava, rearme, start
-python simulador.py --cenario stop        # STOP e novo START
-python simulador.py --cenario degrau      # resposta ao degrau (para ajustar o PID)
-
-python simulador.py --kp 12 --ki 0.4 --kd 2        # testar outros ganhos
-python simulador.py --ambiente 32                   # dia quente
-python simulador.py --cenario ciclo --csv ensaio.csv  # exportar para o Excel
-```
+⚠️ **Os comandos `python simulador.py ...` saíram junto com o arquivo.** O modelo físico
+abaixo continua valendo — ele foi reaproveitado no simulador do aplicativo — mas quem quiser
+rodar um cenário hoje usa a aba **▶️ Simulador** ou `npm run simula` dentro de
+`painel_interativo/`.
 
 ### O modelo físico
 
@@ -250,57 +239,18 @@ Usa exatamente os números calculados no [Doc 12](../camada_1_maquete/12_camara_
 
 O `simulador.py` testa a **lógica**. O Wokwi testa o **código que vai para o Mega**, compilado de verdade, com as interrupções e o tempo reais.
 
-### Caminho A — VS Code (já está instalado e compilado) ⭐
+### ⚠️ A pasta `simulacao/wokwi/` saiu do repositório
 
-O ambiente já foi montado. O que existe na pasta [`simulacao/wokwi/`](../simulacao/wokwi/):
-
-| Arquivo | Para que serve |
-|---|---|
-| `sketch.ino` | O firmware de simulação |
-| `diagram.json` | O circuito (Mega, DS18B20, botões, LEDs, chave) |
-| `wokwi.toml` | Diz ao Wokwi onde está o firmware compilado |
-| `compilar.ps1` | Roda o `arduino-cli` e gera o `.hex` |
-| `.vscode/tasks.json` | **Ctrl+Shift+B** compila |
-| `build/` | Firmware compilado (gerado, não versionado) |
-
-**Já instalado nesta máquina:** extensão `wokwi.wokwi-vscode` v3.6.0 · `arduino-cli` 1.5.1 · core `arduino:avr` 1.8.8 · bibliotecas `OneWire` e `DallasTemperature`.
-
-#### Para rodar
-
-```powershell
-# 1. Abrir a pasta no VS Code (o wokwi.toml precisa estar na RAIZ do workspace)
-code "simulacao/wokwi"
-
-# 2. Compilar
-.\compilar.ps1          # ou Ctrl+Shift+B dentro do VS Code
-```
-
-```
-# 3. No VS Code:  F1  →  "Wokwi: Start Simulator"
-```
-
-> ⚠️ **Na primeira vez o Wokwi pede uma licença gratuita.** Faça `F1 → "Wokwi: Request a New License"`. Abre o navegador, você entra com uma conta (GitHub/Google) e a licença volta sozinha para o VS Code. É grátis para uso pessoal e educacional, e só precisa ser feito **uma vez**.
->
-> Esse é o único passo que não dá para automatizar — depende de um login no navegador.
-
-#### Depois de mexer no `sketch.ino`
-
-Sempre **recompile** antes de simular: `Ctrl+Shift+B`. O Wokwi roda o `.hex`, não o `.ino` — se você editar o código e não compilar, ele continua rodando a versão anterior. É o erro mais comum de quem usa a extensão.
-
-**Verificação rápida da compilação** (a saída esperada):
-
-```
-Sketch uses 12024 bytes (4%) of program storage space. Maximum is 253952 bytes.
-Global variables use 572 bytes (6%) of dynamic memory, leaving 7620 bytes.
-```
-
-> 📊 **4 % da flash e 6 % da RAM.** O firmware final terá RTC, protocolo da tela e JSON, então vai crescer bastante — mas essa folga confirma que o **Mega é folgado para este projeto**. Um Uno (32 KB / 2 KB) ficaria apertado, e é mais um argumento para a escolha do Mega no relatório.
+Ela existia com o `sketch.ino`, o `diagram.json` e o script de compilação. Saiu junto com o
+`simulador.py`, quando o simulador do aplicativo passou a cobrir o que ela cobria — e o que
+**ela** fazia de diferente (rodar o C++ compilado) continua possível pelo navegador, sem
+instalar nada, com o firmware do [Doc 40](40_firmware_arduino.md).
 
 ### Caminho B — navegador, sem instalar nada
 
 1. Entre em **[wokwi.com](https://wokwi.com)** e crie um projeto novo para **Arduino Mega**.
-2. Cole o conteúdo de [`simulacao/wokwi/sketch.ino`](../simulacao/wokwi/sketch.ino) na aba do código.
-3. Abra a aba **`diagram.json`** e cole o conteúdo de [`simulacao/wokwi/diagram.json`](../simulacao/wokwi/diagram.json).
+2. Cole o firmware do [Doc 40](40_firmware_arduino.md) na aba do código.
+3. Monte o circuito arrastando as peças da tabela **O que está montado**, logo abaixo — são 7 peças.
 4. Clique em **▶ Play**.
 
 > No navegador o Wokwi compila sozinho — não precisa do `arduino-cli` nem de licença. É o caminho mais rápido para os alunos que vão só olhar.
@@ -328,7 +278,7 @@ Global variables use 572 bytes (6%) of dynamic memory, leaving 7620 bytes.
 | 5 | **START recusado sem potência** | Desligue a chave do D25 e aperte START | Serial: `START recusado: 24 V ausentes` |
 | 6 | **Emergência não religa** | Aperte a emergência, solte, e **não** aperte START | Fica em `AGUARDA_START`. **Não pode voltar a rodar sozinho** |
 
-> ⚠️ **Se algum componente aparecer com erro** ao colar o `diagram.json`, é só nome de peça ou de pino que mudou de versão. Apague a peça e arraste uma equivalente pela interface — as ligações estão descritas na tabela acima.
+> ⚠️ **Se uma peça não existir com esse nome** na sua versão do Wokwi, arraste uma equivalente — as ligações estão descritas na tabela acima.
 
 ### O que o Wokwi NÃO simula
 
@@ -337,7 +287,7 @@ Global variables use 572 bytes (6%) of dynamic memory, leaving 7620 bytes.
 | **BTS7960** | Substituído por LEDs. O comportamento do driver é trivial (liga/desliga o que entra) |
 | **Tela ES3C28P** | Substituída pelo Monitor Serial. Teste a IHM depois, com a placa na mão |
 | **AM2315C** | Não é crítico — é sensor de referência, não de controle |
-| **Comportamento térmico** | O DS18B20 é ajustado à mão. Para a dinâmica térmica, use o `simulador.py` |
+| **Comportamento térmico** | O DS18B20 é ajustado à mão. Para a dinâmica térmica, use o simulador do aplicativo (§42.0) |
 | **ESP32 + MQTT junto com o Mega** | O Wokwi simula ESP32, mas não dois microcontroladores conversando. Teste separado |
 
 ---

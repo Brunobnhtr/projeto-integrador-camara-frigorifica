@@ -4,6 +4,11 @@ Curso Técnico em Eletrotécnica · maquete funcional de uma **planta industrial
 
 📖 **Comece por aqui: [`00_indice_projeto.md`](00_indice_projeto.md)** — índice completo, na ordem de construção.
 
+🔩 **Vai montar?** Abra o aplicativo (`cd painel_interativo && npm run dev`) e vá direto em
+**Guia de montagem** — 31 passos, da bancada ao ensaio final, cada um com o que pegar, o que
+fazer e **o que medir para provar que ficou certo** — e em **Componentes soltos**, que mostra
+desenhado onde cada resistor, diodo e LED do projeto se liga.
+
 ---
 
 ## Estrutura
@@ -16,9 +21,9 @@ Curso Técnico em Eletrotécnica · maquete funcional de uma **planta industrial
 | [`camada_3_eletrica/`](camada_3_eletrica/) | Força e distribuição · Comando e proteções · Sinais · Placa de interface |
 | [`camada_4_programacao/`](camada_4_programacao/) | Firmware Arduino · ESP32/IHM/IoT · Simulação |
 | [`camada_5_integracao/`](camada_5_integracao/) | Montagem final e comissionamento |
-| [`desenhos/`](desenhos/) | 7 desenhos técnicos em SVG (unifilar, painel, poste, câmara…) |
-| [`simulacao/`](simulacao/) | Simulador Python + projeto Wokwi |
-| [`tutoriais_video/`](tutoriais_video/) | Aulas em vídeo geradas com Remotion |
+| [`desenhos/`](desenhos/) | Desenhos técnicos em SVG (unifilar, painel, poste, câmara…) |
+| [`painel_interativo/`](painel_interativo/) | ⭐ **O aplicativo**: os dados do projeto, os desenhos gerados deles, o **guia de montagem** e os validadores |
+| [`referencias/`](referencias/) | Relatórios externos, guardados como fonte |
 
 ---
 
@@ -79,10 +84,10 @@ git pull
 | Para | Comando |
 |---|---|
 | Gerar a planilha de compras | `pip install openpyxl` → `python gerar_planilha_bom.py` |
-| Rodar o simulador térmico | `python simulacao/simulador.py` |
-| Editar os vídeos | `cd tutoriais_video && npm install && npm run dev` |
+| Abrir o aplicativo (desenhos, guia de montagem, simulador) | `cd painel_interativo && npm install && npm run dev` |
+| Conferir o projeto inteiro antes de publicar | `cd painel_interativo && npm run valida` |
 
-> `node_modules/` e as saídas de render **não estão no repositório** (são regeneráveis e somam 665 MB). O `npm install` recria tudo.
+> `node_modules/` e a pasta `dist/` **não estão no repositório** (são regeneráveis). O `npm install` recria tudo.
 
 ---
 

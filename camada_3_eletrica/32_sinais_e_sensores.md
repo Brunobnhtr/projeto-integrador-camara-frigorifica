@@ -179,7 +179,7 @@ Duas armadilhas do Arduino Mega estão documentadas aqui, e as duas eram silenci
 >
 > O carimbo de tempo continua vindo do **DS3231 no Mega** — quem sabe a hora é quem manda o registro, não quem grava. A tela só recebe a linha pronta e escreve.
 >
-> ⚠️ **Consequência para o protocolo da IHM:** o link serial deixou de ser só "mostrar na tela" e passou a carregar **registro de ensaio**. O [Doc 41](../camada_4_programacao/41_ihm_e_protocolo.md) precisa de um quadro de log com confirmação de gravação — sem o "gravei", o Mega não tem como saber que o ensaio ficou registrado. 📌 Fica junto da reescrita do Doc 41 para LVGL.
+> ⚠️ **Consequência para o protocolo da IHM:** o link serial deixou de ser só "mostrar na tela" e passou a carregar **registro de ensaio**. O [Doc 41](../camada_4_programacao/41_esp32_ihm_iot.md) precisa de um quadro de log com confirmação de gravação — sem o "gravei", o Mega não tem como saber que o ensaio ficou registrado. 📌 Fica junto da reescrita do Doc 41 para LVGL.
 >
 > 🎁 **Os quatro pinos ficaram livres** (`D50`–`D53`), e são justamente os do SPI por hardware — se um dia entrar um módulo que precise de SPI rápido, o barramento está inteiro e desocupado.
 
@@ -521,7 +521,7 @@ Fans padrão geram 2 pulsos por rotação:
 - [ ] Capacitores de 100 nF em A0 e A1, **junto ao Arduino**
 - [ ] DS18B20 no D2 com pull-up de 4,7 kΩ para +5 V
 - [ ] AM2315C e DS3231 no I²C em **5 V**
-- [ ] ⭐ **2× INA219 no mesmo barramento I²C**, endereços 0x40/0x41/0x44/0x45 — scanner deve achar **6 dispositivos** ([Doc 13](13_posicoes_de_ensaio.md))
+- [ ] ⭐ **2× INA219 no mesmo barramento I²C**, endereços 0x40/0x41/0x44/0x45 — scanner deve achar **6 dispositivos** ([Doc 13](../camada_1_maquete/13_posicoes_de_ensaio.md))
 - [ ] START D22 (NA), STOP D23 (NA), EMERG D24 (**NF**)
 - [ ] Divisor **22 kΩ / 4,7 kΩ** do BD-POT para o pino D25 (medir **~4,2 V** com potência presente)
 - [ ] **Pull-down de 10 kΩ em cada `R_EN`** dos BTS7960 — com o Arduino desligado, medir ~0 V

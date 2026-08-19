@@ -666,8 +666,7 @@ Na aba **"Dentro do painel"**, clicando na PI-1 ou na PI-2 e depois em **"Ver a 
 
 > 🖼️ **Três desenhos, com finalidades diferentes:**
 > - [**Circuito em norma IEC**](../desenhos/10_placa_pi1_circuito.png) ⭐ — esquema elétrico com símbolos normalizados. **Arquivo editável:** [`10_placa_pi1_circuito.cddx`](../desenhos/10_placa_pi1_circuito.cddx)
-> - [**Diagrama de ligação**](../desenhos/09_placa_pi1_montagem.svg) — a placa vista de cima, com o caminho físico de cada fio
-> - [**Esquema em blocos**](../desenhos/08_placa_pi1_esquema.svg) — os 4 circuitos separados, com explicação
+> - **A placa no aplicativo** — aba 🔧 *Dentro do painel* → clique na PI-1. É o desenho furo a furo, gerado do `pi1_fisico.js`: os dois lados da placa, cada jumper com sua rota e uma caixa de conferido por solda feita
 >
 > 💡 **Para editar o `.cddx`:** abra o [editor web do Circuit Diagram](https://www.circuit-diagram.org/editor) (gratuito, roda no navegador, não instala nada) e arraste o arquivo para dentro. Dá para mover peças, mudar valores e exportar de novo.
 >
@@ -700,8 +699,8 @@ Na aba **"Dentro do painel"**, clicando na PI-1 ou na PI-2 e depois em **"Ver a 
 ⚠️ **Repare na numeração:** entradas e saídas ficam **frente a frente** — IN1 em cima à esquerda, OUT1 em cima à direita. Os pinos 5 a 8 e 11 a 14 ficam sem uso.
 
 > 🖼️ **Detalhamento adicional:**
-> - [**Esquema elétrico**](../desenhos/08_placa_pi1_esquema.svg) — mostra **como funciona** (os 4 circuitos separados)
-> - [**Diagrama de ligação**](../desenhos/09_placa_pi1_montagem.svg) ⭐ — mostra **onde cada fio vai**. **É este que você usa para montar**
+> - **Para entender como funciona:** o circuito em norma IEC ([10_placa_pi1_circuito.png](../desenhos/10_placa_pi1_circuito.png))
+> - ⭐ **Para montar:** a aba 🔧 *Dentro do painel* → PI-1, no aplicativo — furo a furo, com a lista de jumpers e o que já foi soldado
 
 ### ⭐ J1 = ENTRADAS · J2 = SAÍDAS
 
@@ -767,8 +766,7 @@ Por isso existe **um único bloco BD-0V**, e o nome dele é **star ground**: tod
 
 > 🖼️ **Três desenhos, com finalidades diferentes:**
 > - [**Circuito em norma IEC**](../desenhos/10_placa_pi1_circuito.png) ⭐ — esquema elétrico com símbolos normalizados. **Arquivo editável:** [`10_placa_pi1_circuito.cddx`](../desenhos/10_placa_pi1_circuito.cddx)
-> - [**Diagrama de ligação**](../desenhos/09_placa_pi1_montagem.svg) — a placa vista de cima, com o caminho físico de cada fio
-> - [**Esquema em blocos**](../desenhos/08_placa_pi1_esquema.svg) — os 4 circuitos separados, com explicação
+> - **A placa no aplicativo** — aba 🔧 *Dentro do painel* → clique na PI-1. É o desenho furo a furo, gerado do `pi1_fisico.js`: os dois lados da placa, cada jumper com sua rota e uma caixa de conferido por solda feita
 >
 > 💡 **Para editar o `.cddx`:** abra o [editor web do Circuit Diagram](https://www.circuit-diagram.org/editor) (gratuito, roda no navegador, não instala nada) e arraste o arquivo para dentro. Dá para mover peças, mudar valores e exportar de novo.
 >
@@ -801,8 +799,8 @@ Por isso existe **um único bloco BD-0V**, e o nome dele é **star ground**: tod
 ⚠️ **Repare na numeração:** entradas e saídas ficam **frente a frente** — IN1 em cima à esquerda, OUT1 em cima à direita. Os pinos 5 a 8 e 11 a 14 ficam sem uso.
 
 > 🖼️ **Detalhamento adicional:**
-> - [**Esquema elétrico**](../desenhos/08_placa_pi1_esquema.svg) — mostra **como funciona** (os 4 circuitos separados)
-> - [**Diagrama de ligação**](../desenhos/09_placa_pi1_montagem.svg) ⭐ — mostra **onde cada fio vai**. **É este que você usa para montar**
+> - **Para entender como funciona:** o circuito em norma IEC ([10_placa_pi1_circuito.png](../desenhos/10_placa_pi1_circuito.png))
+> - ⭐ **Para montar:** a aba 🔧 *Dentro do painel* → PI-1, no aplicativo — furo a furo, com a lista de jumpers e o que já foi soldado
 
 ### ⚠️ Os bornes NÃO são "entrada" e "saída"
 

@@ -118,44 +118,50 @@
 | Diagrama de comando ⭐ | [06_diagrama_comando.svg](desenhos/06_diagrama_comando.svg) | **Os dois selos (KA1 e KA2), o KA3 em série na bobina do KA2 e o que o Arduino pode e não pode fazer** |
 | **Ligação dos relés KA1–KA4** ⭐ | [11_reles_ligacao.svg](desenhos/11_reles_ligacao.svg) | **Os quatro relés borne por borne, e os componentes discretos pendurados neles** (D1, R10, R11, D2). No painel interativo, clique num relé → *Ver o borne e os componentes nele*. Gerado do `painel_completo.js` |
 | Corte da câmara | [07_camara_corte.svg](desenhos/07_camara_corte.svg) | Camadas de isolamento e circulação de ar |
-| **Esquema da placa PI-1** | [08_placa_pi1_esquema.svg](desenhos/08_placa_pi1_esquema.svg) | **Os 4 circuitos da placa de interface, separados: filtros IS, divisor do D25, pull-up 1-Wire e driver ULN2803** |
 | **Circuito da PI-1 (norma IEC)** ⭐ | [10_placa_pi1_circuito.png](desenhos/10_placa_pi1_circuito.png) | **Esquema elétrico com símbolos normalizados. Editável no navegador pelo arquivo `.cddx`** |
-| **Montagem da placa PI-1** | [09_placa_pi1_montagem.svg](desenhos/09_placa_pi1_montagem.svg) | **Diagrama de LIGAÇÃO: a placa vista de cima, com os componentes nas posições reais, o caminho de cada fio e as 17 ligações** |
 
 > Abra os `.svg` no navegador ou direto no VS Code. Para imprimir, use o navegador (Ctrl+P) — o SVG é vetorial e imprime em qualquer escala sem perder qualidade.
 
 ---
 
-## 🎬 Tutoriais em vídeo
+## 🖥️ O aplicativo do painel
 
-Cada documento vira uma **aula em vídeo** com narração em português e legenda sincronizada — pensada para quem vai montar, não para quem já sabe.
+O que era desenho parado virou aplicativo: `painel_interativo/` (React + Vite). Cada aba é uma
+forma diferente de olhar o mesmo projeto, e **todas saem dos mesmos dados** — mudou o dado,
+mudaram o desenho, o guia e a validação juntos.
 
-| Aula | Documento | Duração | Situação |
-|---|---|---|---|
-| **Camada 1 · Base e Chão de Fábrica** | [Doc 10](camada_1_maquete/10_base_e_chao_de_fabrica.md) | ~3 min 53 s | ⚠️ **narração OK · telas desatualizadas** (ver abaixo) |
-| Camada 3 · Por que K0, K1 e K2? | [Doc 31](camada_3_eletrica/31_comando_e_protecoes.md) | — | ❌ **roteiro obsoleto** — descreve o K0, que saiu do projeto |
-| Camada 1 · Subestação e Postes | Doc 11 | — | ⬜ |
-| Camada 1 · Câmara Térmica | Doc 12 | — | ⬜ |
-| Camada 2 · Painel de Comando | Doc 20 | — | ⬜ |
-| **Camada 3 · Componentes Discretos** | [Doc 33](camada_3_eletrica/33_placa_interface_componentes.md) | — | ⬜ |
-| Camadas 3 a 5 (demais) | Docs 30–50 | — | ⬜ |
-
-> ⚠️ **Auditoria dos vídeos após a revisão "Potência em 24 V":**
-> - **Camada 1 · Doc 10** — a **narração continua correta** (não cita conversores nem tensões de saída). Apenas as **telas** trazem rótulos antigos: `T1 · 12 V` no poste P1, "entrada 12 V potência" e "1 trafo em cada". **Basta corrigir as cenas e re-renderizar — o áudio não precisa ser refeito.**
-> - **Camada 3 · Relés** — o roteiro descreve **K0, K1 e K2** e uma potência de **12 V / 6,3 A**. O projeto hoje tem **KA1 e KA2** (o K0 saiu) e potência de **24 V / 6,0 A**. **O roteiro precisa ser reescrito antes de gerar a narração.** Este vídeo nunca foi renderizado.
-
-📁 Projeto de vídeo: [`tutoriais_video/`](tutoriais_video/) — veja o [README](tutoriais_video/README.md) para gerar as próximas aulas.
+| Aba | Responde |
+|---|---|
+| 🗺️ **A maquete de cima** | Por onde a energia entra e como chega até a câmara |
+| 🔧 **Dentro do painel** | Todos os componentes e terminais em escala real; clicar num relé ou numa placa abre o desenho parafuso a parafuso |
+| 🔩 **Componentes soltos** ⭐ | **Cada resistor, diodo e LED do projeto: onde ele mora, em que perna, se é em série ou de lado, e o que medir para provar que ficou certo** |
+| 🧾 **Guia de montagem** ⭐ | **31 passos, da bancada ao ensaio final. Com o que pegar, o que fazer, o que conferir — e botão de imprimir para levar em papel** |
+| 📐 **Montar a câmara** | Lista de corte em escala e a ordem de montagem do acrílico |
+| ▶️ **Simulador** | Opere o painel: aperte os botões, injete falhas e veja o que acontece |
 
 ```powershell
-cd tutoriais_video
-python scripts/gerar_narracao.py camada1-doc10   # narração + legendas
-npx remotion studio                              # pré-visualizar
-npx remotion render Camada1-Doc10-Base out/aula.mp4
+cd painel_interativo
+npm install
+npm run dev        # abre em http://localhost:5173
+npm run valida     # os 10 validadores — o mesmo que trava a publicação
 ```
 
-> As aulas são geradas com **Remotion** (vídeo programático em React) e **edge-tts** (vozes neurais pt-BR, gratuitas). A duração de cada cena é a duração real do áudio — mudou o roteiro, o vídeo se reajusta sozinho.
+### Onde mora a verdade
+
+| Arquivo | Guarda |
+|---|---|
+| `src/data/painel_completo.js` | Os componentes do painel e todos os terminais |
+| `src/data/fiacao*.js` | Os 126 fios, com as duas pontas, bitola, cor e rota |
+| `src/data/pi1_fisico.js` · `pi2_fisico.js` | A geometria das placas, furo por furo |
+| ⭐ `src/data/discretos.js` | **Todo componente que não é fio nem borne** — 23 registros, 29 peças, com pernas, polaridade, ensaio e passo |
+| ⭐ `src/data/guia.js` | **A ordem de montagem**: fases, passos, ferramentas e conferências |
+
+> ⚠️ **Número elétrico não se escreve em dois lugares.** Quando um valor está nos dados, o
+> documento cita a decisão, não repete o número — foi assim que os 220 Ω dos postes acabaram
+> virando 2,2 kΩ num documento e 220 Ω em outro. O `valida_discretos.mjs` agora vigia isso.
 
 ---
+
 
 ## 🔢 Números do projeto (para o relatório)
 
@@ -225,19 +231,20 @@ npx remotion render Camada1-Doc10-Base out/aula.mp4
 ```
 projeto integrador/
 ├── 00_indice_projeto.md              ← você está aqui
+├── PLANO_REFATORACAO.md              o que está sendo refeito, e por quê
 ├── camada_0_fundamentos/             01 · 02 ⭐ · 03
-├── camada_1_maquete/                 10 · 11 · 12
+├── camada_1_maquete/                 10 · 11 · 12 · 13 · 14
 ├── camada_2_painel/                  20
-├── camada_3_eletrica/                30 · 31 · 32
-├── camada_4_programacao/             40 · 41
+├── camada_3_eletrica/                30 · 31 · 32 · 33
+├── camada_4_programacao/             40 · 41 · 42 · 43
 ├── camada_5_integracao/              50
-├── desenhos/                         7 desenhos técnicos em SVG
-├── tutoriais_video/                  projeto Remotion das aulas em vídeo
+├── painel_interativo/                ⭐ o aplicativo: dados, desenhos, guia e validadores
+├── desenhos/                         desenhos técnicos em SVG
+├── referencias/                      relatórios externos, guardados como fonte
+├── imagens/                          fotos dos componentes comprados
 ├── gerar_planilha_bom.py             gera o Excel de compras a partir da BOM
-├── BOM_Projeto_Integrador.xlsx       planilha gerada (139 itens)
-└── _arquivo_v1/                      documentação anterior (histórico)
+└── BOM_Projeto_Integrador.xlsx       planilha gerada
 ```
 
 > 📊 A planilha de compras é **gerada a partir do markdown**, não escrita à mão: editou a BOM no [Doc 03](camada_0_fundamentos/03_lista_materiais.md), rodou `python gerar_planilha_bom.py`, a planilha está atualizada. Não existe lista duplicada para sair de sincronia.
 
-> 📄 A pasta [`_arquivo_v1/`](_arquivo_v1/) guarda a documentação da versão com fonte ATX. Mantida como histórico — **não use para construir**, as tensões e a pinagem mudaram.

@@ -308,4 +308,3 @@ CAMADA 5 — INTEGRAÇÃO
 | **5** | [50 — Montagem e Comissionamento](../camada_5_integracao/50_montagem_e_comissionamento.md) | Integração final, ensaios, ajuste de PID, apresentação |
 
 📁 **Desenhos técnicos:** [pasta `desenhos/`](../desenhos/)
-📁 **Documentação anterior (histórico):** [pasta `_arquivo_v1/`](../_arquivo_v1/)
