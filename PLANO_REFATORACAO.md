@@ -198,22 +198,22 @@ Um `valida_discretos.mjs` novo, rodando no `npm run valida` (que já bloqueia o 
 |---|---|---|
 | 1 ✅ | `discretos.js` + `valida_discretos.mjs`, com os 23 registros (29 peças) cadastrados | A lista completa, conferida por máquina |
 | 2 ✅ | Correção das contradições da §2.2 | Sim — a lista de compras fica confiável |
-| 3 | `FichaDiscreto` + os 4 hosts novos desenhados | Sim — some o "não sei onde isso vai" |
-| 4 | Aba **Guia de montagem** com as fases 1 e 2 | Sim — dá para começar a montar |
-| 5 | Fases 3 a 5 do guia + impressão | Guia completo |
-| 6 | Enxugar (Bloco E) e reescrever o índice/README | Repositório limpo |
+| 3 ✅ | `FichaDiscreto` + os hosts novos desenhados | **Pronto** — aba "Componentes soltos" |
+| 4 ✅ | Aba **Guia de montagem** | **Pronto** — as 5 fases, 31 passos |
+| 5 ✅ | Fiação gerada dos dados + impressão | **Pronto** — 126 fios em 6 etapas, com versão de papel |
+| 6 ◐ | Enxugar e reescrever índice/README | **Parcial** — feito o que apontava para arquivo inexistente; falta o corte de redundância dentro dos documentos |
 
 ---
 
 ## 5. Critérios de aceite
 
 - [x] Nenhum componente do projeto existe só em prosa — os 23 registros (29 peças) estão no cadastro
-- [ ] Clicando em qualquer um deles, aparece **o desenho de onde ele vai**, com os terminais nomeados
-- [ ] O guia cobre da bancada ao ensaio final, e **cada passo diz o que medir para provar que ficou certo**
-- [ ] O guia imprime em papel sem perder desenho
+- [x] Clicando em qualquer um deles, aparece **o desenho de onde ele vai**, com os terminais nomeados
+- [x] O guia cobre da bancada ao ensaio final, e **cada passo diz o que medir para provar que ficou certo**
+- [x] O guia imprime em papel sem perder desenho
 - [x] `npm run valida` reprova se alguém citar um componente que não existe, ou esquecer o ensaio
 - [x] Nenhum valor elétrico aparece com dois números diferentes em dois arquivos *(os quatro fatos vigiados; a varredura completa vem na etapa 6)*
-- [ ] README e índice só apontam para coisas que existem
+- [x] README e índice só apontam para coisas que existem
 
 ---
 
@@ -262,3 +262,36 @@ duas placas repetem `R1` e `R2` para componentes de valores diferentes (22 kΩ �
 
 Proposta: os discretos ganham prefixo do lugar onde moram — `PI1-R1`, `PI2-R1` — que é como o
 cadastro já os identifica internamente. Fica a decidir se os documentos passam a usar essa forma.
+
+### Etapas 3, 4 e 5 ✅ — o que dá para abrir agora
+
+`cd painel_interativo && npm run dev`, e duas abas novas:
+
+**🔩 Componentes soltos** — os 23 registros agrupados pelos 5 lugares onde moram. Clicando em
+qualquer um: o desenho da ligação (em série o fio atravessa; de lado o desenho mostra o fio do
+circuito passando por cima e a peça pendurada embaixo), os parafusos com nome, o lado certo, o
+que acontece se inverter, e o que medir.
+
+**🧾 Guia de montagem** — 31 passos em 5 fases: bancada · as duas placas · painel e fiação ·
+energização por trechos · ensaios. Todo passo traz PEGUE, ANTES, FAÇA, **CONFIRA** e SE ERRAR.
+Os 6 passos de fiação são gerados do `fiacao.js` (126 fios, com as duas pontas, bitola e cor),
+e os passos de componente trazem a ficha desenhada dentro do próprio passo. O que está feito
+fica salvo no navegador, e o botão imprimir gera a versão de papel para a bancada.
+
+### Etapa 6 ◐ — o que já saiu, e o que falta
+
+**Saiu:** os comandos do `simulador.py` e a pasta `simulacao/wokwi/` do Doc 42 (removidos do
+repositório há vários commits, mas ainda ensinados) · a seção de tutoriais em vídeo do índice ·
+as referências do README a `simulacao/` e `tutoriais_video/` · a pasta `_arquivo_v1/` citada e
+inexistente · os desenhos `08` e `09` da PI-1 feitos à mão · 3 links relativos quebrados.
+
+**Fica:** a planilha `.xlsx` continua versionada — ela foi atualizada no meio deste trabalho, e
+o gerador lê o Doc 03, então ela não é fonte duplicada de verdade.
+
+**Falta:**
+
+| O quê | Por quê |
+|---|---|
+| O corte de redundância dentro dos documentos | A decisão foi "corte de verdade": cada explicação fica uma vez, no documento dono do assunto. São 13 mil linhas com repetição entre os docs 30, 31, 32 e 33 |
+| Decidir o **PWM de 1 Hz** na Peltier | O relatório em `referencias/` mostra que 1 Hz é praticamente liga/desliga: derruba o rendimento e encurta a vida da pastilha. A correção (frequência alta com filtro, ou corrente contínua controlada) muda o Doc 40 e talvez a BOM |
+| Renomear as refs que colidem | `R1`, `R2`, `R3` são resistores **e** ramais de energia **e** pontos do BD-0V; e as duas placas repetem `R1`/`R2` com valores diferentes. O cadastro já usa `PI1-R1` / `PI2-R1` por dentro |
