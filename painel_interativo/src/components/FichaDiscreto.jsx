@@ -64,6 +64,21 @@ function Simbolo({ tipo, x, y, giro = 0 }) {
           <path d="M 18 0 H 44" {...traco} />
         </g>
       );
+    case 'modulo':
+      return (
+        <g transform={g}>
+          <rect x={-34} y={-26} width={68} height={52} rx={3} fill={C.papel} {...traco} />
+          <circle cx={0} cy={0} r={13} fill="none" stroke={C.tinta} strokeWidth={1.6} />
+          {/* as voltas do fio de força passando pelo furo */}
+          <g stroke={C.destaque} strokeWidth={2} fill="none">
+            <path d="M -46 -8 q 20 -10 24 4 q 2 12 -12 12 q -14 0 -12 -12 q 2 -14 24 -4" />
+            <path d="M 22 -4 H 46" />
+          </g>
+          <text x={0} y={40} textAnchor="middle" fontSize={9.5} fill={C.fraco}>
+            o fio passa por dentro
+          </text>
+        </g>
+      );
     case 'ci':
       return (
         <g transform={g}>
@@ -103,7 +118,7 @@ function Muitas({ d }) {
     <svg viewBox="0 0 640 230" style={{ width: '100%', height: 'auto' }}
          role="img" aria-label={`Ligações do ${d.ref}`}>
       <text x={320} y={26} textAnchor="middle" fontSize={12.5} fill={C.destaque} fontWeight={700}>
-        {d.pernas.length} ligações — o chanfro do corpo diz para que lado ele entra
+        {d.pernas.length} ligações{d.tipo === 'ci' ? ' — o chanfro do corpo diz para que lado ele entra' : ''}
       </text>
       <Simbolo tipo={d.tipo} x={320} y={125} />
       {d.pernas.map((p, i) => {
@@ -189,6 +204,25 @@ function Arranjo({ d }) {
 function Lugar({ host }) {
   const t = { fontSize: 11, fill: C.fraco, fontFamily: 'system-ui' };
   const traco = { fill: C.fundo, stroke: C.tinta, strokeWidth: 1.6 };
+
+  if (host.id === 'SC-1') return (                  /* o sensor, com as voltas no furo */
+    <svg viewBox="0 0 320 130" style={{ width: '100%', height: 'auto' }}>
+      <rect x={96} y={26} width={128} height={80} rx={4} {...traco} />
+      <circle cx={160} cy={66} r={20} fill="#fff" stroke={C.tinta} strokeWidth={1.6} />
+      <text x={160} y={118} textAnchor="middle" {...t}>WCS2702 — o furo é a janela de leitura</text>
+      {/* o fio entrando, dando voltas e saindo */}
+      <g stroke={C.destaque} strokeWidth={2.2} fill="none">
+        <path d="M 8 50 H 120" />
+        {[0, 6, 12].map(dx => (
+          <ellipse key={dx} cx={160} cy={66} rx={26 - dx * 0.6} ry={30 - dx} />
+        ))}
+        <path d="M 200 82 H 312" />
+      </g>
+      <text x={8} y={42} {...t}>do fusível</text>
+      <text x={252} y={100} {...t}>para a câmara</text>
+      <text x={96} y={20} {...t}>10 voltas, todas no mesmo sentido</text>
+    </svg>
+  );
 
   if (host.tipo === 'modulo') return (              /* BTS7960 visto por baixo */
     <svg viewBox="0 0 320 130" style={{ width: '100%', height: 'auto' }}>

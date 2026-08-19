@@ -110,6 +110,12 @@ export const ARRANJOS = {
     diz: 'Em paralelo, mas com polaridade invertida em relação à tensão normal: '
        + 'no dia a dia ele não conduz nada, e só entra em ação no pico.',
   },
+  passagem: {
+    nome: 'por passagem',
+    diz: 'O condutor ATRAVESSA o componente sem encostar nele — quem passa de um lado '
+       + 'para o outro é o campo magnético, não a corrente. É assim que se mede sem abrir '
+       + 'o circuito.',
+  },
   derivacao: {
     nome: 'em derivação para o 0 V',
     diz: 'Uma perna encosta no caminho do sinal, a outra desce para o 0 V. O '
@@ -351,7 +357,7 @@ export const DISCRETOS = [
   {
     id: 'SC1-SENSOR', ref: 'SC-1', peca: 'Sensor de corrente WCS2702 (Hall, saída digital)',
     tipo: 'modulo', valor: '±2 A · 1,0 mV/mA', qtd: 1, host: 'SC-1',
-    arranjo: 'serie', polaridade: true,
+    arranjo: 'passagem', polaridade: true,
     comoIdentificar: '⭐ O FURO tem sentido: o fio entra por um lado e sai pelo outro. Como as '
                    + '10 voltas são todas no mesmo sentido, basta enrolar sempre para o mesmo '
                    + 'lado — se uma volta vier ao contrário, ela CANCELA outra.',
