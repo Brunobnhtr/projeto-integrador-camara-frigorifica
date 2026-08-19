@@ -17,6 +17,7 @@ import { COMPONENTES } from '../src/data/painel_completo.js';
 import * as PI1 from '../src/data/pi1_fisico.js';
 import * as PI2 from '../src/data/pi2_fisico.js';
 import { RELES } from '../src/data/reles_fisico.js';
+import { TODOS as PASSOS_GUIA, FASES } from '../src/data/guia.js';
 
 const erros = [], avisos = [];
 
@@ -146,6 +147,29 @@ for (const [chave, rele] of Object.entries(RELES))
       erros.push(`${c.ref}: reles_fisico diz que NÃO fica no relé, mas o cadastro põe ele lá`);
   }
 
+/* ── 5b. o guia: todo passo citado existe, e todo passo se prova ───── */
+const passos = new Map(PASSOS_GUIA.map(p => [p.id, p]));
+for (const d of DISCRETOS)
+  if (d.passo && !passos.has(d.passo))
+    erros.push(`${d.id}: aponta para o passo "${d.passo}", que não existe no guia`);
+
+for (const p of PASSOS_GUIA) {
+  if (!FASES.some(f => f.id === p.fase)) erros.push(`passo ${p.id}: fase "${p.fase}" não existe`);
+  for (const campo of ['titulo', 'tempo', 'antes', 'confira', 'seErrar'])
+    if (!p[campo]) erros.push(`passo ${p.id}: falta "${campo}" — passo sem isso não guia ninguém`);
+  if (!p.faca?.length) erros.push(`passo ${p.id}: não diz o que fazer`);
+  if (!p.pegue?.length && !p.fios?.length)
+    erros.push(`passo ${p.id}: não diz o que pegar antes de começar`);
+  for (const id of (p.discretos ?? []))
+    if (!DISCRETOS.some(d => d.id === id))
+      erros.push(`passo ${p.id}: cita o componente "${id}", que não está no cadastro`);
+}
+
+/* componente que não entra em passo nenhum some da montagem */
+for (const d of DISCRETOS)
+  if (!PASSOS_GUIA.some(p => (p.discretos ?? []).includes(d.id)))
+    avisos.push(`${d.id} (${d.ref}) não aparece em nenhum passo do guia — quem monta não vai vê-lo`);
+
 /* ── 6. os documentos não podem discordar dos fatos já decididos ───── */
 const RAIZ = fileURLToPath(new URL('../../', import.meta.url));
 const mds = [];
@@ -193,6 +217,7 @@ for (const arquivo of mds) {
 const porHost = HOSTS.map(h => `${h.id}:${DISCRETOS.filter(d => d.host === h.id).length}`).join(' ');
 console.log(`discretos: ${DISCRETOS.length} registros · ${TOTAL_PECAS} peças físicas · ${HOSTS.length} lugares`);
 console.log(`  . por lugar: ${porHost}`);
+console.log(`  . guia: ${PASSOS_GUIA.length} passos em ${FASES.length} fases`);
 console.log(`  . documentos varridos: ${mds.length} · fatos vigiados: ${FATOS_VIGIADOS.length}`);
 avisos.forEach(a => console.log('  . ' + a));
 if (erros.length) {

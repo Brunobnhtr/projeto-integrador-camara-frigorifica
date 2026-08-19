@@ -149,7 +149,7 @@ export const DISCRETOS = [
           + 'alarme de falha com o sistema funcionando bem.',
     seFaltar: 'A leitura de A0 pula dezenas de contagens e o diagnóstico de corrente vira ruído.',
     ensaio: 'Sistema energizado e em repouso: A0 estável dentro de ±2 contagens de A/D.',
-    passo: 'B-04', fonte: 'Doc 33 §33.2',
+    passo: 'B-05', fonte: 'Doc 33 §33.2',
   },
   {
     id: 'PI1-C2', ref: 'C2', peca: 'Capacitor cerâmico 100 nF (marcado 104)',
@@ -162,7 +162,7 @@ export const DISCRETOS = [
     porque: 'Mesma razão do C1 — o cabo é outro, o problema é igual.',
     seFaltar: 'A leitura de A1 fica instável.',
     ensaio: 'A1 estável dentro de ±2 contagens de A/D com o sistema em repouso.',
-    passo: 'B-04', fonte: 'Doc 33 §33.2',
+    passo: 'B-05', fonte: 'Doc 33 §33.2',
   },
   {
     id: 'PI1-R1', ref: 'R1', peca: 'Resistor 22 kΩ · ¼ W',
@@ -177,7 +177,7 @@ export const DISCRETOS = [
     seFaltar: '⚠️ Ligar o D25 direto nos 24 V destrói a entrada do Arduino.',
     ensaio: 'Com o KA2 fechado, medir o nó D25 contra o 0 V → 4,2 V ± 0,3 V. Com a emergência '
           + 'acionada → 0 V.',
-    passo: 'B-03', fonte: 'Doc 33 §33.2',
+    passo: 'B-04', fonte: 'Doc 33 §33.2',
   },
   {
     id: 'PI1-R2', ref: 'R2', peca: 'Resistor 4,7 kΩ · ¼ W',
@@ -191,7 +191,7 @@ export const DISCRETOS = [
           + 'muda a escala inteira da medição.',
     seFaltar: 'Sem o braço de baixo, o D25 vai a 24 V e a entrada queima.',
     ensaio: 'Ohmímetro com a placa fora do circuito: 4,7 kΩ entre o nó D25 e o 0 V.',
-    passo: 'B-03', fonte: 'Doc 33 §33.2',
+    passo: 'B-04', fonte: 'Doc 33 §33.2',
   },
   {
     id: 'PI1-C3', ref: 'C3', peca: 'Capacitor cerâmico 100 nF (marcado 104)',
@@ -205,7 +205,7 @@ export const DISCRETOS = [
           + '"piscando". Custa centavos e elimina a classe inteira de problema.',
     seFaltar: 'Leitura de potência intermitente, sem causa aparente.',
     ensaio: 'Junto com o ensaio do divisor: 4,2 V estáveis, sem tremer no multímetro.',
-    passo: 'B-04', fonte: 'Doc 33 §33.2',
+    passo: 'B-05', fonte: 'Doc 33 §33.2',
   },
   {
     id: 'PI1-R3', ref: 'R3', peca: 'Resistor 4,7 kΩ · ¼ W',
@@ -220,7 +220,7 @@ export const DISCRETOS = [
           + 'nem com fio perfeito e código perfeito.',
     seFaltar: 'O DS18B20 não responde. Não é leitura instável — é leitura nenhuma.',
     ensaio: 'Ohmímetro entre o D2 e o +5 V → ~4,7 kΩ.',
-    passo: 'B-03', fonte: 'Doc 33 §33.2',
+    passo: 'B-04', fonte: 'Doc 33 §33.2',
   },
   {
     id: 'PI1-CI1', ref: 'CI1', peca: 'ULN2803A em soquete DIP-18',
@@ -241,7 +241,7 @@ export const DISCRETOS = [
           + 'O CI não fornece corrente — ele abre o caminho para o 0 V.',
     ensaio: 'Com o CI FORA do soquete, conferir continuidade de todos os jumpers. Só então '
           + 'encaixar, conferindo o chanfro. Depois: forçar cada saída em HIGH → sinaleiro acende.',
-    passo: 'B-06', fonte: 'Doc 33 §33.2',
+    passo: 'B-08', fonte: 'Doc 33 §33.2',
   },
 
   /* ───────────────────────── PLACA PI-2 ───────────────────────── */
@@ -257,7 +257,7 @@ export const DISCRETOS = [
           + '17,6 mA × 47 Ω = 0,83 V, que o multiplexador lê. Sem o shunt não existe nada para medir.',
     seFaltar: 'A posição 1 fica sem retorno: o DUT não acende e a medição não existe.',
     ensaio: 'Com a posição 1 energizada, medir sobre o shunt → ~0,83 V.',
-    passo: 'B-08', fonte: 'Doc 33 §33.5 · Doc 13 §13.3b',
+    passo: 'B-10', fonte: 'Doc 33 §33.5 · Doc 13 §13.3b',
     aviso: '⚠️ Esta ref colide com o R1 da PI-1, que é outro componente (22 kΩ). Ver §renomear.',
   },
   {
@@ -273,7 +273,7 @@ export const DISCRETOS = [
           + 'com o normal DELA.',
     seFaltar: 'A posição 2 fica sem retorno.',
     ensaio: 'Com a posição 2 energizada, medir sobre o shunt → ~0,46 V.',
-    passo: 'B-08', fonte: 'Doc 33 §33.5 · Doc 13 §13.3b',
+    passo: 'B-10', fonte: 'Doc 33 §33.5 · Doc 13 §13.3b',
     aviso: '⚠️ Esta ref colide com o R2 da PI-1, que é outro componente (4,7 kΩ).',
   },
 
@@ -384,7 +384,7 @@ export const DISCRETOS = [
     seFaltar: '🔥 Sem resistor o LED conduz sem limite e queima em segundos.',
     ensaio: 'LED aceso e estável; medir sobre o resistor → ~1,9 V.',
     montagem: 'Dentro da base do poste, com termorretrátil em cada emenda. Nunca solto no fio.',
-    passo: 'A-06', fonte: 'Doc 33 §33.2 · Doc 03 M.4',
+    passo: 'A-04', fonte: 'Doc 33 §33.2 · Doc 03 M.4',
     aviso: '⚠️ 220 Ω, NÃO 2,2 kΩ. O valor de 2,2 kΩ é da versão antiga, quando estes LEDs eram '
          + 'alimentados em 24 V.',
   },
@@ -404,7 +404,7 @@ export const DISCRETOS = [
     seFaltar: '—',
     ensaio: 'Com o BD-5V energizado, os 4 acendem juntos e continuam acesos na emergência (eles '
           + 'são alimentados pelo permanente).',
-    passo: 'A-06', fonte: 'Doc 03 M.4 · Doc 30 fio 54b',
+    passo: 'A-04', fonte: 'Doc 03 M.4 · Doc 30 fio 54b',
   },
 
   /* ───────────────── FORA DO PAINEL — CÂMARA ─────────────────── */
@@ -424,7 +424,7 @@ export const DISCRETOS = [
     ensaio: 'Teste de diodo entre os terminais da ventoinha, com ela desconectada → conduz num '
           + 'sentido só.',
     montagem: '⚠️ NÃO fica no painel: vai junto das ventoinhas, onde o pico nasce.',
-    passo: 'A-07', fonte: 'Doc 31 §31.14',
+    passo: 'A-05', fonte: 'Doc 31 §31.14',
     aviso: '⚠️ Não confunda com o D1: mesmo componente, funções e lugares diferentes.',
   },
   {
@@ -439,7 +439,7 @@ export const DISCRETOS = [
           + 'a falha do dispositivo.',
     seFaltar: 'Sem ele o LED queima e a posição não tem corrente de referência.',
     ensaio: 'Amperímetro em série na volta da posição 1 → 17,6 mA ± 1 mA.',
-    passo: 'A-08', fonte: 'Doc 13 §13.3b',
+    passo: 'A-06', fonte: 'Doc 13 §13.3b',
     aviso: '⚠️ ½ W. O resistor de 220 Ω / 5 W da versão antiga saiu do projeto junto com a ideia '
          + 'de simular carga térmica.',
   },
@@ -457,7 +457,7 @@ export const DISCRETOS = [
     porque: 'Deixa a demonstração de detecção de falha acontecer aos olhos da banca.',
     seFaltar: '—',
     ensaio: 'Aceso com a posição energizada; apaga ao abrir o jumper de ensaio.',
-    passo: 'A-08', fonte: 'Doc 13 §13.3',
+    passo: 'A-06', fonte: 'Doc 13 §13.3',
   },
   {
     id: 'DUT1-J', ref: 'J-DUT1', peca: 'Micro-chave ou jumper de 2 vias',
@@ -471,7 +471,7 @@ export const DISCRETOS = [
           + 'alarme aparece na IHM e no dashboard.',
     seFaltar: 'A falha só poderia ser demonstrada desligando fio — feio e arriscado na apresentação.',
     ensaio: 'Abrir o jumper com o ensaio rodando → alarme da posição 1 em menos de 2 s.',
-    passo: 'A-08', fonte: 'Doc 13 §13.3',
+    passo: 'A-06', fonte: 'Doc 13 §13.3',
   },
   {
     id: 'DUT2-R', ref: 'R-DUT2', peca: 'Resistor 2,2 kΩ · ½ W',
@@ -485,7 +485,7 @@ export const DISCRETOS = [
           + 'posição com o normal dela, e não com um limiar único.',
     seFaltar: 'Sem ele o LED queima e a posição não tem referência.',
     ensaio: 'Amperímetro em série na volta da posição 2 → 9,8 mA ± 1 mA.',
-    passo: 'A-09', fonte: 'Doc 13 §13.3b',
+    passo: 'A-07', fonte: 'Doc 13 §13.3b',
   },
   {
     id: 'DUT2-LED', ref: 'LED-DUT2', peca: 'LED 5 mm verde',
@@ -500,7 +500,7 @@ export const DISCRETOS = [
     porque: 'Cor diferente da posição 1 para as duas serem distinguíveis pela porta.',
     seFaltar: '—',
     ensaio: 'Aceso com a posição energizada.',
-    passo: 'A-09', fonte: 'Doc 13 §13.3',
+    passo: 'A-07', fonte: 'Doc 13 §13.3',
   },
   {
     id: 'DUT2-J', ref: 'J-DUT2', peca: 'Micro-chave ou jumper de 2 vias',
@@ -513,7 +513,7 @@ export const DISCRETOS = [
     porque: 'Duas posições com jumper permitem mostrar que o alarme identifica QUAL posição caiu.',
     seFaltar: 'Só uma posição demonstrável.',
     ensaio: 'Abrir o jumper → alarme da posição 2, e só dela.',
-    passo: 'A-09', fonte: 'Doc 13 §13.3',
+    passo: 'A-07', fonte: 'Doc 13 §13.3',
   },
 ];
 

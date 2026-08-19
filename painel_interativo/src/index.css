@@ -2,3 +2,26 @@
 html, body, #root { margin: 0; padding: 0; width: 100%; height: 100%; }
 body { font-family: 'Segoe UI', system-ui, Arial, sans-serif; }
 code { font-family: 'Consolas', 'Courier New', monospace; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   IMPRESSÃO — o guia de montagem em papel
+   ═══════════════════════════════════════════════════════════════════
+   ⭐ POR QUE ISTO EXISTE. Na bancada, com ferro de solda numa mão e o
+      alicate na outra, ninguém fica rolando tela. O guia sai em papel
+      com os desenhos junto: o que é controle de tela some, o conteúdo
+      fica, e cada passo é mantido inteiro numa página só.
+   ═══════════════════════════════════════════════════════════════════ */
+.so-impresso { display: none; }
+
+@media print {
+  body { background: #fff !important; }
+  .nao-imprime { display: none !important; }
+  /* na tela os desenhos ficam escondidos até clicar; no papel vêm todos */
+  .so-impresso { display: grid !important; gap: 12px; margin-top: 12px; }
+  .guia { padding: 0 !important; background: #fff !important; }
+  /* passo cortado no meio da página é passo que se erra */
+  .passo-card { break-inside: avoid; page-break-inside: avoid;
+                box-shadow: none !important; border: 1px solid #adb5bd !important; }
+  input[type="checkbox"] { -webkit-appearance: none; appearance: none;
+    width: 13px; height: 13px; border: 1.4px solid #495057; border-radius: 2px; }
+}
