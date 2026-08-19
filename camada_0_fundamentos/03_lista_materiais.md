@@ -75,6 +75,100 @@ Se você já tinha uma lista antiga em mãos, **confira estes seis antes de fech
 
 ---
 
+## 🛒 O carrinho de 19/08/2026 — o que já está separado
+
+> 📌 **Esta seção é o retrato do carrinho real, com os preços do dia.** Ela existe porque
+> conferir anúncio contra projeto é o momento em que os erros de compra aparecem — e aqui já
+> apareceram cinco.
+
+### ✅ O que está certo e pode fechar
+
+| Item no carrinho | R$ | No projeto é | Conferir ao receber |
+|---|---:|---|---|
+| Módulo sensor de tensão DC 0-25 V (5 pçs) | 16,07 | ⭐ **SV-1** — vigia do 24 V, substituiu o divisor soldado | **Meça a saída com 24 V: ~4,8 V.** Ver [Doc 33 §33.4](../camada_3_eletrica/33_placa_interface_componentes.md) |
+| Sensor WCS2702 ajustável | 25,41 | ⭐ **SC-1** — detector de dispositivo morto | Que tenha **furo de passagem** para o fio (é por ele que entram as 10 voltas) |
+| Módulo MOSFET 4 canais optoacoplado PWM | 43,51 | **MV-1** — chaveia as 5 ventoinhas internas | Jumper/entrada em 5 V; ele chaveia o **negativo** |
+| Conversor de nível lógico 4 canais I²C | 10,44 | **CONV** — 5 V ↔ 3,3 V entre Mega e ESP32 | Bidirecional, com os dois lados alimentados |
+| BTS7960 ponte-H 43 A (2 pçs) | 20,96 | **BTS1 e BTS2** | Barra de pinos com `R_EN`, `L_EN`, `R_IS`, `GND` |
+| LM2596 com display (2 pçs) | 21,16 | **T2 (5 V)** e **T3 (12 V)** | ⚠️ **Ajuste na bancada antes de fechar no poste** |
+| Módulo relé 1 canal 5 V (2 pçs) | 6,79 | **KA3** (veto) e **KA4** (ventoinha) | ⭐ **"5VDC" no corpo do relé** e jumper em **H** |
+| AM2315C I²C | 68,59 | Sensor de temperatura e umidade da câmara | Endereço 0x38, não conflita com o RTC (0x68) |
+| ESP32-WROOM-32U DevKitC | 31,72 | **ESP32** — MQTT e dashboard | Versão **U** = conector de antena externa ✔ |
+| Antena 2,4 GHz RP-SMA + cabo U.FL→SMA + flange | 42,00 | A antena do ESP32, do lado de **fora** da caixa | ⚠️ **RP-SMA e SMA não encaixam entre si** — confira que antena e flange são o mesmo padrão |
+| Aquecedor PTC 24 V com ventilador | 78,08 | **PTC** — o lado quente da câmara | ⚠️ Confirme **24 V** (o anúncio vende 12/24/110/220) |
+| DS18B20 à prova d'água, cabo 1 m | 6,90 | Sonda do dissipador (1-Wire) | ⚠️ **VEJA O ALERTA ABAIXO** |
+
+### ⚠️ Os cinco pontos de atenção do carrinho
+
+**1 · O DS18B20 do carrinho parece ser só a sonda — e o projeto precisa do adaptador.**
+O anúncio fala em sonda de aço com cabo de 1 m, e não menciona a plaquinha de terminais. É o
+**adaptador** que traz o **pull-up de 4,7 kΩ** — o resistor sem o qual o sensor não responde
+([Doc 33 §33.4](../camada_3_eletrica/33_placa_interface_componentes.md)). Duas saídas:
+
+- comprar o **kit com adaptador** (`DS18B20 waterproof kit adapter terminal`), ou
+- comprar 1 resistor de 4,7 kΩ e ligá-lo entre `DATA` e `+5 V` no borne — funciona igual.
+
+⭐ **De qualquer forma, meça ao receber:** ohmímetro entre `DATA` e `VCC`, procurando ~4,7 kΩ.
+
+**2 · As placas de ensaio (R$ 64,39) e os bornes KF128 (R$ 16,48) não são mais necessários.**
+Elas eram para a PI-1 e a PI-2 — **as duas deixaram de existir**. O que sobrou de solda no
+projeto é a placa simuladora do DUT, que cabe num pedaço de 30 × 40 mm.
+
+| | Carrinho | Necessário |
+|---|---:|---:|
+| Placas de ensaio | R$ 64,39 (conjunto 5×7, 7×9, 9×15 cm) | uma sobra qualquer, ou a menor do conjunto |
+| Bornes KF128 (2 anúncios) | R$ 16,48 | nenhum — os bornes agora são de **trilho DIN** |
+
+💰 **Economia possível: ~R$ 65**, comprando só a placa menor.
+
+**3 · Os dois módulos DIN de fusível/distribuição podem cobrir mais de um item da lista.**
+
+| Item no carrinho | R$ | Pode substituir |
+|---|---:|---|
+| Módulo de distribuição DC para trilho DIN, com divisora de fusíveis e interruptor | 55,39 | Parte dos blocos **BD-** e o porta-fusível **F-P** |
+| Módulo de interface de fusível DIN 2–15 canais (5×20 mm) | 52,66 | Os fusíveis de ramal **F1, F2, F3** e o **F-P** |
+
+⚠️ **Confira ao receber, antes de comprar bloco de distribuição separado:** quantas saídas tem
+cada um, se cada saída tem fusível próprio, e a corrente máxima. O projeto precisa de **6
+barramentos** (BD-24V, BD-POT, BD-5V, BD-AUX e os dois blocos de 0 V) e de **4 fusíveis**
+(F1 10 A, F2 2 A, F3 2 A e o F-P de 100 mA). Se os dois módulos cobrirem isso, saem itens da
+lista; se não, eles complementam.
+
+**4 · O adaptador DIN do Mega (R$ 113,71) é o item mais caro depois do PTC — e é opcional.**
+O `DNMEGA1` põe o Arduino no trilho e transforma os pinos em bornes de parafuso. Ele combina com
+a decisão de **não soldar nada no painel**, e resolve a fixação do Mega. Mas o projeto funciona
+sem ele, com o Mega parafusado no fundo e cabo com conector nos pinos. **É conforto de montagem,
+não requisito** — decida pelo orçamento.
+
+**5 · Os 6 filamentos COB LED de 3 V não estão no projeto.**
+São R$ 70 em filamentos de letra, DC 3 V. Se forem para letreiro ou iluminação cenográfica da
+maquete, tudo bem — mas ⚠️ **eles são de 3 V**: ligados direto no BD-5V queimam. Cada um precisa
+de resistor em série (`(5 − 3) ÷ 0,02 = 100 Ω`) ou de fonte própria. E, se entrarem na maquete,
+**entram no balanço do BD-5V** ([Doc 02](02_arquitetura_de_energia.md)) — hoje ele já está com
+12 de 14 saídas usadas.
+
+### 🔎 O que ainda falta comprar
+
+Nada disso aparece no carrinho, e tudo é necessário para montar:
+
+| Falta | Qtd | Onde entra |
+|---|---:|---|
+| ⭐ **Sinaleiro 22 mm de 5 V** | 4 | RUN, COOL, HEAT, FALHA — acesos direto pelo pino do Arduino |
+| **Bornes de passagem DIN 2,5 mm²** | 6 | O **BS-1** (filtros) e reservas. ⚠️ 2,5 mm²: em dois deles entram 3 condutores |
+| **Blocos de distribuição DIN** | ver ponto 3 | BD-24V, BD-POT, BD-5V, BD-AUX, BD-0V e BD-0V-B |
+| **Botoeira cogumelo com trava** | 1 | **S0** — a emergência |
+| **Botoeiras 22 mm** (verde, preta, azul) | 3 | S1 START · S2 STOP · S3 REARME |
+| **Relé 24 V 8 pinos + base PTF08A** | 2 | KA1 e KA2 *(consta como item nacional)* |
+| **RTC DS3231** | 1 | Data e hora do log |
+| **Capacitor cerâmico 100 nF** | 4 | C1 e C2 + reservas |
+| **Resistores** ¼ W | ~10 | 2× 10 kΩ (BTS) · 4× 220 Ω (postes) · 1,2 kΩ (DUT) + reservas |
+| **Diodo 1N4007** | 4 | D1 (bobina do KA2) e D2 (ventoinhas) + reservas |
+| **LED 3 mm branco** | 4 | Iluminação dos postes |
+| **Fusíveis** | 8 | F1 10 A · F2/F3 2 A · F-P 100 mA + reservas |
+| **Trilho DIN, canaleta, caixa do painel, cabo e anilhas** | — | A infraestrutura do painel ([Doc 20](../camada_2_painel/20_painel_projeto_e_layout.md)) |
+
+---
+
 ## Índice de compras por prioridade
 
 | Lote | Quando comprar | Itens | Custo estimado |
@@ -887,57 +981,47 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 
 > 💡 **O item mais importante desta tabela é o jumper.** Sem ele você não consegue demonstrar a detecção de falha — que é justamente a melhoria que o edital pede.
 
-## L.5 — Placa de Interface PI-1 (onde os componentes discretos moram)
+## L.5 — Módulos de interface e componentes em borne
 
-> ⭐ **Nenhum resistor ou capacitor deste projeto fica pendurado no fio.** Nove deles vão para uma placa em caixa DIN ao lado do Arduino, e dois vão soldados nos próprios BTS7960. O documento com a ligação **perna por perna** de cada componente, e o motivo de cada um existir, é o [Doc 33](../camada_3_eletrica/33_placa_interface_componentes.md).
+> ⭐ **Nenhum resistor ou capacitor deste projeto fica pendurado no fio — e nenhum é soldado
+> dentro do painel.** O que era a placa PI-1 virou dois módulos comprados e três bornes; o resto
+> dos discretos mora parafusado no borne do próprio equipamento. A ligação **perna por perna** de
+> cada um está no [Doc 33](../camada_3_eletrica/33_placa_interface_componentes.md), e o passo a
+> passo com o que medir está na aba **Guia de montagem** do aplicativo.
 
-| Item | Qtd | Especificação | Link |
-|---|---:|---|---|
-| **Placa ilhada (padrão furos isolados)** | 1 | ~5 × 7 cm. ⚠️ **Ilhada, não de barramento** — na de barramento você acaba tendo que cortar trilha, e é dali que saem os curtos difíceis de achar | |
-| ~~Caixa modular para trilho DIN~~ | ~~1~~ | 🗑️ **NÃO COMPRE.** Ela era o invólucro da PI-1. Os módulos que a substituíram já vêm com furo de fixação e ficam no trilho | |
-| ⭐ **Borne de passagem para trilho DIN — 2,5 mm²** | 6 | 3 em uso (`A0`, `A1`, `0V` do BS-1) + 3 reserva. ⚠️ **De 2,5 mm², não de 1,5:** em cada um dos dois primeiros entram TRÊS condutores — o fio que chega do BTS, o fio que vai ao Arduino e uma perna do capacitor | |
-| ⭐ **Módulo sensor de tensão 0–25 V** | 1 (vem em pacote de 5) | 🔎 **Substituiu o divisor R1 + R2 + C3 da PI-1.** Divisor resistivo 30 kΩ / 7,5 kΩ com borne de parafuso na entrada. ⚠️ **Ele divide por 5** (24 V → 4,8 V), e o divisor soldado dividia por 5,68 (4,22 V): **meça a saída antes de ligar no D25**. Buscar `modulo sensor de tensao 25V arduino` | |
-| ⭐ **Kit DS18B20 à prova d'água + adaptador com pull-up** | 2 | 🔎 **Substituiu o R3 da PI-1.** Vem a sonda (cabo de 1 m), o adaptador de terminal plugável com o **pull-up de 4,7 kΩ embutido** e o cabo de 3 vias. ⚠️ **MEÇA AO RECEBER:** ohmímetro entre `DAT` e `VCC` do adaptador deve dar ~4,7 kΩ — há modelos anunciados "com pull-up" que vêm sem o resistor, e o sintoma é sensor mudo. Buscar `DS18B20 waterproof kit adapter terminal` | |
-| ~~CI ULN2803A (DIP 18 pinos)~~ | ~~2~~ | 🗑️ **NÃO COMPRE MAIS.** Ele existia para adaptar 5 V do pino a 24 V do sinaleiro. Com o sinaleiro de 5 V, o pino aciona direto e o CI perdeu a função — junto com o soquete DIP-18, 9 vias de borne da PI-1, 10 jumpers e 5 fios do painel. Ver [Doc 33 §33.8](../camada_3_eletrica/33_placa_interface_componentes.md) | |
-| **Soquete DIP 18 pinos** | 1 | ⚠️ **Solde o soquete, não o CI.** Permite trocar o chip sem dessoldar nada | |
-| ⭐ **Módulo relé 1 canal 5 V, optoacoplado** | 4 | **`KA3` e `KA4`** — 2 em uso + 2 reserva. ⚠️ **Exija três coisas no anúncio:** *optoacoplador*, **jumper de gatilho alto/baixo** e a variante de **5 V** (a foto costuma ser da de 24 V — confira no corpo do relé ao receber). Contato 10 A / 30 Vcc, 51 × 25,5 mm, 65 mA cada. Buscar `modulo rele 1 canal 5v optoacoplador`. ⭐ **O KA3 usa o `NO` e o KA4 usa o `NC`** — estados seguros opostos, de propósito. 💰 **E é aqui que o projeto economiza:** o KA3 conduz 37 mA e o KA4 conduz 0,36 A. Relé de 8 pinos de 10 A nestes dois seria R$ 75 de folga que ninguém usa — só o **KA2** precisa mesmo dos 10 A. Ver [Doc 31 §31.13 e §31.14](../camada_3_eletrica/31_comando_e_protecoes.md) | |
-| ⭐ **Caixa modular DIN 4 módulos (70 mm)** | 1 | Abriga os **dois** módulos de relé empilhados, no trilho 2. Buscar `caixa para trilho din 4m modular` | |
-| ⭐ **Resistor 10 kΩ · ¼ W** | 4 | **`R10` e `R11`** — pull-down do `IN` de cada módulo para o 0 V. 2 em uso + 2 reserva. ⚠️ **É o que torna o fail-safe medível:** Arduino ausente ou fio rompido → `IN` em 0 V → relé aberto → potência cortada e ventoinha parada | |
-| ⭐ **Diodo 1N4007** | — | **`D1` (bobina do KA2) e `D2` (ventoinhas do radiador).** ⭐ **Não compre de novo: já estão na lista L.2**, com 2 reservas. 🔥 **Ficaram MAIS importantes com os módulos de relé:** um contato seco abrindo uma bobina forma arco **no contato do KA3**, e um contato que pita acaba soldando — o veto do firmware perdido em silêncio. 🔎 **O `D1` pode ser dispensável:** teste o KA2 em *teste de diodo* entre `A1` e `A2`; se conduzir num sentido só, ele já tem diodo interno. ⚠️ **O `D2` é obrigatório** — o motor é indutivo e nada o grampeia. Catodo no **+12 V** | |
-| Fio rígido 0,25 mm² para interligação | 1 m | Ligações por baixo da placa. ⚠️ Não usar "sobra de perna" de componente em trecho longo — oxida e não é isolada | |
-| Verniz spray para PCI (ou esmalte incolor) | 1 | Proteção do lado da solda contra umidade e oxidação | |
-| Termorretrátil Ø 2 mm | 30 cm | Isolação dos 2 resistores de 10 kΩ soldados nos BTS7960 | |
-| Etiqueta impressa em papel adesivo | 1 | Identificação das 20 vias na frente da caixa — **é o que torna a placa auditável** | |
+| Item | Qtd | Especificação | R$ |
+|---|---:|---|---:|
+| ⭐ **Módulo sensor de tensão 0–25 V** | 1 (pacote de 5) | **SV-1** — substituiu o divisor `R1 + R2 + C3`. Divisor 30 kΩ / 7,5 kΩ com borne de parafuso. ⚠️ **Divide por 5** (24 V → 4,8 V), e o soldado dividia por 5,68 (4,22 V): **meça a saída antes de ligar no D25** | 16,07 |
+| ⭐ **DS18B20 à prova d'água + adaptador com pull-up** | 2 | **AD-1** — substituiu o `R3`. ⚠️ **O pull-up de 4,7 kΩ está no ADAPTADOR, não na sonda.** Se comprar só a sonda, compre também 1 resistor de 4,7 kΩ. **Meça ao receber:** ~4,7 kΩ entre `DAT` e `VCC` | 6,90 |
+| ⭐ **Borne de passagem DIN 2,5 mm²** | 6 | **BS-1** — 3 em uso (`A0`, `A1`, `0V`) + 3 reserva. ⚠️ **2,5 mm², não 1,5:** em dois deles entram **três** condutores (fio do BTS, fio do Arduino e perna do capacitor) | — |
+| **Capacitor cerâmico 100 nF** | 4 | `C1` e `C2` + reservas — parafusados no BS-1, sem solda | — |
+| ⭐ **Módulo relé 1 canal 5 V, optoacoplado** | 4 | **`KA3`** (veto, contato `NO`) e **`KA4`** (ventoinha, contato `NC`) — 2 em uso + 2 reserva. ⚠️ Exija *optoacoplador*, **jumper H/L** e a variante de **5 V** (a foto costuma ser da de 24 V). 💰 Relé de 8 pinos aqui seria R$ 75 de folga que ninguém usa — só o **KA2** precisa dos 10 A | 6,79 |
+| ⭐ **Caixa modular DIN 4 módulos (70 mm)** | 1 | Abriga os **dois** módulos de relé empilhados, no trilho 2 | — |
+| ⭐ **Resistor 10 kΩ · ¼ W** | 4 | `R10` e `R11` (pull-down dos `IN`) + `R8` e `R9` (soldados nos BTS7960). ⚠️ **É o que torna o fail-safe medível:** Arduino ausente ou fio rompido → `IN` em 0 V → potência cortada e ventoinha girando | — |
+| ⭐ **Diodo 1N4007** | 4 | `D1` (bobina do KA2) e `D2` (ventoinhas) + 2 reservas. 🔎 **O `D1` pode ser dispensável:** teste o KA2 em *teste de diodo* entre `A1` e `A2` — se conduzir num sentido só, ele já tem diodo interno. ⚠️ **O `D2` é obrigatório** | — |
+| Termorretrátil Ø 2 mm | 30 cm | Isolação dos 10 kΩ soldados nos BTS7960 e das emendas nos postes | — |
+| Etiqueta impressa em papel adesivo | 1 | Identificação dos bornes — **é o que torna a montagem auditável** | — |
 
-> 📌 **Componentes que vão NA placa PI-1:** 2× 100 nF (filtro IS) · 1× 22 kΩ + 1× 4,7 kΩ + 1× 100 nF (divisor D25) · 1× 4,7 kΩ (pull-up 1-Wire). **São 6 peças e nenhum CI** — o ULN2803A saiu com a mudança dos sinaleiros para 5 V. Os passivos já estão nas listas L.2 e L.4 — não compre de novo.
+> 🗑️ **Saíram desta lista, e não devem ser comprados:** placa ilhada para o painel, caixa DIN da
+> PI-1, bornes KF301/KF128 de placa, CI ULN2803A, soquete DIP-18, verniz para PCI e o fio de
+> interligação por baixo da placa. **Não há mais placa no painel.**
+
+> ⭐ **Onde cada discreto mora hoje** — 16 registros, 22 peças, nenhuma soldada em placa:
 >
-> ⭐ **O KA3, o KA4 e seus resistores NÃO vão na PI-1.** Os dois módulos de relé moram numa **caixa DIN de 4 módulos, no trilho 2** — onde a canaleta de baixo já é de potência e serve o trilho 1 diretamente. A primeira versão punha um MOSFET na PI-1 e o `npm run valida` reprovou: o circuito da bobina teria de atravessar o painel duas vezes, uma delas pela canaleta de sinal. **Componente de ancoragem é de proximidade.**
->
-> 📌 **Os 4× 220 Ω NÃO vão mais na PI-1.** Eles mudaram de função: agora limitam a corrente dos **LEDs brancos da iluminação pública da maquete**, que passaram a ser de **5 V**. Montam-se dentro da base de cada poste de iluminação (seção M.4).
->
-> 📌 **Componentes que NÃO vão na placa:** os 2× 10 kΩ de pull-down são soldados **no próprio BTS7960**, entre `R_EN` e `GND`. Não é preciosismo — é o único ponto em que um rompimento de cabo ainda deixa o driver desligado. A explicação completa está no [Doc 33 §33.4](../camada_3_eletrica/33_placa_interface_componentes.md).
+> | Lugar | Peças |
+> |---|---|
+> | Bornes do **BS-1** | `C1`, `C2` (100 nF) |
+> | Bornes dos relés | `D1` no KA2 · `R10` e `R11` nos módulos |
+> | Dentro dos **BTS7960** | `R8`, `R9` (10 kΩ, soldados no módulo) |
+> | Na **maquete** | `R4`–`R7` (220 Ω) + 4 LEDs brancos, nas bases dos postes |
+> | Na **câmara** | `D2` nas ventoinhas · resistor, LED e jumper do DUT |
+> | **Módulos comprados** | `SV-1`, `AD-1`, `SC-1` |
 
----
+> 📌 **O KA3, o KA4 e seus resistores ficam no trilho 2**, não junto do Arduino — onde a canaleta
+> de baixo já é de potência e serve o trilho 1 diretamente. A primeira versão punha um MOSFET na
+> PI-1 e o `npm run valida` reprovou: o circuito da bobina teria de atravessar o painel duas
+> vezes, uma delas pela canaleta de sinal. **Componente de ancoragem é de proximidade.**
 
-# 🔧 CAMADA 3 — CABOS E ACESSÓRIOS
-
-| Item | Qtd | Especificação | Aplicação |
-|---|---:|---|---|
-| Cabo flexível 1,5 mm² preto | 3 m | 750 V | Retorno geral 0 V (6,9 A — soma dos 3 ramais) |
-| Cabo flexível 1,5 mm² vermelho | 2 m | 750 V | **24 V de potência** — P1 → painel → BTS (6,0 A) |
-| Cabo flexível 0,75 mm² vermelho/preto | 3 m | 750 V | Barramento 24 V (trechos internos) e **saída de 12 V do T3** (1,0 A) |
-| Cabo flexível 0,5 mm² (5 cores) | 10 m | 750 V | 5 V e derivações do 12 V auxiliar |
-| Cabo flexível 0,25 mm² (8 cores) | 15 m | Sinais | Sensores, botões, comunicação |
-| Cabo par trançado blindado 2×0,25 mm² | 2 m | Blindado, malha aterrada em **um** ponto | I²C e 1-Wire (trecho câmara → painel) |
-| Terminal tubular (ilhós) 0,25 / 0,5 / 1,5 mm² | 1 kit | Com colarinho colorido | **Obrigatório** em todo borne parafuso |
-| Alicate de crimpar terminal tubular | 1 | Tipo quadrado/hexagonal | Ferramenta |
-| Terminal olhal M4 | 10 | Amarelo/vermelho | Aterramento |
-| Espaguete termorretrátil (kit) | 1 | Diversas bitolas | Isolação de emendas |
-| Abraçadeiras de nylon 100 mm | 100 | — | Amarração |
-| Anilhas de identificação de cabo | 1 kit | Numeradas 0–9 | Identificação (norma de painel) |
-| Espiral organizador Ø 8 mm | 2 m | — | Chicote painel → câmara |
-
----
 
 ## Resumo de conferência rápida
 
