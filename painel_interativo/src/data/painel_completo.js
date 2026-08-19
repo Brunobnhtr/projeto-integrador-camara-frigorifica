@@ -433,7 +433,7 @@ export const COMPONENTES = [
   {
     id: 'KA1', nome: 'KA1 — SEGURANÇA: cai na emergência, rearme azul', trilho: 1,
     resumoFuncao: '🔎 O QUE ELE FAZ: e o rele da SEGURANCA. Sela-se sozinho quando alguem aperta o REARME azul e so cai quando o cogumelo e socado. Nenhum fio do Arduino chega perto dele — e por isso que a emergencia nao depende de software. Enquanto ele estiver caido, nada no painel pode armar potencia.',
-    x: 362, largura: 34, altura: 50, cor: '#7048e8',
+    x: 372, largura: 34, altura: 50, cor: '#7048e8',
     nota: 'Relé de 8 pinos com 2 contatos reversíveis, em base PTF08A.',
     grupos: [
       /* ⭐ A base PTF08A tem os 8 terminais em DUAS fileiras de 4.
@@ -463,7 +463,7 @@ export const COMPONENTES = [
   {
     id: 'KA2', nome: 'KA2 — PROCESSO: cai no STOP, religa no verde', trilho: 1,
     resumoFuncao: '🔎 O QUE ELE FAZ: e o rele do PROCESSO, e o unico que liga e desliga os 24 V dos BTS. Tem selo proprio: o botao VERDE o arma, o botao PRETO o derruba (e ele NAO volta sozinho), e o KA3 pode derruba-lo tambem, quando o firmware detecta uma falha. ⚠ Contato de 10 A em corrente continua — ele pode abrir sob os 6 A da Peltier.',
-    x: 402, largura: 34, altura: 50, cor: '#7048e8',
+    x: 410, largura: 34, altura: 50, cor: '#7048e8',
     nota: '⚠️ Contato declarado em CORRENTE CONTÍNUA, mínimo 10 A.',
     grupos: [
       { ref: 'CIMA', lado: 'cima', legenda: 'Fileira de cima · pinos 4 · 8 · 12 · 14', pinos: [
@@ -655,7 +655,7 @@ export const COMPONENTES = [
   {
     id: 'BD-AUX', nome: 'BD-AUX — 12 V das ventoinhas (permanente)', trilho: 1,
     resumoFuncao: '🔎 O QUE ELE E: os 12 V das ventoinhas, tambem permanente. Ele nao passa pelo KA2 de proposito: e o que permite as ventoinhas do radiador continuarem resfriando o dissipador quente DEPOIS de alguem socar o cogumelo.',
-    x: 72, largura: 36, altura: 58, cor: '#fab005',
+    x: 68, largura: 36, altura: 58, cor: '#fab005',
     grupos: [
       { ref: 'IN', lado: 'cima', legenda: 'Entrada 2,5 mm² (1)', pinos: [via('IN', 1, 'prensa-cabo do 12 V')] },
       { ref: 'OUT', lado: 'baixo', legenda: 'Saídas (4)', pinos: [
@@ -679,7 +679,7 @@ export const COMPONENTES = [
   {
     id: 'BD-24V', nome: 'BD-24V — 24 V PERMANENTE (comando)', trilho: 1,
     resumoFuncao: '🔎 O QUE ELE E: a barra dos 24 V que SOBREVIVE. Alimenta a cadeia de comando (o cogumelo, o rearme, os reles) e a posicao de ensaio. ⭐ Tem de ser permanente: se a cadeia de comando fosse alimentada pela potencia que ela mesma comanda, nada nunca ligaria. ⭐ AS SAIDAS O3 E O5 FICARAM LIVRES quando os sinaleiros passaram para 5 V — antes elas levavam o positivo comum das lampadas e o COM do ULN2803.',
-    x: 114, largura: 45, altura: 58, cor: '#e8590c',
+    x: 106, largura: 45, altura: 58, cor: '#e8590c',
     nota: 'PERMANENTE — não cai na emergência.',
     grupos: [
       { ref: 'IN', lado: 'cima', legenda: 'Entrada 2,5 mm² (1)', pinos: [via('IN', 1, 'prensa-cabo dos 24 V de serviços')] },
@@ -693,7 +693,7 @@ export const COMPONENTES = [
   {
     id: 'BD-5V', nome: 'BD-5V — 5,10 V da eletrônica (permanente)', trilho: 1,
     resumoFuncao: '🔎 O QUE ELE E: os 5,10 V de toda a eletronica — Mega, IHM, ESP32, RTC e os dois modulos de rele. Permanente: o Arduino tem de continuar vivo depois da emergencia para registrar o evento no log e mostrar o alerta na tela.',
-    x: 165, largura: 87, altura: 58, cor: '#f08c00',
+    x: 153, largura: 87, altura: 58, cor: '#f08c00',
     grupos: [
       { ref: 'IN', lado: 'cima', legenda: 'Entrada 2,5 mm² (1)', pinos: [via('IN', 1, 'prensa-cabo dos 5 V')] },
       { ref: 'OUT', lado: 'baixo', legenda: 'Saídas (12) ⬆', pinos: [
@@ -713,9 +713,9 @@ export const COMPONENTES = [
   {
     id: 'BD-0V', nome: 'BD-0V — retorno único de tudo (star ground)', trilho: 1,
     resumoFuncao: '🔎 O QUE ELE E: o ponto onde TODO retorno do painel se encontra, um parafuso por dispositivo. ⭐ Estrela, nunca em cadeia: pendurar um retorno no outro faz a corrente de um virar erro de medicao do outro — e como os BTS chaveiam, esse erro PISCA no ritmo do PWM. Chama-se acoplamento por impedancia comum e e a causa numero 1 de medicao ruim em painel.',
-    x: 258, largura: 105, altura: 58, cor: '#212529',
+    x: 242, largura: 126, altura: 58, cor: '#212529',
     nota: '⭐ O ÚNICO 0 V do projeto. Barra de 24 pontos — três blocos de 8, ligados por '
-        + 'ponte de 4 mm². ⭐ Subiu de 20 para 24 quando o retorno da posição de ensaio '
+        + 'ponte de 4 mm². ⚠️ 126 mm: com 24 saídas ele é o componente mais largo do painel. ⭐ Subiu de 20 para 24 quando o retorno da posição de ensaio '
         + 'passou a vir direto para cá, em vez de atravessar o shunt da PI-2.',
     grupos: [
       { ref: 'IN', lado: 'cima', legenda: 'Entrada 10 mm² (1)', pinos: [via('IN', 1, 'retorno do padrão de entrada')] },

@@ -602,7 +602,10 @@ export default function VistaPainelInterno() {
                     {t.nome}
                   </div>
                   <div style={{ fontSize: 11, color: '#868e96', marginBottom: 4 }}>
-                    {larg} de 360 mm · sobram {360 - larg} mm
+                    {larg} de {TRILHO_X1 - TRILHO_X0} mm · sobram{' '}
+                    <b style={{ color: TRILHO_X1 - TRILHO_X0 - larg < 0 ? '#c92a2a' : '#868e96' }}>
+                      {TRILHO_X1 - TRILHO_X0 - larg} mm
+                    </b>
                   </div>
                   {cs.map(c => {
                     const ps = c.grupos.flatMap(g => g.pinos);

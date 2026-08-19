@@ -394,13 +394,13 @@ O projeto declarava um **PG9** ali, com "capacidade: 14 fios" escrito à mão. R
 | # | Componente | X | Largura | Termina em |
 |---:|---|---:|---:|---:|
 | 1 | **BD-POT** — 24 V COMUTADO (morre na emergência) | 30 | 36 mm | 66 |
-| 2 | **BD-AUX** — 12 V das ventoinhas (permanente) | 72 | 36 mm | 108 |
-| 3 | **BD-24V** — 24 V PERMANENTE (comando) | 114 | 45 mm | 159 |
-| 4 | **BD-5V** — 5,10 V da eletrônica (permanente) | 165 | 87 mm | 252 |
-| 5 | **BD-0V** — retorno único de tudo (star ground) | 258 | 105 mm | 363 |
-| 6 | **KA1** — SEGURANÇA: cai na emergência, rearme azul | 362 | 34 mm | 396 |
-| 7 | **KA2** — PROCESSO: cai no STOP, religa no verde | 402 | 34 mm | 436 |
-| | **Ocupação total** | | **406 mm** | livre até 458 — sobram **22 mm** |
+| 2 | **BD-AUX** — 12 V das ventoinhas (permanente) | 68 | 36 mm | 104 |
+| 3 | **BD-24V** — 24 V PERMANENTE (comando) | 106 | 45 mm | 151 |
+| 4 | **BD-5V** — 5,10 V da eletrônica (permanente) | 153 | 87 mm | 240 |
+| 5 | **BD-0V** — retorno único de tudo (star ground) | 242 | 126 mm | 368 |
+| 6 | **KA1** — SEGURANÇA: cai na emergência, rearme azul | 372 | 34 mm | 406 |
+| 7 | **KA2** — PROCESSO: cai no STOP, religa no verde | 410 | 34 mm | 444 |
+| | **Ocupação total** | | **414 mm** | livre até 458 — sobram **14 mm** |
 
 ### TRILHO 2 — Potência e comando (Y = 255)
 

@@ -15,6 +15,38 @@ const UTIL = Math.round(Math.min(...cv.map(k => k.x)) === cv[0].x
   ? cv[1].x - (cv[0].x + cv[0].w) : 0);
 
 const erros = [], avisos = [];
+
+/* ── os componentes cabem no trilho, e nenhum invade o vizinho? ───────
+   ⭐ ESTA REGRA FALTAVA, e o preço apareceu: o BD-0V estava 1 mm dentro do
+   KA1 havia semanas, e ninguém viu — o desenho é pequeno demais para o
+   olho pegar 1 mm. Quando o BD-0V cresceu para 24 saídas, o erro virou
+   21 mm de invasão. Máquina confere milímetro; pessoa não. */
+{
+  const util = TRILHO_X1 - TRILHO_X0;
+  for (const t of TRILHOS) {
+    const cs = COMPONENTES.filter(c => c.trilho === t.n).sort((a, b) => a.x - b.x);
+    if (!cs.length) continue;
+    const soma = cs.reduce((a, c) => a + c.largura, 0);
+    console.log(`   trilho ${t.n}: ${soma} mm de ${util} · sobram ${util - soma} mm`);
+    if (soma > util)
+      erros.push(`trilho ${t.n}: ${soma} mm de componentes num trilho de ${util} mm`);
+    for (let i = 1; i < cs.length; i++) {
+      const fim = cs[i - 1].x + cs[i - 1].largura;
+      if (cs[i].x < fim)
+        erros.push(`trilho ${t.n}: ${cs[i - 1].id} invade ${cs[i].id} em ${fim - cs[i].x} mm`);
+    }
+    /* começar antes da régua ou passar dela é aviso, não erro: a régua
+       TRILHO_X0..X1 é o trilho, e o corpo do componente pode avançar um
+       pouco sobre a canaleta sem encostar nela. Sobreposição entre dois
+       componentes, essa sim, é impossível de montar. */
+    if (PLACA.x + cs[0].x < TRILHO_X0)
+      avisos.push(`trilho ${t.n}: ${cs[0].id} começa em ${PLACA.x + cs[0].x}, antes da régua (${TRILHO_X0})`);
+    const ultimo = cs[cs.length - 1];
+    if (PLACA.x + ultimo.x + ultimo.largura > TRILHO_X1)
+      avisos.push(`trilho ${t.n}: ${ultimo.id} termina em ${PLACA.x + ultimo.x + ultimo.largura}, além da régua (${TRILHO_X1})`);
+  }
+}
+
 let totPinos = 0, totUsados = 0;
 
 console.log(`caixa ${CAIXA.largura} × ${CAIXA.altura} × ${CAIXA.profundidade} mm\n`);
