@@ -308,7 +308,7 @@ Para os ramais com conversor, `I₂₄ = P_saída / (η × 24 V)`. Para o **R1 n
 
 > ⭐ **O `η = 1,00` do R1 é o argumento central do Plano B.** No arranjo anterior, os 75 W térmicos atravessavam o XL4016 e **10 W viravam calor** dentro do poste P1. Agora a potência térmica vai da fonte à carga **sem nenhum estágio de conversão no meio** — o único caminho de energia do projeto com rendimento 100 % de barramento a carga.
 
-> 📌 **F1 subiu de 6 A para 10 A.** O ramal R1 passou a conduzir 6,0 A contínuos; um fusível de 6 A abriria em operação normal. Fusível mini automotivo de **10 A** (≈ 1,7× a corrente nominal) é a escolha correta — e é ele, sozinho, que protege todo o caminho de potência, já que os fusíveis de saída (F4/F5) deixaram de existir.
+> 📌 **F1 subiu de 6 A para 10 A.** O ramal RM1 passou a conduzir 6,0 A contínuos; um fusível de 6 A abriria em operação normal. Fusível mini automotivo de **10 A** (≈ 1,7× a corrente nominal) é a escolha correta — e é ele, sozinho, que protege todo o caminho de potência, já que os fusíveis de saída (F4/F5) deixaram de existir.
 
 ### Dimensionamento da fonte principal
 
@@ -487,7 +487,7 @@ O limite de corrente e o shutdown térmico do LM2596 cobrem sobrecarga, curto e 
 
 ### Cálculo da queda no barramento de 24 V (o trecho dos postes)
 
-Trecho crítico: ramal R1, **1,2 m** de ida (subestação → P1) e 1,2 m de retorno pelo 0 V.
+Trecho crítico: ramal RM1, **1,2 m** de ida (subestação → P1) e 1,2 m de retorno pelo 0 V.
 
 ```
 R_ida   = ρ × L / S = 0,0172 × 1,2 / 1,00 = 0,0206 Ω
@@ -657,7 +657,7 @@ O **Plano A** era a arquitetura original: um conversor em cada um dos três post
 | 6 | ⭐ **T1 (XL4016) ELIMINADO — P1 vira poste de derivação** | Não há tensão a transformar nesse ramal. Ganha a analogia do consumidor industrial atendido em tensão primária |
 | 7 | ⭐ **T2 e T3 = LM2596 com display** | A maior carga restante é de 0,87 A: o LM2596 de 3 A sobra. Traz **display integrado** (didática) e **proteção térmica + curto nativas** (segurança) |
 | 8 | ⭐ **Crowbar (Zener + fusíveis F4/F5) ELIMINADO** | As proteções internas do LM2596 cobrem sobrecarga, curto e temperatura. Menos 8 componentes soltos em fio volante — ver [§2.6](#26-proteções-do-sistema--quem-protege-o-quê) |
-| 9 | **F1 subiu para 10 A; F2 e F3 seguem em 2 A** | O ramal R1 passou a conduzir 6,0 A contínuos. Os fusíveis de entrada dos ramais são a seletividade da rede e continuam obrigatórios |
+| 9 | **F1 subiu para 10 A; F2 e F3 seguem em 2 A** | O ramal RM1 passou a conduzir 6,0 A contínuos. Os fusíveis de entrada dos ramais são a seletividade da rede e continuam obrigatórios |
 | 10 | **Fonte 24 V / 10 A / 240 W confirmada como mínimo** | Com 166 W de consumo, a folga é de 1,44×. **A fonte de 150 W foi descartada** |
 | 11 | **ESP32 alimentado pela DNLCB30 em 24 V** | A DNLCB30 aceita 7–35 V e já gera 3,3 V regulado — não precisa de um 3º conversor |
 | 12 | **Volta o disjuntor 2P 6 A curva C** | Ambiente industrial exige proteção de entrada; curva C por causa do inrush da fonte. Continua adequado com os 2,4 A do novo consumo |

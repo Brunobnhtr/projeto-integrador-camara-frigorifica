@@ -39,7 +39,7 @@ export const COMPONENTES = [
   {
     id: 'BD-POT', nome: 'BD-POT', trilho: 1, x: 40, categoria: 'bloco',
     descricao: 'Bloco de distribuição · 24 V de POTÊNCIA',
-    detalhe: 'Vem do ramal R1 pelo poste P1 e passa pelo KA2. CAI NA EMERGÊNCIA.',
+    detalhe: 'Vem do ramal RM1 pelo poste P1 e passa pelo KA2. CAI NA EMERGÊNCIA.',
     tensao: '24V_POT', largura: 36,
     terminais: { 'IN': 'entrada 4 mm²', 'O1': 'saída 1', 'O2': 'saída 2', 'O3': 'saída 3', 'O4': 'reserva' },
   },
@@ -61,7 +61,7 @@ export const COMPONENTES = [
   {
     id: 'BD-24V', nome: 'BD-24V', trilho: 1, x: 148, categoria: 'bloco',
     descricao: 'Bloco de distribuição · 24 V de SERVIÇOS',
-    detalhe: 'Vem do ramal R3, pelo poste P3. PERMANENTE — não passa pelo KA2.',
+    detalhe: 'Vem do ramal RM3, pelo poste P3. PERMANENTE — não passa pelo KA2.',
     tensao: '24V_SRV', largura: 36,
     terminais: { 'IN': 'entrada', 'O1': 'DNLCB30/ESP32', 'O2': 'cadeia de comando',
                  'O3': 'sinaleiros + COM do CI', 'O4': 'reserva' },

@@ -75,7 +75,7 @@ export const FIOS_ETAPA6 = [
           + 'nos dissipadores. É o calor que a Peltier tirou de dentro. 🔧 O fio agora '
           + 'nasce no contato do KA4, e não mais direto no BD-AUX: é assim que o firmware '
           + 'consegue desligá-las quando o dissipador esfria.' },
-  { ...kabo('X6', naTampa('RAD', '−'), { comp: 'BD-0V', via: 'R20' }, 0.5,
+  { ...kabo('X6', naTampa('RAD', '−'), { comp: 'BD-0V', via: 'Z20' }, 0.5,
       'zero', 'comum', 'Retorno das ventoinhas do radiador, no 0 V de verdade.'),
     nome: 'ventoinhas do radiador · 0 V', prensa: 'PG13-2', rota: ['CH-base'],
     aviso: '🔥 ESTE FIO É A REFERÊNCIA DOS DOIS TACÔMETROS. Ligado num negativo '
@@ -118,7 +118,7 @@ export const FIOS_ETAPA6 = [
   { ...kabo('X15', { comp: 'BD-5V', via: 'O10' }, naCamara('SENS', 'VCC'), 0.25,
       'log5', 'alim', 'Alimentação do AM2315C.'),
     nome: 'AM2315C · VCC', prensa: 'PG9-3', rota: ['CH-base', 'CV-dir'] },
-  { ...kabo('X16', naCamara('SENS', 'GND'), { comp: 'BD-0V', via: 'R15' }, 0.25,
+  { ...kabo('X16', naCamara('SENS', 'GND'), { comp: 'BD-0V', via: 'Z15' }, 0.25,
       'zero', 'comum', 'Retorno do sensor.'),
     nome: 'AM2315C · GND', prensa: 'PG9-3', rota: ['CV-dir', 'CH-base'] },
   { ...kabo('X17', { comp: 'PI-2', via: 'SDA' }, naCamara('SENS', 'SDA'), 0.25,
@@ -156,7 +156,7 @@ export const FIOS_ETAPA6 = [
           + 'para +5 V. Sensor alimentado em 3,3 com a linha puxada para 5 leria, mas '
           + 'com o pino de dados acima da própria alimentação — que é o jeito de '
           + 'estragar um sensor devagar.' },
-  { ...kabo('X23', naTampa('DS18', 'GND'), { comp: 'BD-0V', via: 'R19' }, 0.25,
+  { ...kabo('X23', naTampa('DS18', 'GND'), { comp: 'BD-0V', via: 'Z19' }, 0.25,
       'zero', 'comum', 'Retorno do DS18B20.'),
     nome: 'DS18B20 · GND', prensa: 'PG9-3', rota: ['CV-dir', 'CH-base'],
     aviso: '⚠️ SEM ESTE FIO NÃO EXISTE 1-WIRE. O protocolo mede o tempo em que a linha '

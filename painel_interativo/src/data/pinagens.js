@@ -140,7 +140,7 @@ export const PINAGENS = {
 '🔌 "VBUS" e "GND-PWR" no diagrama do painel SÃO o Type-C: VBUS é o +5 V dele e '
       + 'GND-PWR é o 0 V dele. Não é uma segunda entrada — é o mesmo conector, com os '
       + 'dois fios nomeados para o desenho poder mostrar onde cada um termina. Na '
-      + 'montagem isso é um RABICHO Type-C: vermelho no BD-5V O2, preto no BD-0V R9. '
+      + 'montagem isso é um RABICHO Type-C: vermelho no BD-5V O2, preto no BD-0V Z9. '
       + '⚠️ Um alimentador de cada vez — com o rabicho ligado, não plugue o PC junto.',
             '🔥 NÃO ligue o pino de 5 V do conector UART no BD-5V. A wiki lista apenas Type-C '
       + 'e bateria como entradas de alimentação; esse pino é provavelmente saída. '

@@ -402,7 +402,7 @@ A decisão anterior foi tirar o comando e deixá-las **sempre ligadas**. Seguro,
                           │ gatilho
                    Mega · D30 ──[ R11 · 10 kΩ ]── 0 V
 
-   X6 ── ventoinhas − ──► BD-0V · R20      ⭐ NUNCA chaveado
+   X6 ── ventoinhas − ──► BD-0V · Z20      ⭐ NUNCA chaveado
 ```
 
 > ### 🔥 O contato é o NC, e essa é a diferença mais importante entre o KA4 e o KA3

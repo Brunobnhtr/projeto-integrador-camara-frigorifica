@@ -298,7 +298,7 @@ Comparar com a carga térmica CALCULADA no Doc 12: ≈ 9,5 W
 | Ponto | Tensão | Corrente | Queda |
 |---|---|---|---|
 | Saída da subestação | | | — |
-| Poste P1 (ramal R1, derivação direta) | | | |
+| Poste P1 (ramal RM1, derivação direta) | | | |
 | Poste P3 (fim da linha) | | | |
 
 Comparar com o **valor calculado no Doc 02 §2.7: 0,17 V (0,71 %)**.

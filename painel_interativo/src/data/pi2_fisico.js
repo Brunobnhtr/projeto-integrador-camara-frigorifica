@@ -38,8 +38,8 @@ export const BORNES = [
     ref: 'J1', papel: 'RETORNOS DA CÂMARA', linha: 2, corpo: [0.4, 4.0],
     cor: '#c92a2a',
     vias: [
-      { n: 1, col: 2, sinal: 'RET-1', de: 'volta do DUT da posição 1 — passa pelo INA219 e pelo shunt R1' },
-      { n: 2, col: 4, sinal: 'RET-2', de: 'volta do DUT da posição 2 — vai direto ao shunt R2' },
+      { n: 1, col: 2, sinal: 'RET-1', de: 'volta do DUT da posição 1 — passa pelo INA219 e pelo shunt RS1' },
+      { n: 2, col: 4, sinal: 'RET-2', de: 'volta do DUT da posição 2 — vai direto ao shunt RS2' },
       { n: 3, col: 6, sinal: 'RET-3', de: 'reserva — borne montado, falta o shunt e o jumper para C2', livre: true },
       { n: 4, col: 8, sinal: 'RET-4', de: 'reserva — idem, para C3', livre: true },
     ],
@@ -48,7 +48,7 @@ export const BORNES = [
     ref: 'J2', papel: 'ALIMENTAÇÃO', linha: 28, corpo: [26.0, 29.6],
     cor: '#f08c00',
     vias: [
-      { n: 1, col: 2, sinal: '0V',  para: 'BD-0V · R17 — sai DEPOIS dos shunts' },
+      { n: 1, col: 2, sinal: '0V',  para: 'BD-0V · Z17 — sai DEPOIS dos shunts' },
       { n: 2, col: 4, sinal: '+5V', para: 'BD-5V saída 8 — alimenta o mux e o INA219' },
     ],
   },
@@ -73,7 +73,7 @@ export const BARRAMENTO_0V = { linha: 11, de: 2, ate: 32 };
 /* ── COMPONENTES DISCRETOS ──────────────────────────────────────────── */
 export const COMPONENTES_PI2 = [
   {
-    ref: 'R1', tipo: 'resistor', valor: '47 Ω 1%', circuito: 1,
+    ref: 'RS1', tipo: 'resistor', valor: '47 Ω 1%', circuito: 1,
     furos: [[2, 6], [2, 11]],
     polaridade: false,
     ligacao: 'Perna de cima no nó RET-1 (furo B6), perna de baixo no barramento de 0 V '
@@ -84,7 +84,7 @@ export const COMPONENTES_PI2 = [
           + 'multiplexador lê. Sem o shunt não existe nada para medir.',
   },
   {
-    ref: 'R2', tipo: 'resistor', valor: '47 Ω 1%', circuito: 2,
+    ref: 'RS2', tipo: 'resistor', valor: '47 Ω 1%', circuito: 2,
     furos: [[7, 6], [7, 11]],
     polaridade: false,
     ligacao: 'Perna de cima no nó RET-2 (furo G6), perna de baixo no barramento (furo G11).',
@@ -147,7 +147,7 @@ export const MODULOS = [
     aConferir: 'A maioria dos módulos GY-219 traz VIN+ / VIN− num borne de parafuso, e '
              + 'não em pino. Se for o caso, os furos [25,8] e [29,8] viram os do borne.',
     papel: 'O instrumento de referência. Fica em série com o retorno da posição 1, ANTES '
-         + 'do shunt R1 — mede a mesma corrente que o mux vai medir.',
+         + 'do shunt RS1 — mede a mesma corrente que o mux vai medir.',
     porque: '⭐ É a prova da banca. Se o INA219 e o multiplexador dizem o mesmo número na '
           + 'posição 1, está demonstrado que o mux mede certo — e portanto que as outras '
           + '15 posições, que não têm INA219, também estão certas. Um instrumento '
@@ -175,7 +175,7 @@ export const NOS = [
     furos: { 2: 'perna de cima do R1', 3: 'chega o fio do INA219 · VIN−',
              4: 'sai o fio para o canal C0 do mux' },
     nota: 'É AQUI que a medição acontece. A tensão deste nó em relação ao 0 V é '
-        + 'exatamente o que o shunt R1 está criando — e é ela que o mux entrega ao '
+        + 'exatamente o que o shunt RS1 está criando — e é ela que o mux entrega ao '
         + 'Arduino quando seleciona o canal 0.' },
   { ref: 'nó RET-2', linha: 6, de: 7, ate: 9, circuito: 2,
     furos: { 7: 'perna de cima do R2', 8: 'chega o fio de J1-2 (RET-2)',
@@ -247,9 +247,9 @@ export const CIRCUITOS = [
   { id: 0, nome: 'Barramento de 0 V', cor: '#212529',
     resumo: 'O retorno comum, DEPOIS dos shunts. Toda a corrente medida passa por aqui.' },
   { id: 1, nome: 'Medição da posição 1', cor: '#c92a2a',
-    resumo: 'RET-1 → INA219 → nó → shunt R1 → 0 V. O canal C0 lê a tensão do nó.' },
+    resumo: 'RET-1 → INA219 → nó → shunt RS1 → 0 V. O canal C0 lê a tensão do nó.' },
   { id: 2, nome: 'Medição da posição 2', cor: '#2f9e44',
-    resumo: 'RET-2 → nó → shunt R2 → 0 V. O canal C1 lê o nó. Sem INA219.' },
+    resumo: 'RET-2 → nó → shunt RS2 → 0 V. O canal C1 lê o nó. Sem INA219.' },
   { id: 3, nome: 'Comando do multiplexador', cor: '#ae3ec9',
     resumo: 'S0–S3 escolhem o canal, SIG entrega a leitura, EN fica preso no 0 V.' },
   { id: 4, nome: 'I²C do INA219', cor: '#f08c00',

@@ -759,7 +759,7 @@ componente industrial **e** eliminar todo o circuito de adaptação.
 | Quantidade | 4 (RUN, COOL, HEAT, FALHA) | 4 (3 da rua + 1 na guarita) |
 | Acionamento | ⭐ **pino do Arduino, direto** (D9 a D12) | direto do BD-5V, sempre aceso |
 | Limitação de corrente | interna ao sinaleiro | resistor de 220 Ω por LED |
-| Alimentação | **BD-5V**, pelo próprio pino | **BD-5V** (ramal R2) |
+| Alimentação | **BD-5V**, pelo próprio pino | **BD-5V** (ramal RM2) |
 | Componentes no meio | ⭐ **nenhum** | R4–R7, na base de cada poste |
 
 **O que essa decisão levou junto:**

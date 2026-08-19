@@ -203,7 +203,7 @@ A empresa **não pode parar os ensaios** enquanto o projeto acontece. Arrancar o
                                             │
                     ┌───────────────────────┼───────────────────────┐
                  [F1 10A]                [F2 2A]                 [F3 2A]
-                    │ R1                    │ R2                    │ R3
+                    │ RM1                    │ RM2                    │ RM3
               ══════╪═══════════════════════╪═══════════════════════╪══════ POSTES
                     ▼                       ▼                       ▼
               P1 · DERIVAÇÃO           T2 · LM2596 📟          T3 · LM2596 📟

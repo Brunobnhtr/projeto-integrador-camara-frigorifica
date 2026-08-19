@@ -187,7 +187,9 @@ for (const f of FIOS) {
   else noPonto.set(k, f.n);
 }
 const bd0 = COMPONENTES.find(c => c.id === 'BD-0V');
-const totPontos = bd0.grupos.flatMap(g => g.pinos).filter(p => /^R\d+$/.test(p.nome)).length;
+/* Z1..Zn — os pontos de retorno. Chamavam-se R1..Rn até 18/08/2026, e o
+   nome colidia com os resistores do projeto e com os ramais de energia. */
+const totPontos = bd0.grupos.flatMap(g => g.pinos).filter(p => /^Z\d+$/.test(p.nome)).length;
 console.log(`  . ${noPonto.size} retornos declarados em pontos distintos, `
   + `de ${totPontos} pontos na barra`);
 if (noPonto.size > totPontos)

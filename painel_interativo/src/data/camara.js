@@ -106,7 +106,7 @@ export const COMPONENTES = [
           + 'outro lado. No centro, ele lê o que o ensaio realmente vê.',
     terminais: [
       { t: 'VCC', de: 'BD-5V saída 10', ref: ['BD-5V', 'O10'], fio: '0,25 mm² vermelho' },
-      { t: 'GND', de: 'BD-0V · R15', ref: ['BD-0V', 'R15'], fio: '0,25 mm² preto' },
+      { t: 'GND', de: 'BD-0V · Z15', ref: ['BD-0V', 'Z15'], fio: '0,25 mm² preto' },
       { t: 'SDA', de: 'Mega D20', ref: ['MEGA', 'D20'], fio: '0,25 mm² azul' },
       { t: 'SCL', de: 'Mega D21', ref: ['MEGA', 'D21'], fio: '0,25 mm² amarelo' },
     ],

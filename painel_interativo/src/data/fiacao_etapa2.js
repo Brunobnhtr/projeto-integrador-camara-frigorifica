@@ -129,10 +129,10 @@ export const FIOS_ETAPA2 = [
   },
   {
     n: 'C9', etapa: 2, func: 'zero', nome: 'retorno da bobina do KA1', classe: 'comum',
-    de: { comp: 'KA1', via: 'A2' }, para: { comp: 'BD-0V', via: 'R11' },
+    de: { comp: 'KA1', via: 'A2' }, para: { comp: 'BD-0V', via: 'Z11' },
     mm2: 0.5,
     rota: ['CH-2x1', 'CV-dir', 'CH-base'],
-    diz: 'A bobina fecha no 0 V comum, ponto R11 da barra.',
+    diz: 'A bobina fecha no 0 V comum, ponto Z11 da barra.',
   },
   {
     n: 'C10', etapa: 2, func: 'zero', nome: '⭐ bobina do KA2 → contato do KA3', classe: 'comum',
@@ -151,10 +151,10 @@ export const FIOS_ETAPA2 = [
   },
   {
     n: 'C10b', etapa: 2, func: 'zero', nome: 'contato do KA3 → 0 V', classe: 'comum',
-    de: { comp: 'KA34', via: 'NO3' }, para: { comp: 'BD-0V', via: 'R12' },
+    de: { comp: 'KA34', via: 'NO3' }, para: { comp: 'BD-0V', via: 'Z12' },
     mm2: 0.5,
     rota: ['CH-2x1', 'CV-esq', 'CH-base'],
-    diz: 'Fecha o circuito da bobina do KA2 no ponto R12 da barra.',
+    diz: 'Fecha o circuito da bobina do KA2 no ponto Z12 da barra.',
     aviso: '🔥 USE O NO (NORMALMENTE ABERTO), NUNCA O NC. Módulo sem energia = contato '
          + 'aberto = potência cortada. No NC, um Arduino desligado ARMARIA a potência. '
          + '⚠ O KA4 usa o NC de propósito — lá o estado seguro é o contrário (§31.14).',

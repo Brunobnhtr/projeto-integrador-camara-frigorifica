@@ -247,7 +247,7 @@ export const COMPONENTES = [
         via('A2', 1, '⭐ PI-2 · SIG — os 16 canais entram por aqui'),
         via('A1', 1, 'PI-1 J2-2 — corrente do BTS #2'), via('A0', 1, 'PI-1 J2-1 — corrente do BTS #1'), via('GND2', 1, 'retorno dos 4 sinaleiros da porta — mesma referência do pino que os acende'), via('IOREF'),
         via('AREF'), via('RESET'), via('+3V3'),
-        via('GND3', 1, '⭐ BD-0V · R5 — o retorno da alimentação, no bloco POWER'),
+        via('GND3', 1, '⭐ BD-0V · Z5 — o retorno da alimentação, no bloco POWER'),
         via('+5V', 1, 'BD-5V saída 1'), via('VIN'),
       ]},
     ],
@@ -484,7 +484,7 @@ export const COMPONENTES = [
         rele('22'),
         rele('24', 1, '⭐ ponte curta até o A1: é ISTO que faz o relé se segurar'),
         rele('21', 1, 'ponte curta do 11 — comum do contato de SELO'),
-        rele('A2', 1, 'BD-0V · R11'),
+        rele('A2', 1, 'BD-0V · Z11'),
       ]},
       { ref: 'BAIXO', lado: 'baixo', legenda: 'Fileira de baixo · pinos 1 · 5 · 9 · 13', pinos: [
         rele('12'),
@@ -557,7 +557,7 @@ export const COMPONENTES = [
     grupos: [
       { ref: 'ALIM', lado: 'baixo', legenda: 'Alimentação dos dois módulos (2)', pinos: [
         via('+5V', 1, 'BD-5V saída 12 — DC+ dos dois, em ponte interna'),
-        via('0V', 1, 'BD-0V · R21 — DC− dos dois, em ponte interna'),
+        via('0V', 1, 'BD-0V · Z21 — DC− dos dois, em ponte interna'),
       ]},
       { ref: 'CMD', lado: 'cima', legenda: 'Gatilhos, vindos do Arduino (2)', pinos: [
         via('IN3', 1, '⭐ Mega D27 — KA3, autoriza a potência'),
@@ -565,7 +565,7 @@ export const COMPONENTES = [
       ]},
       { ref: 'KA3', lado: 'baixo', legenda: '⚡ KA3 · POTÊNCIA — corta os 24 V dos BTS (2)', pinos: [
         via('COM3', 1, 'KA2 · A2 — o retorno da bobina do KA2 passa por aqui'),
-        via('NO3', 1, 'BD-0V · R12 — fecha o circuito da bobina'),
+        via('NO3', 1, 'BD-0V · Z12 — fecha o circuito da bobina'),
       ]},
       { ref: 'KA4', lado: 'baixo', legenda: '🌀 KA4 · FAN EXTERNA — ventoinhas do radiador (2)', pinos: [
         via('COM4', 1, 'BD-AUX saída 2 — os 12 V permanentes'),
@@ -620,7 +620,7 @@ export const COMPONENTES = [
     grupos: [
       { ref: 'CTRL', lado: 'cima', legenda: 'Comando — vem do Arduino (6)', pinos: [
         { nome: 'VCC', usa: true, para: 'BD-5V saída 9 — alimenta o lado do comando' },
-        { nome: 'GND-C', usa: true, para: 'BD-0V · R14 — retorno do COMANDO' },
+        { nome: 'GND-C', usa: true, para: 'BD-0V · Z14 — retorno do COMANDO' },
         { nome: 'IN1' },
         { nome: 'IN2' },
         { nome: 'IN3', usa: true, para: '⭐ Mega D29 — TODAS as 5 ventoinhas internas' },
@@ -628,7 +628,7 @@ export const COMPONENTES = [
       ]},
       { ref: 'VIN', lado: 'direita', legenda: 'Alimentação das cargas (2)', pinos: [
         { nome: 'VIN', usa: true, para: 'BD-AUX saída 1 — 12 V' },
-        { nome: 'GND-P', usa: true, para: 'BD-0V · R13 — retorno das CARGAS' },
+        { nome: 'GND-P', usa: true, para: 'BD-0V · Z13 — retorno das CARGAS' },
       ]},
       { ref: 'OUT', lado: 'baixo', legenda: 'Saídas — 4 pares independentes (8)', pinos: [
         { nome: 'O1+' },
@@ -753,22 +753,22 @@ export const COMPONENTES = [
     grupos: [
       { ref: 'IN', lado: 'cima', legenda: 'Entrada 10 mm² (1)', pinos: [via('IN', 1, 'retorno do padrão de entrada')] },
       { ref: 'R', lado: 'baixo', legenda: 'Retornos (20 pontos)', pinos: [
-        via('R1', 1, 'BTS #1 · B−'), via('R2', 1, 'BTS #2 · B−'),
-        via('R3', 1, 'BTS #1 · GND lógica'), via('R4', 1, 'BTS #2 · GND lógica'),
-        via('R5', 1, 'Arduino · GND'), via('R6', 1, 'PI-1 J1-9'),
-        via('R7', 1, 'DNLCB30 · −'), via('R8', 1, 'RTC DS3231 · GND'),
-        via('R9', 1, 'tela ES3C28P · GND'), via('R10', 1, 'conversor de nível · GND'),
-        via('R11', 1, 'KA1 · A2'),
-        via('R12', 1, '⭐ KA3 · NO3 — o retorno da bobina, depois do contato do módulo de relé'),
-        via('R13', 1, 'MV-1 · GND da carga (lado VIN)'),
-        via('R14', 1, 'MV-1 · GND do comando (lado isolado)'),
-        via('R15', 1, '⭐ AM2315C · GND — o sensor DENTRO da câmara'),
-        via('R16', 1, 'LEDs da maquete −'),
-        via('R17', 1, 'PI-2 · 0V — retorno das posições, depois dos shunts'),
-        via('R18', 1, 'seletora LOCAL/REMOTO — contato para o 0 V'),
-        via('R19', 1, 'DS18B20 do radiador · GND'),
-        via('R20', 1, '⭐ retorno das ventoinhas do radiador — referência dos 2 RPM'),
-        via('R21', 1, '⭐ KA3 + KA4 · DC− — retorno dos dois módulos de relé'),
+        via('Z1', 1, 'BTS #1 · B−'), via('Z2', 1, 'BTS #2 · B−'),
+        via('Z3', 1, 'BTS #1 · GND lógica'), via('Z4', 1, 'BTS #2 · GND lógica'),
+        via('Z5', 1, 'Arduino · GND'), via('Z6', 1, 'PI-1 J1-9'),
+        via('Z7', 1, 'DNLCB30 · −'), via('Z8', 1, 'RTC DS3231 · GND'),
+        via('Z9', 1, 'tela ES3C28P · GND'), via('Z10', 1, 'conversor de nível · GND'),
+        via('Z11', 1, 'KA1 · A2'),
+        via('Z12', 1, '⭐ KA3 · NO3 — o retorno da bobina, depois do contato do módulo de relé'),
+        via('Z13', 1, 'MV-1 · GND da carga (lado VIN)'),
+        via('Z14', 1, 'MV-1 · GND do comando (lado isolado)'),
+        via('Z15', 1, '⭐ AM2315C · GND — o sensor DENTRO da câmara'),
+        via('Z16', 1, 'LEDs da maquete −'),
+        via('Z17', 1, 'PI-2 · 0V — retorno das posições, depois dos shunts'),
+        via('Z18', 1, 'seletora LOCAL/REMOTO — contato para o 0 V'),
+        via('Z19', 1, 'DS18B20 do radiador · GND'),
+        via('Z20', 1, '⭐ retorno das ventoinhas do radiador — referência dos 2 RPM'),
+        via('Z21', 1, '⭐ KA3 + KA4 · DC− — retorno dos dois módulos de relé'),
       ]},
     ],
     avisos: ['🔥 É o componente mais fácil de subdimensionar. Chegam 18 retornos + a '
@@ -816,7 +816,7 @@ export const COMPONENTES = [
       { ref: 'USB', lado: 'esquerda', legenda: 'Type-C — o +5 V e o 0 V dele (2)',
         parAlim: true, pinos: [
         via('VBUS', 1, '+5 V do Type-C ← BD-5V saída 2'),
-        via('GND-PWR', 1, '0 V do Type-C → BD-0V · R9'),
+        via('GND-PWR', 1, '0 V do Type-C → BD-0V · Z9'),
       ]},
     ],
     avisos: ['🔥 NÃO ligue o pino 5 V do conector UART. A wiki lista só Type-C e bateria '
@@ -835,7 +835,7 @@ export const COMPONENTES = [
     grupos: [
       { ref: 'HV', lado: 'cima', legenda: 'Lado alto — 5 V (6)', pinos: [
         via('TXI', 1, 'Mega D16'), via('HV', 1, 'BD-5V saída 7'),
-        via('GND-HV', 1, 'BD-0V · R10 — referência do lado de 5 V'),
+        via('GND-HV', 1, 'BD-0V · Z10 — referência do lado de 5 V'),
         via('RXO', 1, 'Mega D17'), via('TXI2'), via('RXO2'),
       ]},
       { ref: 'LV', lado: 'baixo', legenda: 'Lado baixo — 3,3 V (6)', pinos: [
@@ -898,7 +898,7 @@ export const COMPONENTES = [
       via('12', 1, '⚡ HARDWARE: nó do selo do KA2 — vai ao S1 · 13 e ao KA2 · 21'),
     ]},
     { ref: 'NA5', lado: 'cima', legenda: 'Bloco NA de 5 V — contatos 13-14', pinos: [
-      via('13', 1, '⚡ 0 V comum dos comandos (vem do BD-0V · R18)'),
+      via('13', 1, '⚡ 0 V comum dos comandos (vem do BD-0V · Z18)'),
       via('14', 1, 'Mega D23 — INPUT_PULLUP, LOW = apertado'),
     ]}],
     avisos: ['🔥 NÃO CONFUNDA OS DOIS BLOCOS. O de 24 V (11-12) é o que corta de verdade; '

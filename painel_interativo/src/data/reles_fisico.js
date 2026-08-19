@@ -150,7 +150,7 @@ export const RELES = {
     ],
     pontes: [
       { de: 'DC+ do KA3', para: 'DC+ do KA4', diz: 'Ponte dentro da caixa — sai um fio só para o BD-5V · O12.' },
-      { de: 'DC− do KA3', para: 'DC− do KA4', diz: 'Idem — um fio só para o BD-0V · R21. ⚠️ Ponto PRÓPRIO na barra, não pendurado: este 0 V é também a referência dos dois gatilhos.' },
+      { de: 'DC− do KA3', para: 'DC− do KA4', diz: 'Idem — um fio só para o BD-0V · Z21. ⚠️ Ponto PRÓPRIO na barra, não pendurado: este 0 V é também a referência dos dois gatilhos.' },
     ],
     ensaios: [
       '⭐ Jumper em H nos DOIS módulos — em L a lógica inverte e o firmware vira armadilha',

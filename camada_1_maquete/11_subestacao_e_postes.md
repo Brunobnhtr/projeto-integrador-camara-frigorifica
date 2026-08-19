@@ -421,7 +421,7 @@ Em cada poste você tira **dois fios da linha**: o **positivo do seu ramal** e o
 
 > ⭐ **Por que o P1 não tem transformador — e por que isso é MELHOR para a defesa.**
 >
-> A carga do ramal R1 (duas pastilhas Peltier em série e um PTC de 24 V) **já opera na tensão da linha**. Não há nada a transformar. E isso reproduz exatamente uma situação real da rede de distribuição:
+> A carga do ramal RM1 (duas pastilhas Peltier em série e um PTC de 24 V) **já opera na tensão da linha**. Não há nada a transformar. E isso reproduz exatamente uma situação real da rede de distribuição:
 >
 > | Na rede real | Na maquete |
 > |---|---|
@@ -430,7 +430,7 @@ Em cada poste você tira **dois fios da linha**: o **positivo do seu ramal** e o
 >
 > Antes o P1 era só "o poste do conversor maior". Agora ele conta uma história que existe na norma e na prática: **quem consome muito entra em tensão mais alta**. É o tipo de detalhe que a banca reconhece.
 
-> 🔧 **O ramal R1 continua no P1, o poste mais próximo da subestação.** Não é acaso: é o ramal de maior corrente (**6,0 A**), e encurtar o trecho de linha reduz a queda de tensão. Na prática real também é assim — a carga pesada fica perto da fonte.
+> 🔧 **O ramal RM1 continua no P1, o poste mais próximo da subestação.** Não é acaso: é o ramal de maior corrente (**6,0 A**), e encurtar o trecho de linha reduz a queda de tensão. Na prática real também é assim — a carga pesada fica perto da fonte.
 
 ### Corpo dos três equipamentos
 
@@ -522,7 +522,7 @@ O LM2596 traz um **display LED vermelho de 3 dígitos soldado na própria placa*
 | Posição | Calçada do fundo (Y = 265) | **Calçada da frente (Y = 75)** |
 | Topo | Cruzeta com 3 isoladores | **Braço curvo com luminária** |
 | Quantidade | 3 | 3 — em X = 150, 330 e 510 |
-| Alimentação | — | LED 3 mm branco quente + resistor **220 Ω**, do **BD-5V** (ramal R2 · saída O7) |
+| Alimentação | — | LED 3 mm branco quente + resistor **220 Ω**, do **BD-5V** (ramal RM2 · saída O7) |
 
 ```
 Cálculo do resistor:  R = (24 − 3,1) / 0,0095 ≈ 2200 Ω

@@ -254,7 +254,7 @@ O pino que vagou aqui é o mesmo que resolve o maior buraco do projeto: o firmwa
    ─────────                    ─────────                  ─────────
    MEGA · D27 ──── sinal ─────► IN  ┌───────┐              bobina do KA2
         │                           │  KA3  │  COM ──────► A2
-   [ R10 · 10 kΩ ]                  └───────┘  NO  ──────► BD-0V · R12
+   [ R10 · 10 kΩ ]                  └───────┘  NO  ──────► BD-0V · Z12
         │
        0 V           (jumper do módulo em "H": HIGH fecha o contato)
 ```

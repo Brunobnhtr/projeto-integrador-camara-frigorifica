@@ -90,27 +90,27 @@ export const FIOS_ETAPA3 = [
     diz: 'Os 12 V que os quatro canais do MV-1 chaveiam.' },
 
   /* ── BD-0V: um ponto por fio ──────────────────────────────────────── */
-  { ...zero('D15', { comp: 'BTS1', via: 'B−' }, { comp: 'BD-0V', via: 'R1' },
+  { ...zero('D15', { comp: 'BTS1', via: 'B−' }, { comp: 'BD-0V', via: 'Z1' },
       'Retorno de potência do BTS #1 — 6 A.'),
     mm2: 1.5, rota: ['CH-2x1', 'CV-esq', 'CH-base'] },
-  { ...zero('D16', { comp: 'BTS2', via: 'B−' }, { comp: 'BD-0V', via: 'R2' },
+  { ...zero('D16', { comp: 'BTS2', via: 'B−' }, { comp: 'BD-0V', via: 'Z2' },
       'Retorno de potência do BTS #2.'), mm2: 1.5, rota: ['CH-2x1', 'CV-esq', 'CH-base'] },
-  { ...zero('D17', { comp: 'BTS1', via: 'GND' }, { comp: 'BD-0V', via: 'R3' },
+  { ...zero('D17', { comp: 'BTS1', via: 'GND' }, { comp: 'BD-0V', via: 'Z3' },
       'Retorno da LÓGICA do BTS #1, em fio próprio.'),
     rota: ['CH-2x1', 'CV-esq', 'CH-base'],
     porque: '⭐ Fio separado do B−, e não uma ponte no módulo. Os 6 A do B− criam queda '
           + 'no próprio fio; se a lógica pendurasse nele, essa queda apareceria como '
           + 'ruído na referência do sinal IS.' },
-  { ...zero('D18', { comp: 'BTS2', via: 'GND' }, { comp: 'BD-0V', via: 'R4' },
+  { ...zero('D18', { comp: 'BTS2', via: 'GND' }, { comp: 'BD-0V', via: 'Z4' },
       'Idem para o BTS #2.'), rota: ['CH-2x1', 'CV-esq', 'CH-base'] },
-  { ...zero('D19', { comp: 'MEGA', via: 'GND3' }, { comp: 'BD-0V', via: 'R5' },
+  { ...zero('D19', { comp: 'MEGA', via: 'GND3' }, { comp: 'BD-0V', via: 'Z5' },
       'O 0 V do Arduino.'), rota: ['CH-3x2', 'CV-dir', 'CH-base'] },
   { ...cinco('D7b', { comp: 'BD-5V', via: 'O12' }, { comp: 'KA34', via: '+5V' },
       '⭐ Alimenta os DOIS módulos de relé — o DC+ é pontelhado entre eles na caixa.'),
     rota: ['CH-base', 'CV-esq', 'CH-2x1'], nome: '5 V dos módulos KA3/KA4',
     aviso: '⚠️ 65 mA CADA, com o relé fechado. São 130 mA a mais no ramal T2 — some com '
          + 'o Arduino, a tela e o ESP32 antes de fechar o projeto de energia.' },
-  { ...zero('D20b', { comp: 'KA34', via: '0V' }, { comp: 'BD-0V', via: 'R21' },
+  { ...zero('D20b', { comp: 'KA34', via: '0V' }, { comp: 'BD-0V', via: 'Z21' },
       '⭐ O DC− dos dois módulos, em ponto próprio da barra.'),
     rota: ['CH-2x1', 'CV-esq', 'CH-base'],
     porque: '📌 PONTO PRÓPRIO, e não pendurado. O DC− carrega os 130 mA das duas bobinas '
@@ -122,29 +122,29 @@ export const FIOS_ETAPA3 = [
     classe: 'alim', func: 'aux12', rota: ['CH-base', 'CV-esq', 'CH-2x1'],
     nome: '12 V → contato do KA4',
     porque: '⭐ O KA4 fica EM SÉRIE com o lado POSITIVO das ventoinhas do radiador. O '
-          + 'negativo delas (X6) vai direto ao BD-0V · R20 e NUNCA é chaveado — é a '
+          + 'negativo delas (X6) vai direto ao BD-0V · Z20 e NUNCA é chaveado — é a '
           + 'referência dos dois tacômetros, e mexer nela foi o erro que tirou o comando '
           + 'destas ventoinhas na primeira versão.',
     aviso: '🔥 A SAÍDA É O CONTATO NC4, NÃO O NO4. Ao contrário do KA3, aqui o estado '
          + 'seguro é FECHADO: módulo sem energia, ventoinha girando (§31.14).' },
-  { ...zero('D20', { comp: 'PI1', via: 'J1-5' }, { comp: 'BD-0V', via: 'R6' },
+  { ...zero('D20', { comp: 'PI1', via: 'J1-5' }, { comp: 'BD-0V', via: 'Z6' },
       'O 0 V da PI-1, que lá dentro vira o barramento de fio nu.'),
     rota: ['CH-topo', 'CV-dir', 'CH-base'] },
-  { ...zero('D21', { comp: 'ESP32', via: '−' }, { comp: 'BD-0V', via: 'R7' },
+  { ...zero('D21', { comp: 'ESP32', via: '−' }, { comp: 'BD-0V', via: 'Z7' },
       'Retorno do DNLCB30.'), rota: ['CH-2x1', 'CV-esq', 'CH-base'] },
-  { ...zero('D22', { comp: 'RTC', via: 'GND' }, { comp: 'BD-0V', via: 'R8' },
+  { ...zero('D22', { comp: 'RTC', via: 'GND' }, { comp: 'BD-0V', via: 'Z8' },
       'Retorno do relógio.'), rota: ['CH-3x2', 'CV-esq', 'CH-base'] },
-  { ...zero('D23', { comp: 'MV-1', via: 'GND-P' }, { comp: 'BD-0V', via: 'R13' },
+  { ...zero('D23', { comp: 'MV-1', via: 'GND-P' }, { comp: 'BD-0V', via: 'Z13' },
       'Retorno das CARGAS do MV-1 — o lado dos 12 V das ventoinhas.'),
     rota: ['CH-2x1', 'CV-esq', 'CH-base'] },
-  { ...zero('D25', { comp: 'MV-1', via: 'GND-C' }, { comp: 'BD-0V', via: 'R14' },
+  { ...zero('D25', { comp: 'MV-1', via: 'GND-C' }, { comp: 'BD-0V', via: 'Z14' },
       'Retorno do COMANDO do MV-1 — o lado de 5 V do Arduino.'),
     rota: ['CH-3x2', 'CV-dir', 'CH-base'],
     aviso: '🔥 DOIS FIOS SEPARADOS, e não uma ponte entre os dois GND do módulo. O '
          + 'optoacoplador existe para isolar o lado das ventoinhas do lado do Arduino; '
          + 'unir os dois no módulo anula esse isolamento e traz o ruído de partida das '
          + 'ventoinhas para dentro da lógica.' },
-  { ...zero('D24', { comp: 'PI-2', via: '0V' }, { comp: 'BD-0V', via: 'R17' },
+  { ...zero('D24', { comp: 'PI-2', via: '0V' }, { comp: 'BD-0V', via: 'Z17' },
       'Retorno das posições de ensaio, DEPOIS dos shunts.'),
     rota: ['CH-3x2', 'CV-dir', 'CH-base'],
     porque: '⭐ Este fio carrega a corrente que está sendo medida. Ele só é 0 V deste '

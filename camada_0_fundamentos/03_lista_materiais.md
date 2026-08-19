@@ -202,7 +202,7 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 |---|---:|---|---|---|
 | Porta-fusível mini automotivo | 3 | **Fusível de LÂMINA (automotivo)**, não de vidro. Trilho DIN 35 mm **ou** bloco parafusado — ver nota abaixo | **F1, F2, F3** — entrada dos 3 ramais, **na subestação** | |
 | *Alternativa:* **bloco de 3 posições para fusível lâmina** | 1 | Substitui os 3 suportes acima. ⚠️ Conferir: **fusível lâmina** · **≥ 10 A por posição** · **≥ 32 Vdc** · preferir **entrada comum** (1 entrada + 3 saídas). Parafusa na parede da caixa — dispensa trilho DIN na subestação | idem | |
-| **Fusível mini automotivo 10 A** | 2 | 1 uso + 1 reserva | **F1** — ramal R1 (potência 24 V, 6,0 A) | |
+| **Fusível mini automotivo 10 A** | 2 | 1 uso + 1 reserva | **F1** — ramal RM1 (potência 24 V, 6,0 A) | |
 | Fusível mini automotivo 2 A | 4 | 2 usos + 2 reservas | **F2** (comando) e **F3** (auxiliares) | |
 | Terminal olhal M4 amarelo | 10 | Aterramento e barramento de 0 V | — | |
 
@@ -512,7 +512,7 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 >
 > | O que você compra | Onde encosta |
 > |---|---|
-> | rabicho USB-C macho, 2 fios, ~0,5 mm² | vermelho → **BD-5V O2** · preto → **BD-0V R9** |
+> | rabicho USB-C macho, 2 fios, ~0,5 mm² | vermelho → **BD-5V O2** · preto → **BD-0V Z9** |
 >
 > 🔥 **Um alimentador de cada vez.** Com o rabicho ligado no barramento, **não plugue também um carregador nem o cabo do PC** — seriam duas fontes de 5 V empurrando uma contra a outra dentro do mesmo conector, sem nada entre elas. Para gravar firmware: desligue o disjuntor do painel **ou** desconecte o rabicho antes de plugar o PC.
 >
@@ -990,14 +990,14 @@ Se você já tinha uma lista antiga em mãos, confira **estes seis** antes de fe
 |---|---|
 | ~~Fonte ATX 500 W~~ | Não possui trilho de 24 V; substituída pela fonte chaveada de 24 V |
 | ~~Jumper PS_ON (verde-preto)~~ | Era específico da ATX |
-| ~~Módulo XL4016 (T1)~~ | **Plano B:** a potência térmica ligou direto em 24 V — não há tensão a transformar no ramal R1 |
+| ~~Módulo XL4016 (T1)~~ | **Plano B:** a potência térmica ligou direto em 24 V — não há tensão a transformar no ramal RM1 |
 | ~~2× Módulo XL4015 (T2, T3)~~ | Substituídos pelos **LM2596 com display**: mesma função, mais barato, com leitura visível e proteções nativas |
 | ~~6× Diodo Zener (5V6 / 13 V / 15 V)~~ | Crowbar dispensado — o LM2596 traz limite de corrente e desligamento térmico no CI |
 | ~~Fusíveis F4 e F5 + 2 porta-fusíveis~~ | Eram os fusíveis de **saída** do crowbar. Os de **entrada** dos ramais (F1/F2/F3) continuam |
 | ~~2× Voltímetro digital 3 fios~~ | O display já vem integrado ao LM2596 |
 | ~~Tubo PVC Ø 63 mm + 2 tampas~~ | Era o corpo maior do T1; hoje os 3 postes usam Ø 50 mm |
 | ~~Cooler 30 mm 12 V~~ | Ventilava o XL4016 dentro do T1 |
-| ~~Fusível 6 A~~ | **F1 subiu para 10 A** (ramal R1 conduz 6,0 A contínuos) |
+| ~~Fusível 6 A~~ | **F1 subiu para 10 A** (ramal RM1 conduz 6,0 A contínuos) |
 | ~~Aquecedor PTC de 12 V~~ | Trocado pela **versão de 24 V**, alimentada direto do barramento |
 | ~~Resistor 220 Ω / 5 W (carga térmica do simulador)~~ | O DUT **não** simula carga térmica: é LED + resistor de ½ W, 0,37 W e 0,21 W ([Doc 13 §13.3b](../camada_1_maquete/13_posicoes_de_ensaio.md)) |
 | ~~Resistor 2,2 kΩ (LEDs da maquete em 24 V)~~ | A iluminação da maquete passou para **5 V** — o limitador virou **220 Ω** |

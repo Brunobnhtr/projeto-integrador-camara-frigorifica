@@ -28,7 +28,7 @@
                                             │                      (única parte com 127 V)
                     ┌───────────────────────┼───────────────────────┐
                  [F1 10A]                [F2 2A]                 [F3 2A]
-                    │ R1                    │ R2                    │ R3
+                    │ RM1                    │ RM2                    │ RM3
     ════════════════╪═══════════════════════╪═══════════════════════╪═════  LINHA COMPACTA
                     │ vermelho 1,0          │ marrom 0,5            │ cinza  sobre 3 POSTES
                     │        0 V azul 1,5 mm², 40 mm abaixo         │       (encapada!)
@@ -162,6 +162,32 @@ npm run valida     # os 10 validadores — o mesmo que trava a publicação
 
 ---
 
+
+## 🔤 Como as coisas se chamam
+
+⭐ **Um nome, um dono.** Até 18/08/2026 o projeto chamava três coisas diferentes de `R1`: um
+resistor da PI-1, um ramal de energia e um ponto de retorno do BD-0V. Na bancada, "meça o R12"
+podia significar duas peças diferentes. Ficou assim:
+
+| Prefixo | O que é | Exemplos |
+|---|---|---|
+| `R`, `C`, `D` | **Componente discreto** — resistor, capacitor, diodo | `R1` 22 kΩ da PI-1 · `C3` 100 nF · `D1` na bobina do KA2 |
+| `RS` | **Shunt** de medição de corrente | `RS1`, `RS2` — os 47 Ω da PI-2 |
+| `RM` | **Ramal** de energia, na saída de cada fusível | `RM1` (potência) · `RM2` (5 V) · `RM3` (12 V) |
+| `Z` | **Ponto de retorno** no BD-0V, um parafuso por dispositivo | `Z1` … `Z21` |
+| `KA` | Relé | `KA1`, `KA2`, `KA3`, `KA4` |
+| `H` | Sinaleiro | `H1` … `H4` |
+| `S` | Botoeira | `S0` (emergência) · `S1` · `S2` · `S3` |
+| `BD-` | Bloco de distribuição | `BD-24V` · `BD-POT` · `BD-5V` · `BD-AUX` · `BD-0V` |
+| `J` | Borne de placa | `J1`, `J2` na PI-1 · `J1`–`J3` na PI-2 |
+| `PI-` | Placa de interface | `PI-1`, `PI-2` |
+
+> 🔎 **Onde conferir:** o cadastro `painel_interativo/src/data/discretos.js` usa a forma
+> `PI1-R1` / `PI2-RS1` como identificador interno, para que dois componentes nunca disputem o
+> mesmo nome nem por acidente. O `valida_discretos.mjs` avisa se uma ref voltar a ser usada por
+> dois componentes.
+
+---
 
 ## 🔢 Números do projeto (para o relatório)
 

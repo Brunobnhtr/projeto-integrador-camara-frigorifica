@@ -224,7 +224,7 @@ export const DISCRETOS = [
   },
   /* ───────────────────────── PLACA PI-2 ───────────────────────── */
   {
-    id: 'PI2-R1', ref: 'R1', peca: 'Resistor 47 Ω · 1 % · ¼ W',
+    id: 'PI2-R1', ref: 'RS1', peca: 'Resistor 47 Ω · 1 % · ¼ W',
     tipo: 'resistor', valor: '47 Ω 1%', qtd: 1, host: 'PI2', arranjo: 'serie', polaridade: false,
     pernas: [
       { nome: 'perna de cima',  vai: { comp: 'PI2', via: 'nó RET-1' } },
@@ -239,7 +239,7 @@ export const DISCRETOS = [
     aviso: '⚠️ Esta ref colide com o R1 da PI-1, que é outro componente (22 kΩ). Ver §renomear.',
   },
   {
-    id: 'PI2-R2', ref: 'R2', peca: 'Resistor 47 Ω · 1 % · ¼ W',
+    id: 'PI2-R2', ref: 'RS2', peca: 'Resistor 47 Ω · 1 % · ¼ W',
     tipo: 'resistor', valor: '47 Ω 1%', qtd: 1, host: 'PI2', arranjo: 'serie', polaridade: false,
     pernas: [
       { nome: 'perna de cima',  vai: { comp: 'PI2', via: 'nó RET-2' } },

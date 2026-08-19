@@ -70,7 +70,7 @@ for (const r of refs) {
    do SEU ponto na barra. */
 const bd0 = idPorNome.get('BD-0V');
 const chegam = refs.filter(r => /^BD-0V$/i.test(r.para.trim()));
-const pontos = bd0.grupos.flatMap(g => g.pinos).filter(p => /^R\d+$/.test(p.nome));
+const pontos = bd0.grupos.flatMap(g => g.pinos).filter(p => /^Z\d+$/.test(p.nome));
 console.log(`\n── O 0 V ponto a ponto`);
 console.log(`   fios declarados nos componentes: ${chegam.length}`);
 chegam.forEach(r => console.log(`     · ${r.de} · ${r.pino}`));

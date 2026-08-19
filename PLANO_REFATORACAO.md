@@ -248,7 +248,7 @@ Um `valida_discretos.mjs` novo, rodando no `npm run valida` (que já bloqueia o 
 
 | Onde | O que dizia | O que diz agora |
 |---|---|---|
-| `11_subestacao_e_postes.md:525` e `:573` | LED do poste com 2,2 kΩ, do ramal R3 | **220 Ω**, do **BD-5V (ramal R2 · saída O7)** |
+| `11_subestacao_e_postes.md:525` e `:573` | LED do poste com 2,2 kΩ, do ramal RM3 | **220 Ω**, do **BD-5V (ramal RM2 · saída O7)** |
 | `03_lista_materiais.md:901` | Resistor 220 Ω / 5 W como carga térmica do simulador | Linha removida; a peça foi para a tabela do que saiu |
 | `03_lista_materiais.md:902` | 4× 1,2 kΩ ¼ W para os dois DUTs | **2× 1,2 kΩ ½ W** (posição 1) e **2× 2,2 kΩ ½ W** (posição 2) |
 | `03_lista_materiais.md:755` e `:924` | 1N4007 como sobressalente que não vai no painel | **2 usos + 2 reservas**, com o teste de diodo antes de montar o D1 |

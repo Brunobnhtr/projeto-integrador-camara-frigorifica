@@ -70,10 +70,10 @@ export const FIOS_ETAPA5 = [
          + 'disjuntor do painel ou desconecte o rabicho antes.',
     juntoCom: 'P11' },
   { n: 'P11', etapa: 5, classe: 'comum', func: 'zero', mm2: 0.5,
-    de: { comp: 'HMI', via: 'GND-PWR' }, para: { comp: 'BD-0V', via: 'R9' },
+    de: { comp: 'HMI', via: 'GND-PWR' }, para: { comp: 'BD-0V', via: 'Z9' },
     nome: 'alimentação da tela · 0 V',
     rota: ['CP-topo', 'CP-vsin', 'CV-dir', 'CH-base'],
-    diz: 'O preto do MESMO rabicho Type-C, no ponto R9 da barra.',
+    diz: 'O preto do MESMO rabicho Type-C, no ponto Z9 da barra.',
     porque: '⭐ ANDA COLADO NO P10, porque é o outro fio do mesmo plugue. Se você vir '
           + 'este par se separando em canaletas diferentes no desenho, é erro: os dois '
           + 'saem do mesmo Type-C e voltam pelo mesmo caminho.',
@@ -95,7 +95,7 @@ export const FIOS_ETAPA5 = [
     rota: ['CH-base', 'CV-dir', 'CP-vsin', 'CP-topo'],
     diz: 'O conversor precisa conhecer as DUAS tensões para trabalhar.' },
   { n: 'P15', etapa: 5, classe: 'comum', func: 'zero', mm2: 0.25,
-    de: { comp: 'CONV', via: 'GND-HV' }, para: { comp: 'BD-0V', via: 'R10' },
+    de: { comp: 'CONV', via: 'GND-HV' }, para: { comp: 'BD-0V', via: 'Z10' },
     nome: 'retorno do conversor', rota: ['CP-topo', 'CP-vsin', 'CV-dir', 'CH-base'],
     diz: 'O 0 V do lado alto.' },
   { ...sin('P16', { comp: 'CONV', via: 'LV' }, { comp: 'HMI', via: '3V3' },
@@ -121,7 +121,7 @@ export const FIOS_ETAPA5 = [
 
   /* ── os blocos de 5 V dos comandos ────────────────────────────────── */
   { n: 'P20', etapa: 5, classe: 'comum', func: 'zero', mm2: 0.25,
-    de: { comp: 'BD-0V', via: 'R18' }, para: { comp: 'S2', via: '13' },
+    de: { comp: 'BD-0V', via: 'Z18' }, para: { comp: 'S2', via: '13' },
     nome: '0 V dos comandos → porta', rota: ['CH-base', 'CV-dir', 'CP-vsin', 'CP-2x3'],
     diz: 'UM fio de 0 V cruza a dobradiça e serve os dois comandos de 5 V.',
     porque: '⭐ Aqui pendurar É o certo. O limiar do Arduino fica em 2,5 V e o pull-up '
@@ -153,7 +153,7 @@ export const FIOS_ETAPA5 = [
     porque: '📌 Cada LED tem o SEU resistor de 220 Ω, montado dentro da base do poste '
           + 'e não aqui. Do painel sai só o par de alimentação.' },
   { n: 'P29', etapa: 5, classe: 'comum', func: 'zero', mm2: 0.25,
-    de: { maquete: 'LEDS', borne: '−' }, para: { comp: 'BD-0V', via: 'R16' },
+    de: { maquete: 'LEDS', borne: '−' }, para: { comp: 'BD-0V', via: 'Z16' },
     prensa: 'PG7-3', nome: 'LEDs da maquete −', rota: ['CH-base'],
     diz: 'Retorno comum dos quatro.' },
 ];

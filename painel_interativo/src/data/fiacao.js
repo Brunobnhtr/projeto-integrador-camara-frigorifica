@@ -55,7 +55,7 @@ export const PRENSAS_PAINEL = [
   {
     id: 'PG7-2', tipo: 'PG7', liga: '◄ do poste 3 · T3 e R2', face: 'base', x: 170, classe: 'potencia',
     nome: 'ENTRADA 12 V + 24 V SERVIÇOS',
-    diz: 'Dois positivos: o 12 V do T3 (poste 3) e o 24 V de serviços do ramal R2.',
+    diz: 'Dois positivos: o 12 V do T3 (poste 3) e o 24 V de serviços do ramal RM2.',
   },
   /* ⭐ AS DUAS SAÍDAS PARA A CÂMARA. Separadas pelo mesmo motivo das
      entradas: o PG13-2 leva a saída dos BTS, que é o que polui, e o
@@ -103,7 +103,7 @@ const FIOS_ETAPA1 = [
     de: { prensa: 'PG9-1' }, para: { comp: 'KA2', via: '11' },
     mm2: 1.5,
     rota: ['CH-base'],
-    diz: 'Vem do ramal R1, que desce no poste 4. Conduz os 6 A das Peltier — é o fio '
+    diz: 'Vem do ramal RM1, que desce no poste 4. Conduz os 6 A das Peltier — é o fio '
        + 'mais carregado do painel.',
     porque: '⭐ Ele NÃO vai direto ao barramento. Entra pelo contato 11 do KA2, e só sai '
           + 'pelo 14 se o relé estiver energizado. É isso que faz o cogumelo de '
@@ -145,7 +145,7 @@ const FIOS_ETAPA1 = [
     de: { prensa: 'PG7-2' }, para: { comp: 'BD-24V', via: 'IN' },
     mm2: 0.5,
     rota: ['CH-base', 'CV-esq', 'CH-2x1'],
-    diz: 'Vem do ramal R2, que também desce no poste 4. É o barramento PERMANENTE.',
+    diz: 'Vem do ramal RM2, que também desce no poste 4. É o barramento PERMANENTE.',
     porque: '⭐ Este é o que NÃO cai na emergência. Ele alimenta o ESP32, os sinaleiros e '
           + 'as posições de ensaio — tudo o que precisa continuar vivo para registrar o '
           + 'que aconteceu quando alguém socou o cogumelo.',

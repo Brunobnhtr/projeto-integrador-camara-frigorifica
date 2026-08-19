@@ -112,7 +112,7 @@ Quando precisarem se cruzar, cruze a **90°**. Cabos paralelos "conversam" por i
    ║        ┌────────┼────────┐          │                                 ║
    ║     [F1 10A]  [F2 2A]  [F3 2A]      │                                 ║
    ╚════════╪════════╪════════╪══════════╪═════════════════════════════════╝
-            │ R1     │ R2     │ R3       │ 0 V
+            │ RM1     │ RM2     │ RM3       │ 0 V
    ═════════╪════════╪════════╪══════════╪══════ LINHA COMPACTA PROTEGIDA
     vermelho│  marrom│   cinza│      azul│       sobre os postes P1, P2, P3
      1,0 mm²│ 0,5 mm²│ 0,5 mm²│   1,5 mm²│
@@ -152,7 +152,7 @@ Quando precisarem se cruzar, cruze a **90°**. Cabos paralelos "conversam" por i
 
    ┌──────────────────────────────────────────────────────┐
    │ BD-24V (24 V PERMANENTE, não passa pelo KA2)         │
-   │  ← ramal R3, derivação no poste P3                   │
+   │  ← ramal RM3, derivação no poste P3                   │
    │  → DNLCB30/ESP32 · cadeia de comando (KA1/KA2) ·     │
    │    POSITIVO DOS 4 SINALEIROS de 24 V (via ULN2803)   │
    │    NÃO cai com a emergência — de propósito: o        │
@@ -160,7 +160,7 @@ Quando precisarem se cruzar, cruze a **90°**. Cabos paralelos "conversam" por i
    └──────────────────────────────────────────────────────┘
 ```
 
-> ⚠️ **Os dois barramentos de 24 V não são a mesma coisa.** O **BD-POT** vem do ramal R1, passa pelo KA2 e **cai com a emergência**. O **BD-24V** vem do ramal R3, é **permanente**, e é o que mantém o ESP32 vivo para publicar o evento. Anilhas de cores diferentes nos dois.
+> ⚠️ **Os dois barramentos de 24 V não são a mesma coisa.** O **BD-POT** vem do ramal RM1, passa pelo KA2 e **cai com a emergência**. O **BD-24V** vem do ramal RM3, é **permanente**, e é o que mantém o ESP32 vivo para publicar o evento. Anilhas de cores diferentes nos dois.
 
 > 🔄 **Onde fica o corte de emergência:** entre o prensa-cabo de entrada e o bloco BD-POT.
 >
@@ -352,7 +352,7 @@ Num painel de verdade **não existem 24 cores de fio**. A cor diz **que circuito
 | ~~38~~ | — | — | — | **vago** — era o "retorno 5 V" |
 | 39 | 12 V auxiliar | Amarelo | **0,75 mm²** | PG7-2 (X=170) → **BD-AUX** entrada |
 | ~~40~~ | — | — | — | **vago** — era o "retorno auxiliar" |
-| 41 | **+24 V serviços** | Vermelho | 0,5 mm² | 🔄 **Agora vem do ramal R2, pelo poste P4** (padrão de entrada) → **BD-24V** entrada |
+| 41 | **+24 V serviços** | Vermelho | 0,5 mm² | 🔄 **Agora vem do ramal RM2, pelo poste P4** (padrão de entrada) → **BD-24V** entrada |
 
 > 🔄 **Mudou de ramal: o 24 V de serviços sai do R2, não do R3.** Os dois funcionariam, mas o R2 é bem mais folgado — ele alimenta só o transformador de 5 V, e toda a eletrônica consome cerca de **75 mA** vistos do lado de 24 V. O R3 alimenta as ventoinhas e puxa uns **265 mA**.
 >
@@ -366,7 +366,7 @@ Num painel de verdade **não existem 24 cores de fio**. A cor diz **que circuito
 >
 > | Barramento | Quem protege |
 > |---|---|
-> | **24 V de potência** (BD-POT) | **F1 (10 A)**, lá na subestação, na entrada do ramal R1 — protege o caminho inteiro |
+> | **24 V de potência** (BD-POT) | **F1 (10 A)**, lá na subestação, na entrada do ramal RM1 — protege o caminho inteiro |
 > | **5 V** (BD-5V) | **F2 (2 A)** na entrada do R2 + **limite de corrente e shutdown térmico internos do LM2596** |
 > | **12 V auxiliar** (BD-AUX) | **F3 (2 A)** na entrada do R3 + proteções internas do LM2596 |
 >
@@ -430,11 +430,11 @@ Esta seção descrevia uma placa com três diodos Zener (5V6 / 13 V / 15 V) que 
 | 61 | BTS #2 M+ | Laranja | 1,5 mm² | BTS #2 saída → borne `24V-QUENTE` |
 | 62 | BTS #2 M− | Preto | 1,5 mm² | BTS #2 saída → borne `0V-QUENTE` |
 | 63 (X5) | Coolers do radiador **+** | Amarelo | 0,5 mm² | **BD-AUX** saída 2 → **os DOIS positivos**, em paralelo |
-| 64 (X6) | Coolers do radiador **−** | Azul escuro | 0,5 mm² | os dois negativos → **BD-0V · R20** |
+| 64 (X6) | Coolers do radiador **−** | Azul escuro | 0,5 mm² | os dois negativos → **BD-0V · Z20** |
 | **64d** (X20) | RPM cooler #1 | Cinza | 0,25 mm² | Tacômetro do cooler #1 → **Arduino D3** (INT1) |
 | **64e** (X21) | RPM cooler #2 | Cinza | 0,25 mm² | Tacômetro do cooler #2 → **Arduino A8** (PCINT16) |
 | **64f** (X22) | DS18B20 do radiador · **VCC** | Violeta | 0,25 mm² | **BD-5V** saída 11 → fio vermelho do sensor |
-| **64g** (X23) | DS18B20 do radiador · **GND** | Azul escuro | 0,25 mm² | fio preto do sensor → **BD-0V · R19** |
+| **64g** (X23) | DS18B20 do radiador · **GND** | Azul escuro | 0,25 mm² | fio preto do sensor → **BD-0V · Z19** |
 | **64h** (X19) | DS18B20 do radiador · **DATA** | Cinza | 0,25 mm² | fio amarelo → **PI-1 · J1-3** (pull-up de 4,7 kΩ na placa) |
 
 > 🔧 **Correção — os itens 64b e 64c foram removidos.** A tabela dava um par de alimentação para cada cooler. Um par só, com os dois em paralelo, faz o mesmo serviço: **quem identifica qual dos dois parou é o RPM, que já é individual.** É a mesma lógica dos retornos das posições de ensaio — lá o retorno é a medição, então ele é individual; aqui a medição é o tacômetro, então é ele que precisa ser. Dois condutores a menos atravessando o prensa-cabo.
