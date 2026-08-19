@@ -44,7 +44,7 @@ Este é o quadro para gravar. Cada componente discreto do projeto se encaixa em 
 | 3 | **Fazer parte do protocolo** | 4,7 kΩ do 1-Wire | O barramento 1-Wire é dreno aberto por definição: **o resistor É o barramento**. Sem ele não existe comunicação, nem com fio perfeito |
 | 4 | **Adaptar escala de medição** | Divisor 22 kΩ / 4,7 kΩ | Transforma 24 V em 4,2 V para o Arduino conseguir ler. É um **instrumento de medida**, não uma proteção |
 | 5 | **Definir ponto de operação** | 220 Ω dos LEDs da maquete | Um LED é um diodo: não tem resistência que limite a própria corrente. Quem escolhe o brilho escolhe o resistor |
-| 1+5 | **Adaptar nível de acionamento** | ULN2803A dos sinaleiros | Um pino de 5 V / 20 mA não aciona um sinaleiro de 24 V. É a mesma função do **relé de interposição** entre CLP e contator |
+| ~~1+5~~ | ~~**Adaptar nível de acionamento**~~ | ~~ULN2803A dos sinaleiros~~ | 🗑️ **Saiu do projeto.** Ele adaptava 5 V do pino a 24 V do sinaleiro — até alguém perguntar por que o sinaleiro não podia ser de 5 V. **Categoria que some quando os dois lados falam a mesma língua** ([§33.8](#338--decisão-revisada--sinaleiros-de-5-v-no-painel-leds-de-5-v-na-maquete)) |
 
 ### O paralelo industrial — isso é normal, não é gambiarra
 
@@ -212,68 +212,40 @@ O DS18B20 comunica pelo protocolo **1-Wire**, que é **dreno aberto**: o sensor 
 
 ---
 
-### CI1 — ULN2803A · driver dos 4 sinaleiros de 24 V
+### ~~CI1 — ULN2803A~~ · o driver que deixou de ser necessário
 
-| | |
-|---|---|
-| **Categoria** | 1 e 5 — adaptar nível e definir ponto de operação |
-| **Quantidade** | 1 (um CI cobre os 4 canais, e ainda sobram 4) |
-| **Onde fica** | Placa PI-1 |
-| **Substitui** | Os 4 resistores de 220 Ω da versão anterior desta placa |
+> 🗑️ **Ele saiu do projeto em 18/08/2026, e a razão é a melhor possível: o problema que ele
+> resolvia deixou de existir.**
 
-**O problema:** os sinaleiros do painel são **módulos 22 mm de 24 V**, que é o padrão industrial e o que dá ao painel a aparência certa. Um pino do Arduino entrega **5 V e no máximo 20 mA** — ele não tem tensão nem corrente para acionar um sinaleiro de 24 V. Ligar direto não acende nada e, dependendo de como for ligado, **destrói o pino**.
+O CI estava aqui por **uma** diferença: o pino do Arduino entrega 5 V e o sinaleiro era de 24 V.
+Alguém tinha que estar no meio — e o ULN2803A era a escolha certa entre as três possíveis
+(transistor discreto, relé ou CI driver).
 
-**A solução:** um **ULN2803A** — um único CI de 18 pinos com **8 canais Darlington**, cada um capaz de chavear até 500 mA em até 50 V, **com os diodos de proteção já integrados**. O Arduino comanda a entrada em 5 V; o CI chaveia os 24 V.
+**A pergunta que mudou o projeto foi de um dos alunos:** *"e se o sinaleiro fosse de 5 V?"*
 
-> ⭐ **Repare no que aconteceu com a contagem de componentes.** Trocar os LEDs de 5 V por sinaleiros de 24 V parece "complicar", mas o resultado foi o oposto: **saíram 4 resistores e entrou 1 CI**. A placa ficou com **menos** peças, o painel ficou com aparência industrial de verdade, e ainda sobraram 4 canais livres para expansão.
+Aí não há o que adaptar. O pino aciona o sinaleiro direto, e com o CI saem também o soquete
+DIP-18, **9 vias de borne** da PI-1, **10 dos 20 jumpers** e **5 fios** do painel. A placa
+encolheu de 34 × 29 para 22 × 22 furos e a caixa DIN de 6 módulos virou uma de 4.
 
-**Como funciona (e por que o firmware não muda):** o ULN2803 é um **dreno** (open collector) — ele não fornece corrente, ele a puxa para o 0 V. O sinaleiro fica ligado permanentemente ao +24 V pelo lado positivo, e o CI **fecha o caminho para o 0 V** quando o Arduino manda. Como continua valendo **pino em nível alto = sinaleiro aceso**, o código do [Doc 40](../camada_4_programacao/40_firmware_arduino.md) **não muda nenhuma linha**.
-
-```
-                    +24 V PERMANENTE (BD-24V)
-                       │
-                       ├──────────────► terminal + do sinaleiro
-                       │                        │
-                       │                   (SINALEIRO 22 mm 24 V)
-                       │                        │
-                       │                        ▼ terminal −
-       ┌───────────────┴──────────────────────────────────┐
-       │  pino 10 (COM) ── diodos de proteção internos    │
-       │                                                   │
-   D9 ─┤ IN1 (pino 1)                    OUT1 (pino 18) ├──┘
-  D10 ─┤ IN2 (pino 2)                    OUT2 (pino 17) ├── LED azul −
-  D11 ─┤ IN3 (pino 3)                    OUT3 (pino 16) ├── LED amarelo −
-  D12 ─┤ IN4 (pino 4)                    OUT4 (pino 15) ├── LED vermelho −
-       │ IN5..IN8 (5,6,7,8)   RESERVA    OUT5..OUT8      │
-       │  pino 9 (GND) ──────────────────────────────► 0 V
-       └───────────────────────────────────────────────────┘
-                     ULN2803A  ·  8 canais Darlington
-```
-
-| Pino do CI1 | Nome | Vai para |
+| | Antes (sinaleiro 24 V) | Agora (sinaleiro 5 V) |
 |---|---|---|
-| **1** | IN1 | Borne `D9` → Arduino **D9** (LED verde · RUN) |
-| **2** | IN2 | Borne `D10` → Arduino **D10** (LED azul · COOL) |
-| **3** | IN3 | Borne `D11` → Arduino **D11** (LED amarelo · HEAT) |
-| **4** | IN4 | Borne `D12` → Arduino **D12** (LED vermelho · FAULT) |
-| 5, 6, 7, 8 | IN5–IN8 | **Livres** — reserva de expansão, deixe sem ligação |
-| **9** | **GND** | **0 V** (BD-0V) |
-| **10** | **COM** | ⚠️ **+24 V do BD-24V** — é o retorno dos diodos de proteção internos |
-| **18** | OUT1 | Borne `L1−` → terminal **negativo** do sinaleiro **verde** |
-| **17** | OUT2 | Borne `L2−` → terminal negativo do sinaleiro **azul** |
-| **16** | OUT3 | Borne `L3−` → terminal negativo do sinaleiro **amarelo** |
-| **15** | OUT4 | Borne `L4−` → terminal negativo do sinaleiro **vermelho** |
-| 14, 13, 12, 11 | OUT5–OUT8 | Livres |
+| Peças entre o pino e a lâmpada | ULN2803A + soquete + 2 fios + positivo comum de 24 V | **nada** |
+| Vias de borne na PI-1 | 19 | **10** |
+| Jumpers na PI-1 | 20 | **10** |
+| Caixa DIN | 6 módulos | **4 módulos** |
+| Limite a respeitar | 500 mA por canal do CI | ⚠️ **20 mA por pino do Arduino** |
 
-> ⚠️ **O pino 10 (COM) não é opcional.** É por ele que os diodos internos de proteção se referenciam ao +24 V. Sem essa ligação os diodos não fazem nada, e o CI fica exposto a picos indutivos. Custa um fio.
->
-> ⚠️ **Não existe resistor de entrada.** O ULN2803 já traz um resistor de 2,7 kΩ em série com a base de cada Darlington, dentro do chip — por isso ele aceita ser comandado direto por um pino de 5 V. **Acrescentar resistor por fora só reduz o brilho.**
+> ⚠️ **O limite mudou de lugar, não sumiu.** Quem sustenta a lâmpada agora é o pino, e o pino do
+> Mega entrega 20 mA com folga e 40 mA no limite absoluto. Meça o sinaleiro com fonte de bancada
+> antes de ligá-lo (passo A-02): se puxar mais que 20 mA, ele **não** pode ir direto no pino, e o
+> ULN2803A volta.
 
-> 🔌 **De onde vêm os 24 V dos sinaleiros: do BD-24V (permanente), NÃO do BD-POT.** Isso é intencional e importante: **o sinaleiro vermelho de FALHA precisa continuar aceso com a emergência acionada.** Se os sinaleiros fossem alimentados pelo barramento comutado, apertar o cogumelo apagaria justamente a luz que informa que algo está errado.
-
-**Ensaio:** no comissionamento, forçar cada saída em HIGH pelo firmware de teste e confirmar o acendimento. Com o canal ligado, medir do terminal negativo do sinaleiro ao 0 V: deve dar **~0,9 a 1,1 V** (a queda de saturação do Darlington). Se der 24 V, o canal não está conduzindo; se der 0 V exato, desconfie de curto.
+> 🎓 **A lição que vale na defesa:** antes de projetar o adaptador entre dois lados, pergunte se
+> os dois lados não podem falar a mesma língua. Metade desta placa existia por uma diferença de
+> tensão que era escolha nossa, não imposição de ninguém.
 
 ---
+
 
 ### R4 a R7 — Resistor 220 Ω · limitador dos LEDs da maquete
 
@@ -382,21 +354,24 @@ A PI-1 está no trilho 3 e o KA2 no trilho 1. Com o MOSFET na placa, o **circuit
 
 ---
 
-## 33.3 ✂️ Uma placa de 9 × 15 cm vira as duas placas
+## 33.3 ✂️ Uma placa de 9 × 15 cm vira as duas placas — e ainda sobra
 
-As placas ilhadas compradas são de **9 × 15 cm**. Um corte reto no meio dá **dois pedaços de 34 × 29 furos** — um é a PI-1, o outro é a PI-2.
+As placas ilhadas compradas são de **9 × 15 cm** (34 × 58 furos). Dela saem as duas placas do
+projeto, com sobra:
 
 ```
    ┌──────────────────┐  ← placa comprada, 34 × 58 furos (90 × 150 mm)
-   │                  │
-   │      PI-1        │     34 × 29 furos  ·  86,4 × 73,7 mm
-   │                  │
-   ├ ─ ─ ─ ─ ─ ─ ─ ─ ─┤  ← ÚNICO corte, entre as fileiras 29 e 30
+   │  PI-1   │ sobra  │     PI-1: 22 × 22 furos · 56 × 56 mm
+   │ 22×22   │  →DUTs │     a sobra vira o corpo das 2 placas simuladoras
+   ├ ─ ─ ─ ─ ┴ ─ ─ ─ ─┤  ← primeiro corte, entre as fileiras 29 e 30
    │                  │
    │      PI-2        │     34 × 29 furos  ·  86,4 × 73,7 mm
    │                  │
    └──────────────────┘
 ```
+
+⭐ **A PI-1 encolheu pela metade** quando o ULN2803A saiu: ela tinha 34 × 29 furos e uma caixa DIN
+de 6 módulos; hoje tem 22 × 22 e cabe numa de 4 módulos. A PI-2 não mudou.
 
 ### Por que 29 fileiras, e não mais
 
@@ -596,364 +571,59 @@ Na aba **"Dentro do painel"**, clicando na PI-1 ou na PI-2 e depois em **"Ver a 
 
 ## 33.4 A Placa de Interface PI-1 — construção
 
-### Onde fica no painel
+### Onde fica, e o que ela faz
 
-| | |
-|---|---|
-| **Trilho** | **3 (controle)**, imediatamente ao lado do Arduino |
-| **Posição** | X = 310 mm (no espaço livre atual do trilho) |
-| **Invólucro** | **Caixa modular DIN de 4 módulos (70 mm)** |
-| **Placa interna** | Ilhada, **24 × 29 furos** = 61 × 74 mm |
-| **Bornes** | Tipo **KF301 (passo 5,08 mm)** — todos os fios são de 0,25 mm² |
+Caixa modular DIN de **4 módulos**, no trilho 3, ao lado do Arduino. A placa tem
+**22 × 22 furos** (56 × 56 mm) e faz **três** coisas — nenhuma delas é comandar potência:
 
-> ⚠️ **Por que 4 módulos e não 3.** O borne J1 tem **11 vias**. Em passo de 5,08 mm isso dá `11 × 5,08 = 55,9 mm`, e uma caixa de 3 módulos oferece só ~45 mm úteis — **não cabe**. A caixa de 4 módulos dá 61 mm de placa, com 5 mm de folga.
+| Circuito | O que faz | Peças |
+|---|---|---|
+| **Filtros de corrente** | Limpa o sinal `IS` dos dois BTS antes de entrar em A0 e A1 | C1, C2 |
+| **Pull-up do 1-Wire** | Levanta a linha do DS18B20 — sem ele o sensor não responde | R3 |
+| **Divisor do D25** | Transforma os 24 V do BD-POT em 4,22 V, para o Arduino vigiar a emergência | R1, R2, C3 |
 
-> ⚠️ **A placa precisa dos ~52 mm que hoje estão livres no trilho 3.** Para caber, zere os vãos de 5 mm entre o Arduino, a DNLCB30 e o módulo SD/RTC. Se preferir uma placa mais folgada, o **trilho 1 tem ~86 mm livres** desde que a placa Zener e os porta-fusíveis F4/F5 saíram do projeto — mas aí o cabo SPI do SD fica mais longo, o que é pior. **Recomendação: 3M no trilho 3.**
+> ⭐ **Havia um quarto circuito** — o driver dos 4 sinaleiros — e ele saiu inteiro quando os
+> sinaleiros passaram para 5 V ([§33.8](#338--decisão-revisada--sinaleiros-de-5-v-no-painel-leds-de-5-v-na-maquete)).
+> Com ele foram o ULN2803A, o soquete, 9 vias de borne, 10 jumpers e 5 fios do painel.
 
-> 🔧 **Use placa ILHADA, não a de barramento.** Na placa ilhada cada furo é uma ilha isolada, e você define as ligações com as próprias pernas dos componentes e fios de cobre por baixo. Na de barramento, faixas inteiras já vêm ligadas e você acaba tendo que cortar trilha — que é justamente onde nascem os curtos difíceis de achar.
+### Os dois bornes
 
-### Bornes — o que entra e o que sai
+| Borne | Via | Sinal | De onde vem / para onde vai |
+|---|---:|---|---|
+| **J1 · ENTRADAS** | 1 | `IS#1` | BTS7960 #1 · pino `R_IS` |
+| | 2 | `IS#2` | BTS7960 #2 · pino `R_IS` |
+| | 3 | `DATA` | DS18B20 do radiador · fio de dados |
+| | 4 | `+5V` | BD-5V · saída 6 |
+| | 5 | `0V` | BD-0V |
+| | 6 | `24V-POT` ⚠️ | BD-POT · saída 3 — **comutado**, cai na emergência |
+| **J2 · SAÍDAS** | 1 | `A0` | Arduino A0 — corrente do Peltier #1 |
+| | 2 | `A1` | Arduino A1 — corrente do Peltier #2 |
+| | 3 | `D2` | Arduino D2 — 1-Wire |
+| | 4 | `D25` | Arduino D25 — vigia se o 24 V de potência caiu |
 
-```
-        ┌─────────── BORNE SUPERIOR · lado ARDUINO ───────────┐
-        │  A0   A1   D2   D25   D9   D10  D11  D12  +5V   0V  │
-        └──┬────┬────┬─────┬─────┬────┬────┬────┬────┬─────┬──┘
-           │    │    │     │     │    │    │    │    │     │
-        ┌──┴────┴────┴─────┴─────┴────┴────┴────┴────┴─────┴──┐
-        │                                                      │
-        │   C1   C2      R1  R2  C3      R3                    │
-        │  100n 100n    22k 4k7 100n    4k7                    │
-        │                        ╔══════════════════╗          │
-        │                        ║    CI1           ║          │
-        │                        ║   ULN2803A       ║          │
-        │                        ╚══════════════════╝          │
-        │             PI-1 · PLACA DE INTERFACE                │
-        └──┬────┬─────┬──────┬─────┬────┬────┬────┬────┬──────┘
-           │    │     │      │     │    │    │    │    │
-        ┌──┴────┴─────┴──────┴─────┴────┴────┴────┴────┴──────┐
-        │IS#1 IS#2  24V-POT 24V-SRV DATA  L1−  L2−  L3−  L4−  │
-        └────────── BORNE INFERIOR · lado CAMPO ──────────────┘
-```
-
-| Borne | Via | Sinal | Vai para |
-|---|---|---|---|
-| **Superior** (lado Arduino) | 1 | A0 | Arduino pino A0 |
-| | 2 | A1 | Arduino pino A1 |
-| | 3 | D2 | Arduino pino D2 |
-| | 4 | D25 | Arduino pino D25 |
-| | 5–8 | D9 · D10 · D11 · D12 | Arduino → entradas IN1–IN4 do ULN2803 |
-| | 9 | +5 V | Bloco **BD-5V** (só o pull-up do 1-Wire) |
-| | 10 | 0 V | Bloco **BD-0V** |
-| **Inferior** (lado campo) | 1 | IS #1 | `R_IS` do BTS7960 #1 |
-| | 2 | IS #2 | `R_IS` do BTS7960 #2 |
-| | 3 | **24V-POT** ⚠️ | Bloco **BD-POT** (comutado) → braço superior do divisor |
-| | 4 | **24V-SRV** ⚠️ | Bloco **BD-24V** (permanente) → pino **COM** do ULN2803 |
-| | 5 | DATA | DS18B20 na câmara (fio amarelo) |
-| | 6–9 | L1− · L2− · L3− · L4− | Terminal **negativo** dos 4 sinaleiros da porta |
-
-> ⚠️ **São DUAS vias de 24 V, de origens diferentes, e trocá-las quebra o projeto.**
->
-> | Via | Origem | Se você trocar |
-> |---|---|---|
-> | **24V-POT** | BD-POT — **cai com a emergência** | O Arduino passa a achar que a potência está sempre presente e aceita dar START sem energia |
-> | **24V-SRV** | BD-24V — **permanente** | O sinaleiro vermelho de FALHA apaga justamente quando a emergência é acionada |
->
-> **Anilhas de cores diferentes nas duas**, e as duas nas extremidades do borne, longe das vias de sinal. É onde 24 V convive com lógica de 5 V — um fio solto ali leva o Arduino junto.
-
-> 📌 **O terminal POSITIVO dos 4 sinaleiros não passa pela placa.** Vai direto do **BD-24V** para os sinaleiros na porta. Só o negativo volta para a PI-1, onde o ULN2803 o puxa para 0 V. Isso economiza 4 vias de borne e deixa a fiação da porta mais limpa.
-
-### 📐 Esquema elétrico — 4 circuitos independentes
-
-> 🖼️ **Três desenhos, com finalidades diferentes:**
-> - [**Circuito em norma IEC**](../desenhos/10_placa_pi1_circuito.png) ⭐ — esquema elétrico com símbolos normalizados. **Arquivo editável:** [`10_placa_pi1_circuito.cddx`](../desenhos/10_placa_pi1_circuito.cddx)
-> - **A placa no aplicativo** — aba 🔧 *Dentro do painel* → clique na PI-1. É o desenho furo a furo, gerado do `pi1_fisico.js`: os dois lados da placa, cada jumper com sua rota e uma caixa de conferido por solda feita
->
-> 💡 **Para editar o `.cddx`:** abra o [editor web do Circuit Diagram](https://www.circuit-diagram.org/editor) (gratuito, roda no navegador, não instala nada) e arraste o arquivo para dentro. Dá para mover peças, mudar valores e exportar de novo.
->
-> ⚙️ **Como o desenho foi gerado:** o `.cddx` é um formato aberto (ZIP com XML). Ele foi escrito por script e renderizado com a `circuit-diagram-cli` oficial. Se você mudar o circuito, dá para regerar a imagem sem abrir editor nenhum.
->
-> 📌 Os capacitores aparecem como **100000 pF**, que é a mesma coisa que **100 nF** — é só a notação que a ferramenta escolhe.
-
-### Como ler o desenho do circuito
-
-**A linha horizontal grossa embaixo é o barramento de 0 V.** Os pontinhos cheios sobre ela são **nós** — onde os fios realmente se juntam. Repare que C1, C2, R2 e C3 descem todos até ela: é o mesmo 0 V para todos, e por isso existe **um único borne "0 V"**.
-
-**Os quatro circuitos de cima não se tocam entre si** — só se encontram no barramento. Da esquerda para a direita:
-
-| Circuito | O que faz |
-|---|---|
-| **C1** entre `J1·A0` e o 0 V | Filtra o ruído do pino IS do BTS #1 |
-| **C2** entre `J1·A1` e o 0 V | Idem, BTS #2 |
-| **R3** entre `J2·+5V` e `J1·D2` | Pull-up do sensor. **Não desce ao 0 V** |
-| **R1 + R2 + C3** | Divisor: os 24 V entram por `J2·24V-POT`, viram 4,2 V no nó e saem por `J1·D25` |
-
-**No ULN2803, cada pino mostra o número real do CI e para onde vai o fio.** Confira contra o chip físico: o pino 1 fica ao lado do chanfro.
-
-| Pino | Liga em |
-|---|---|
-| 1 · IN1 · 2 · IN2 · 3 · IN3 · 4 · IN4 | `J1·D9` · `D10` · `D11` · `D12` |
-| **9 · GND** | Barramento de 0 V |
-| **10 · COM** | `J2·24V-SRV` (24 V permanente) |
-| 18 · OUT1 · 17 · OUT2 · 16 · OUT3 · 15 · OUT4 | `J2·L1−` · `L2−` · `L3−` · `L4−` |
-
-⚠️ **Repare na numeração:** entradas e saídas ficam **frente a frente** — IN1 em cima à esquerda, OUT1 em cima à direita. Os pinos 5 a 8 e 11 a 14 ficam sem uso.
-
-> 🖼️ **Detalhamento adicional:**
-> - **Para entender como funciona:** o circuito em norma IEC ([10_placa_pi1_circuito.png](../desenhos/10_placa_pi1_circuito.png))
-> - ⭐ **Para montar:** a aba 🔧 *Dentro do painel* → PI-1, no aplicativo — furo a furo, com a lista de jumpers e o que já foi soldado
-
-### ⭐ J1 = ENTRADAS · J2 = SAÍDAS
-
-**O fluxo é sempre o mesmo:** o fio chega em **J1**, atravessa o componente eletrônico, e sai por **J2** para o destino.
-
-```
-   vem de algum lugar ──► J1 ──► [componente] ──► J2 ──► vai para algum lugar
-```
-
-#### J1 — ENTRADAS (11 vias) · de onde vem cada fio
-
-| Via | Sinal | **Vem de** | Cor |
-|---|---|---|---|
-| 1 | `IS#1` | **BTS7960 #1**, pino `R_IS` | amarelo |
-| 2 | `IS#2` | **BTS7960 #2**, pino `R_IS` | amarelo |
-| 3 | `DATA` | **DS18B20** na câmara (fio de dados) | amarelo |
-| 4 | `24V-POT` | **BD-POT** — 24 V comutado pelo KA2 | vermelho ⚠️ |
-| 5 | `D9` | **Arduino** pino D9 | azul |
-| 6 | `D10` | **Arduino** pino D10 | azul |
-| 7 | `D11` | **Arduino** pino D11 | azul |
-| 8 | `D12` | **Arduino** pino D12 | azul |
-| 9 | `0V` | **BD-0V** — o star ground | preto |
-| 10 | `24V-SRV` | **BD-24V** — 24 V permanente | vermelho ⚠️ |
-| 11 | `+5V` | **BD-5V** | vermelho |
-
-#### J2 — SAÍDAS (8 vias) · para onde vai cada fio
-
-| Via | Sinal | **Vai para** | Cor |
-|---|---|---|---|
-| 1 | `A0` | **Arduino** pino A0 (sinal já filtrado) | amarelo |
-| 2 | `A1` | **Arduino** pino A1 (sinal já filtrado) | amarelo |
-| 3 | `D2` | **Arduino** pino D2 (com pull-up aplicado) | amarelo |
-| 4 | `D25` | **Arduino** pino D25 (24 V reduzidos a 4,2 V) | azul |
-| 5 | `L1−` | Sinaleiro **verde** (RUN) — terminal negativo | preto |
-| 6 | `L2−` | Sinaleiro **azul** (COOL) | preto |
-| 7 | `L3−` | Sinaleiro **amarelo** (HEAT) | preto |
-| 8 | `L4−` | Sinaleiro **vermelho** (FAULT) | preto |
-
-> ⚠️ **As duas vias de 24 V têm origens diferentes e não podem ser trocadas.** `24V-POT` vem do barramento **comutado** (cai na emergência) e serve só para **medir**; `24V-SRV` vem do **permanente** e alimenta o CI, para o sinaleiro de FALHA continuar aceso quando a emergência for acionada. **Anilhas de cores diferentes nas duas.**
-
-> 📌 **O positivo dos sinaleiros não passa pela placa.** Vai direto do BD-24V às lâmpadas; só o negativo volta para a PI-1, onde o ULN2803 o puxa para o 0 V.
+⚠️ **O borne tem que ser de passo 5,08 mm** (KF301). O de 5,00 mm parece igual no anúncio e não
+encaixa na placa de 2,54 mm: a diferença acumula 0,4 mm a cada 5 vias e o último pino não entra.
 
 ### 🔌 O 0 V é ÚNICO no projeto inteiro
 
-Dúvida comum: *"são 3 neutros — o do 24 V, o do 12 V e o do 5 V?"* **Não.**
+Os LM2596 **não são isolados**: o 0 V do 5 V, o do 12 V e o dos 24 V são o mesmo condutor. Por
+isso existe **um** BD-0V, e por isso o barramento de 0 V da placa é uma linha reta de fio nu, a
+primeira coisa que se solda. Não existe "terra da eletrônica" separado do "terra da potência"
+neste projeto — inventar um cria laço de terra, que é a origem clássica de leitura instável.
 
-Os **LM2596 são conversores NÃO ISOLADOS**: o 0 V da entrada e o da saída são o **mesmo condutor**, ligado por dentro do módulo.
+### 🔎 O desenho furo a furo está no aplicativo
 
-```
-   FONTE 24 V
-    +24 ──────────────► [LM2596] ──────► +5,10 V
-      0 ────────────────────┴───────────────┴──── 0 V
-                        ▲ é o MESMO fio, atravessa reto
-```
+Aba **🔧 Dentro do painel** → clique na PI-1. Lá estão, gerados do `pi1_fisico.js`:
 
-**E tem que ser único, não é só conveniência:** o Arduino mede o pino A0 **em relação ao 0 V dele**. Se o 0 V do BTS fosse outro ponto, a leitura não significaria nada. Sinal só tem sentido contra uma referência comum.
+- os dois lados da placa (componentes em cima, fiação por baixo);
+- cada furo clicável, dizendo o que existe nele e a que ele está ligado eletricamente;
+- os **10 jumpers** com a rota de cada um e uma caixa de conferido por solda feita;
+- os quatro **nós**, mostrando por que três pernas não entram no mesmo furo.
 
-> ⚠️ **A confusão vem de pensar em corrente alternada**, onde cada secundário de transformador tem o seu neutro isolado. Em CC com conversor buck, **o negativo passa direto**.
+**A ordem de montagem, passo a passo, está na aba 🧾 Guia de montagem, fase B** — com o que pegar,
+o que fazer e o que medir em cada etapa. Não repetimos aqui: lista de montagem em dois lugares é
+lista que diverge.
 
-Por isso existe **um único bloco BD-0V**, e o nome dele é **star ground**: todos os retornos convergem para um ponto só. Se você emendasse um retorno no outro, a corrente de uma carga criaria queda de tensão que a seguinte enxergaria como ruído.
-
-### 📐 Esquema elétrico — 4 circuitos independentes
-
-> 🖼️ **Três desenhos, com finalidades diferentes:**
-> - [**Circuito em norma IEC**](../desenhos/10_placa_pi1_circuito.png) ⭐ — esquema elétrico com símbolos normalizados. **Arquivo editável:** [`10_placa_pi1_circuito.cddx`](../desenhos/10_placa_pi1_circuito.cddx)
-> - **A placa no aplicativo** — aba 🔧 *Dentro do painel* → clique na PI-1. É o desenho furo a furo, gerado do `pi1_fisico.js`: os dois lados da placa, cada jumper com sua rota e uma caixa de conferido por solda feita
->
-> 💡 **Para editar o `.cddx`:** abra o [editor web do Circuit Diagram](https://www.circuit-diagram.org/editor) (gratuito, roda no navegador, não instala nada) e arraste o arquivo para dentro. Dá para mover peças, mudar valores e exportar de novo.
->
-> ⚙️ **Como o desenho foi gerado:** o `.cddx` é um formato aberto (ZIP com XML). Ele foi escrito por script e renderizado com a `circuit-diagram-cli` oficial. Se você mudar o circuito, dá para regerar a imagem sem abrir editor nenhum.
->
-> 📌 Os capacitores aparecem como **100000 pF**, que é a mesma coisa que **100 nF** — é só a notação que a ferramenta escolhe.
-
-### Como ler o desenho do circuito
-
-**A linha horizontal grossa embaixo é o barramento de 0 V.** Os pontinhos cheios sobre ela são **nós** — onde os fios realmente se juntam. Repare que C1, C2, R2 e C3 descem todos até ela: é o mesmo 0 V para todos, e por isso existe **um único borne "0 V"**.
-
-**Os quatro circuitos de cima não se tocam entre si** — só se encontram no barramento. Da esquerda para a direita:
-
-| Circuito | O que faz |
-|---|---|
-| **C1** entre `J1·A0` e o 0 V | Filtra o ruído do pino IS do BTS #1 |
-| **C2** entre `J1·A1` e o 0 V | Idem, BTS #2 |
-| **R3** entre `J2·+5V` e `J1·D2` | Pull-up do sensor. **Não desce ao 0 V** |
-| **R1 + R2 + C3** | Divisor: os 24 V entram por `J2·24V-POT`, viram 4,2 V no nó e saem por `J1·D25` |
-
-**No ULN2803, cada pino mostra o número real do CI e para onde vai o fio.** Confira contra o chip físico: o pino 1 fica ao lado do chanfro.
-
-| Pino | Liga em |
-|---|---|
-| 1 · IN1 · 2 · IN2 · 3 · IN3 · 4 · IN4 | `J1·D9` · `D10` · `D11` · `D12` |
-| **9 · GND** | Barramento de 0 V |
-| **10 · COM** | `J2·24V-SRV` (24 V permanente) |
-| 18 · OUT1 · 17 · OUT2 · 16 · OUT3 · 15 · OUT4 | `J2·L1−` · `L2−` · `L3−` · `L4−` |
-
-⚠️ **Repare na numeração:** entradas e saídas ficam **frente a frente** — IN1 em cima à esquerda, OUT1 em cima à direita. Os pinos 5 a 8 e 11 a 14 ficam sem uso.
-
-> 🖼️ **Detalhamento adicional:**
-> - **Para entender como funciona:** o circuito em norma IEC ([10_placa_pi1_circuito.png](../desenhos/10_placa_pi1_circuito.png))
-> - ⭐ **Para montar:** a aba 🔧 *Dentro do painel* → PI-1, no aplicativo — furo a furo, com a lista de jumpers e o que já foi soldado
-
-### ⚠️ Os bornes NÃO são "entrada" e "saída"
-
-Confusão comum, e a nomenclatura anterior tinha culpa. Eles são divididos por **para onde o fio vai fisicamente**:
-
-| Borne | Regra, sem exceção |
-|---|---|
-| **J1** (borda de cima) | **Só ENTRA.** 11 vias. Nada sai por aqui. |
-| **J2** (borda de baixo) | **Só SAI.** 8 vias. Nada entra por aqui. |
-
-**O fluxo é sempre o mesmo, de cima para baixo:**
-
-```
-   vem de algum lugar ──► J1 ──► [componente] ──► J2 ──► vai para algum lugar
-```
-
-Isso vale até para os sinais que a placa apenas *atravessa*. O IS#1 entra por `J1-1`, encosta no capacitor e sai por `J2-1` já chamado de `A0`. **O sinal muda de nome ao atravessar a placa**, e isso é proposital: o nome diz em que ponto do caminho ele está.
-
-| Via | O que é |
-|---|---|
-| `J1-5` · D9 | Arduino **→** placa |
-| `J1-11` · 24V-POT | Painel **→** placa (só para ser medido) |
-| `J2-1` · A0 | Placa **→** Arduino, já filtrado |
-| `J2-4` · L1− | Placa **→** sinaleiro |
-
-📌 **As duas vias de 24 V ficam nas pontas de J1** (`J1-10` = 24V-SRV, `J1-11` = 24V-POT), longe das vias de sinal — é ali que 24 V convive com lógica de 5 V, e um fio solto leva o Arduino junto. **Anilhas de cores diferentes nas duas.**
-
-**A chave para não se perder:** os 4 circuitos da placa **não se tocam** — a única coisa que compartilham é o barramento de 0 V. Estude um de cada vez.
-
-#### Bloco A — Filtro dos pinos IS (são 2, idênticos)
-
-```
-   J1-1 (IS#1) ──●──► J2-1 (A0)     J1-2 (IS#2) ──●──► J2-2 (A1)
-                  │                                 │
-                ══╪══ C1 · 100 nF                  ══╪══ C2 · 100 nF
-                  │                                 │
-                 ─┴─ 0 V                           ─┴─ 0 V
-```
-
-#### Bloco B — Divisor que lê os 24 V
-
-```
-   J1-11 (24V-POT) ──┤ R1 · 22 kΩ ├──●──────────► J2-8 (D25)
-                                     │
-                           ┌─────────┴─────────┐
-                           │                   │
-                     ┤ R2 · 4,7 kΩ ├         ══╪══ C3 · 100 nF
-                           │                   │
-                          ─┴─ 0 V             ─┴─ 0 V
-```
-
-⚠️ **R2 e C3 ficam em PARALELO**, os dois ligados do **nó D25** ao 0 V. O C3 não tem relação nenhuma com os pinos dos sinaleiros.
-
-#### Bloco C — Pull-up do sensor de temperatura
-
-```
-   J1-4 (+5V) ───┤ R3 · 4,7 kΩ ├───●───► J2-3 (D2)
-                                    │
-                            J1-3 (DATA, vem do sensor)
-```
-
-Um resistor entre dois pontos. **Não toca no 0 V.**
-
-#### Bloco D — Driver dos sinaleiros
-
-```
-                    ┌──────────────────────┐
-    J1-5 (D9)  ─────┤ 1  IN1      OUT1  18 ├─────► J2-4 (L1−)
-    J1-6 (D10) ─────┤ 2  IN2      OUT2  17 ├─────► J2-5 (L2−)
-    J1-7 (D11) ─────┤ 3  IN3      OUT3  16 ├─────► J2-6 (L3−)
-    J1-8 (D12) ─────┤ 4  IN4      OUT4  15 ├─────► J2-7 (L4−)
-                    │ 5..8  IN5-8  OUT5-8 11..14│  (livres)
-           0 V ─────┤ 9  GND      COM   10 ├───── J1-10 (24V-SRV)
-                    └──────────────────────┘
-                            ULN2803A
-```
-
-### Lista de ligações — confira uma a uma
-
-| # | De | Para | Componente |
-|---|---|---|---|
-| 1 | nó **A0** | barramento 0 V | **C1** (100 nF) |
-| 2 | nó **A1** | barramento 0 V | **C2** (100 nF) |
-| 3 | **J1-4** (+5V) | nó **1-Wire** | **R3** (4,7 kΩ) |
-| 4 | **J1-11** (24V-POT) | nó **D25** | **R1** (22 kΩ) |
-| 5 | nó **D25** | barramento 0 V | **R2** (4,7 kΩ) |
-| 6 | nó **D25** | barramento 0 V | **C3** (100 nF) |
-| 7 | **J1-1** (IS#1) → nó A0 → **J2-1** | — | 2 fios |
-| 8 | **J1-2** (IS#2) → nó A1 → **J2-2** | — | 2 fios |
-| 9 | **J1-3** (DATA) → nó 1-Wire → **J2-3** | — | 2 fios |
-| 10 | nó **D25** | **J2-8** (D25) | fio |
-| 11–14 | **J1-5..8** (D9..D12) | soquete **pinos 1 · 2 · 3 · 4** | fio |
-| 15 | soquete **pino 9** (GND) | barramento 0 V | fio |
-| 16 | soquete **pino 10** (COM) | **J1-10** (24V-SRV) | fio |
-| 17–20 | soquete **pinos 18 · 17 · 16 · 15** | **J2-4..7** (L1−..L4−) | fio |
-| 21 | **J1-9** (0V) | barramento 0 V | fio |
-
-**21 ligações · 7 componentes · 1 barramento · 1 ponte de nó.**
-
-> 🖥️ **Confira no simulador antes de soldar.** O painel interativo desenha esta placa **furo por furo, em escala real**: [`painel_interativo/`](../painel_interativo/). Dê duplo clique na PI-1 e use o filtro dos 4 circuitos para estudar um de cada vez. O comando `npm run valida` confere sozinho se dois componentes disputam o mesmo furo.
-
-### ⚠️ O passo do borne tem que ser 5,08 mm
-
-| Passo | Casa com a placa ilhada? |
-|---|---|
-| 3,5 mm (KF350) | ❌ **Não** — a placa tem furos a cada 2,54 mm |
-| **5,08 mm (KF301 / KRE)** | ✅ **Sim — é exatamente 2 furos** |
-
-| Borne | Vias | Largura | Cabe nos 61 mm? |
-|---|---|---|---|
-| **J1** (entradas) | 11 | `11 × 5,08 = 55,9 mm` | ✅ com 5 mm de folga |
-| **J2** (saídas) | 8 | `8 × 5,08 = 40,6 mm` | ✅ com folga |
-
-Os pinos caem sempre em **coluna par** — via 1 na coluna 2, via 2 na coluna 4, e assim por diante. É isso que torna o desenho previsível na hora de montar.
-
-### O barramento de 0 V
-
-Um **fio de cobre nu** soldado numa fileira reta de furos, atravessando a placa. Todos os retornos se ligam a ele pelo furo mais próximo, em vez de correrem individualmente até o borne.
-
-```
-   ══════●═══●═══●═══●═══●══════
-         │   │   │   │   │
-        C1  C2  R2  C3  pino 9
-```
-
-**Solde o fio nu primeiro**, bem esticado, antes de qualquer componente.
-
-### Roteiro de montagem
-
-1. **Corte a placa ilhada** em **24 × 29 furos** (≈ 61 × 74 mm) com estilete e régua (risque dos dois lados e quebre) ou com serra de joalheiro. **Conte os furos em vez de medir com régua** — é mais confiável.
-2. **Faça a montagem a seco primeiro:** posicione os 6 componentes discretos, o CI e os 2 bornes sem soldar, e confira que tudo cabe dentro da caixa DIN fechada.
-3. **Solde os bornes primeiro**, nas duas bordas. São o que define a geometria.
-4. **Solde um soquete DIP de 18 pinos** para o ULN2803 — não solde o CI direto. Assim você troca o chip sem dessoldar nada se ele queimar.
-5. **Solde os componentes na ordem:** primeiro os resistores deitados, depois os capacitores.
-6. **Faça as interligações por baixo com fio ISOLADO** de 0,25 mm² (não use "sobra de perna" em trechos longos — ela oxida e não é isolada).
-
-> ⚠️ **Fio isolado nos jumpers, fio nu só no barramento.** São 20 jumpers, e vários precisam **cruzar por cima do barramento de 0 V** para alcançar o borne do outro lado. Se forem de fio nu, cada cruzamento vira um curto para o 0 V — e é o tipo de defeito que só aparece com tudo já montado. O **único** condutor nu da placa é o próprio barramento.
-7. ⚠️ **Confira a orientação do CI:** o **chanfro / meia-lua** do ULN2803 fica do lado dos pinos 1 e 18. Inserir o CI girado 180° liga os 24 V do COM na entrada IN e destrói tanto o chip quanto o pino do Arduino.
-8. **Confira com multímetro em modo continuidade, ANTES de energizar** (com o CI **fora** do soquete):
-   - [ ] Não há continuidade entre **24V-POT** e **24V-SRV** — são circuitos diferentes
-   - [ ] Não há continuidade entre nenhuma via de 24 V e nenhuma via de sinal
-   - [ ] Não há continuidade entre **+5 V** e **0 V**
-   - [ ] Resistência de D25 para 0 V ≈ 4,7 kΩ
-   - [ ] Resistência de D2 para +5 V ≈ 4,7 kΩ
-   - [ ] Continuidade de cada borne `Dx` até o respectivo pino de entrada do soquete
-   - [ ] Continuidade de cada borne `Lx−` até o respectivo pino de saída do soquete
-9. **Só então encaixe o ULN2803 no soquete.**
-10. **Aplique verniz protetor** (spray para PCI ou esmalte incolor) no lado da solda, evitando os bornes e o soquete.
-11. **Etiquete a frente da caixa** com uma impressão em papel adesivo: nome de cada via e a identificação **PI-1**.
-
-> 🎯 **A etiqueta não é enfeite — é o que torna a placa auditável.** Um painel industrial identifica cada borne por norma, justamente para que outra pessoa consiga dar manutenção sem o projetista do lado.
-
----
 
 ## 33.5 A Placa de Interface PI-2 — construção
 
@@ -1073,46 +743,77 @@ Os dois pull-downs **não vão na placa PI-1**, pelo motivo explicado na §33.2:
 
 ---
 
-## 33.8 ✅ Decisão tomada — sinaleiros de 24 V no painel, LEDs de 5 V na maquete
+## 33.8 ✅ Decisão revisada — sinaleiros de 5 V no painel, LEDs de 5 V na maquete
 
-A dúvida sobre a tensão dos LEDs está resolvida, e a divisão é por **onde** o LED fica:
+**A versão anterior desta seção defendia sinaleiro de 24 V no painel**, com o argumento de que o
+sinaleiro industrial de 22 mm é o que a banca reconhece, e que um LED de 5 mm espetado na porta
+entrega a mensagem de "protótipo escolar".
 
-| | **Painel — sinaleiros 22 mm** | **Maquete — iluminação pública** |
+**O argumento continua certo — e a solução ficou melhor:** existe sinaleiro 22 mm de 5 V. O corpo
+metálico, o anel de 22 mm e o difusor são os mesmos; muda a tensão. Então dá para ter o
+componente industrial **e** eliminar todo o circuito de adaptação.
+
+| | Painel — sinaleiros 22 mm | Maquete — iluminação pública |
 |---|---|---|
-| Tensão | ⭐ **24 V** | ⭐ **5 V** (LED branco, Vf ≈ 3,1 V) |
-| Quantidade | 4 (RUN, COOL, HEAT, FAULT) | 4 (3 luminárias da rua + 1 guarita) |
-| Acionamento | **ULN2803A** na placa PI-1 | Direto do BD-5V, **sempre aceso** |
-| Limitação de corrente | Interna ao sinaleiro de 24 V | **Resistor de 220 Ω** por LED |
-| Alimentação | **BD-24V** (permanente) | **BD-5V** (ramal R2) |
-| Onde ficam os componentes | CI1 na PI-1 | R4–R7 na base de cada poste |
+| Tensão | ⭐ **5 V** | 5 V |
+| Quantidade | 4 (RUN, COOL, HEAT, FALHA) | 4 (3 da rua + 1 na guarita) |
+| Acionamento | ⭐ **pino do Arduino, direto** (D9 a D12) | direto do BD-5V, sempre aceso |
+| Limitação de corrente | interna ao sinaleiro | resistor de 220 Ω por LED |
+| Alimentação | **BD-5V**, pelo próprio pino | **BD-5V** (ramal R2) |
+| Componentes no meio | ⭐ **nenhum** | R4–R7, na base de cada poste |
 
-**Por que essa divisão faz sentido:**
+**O que essa decisão levou junto:**
 
-- **No painel**, o sinaleiro de 24 V é o componente industrial de verdade — corpo metálico, anel de 22 mm, difusor. Um LED de 5 mm espetado na porta entrega a mensagem de "protótipo escolar", e é a primeira coisa que a banca vê.
-- **Na maquete**, o que se quer é um ponto de luz pequeno e discreto dentro de uma luminária de 180 mm de altura. Um LED de 3 mm em 5 V com 8,6 mA é exatamente isso; um sinaleiro de 24 V não caberia nem faria sentido cenográfico.
+- o **ULN2803A** e o soquete DIP-18 (§33.2);
+- **9 vias de borne** da PI-1 — as 4 de comando, o 24 V permanente e as 4 de retorno;
+- **10 jumpers** e o quarto circuito inteiro da placa;
+- **5 fios** do painel: o positivo comum de 24 V, as três pontes entre sinaleiros e o COM do CI;
+- **duas saídas do BD-24V**, que ficaram livres.
 
-> ⭐ **E o balanço de componentes melhorou:** saíram **4 resistores** da placa e entrou **1 CI**. Os 220 Ω não foram descartados — foram realocados para a maquete, onde agora fazem falta.
+### ⚠️ O que passou a ser responsabilidade do pino
 
----
+| Antes | Agora |
+|---|---|
+| O pino comandava; quem sustentava a lâmpada era o CI | **O pino sustenta a lâmpada** |
+| Limite: 500 mA por canal do ULN | **Limite: 20 mA por pino** (40 mA absoluto) |
+| Um curto no sinaleiro queimava o CI (R$ 3) | **Um curto no sinaleiro queima o pino do Mega** |
+
+Por isso o passo **A-02** do guia manda medir a corrente do sinaleiro com fonte de bancada antes
+de qualquer ligação, e por isso o retorno dos quatro vai para o **GND do próprio Mega**, e não
+para o barramento: a corrente que sai do pino tem que voltar pela referência dele, ou ela desloca
+a referência das medições analógicas do A0 e do A1 a cada lâmpada que acende.
+
+### E o vermelho de FALHA na emergência?
+
+Continua aceso — e agora por um motivo mais direto do que antes. Ele não depende de um barramento
+permanente: depende do **Arduino estar vivo**, e o Arduino é alimentado pelo BD-5V, que não cai
+com o cogumelo. Quem segura o pino em nível alto é o firmware, que continua rodando.
+
+| Situação | Vermelho |
+|---|---|
+| Operando normal | apagado |
+| Emergência socada | **aceso**, e apaga sozinho quando o cogumelo é destravado |
+| Falha (sensor, potência, dissipador) | **aceso e fica** |
+| Defeito corrigido, sem reconhecer | continua aceso |
+| STOP segurado por 2 s | apaga — é o reconhecimento do alarme |
+
 
 ## 33.9 Checklist de aceitação do Doc 33
 
 ### Placa PI-1
-- [ ] Placa montada com os **6 componentes discretos + 1 CI** e os 2 bornes
-- [ ] **ULN2803 em soquete DIP de 18 pinos**, com o chanfro do lado dos pinos 1 e 18
-- [ ] Pino **10 (COM) ligado ao 24V-SRV** — sem ele os diodos internos não protegem nada
+- [ ] Placa de **22 × 22 furos** montada com os **6 componentes discretos** e os 2 bornes — **não há CI**
 - [ ] Bornes identificados com etiqueta e anilhas nos cabos
-- [ ] ⚠️ **As duas vias de 24 V nas extremidades do borne, com anilhas de cores DIFERENTES:** `24V-POT` (comutado, do BD-POT) e `24V-SRV` (permanente, do BD-24V)
-- [ ] Ensaios de continuidade da §33.3 item 8, **todos** conferidos com o CI fora do soquete
+- [ ] Continuidade conferida via por via, com o multímetro, antes de encaixar a placa
 - [ ] Verniz de proteção aplicado no lado da solda
-- [ ] Caixa DIN de 3M encaixada no trilho 3, ao lado do Arduino
+- [ ] Caixa DIN de **4 módulos** encaixada no trilho 3, ao lado do Arduino
 
 ### Sinaleiros do painel
-- [ ] 4 sinaleiros **22 mm de 24 V** montados na porta
-- [ ] Terminal **positivo** dos 4 ligado direto ao **BD-24V** (não passa pela PI-1)
-- [ ] Terminal **negativo** de cada um chegando ao respectivo borne `Lx−` da PI-1
-- [ ] Teste: forçar cada saída em HIGH → sinaleiro acende; medir ~1 V do terminal negativo ao 0 V
-- [ ] ⭐ **Teste da emergência:** com o cogumelo acionado, **o sinaleiro vermelho continua aceso**. Se apagar, os sinaleiros foram ligados no BD-POT em vez do BD-24V
+- [ ] 4 sinaleiros **22 mm de 5 V** montados na porta
+- [ ] ⚠️ **Corrente de cada um medida com fonte de bancada: ≤ 20 mA.** Acima disso não pode ir direto no pino
+- [ ] Terminal **+** de cada um ligado ao seu pino: H1→D9, H2→D10, H3→D11, H4→D12
+- [ ] Terminais **−** em ponte entre os quatro, com **um** retorno até o **GND2 do Mega** (não ao BD-0V)
+- [ ] Teste: forçar cada saída em HIGH → sinaleiro acende
+- [ ] ⭐ **Teste da emergência:** com o cogumelo acionado, **o sinaleiro vermelho continua aceso** — quem o segura é o Arduino, que vive no BD-5V permanente
 
 ### Nos BTS7960
 - [ ] **10 kΩ soldado nos dois**, medindo ~10 kΩ entre `R_EN` e `GND`

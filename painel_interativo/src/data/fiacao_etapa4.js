@@ -25,12 +25,19 @@ const T = { comp: 'MEGA' };
 const meg = via => ({ ...T, via });
 
 export const FIOS_ETAPA4 = [
-  /* ── comando dos sinaleiros: Mega → PI-1 → ULN ────────────────────── */
-  ...[['S1', 'D9', 'J1-5', 'ENERGIZADO'], ['S2', 'D10', 'J1-6', 'RESFRIANDO'],
-      ['S3', 'D11', 'J1-7', 'AQUECENDO'], ['S4', 'D12', 'J1-8', 'FALHA']]
-    .map(([n, d, j, nome]) => sig(n, meg(d), { comp: 'PI1', via: j },
-      `Comando do sinaleiro ${nome}.`, { rota: ['CH-topo'],
-      nome: `Mega ${d} → sinaleiro ${nome}` })),
+  /* ── comando dos sinaleiros: o pino acende o sinaleiro, e pronto ────
+     ⭐ ANTES ERAM DOIS FIOS E UM CI NO MEIO: o pino ia à PI-1, o ULN2803A
+        puxava o negativo do sinaleiro de 24 V para o 0 V, e o positivo vinha
+        do BD-24V. Tudo isso existia porque o sinaleiro era de 24 V e o pino
+        é de 5 V. Com o sinaleiro de 5 V, o pino aciona direto.
+     ⚠️ O LIMITE AGORA É O PINO: 20 mA. Meça o sinaleiro antes (passo A-02);
+        acima disso ele não pode ser ligado direto. */
+  ...[['S1', 'D9', 'H1', 'ENERGIZADO'], ['S2', 'D10', 'H2', 'RESFRIANDO'],
+      ['S3', 'D11', 'H3', 'AQUECENDO'], ['S4', 'D12', 'H4', 'FALHA']]
+    .map(([n, d, h, nome]) => sig(n, meg(d), { comp: h, via: '+' },
+      `O pino ${d} alimenta o sinaleiro ${nome} — 5 V, ~20 mA.`,
+      { rota: ['CH-topo', 'CV-dir', 'CP-vsin', 'CP-2x3'],
+        nome: `Mega ${d} → sinaleiro ${nome}` })),
 
   /* ── ⭐ os dois gatilhos dos módulos de relé ───────────────────────── */
   { ...sig('S4b', meg('D27'), { comp: 'KA34', via: 'IN3' },
@@ -70,7 +77,7 @@ export const FIOS_ETAPA4 = [
     nome: '1-Wire → D2', rota: ['CH-3x2', 'CV-dir', 'CH-topo'],
     aviso: '⚠️ Pulsos de microssegundos. Se este fio pegar ruído o sensor some do '
          + 'barramento e o firmware acusa CARGA_ABERTA sem haver defeito nenhum.' },
-  { ...sig('S8', { comp: 'PI1', via: 'J2-8' }, meg('D25'),
+  { ...sig('S8', { comp: 'PI1', via: 'J2-4' }, meg('D25'),
       'Os 4,22 V do divisor, dizendo se os 24 V de potência estão presentes.'),
     nome: 'vigia do 24 V → D25', rota: ['CH-3x2', 'CV-dir', 'CH-topo'] },
 

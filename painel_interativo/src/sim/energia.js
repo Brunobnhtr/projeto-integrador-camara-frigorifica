@@ -37,7 +37,7 @@ export const CARGAS = {
   // ── BD-24V · 24 V permanente ─────────────────────────────────────
   esp32: 0.10,           // DNLCB30 + ESP32
   bobinaRele: 0.037,     // 24 V / 650 Ω — são o KA1 e o KA2
-  sinaleiroCada: 0.02,   // 4 sinaleiros de 22 mm, via ULN2803
+  sinaleiroCada: 0.02,   // ⭐ agora em 5 V, acesos direto pelo pino do Mega
 };
 
 /** Rendimento dos LM2596 — Doc 02 §2.5. */
@@ -96,6 +96,11 @@ export function consumo(sim) {
     // ⭐ os módulos só consomem com o relé ATRACADO
     if (f.habPotencia) i5 += CARGAS.moduloReleCada;   // KA3
     if (f.ventRadiador) i5 += CARGAS.moduloReleCada;  // KA4
+    /* ⭐ OS SINALEIROS MIGRARAM PARA CÁ. Eram de 24 V no BD-24V, acionados
+       pelo ULN2803; hoje são de 5 V e cada um sai de um pino do Mega —
+       então quem paga a conta é o ramal de 5 V, e o pino é o limite
+       (20 mA cada, 80 mA com os quatro acesos). */
+    i5 += sinaleirosAcesos(sim) * CARGAS.sinaleiroCada;
   }
 
   // ── BD-24V (serviços permanentes) ────────────────────────────────
@@ -104,7 +109,6 @@ export function consumo(sim) {
     i24srv += CARGAS.esp32;
     if (sim.eletrica.ka1Selado) i24srv += CARGAS.bobinaRele;
     if (sim.eletrica.ka2Selado) i24srv += CARGAS.bobinaRele;
-    i24srv += sinaleirosAcesos(sim) * CARGAS.sinaleiroCada;
   }
 
   // ── O que a fonte de 24 V enxerga ────────────────────────────────

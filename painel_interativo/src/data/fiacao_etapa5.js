@@ -23,31 +23,32 @@ const POT = ['CH-base', 'CP-vpot'];             // travessia pela calha de potê
 
 export const FIOS_ETAPA5 = [
   /* ── os 4 sinaleiros ──────────────────────────────────────────────── */
-  { n: 'P1', etapa: 5, classe: 'alim', func: 'srv24', mm2: 0.5,
-    de: { comp: 'BD-24V', via: 'O3' }, para: { comp: 'H1', via: '+' },
-    nome: 'positivo comum dos sinaleiros', rota: [...POT, 'CP-2x3'],
-    diz: 'Um fio só do barramento permanente até o primeiro sinaleiro.',
-    porque: '⭐ Vem do BD-24V, que NÃO cai na emergência. A lâmpada de FALHA precisa '
-          + 'continuar acesa justamente quando a potência morreu.' },
-  ...[['P2', 'H1', 'H2'], ['P3', 'H2', 'H3'], ['P4', 'H3', 'H4']].map(([n, a, b]) => ({
-    n, etapa: 5, classe: 'alim', func: 'srv24', mm2: 0.5,
-    de: { comp: a, via: '+' }, para: { comp: b, via: '+' },
-    nome: `ponte do +24 V · ${a} → ${b}`, rota: ['CP-2x3'],
+  /* ── os 4 sinaleiros da porta ────────────────────────────────────────
+     ⭐ ANTES: um positivo de 24 V vindo do BD-24V, três pontes entre os
+        sinaleiros e quatro retornos até a PI-1, onde o ULN2803A os puxava
+        para o 0 V. Oito fios e um CI.
+     ⭐ AGORA: o pino do Arduino é o positivo (fios S1..S4, etapa 4), e os
+        negativos se unem em ponte e voltam num fio só. Quatro fios.
+     ⚠️ O RETORNO VOLTA PARA O GND DO PRÓPRIO MEGA, não para o barramento.
+        A corrente que o pino entrega tem que voltar pela referência DELE —
+        se ela circulasse pelo BD-0V, deslocaria a referência das medições
+        analógicas do A0 e do A1 a cada sinaleiro que acende. */
+  ...[['P5', 'H1', 'H2'], ['P6', 'H2', 'H3'], ['P7', 'H3', 'H4']].map(([n, a, b]) => ({
+    n, etapa: 5, classe: 'sinal', func: 'zero', mm2: 0.5,
+    de: { comp: a, via: '−' }, para: { comp: b, via: '−' },
+    nome: `ponte do 0 V · ${a} → ${b}`, rota: ['CP-2x3'],
     diz: 'Ponte curta na própria porta, entre sinaleiros vizinhos.',
   })),
-  ...[['P5', 'H1', 'J2-4', 'ENERGIZADO'], ['P6', 'H2', 'J2-5', 'RESFRIANDO'],
-      ['P7', 'H3', 'J2-6', 'AQUECENDO'], ['P8', 'H4', 'J2-7', 'FALHA']]
-    .map(([n, h, j, nome]) => ({
-      /* ⭐ 20 mA de LED, chaveados a cada MUDANÇA DE ESTADO — não a
-         cada milissegundo. Não é o que a canaleta de potência existe
-         para conter, e classificá-lo assim tornaria impossível chegar
-         na PI-1, que só tem canaleta de sinal ao redor. */
-      n: n, etapa: 5, classe: 'alim', func: 'srv24', mm2: 0.5,
-      de: { comp: h, via: '−' }, para: { comp: 'PI1', via: j },
-      nome: `retorno do sinaleiro ${nome}`,
-      rota: ['CP-2x3', 'CP-vsin', 'CV-dir', 'CH-3x2'],
-      diz: `O negativo do ${nome}, que o ULN2803A puxa para o 0 V quando acende.`,
-    })),
+  { n: 'P8', etapa: 5, classe: 'sinal', func: 'zero', mm2: 0.5,
+    de: { comp: 'H4', via: '−' }, para: { comp: 'MEGA', via: 'GND2' },
+    nome: 'retorno dos 4 sinaleiros → GND do Mega',
+    rota: ['CP-2x3', 'CP-vsin', 'CV-dir', 'CH-3x2'],
+    diz: 'Um fio só fecha o circuito dos quatro sinaleiros.',
+    porque: '⭐ Vai no GND do Mega, e não no BD-0V: é a mesma referência do pino que '
+          + 'acende o sinaleiro. Fechar em outro ponto faria a corrente dos LEDs '
+          + 'atravessar o barramento e sujar as leituras analógicas.',
+    aviso: '⚠️ São 4 × 20 mA = 80 mA voltando por este fio. Ele é o único retorno dos '
+         + 'sinaleiros — se ele abrir, os quatro apagam de uma vez.' },
   { n: 'P9', etapa: 5, classe: 'potencia', func: 'srv24', mm2: 0.5,
     de: { comp: 'H4', via: '+' }, para: { comp: 'H4', via: '+' }, rota: [],
     nome: '— placeholder do encadeamento', oculto: true,

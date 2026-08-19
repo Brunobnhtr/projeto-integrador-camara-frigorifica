@@ -168,7 +168,7 @@ export const DISCRETOS = [
     id: 'PI1-R1', ref: 'R1', peca: 'Resistor 22 kΩ · ¼ W',
     tipo: 'resistor', valor: '22 kΩ', qtd: 1, host: 'PI1', arranjo: 'serie', polaridade: false,
     pernas: [
-      { nome: 'perna 1', vai: { comp: 'PI1', via: 'J1-11' } },
+      { nome: 'perna 1', vai: { comp: 'PI1', via: 'J1-6' } },
       { nome: 'perna 2', vai: { comp: 'PI1', via: 'nó D25' } },
     ],
     papel: 'Braço de cima do divisor que mede o barramento de potência',
@@ -222,28 +222,6 @@ export const DISCRETOS = [
     ensaio: 'Ohmímetro entre o D2 e o +5 V → ~4,7 kΩ.',
     passo: 'B-04', fonte: 'Doc 33 §33.2',
   },
-  {
-    id: 'PI1-CI1', ref: 'CI1', peca: 'ULN2803A em soquete DIP-18',
-    tipo: 'ci', valor: 'ULN2803A', qtd: 1, host: 'PI1', arranjo: 'serie', polaridade: true,
-    comoIdentificar: '⭐ O chanfro (meia-lua) no corpo do CI marca o lado dos pinos 1 e 18. '
-                   + 'Nesta montagem ele fica À DIREITA.',
-    seInverter: '🔥 Girado 180°, os 24 V do pino COM entram na entrada de sinal e destroem o '
-              + 'chip E o pino do Arduino.',
-    pernas: [
-      { nome: 'pinos 1–4 (IN1..IN4)', vai: { comp: 'PI1', via: 'J1-5' } },
-      { nome: 'pino 9 (GND)',         vai: { comp: 'PI1', via: 'barramento 0V' } },
-      { nome: 'pino 10 (COM)',        vai: { comp: 'PI1', via: 'J1-10' } },
-      { nome: 'pinos 15–18 (OUT4..OUT1)', vai: { comp: 'PI1', via: 'J2-4' } },
-    ],
-    papel: 'É o relé de interposição dos sinaleiros: deixa um pino de 5 V acender um sinaleiro '
-         + 'industrial de 24 V',
-    porque: 'Um pino do Arduino entrega 5 V e 20 mA. O sinaleiro de 24 V precisa de muito mais. '
-          + 'O CI não fornece corrente — ele abre o caminho para o 0 V.',
-    ensaio: 'Com o CI FORA do soquete, conferir continuidade de todos os jumpers. Só então '
-          + 'encaixar, conferindo o chanfro. Depois: forçar cada saída em HIGH → sinaleiro acende.',
-    passo: 'B-08', fonte: 'Doc 33 §33.2',
-  },
-
   /* ───────────────────────── PLACA PI-2 ───────────────────────── */
   {
     id: 'PI2-R1', ref: 'R1', peca: 'Resistor 47 Ω · 1 % · ¼ W',
@@ -517,6 +495,11 @@ export const DISCRETOS = [
   },
 ];
 
+
+/* ⭐ O ULN2803A SAIU DO CADASTRO em 18/08/2026, junto com a mudança dos
+   sinaleiros para 5 V (Doc 33 §33.8): o pino do Arduino passou a acender
+   o sinaleiro direto, e o CI ficou sem função. Saíram com ele o soquete
+   DIP-18, 9 vias de borne da PI-1, 10 jumpers e 5 fios do painel. */
 
 /* ══════════════════════════════════════════════════════════════════════
    FATOS VIGIADOS — o que os documentos NÃO podem mais dizer

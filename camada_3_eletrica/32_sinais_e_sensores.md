@@ -289,10 +289,10 @@ O pino que vagou aqui é o mesmo que resolve o maior buraco do projeto: o firmwa
 > **Um fio rompido não pode abrir a máquina para o mundo.** Por isso o contato fecha para o 0 V na posição REMOTO: a falha cai sempre para o lado de quem está presente e enxerga a câmara.
 >
 > 📌 **Basta UM bloco NA e UM pino.** Aberto = LOCAL, fechado = REMOTO. Não precisa de dois blocos.
-| **D9** | Sinaleiro verde — RUN | `OUTPUT` | → **IN1 do ULN2803** (placa PI-1) |
-| **D10** | Sinaleiro azul — COOL | `OUTPUT` | → **IN2 do ULN2803** |
-| **D11** | Sinaleiro amarelo — HEAT | `OUTPUT` | → **IN3 do ULN2803** |
-| **D12** | Sinaleiro vermelho — FAULT | `OUTPUT` | → **IN4 do ULN2803** |
+| **D9** | Sinaleiro verde — RUN | `OUTPUT` | → **terminal + do sinaleiro H1** (5 V, direto) |
+| **D10** | Sinaleiro azul — COOL | `OUTPUT` | → **terminal + do H2** |
+| **D11** | Sinaleiro amarelo — HEAT | `OUTPUT` | → **terminal + do H3** |
+| **D12** | Sinaleiro vermelho — FAULT | `OUTPUT` | → **terminal + do H4** |
 
 ### Mapa visual
 
@@ -306,7 +306,7 @@ ARDUINO MEGA 2560
 ├─ D5      ── BTS #1 RPWM  (frio)
 ├─ D6      ── BTS #2 RPWM  (quente)
 ├─ D7      ── BTS #2 R_EN
-├─ D9..D12 ── ULN2803 ─► 4 SINALEIROS 22 mm de 24 V (RUN/COOL/HEAT/FAULT)
+├─ D9..D12 ─────────────► 4 SINALEIROS 22 mm de 5 V (RUN/COOL/HEAT/FALHA)
 ├─ D16/D17 ── Serial2 ──[conversor de nível]──► tela ES3C28P
 ├─ D18/D19 ── Serial1 ────────────────────► DNLCB30 → ESP32
 ├─ D20/D21 ── I²C ────────────────────────► AM2315C · DS3231
@@ -525,7 +525,7 @@ Fans padrão geram 2 pulsos por rotação:
 - [ ] START D22 (NA), STOP D23 (NA), EMERG D24 (**NF**)
 - [ ] Divisor **22 kΩ / 4,7 kΩ** do BD-POT para o pino D25 (medir **~4,2 V** com potência presente)
 - [ ] **Pull-down de 10 kΩ em cada `R_EN`** dos BTS7960 — com o Arduino desligado, medir ~0 V
-- [ ] **D9–D12 nas entradas IN1–IN4 do ULN2803** da placa PI-1 — ⚠️ **sem resistor externo**, o CI já tem 2,7 kΩ interno em cada entrada
+- [ ] **D9–D12 direto no terminal + de cada sinaleiro** — ⚠️ **sem CI, sem relé e sem resistor externo**: o sinaleiro de 5 V já traz o resistor dentro. Meça a corrente antes (passo A-02): acima de 20 mA ele não pode ir direto no pino
 - [ ] Sinaleiros de 24 V com o **positivo no BD-24V permanente** e o negativo nas saídas OUT1–OUT4
 - [ ] **Teste da emergência: o sinaleiro vermelho continua aceso** com o cogumelo acionado
 - [ ] Grupos A e B em canaletas opostas

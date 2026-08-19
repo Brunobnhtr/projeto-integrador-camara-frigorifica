@@ -399,7 +399,7 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 | ⭐ **Espiral organizador Ø 12 mm** | 40 cm | A **passagem flexível** entre a placa e a porta. Protege o chicote nos ciclos de abertura | |
 | **Bloco de distribuição DIN** — 1 entrada 4 mm² + **4 saídas** | 1 | **BD-POT** — 24 V de potência comutados pelo KA2 → BTS #1, BTS #2, medição do D25 e 1 reserva. ⚠️ Cai com a emergência | |
 | **Bloco de distribuição DIN** — 1 entrada 2,5 mm² + **4 saídas** | 1 | **BD-AUX** — 12 V auxiliar (do T3): cooler dos BTS + 2 coolers das Peltier + 1 reserva | |
-| **Bloco de distribuição DIN** — 1 entrada 2,5 mm² + **6 saídas** ⬆ | 1 | **BD-24V** — 24 V permanentes. ⚠️ **Subiu de 4 para 6:** são **5 cargas** (DNLCB30/ESP32, cadeia de comando, positivo comum dos sinaleiros, COM do ULN2803 na PI-1, e a alimentação das 2 posições de ensaio) + 1 reserva. **Não confundir com o BD-POT** — este não cai com a emergência | |
+| **Bloco de distribuição DIN** — 1 entrada 2,5 mm² + **6 saídas** | 1 | **BD-24V** — 24 V permanentes. São **3 cargas** (DNLCB30/ESP32, cadeia de comando e a alimentação das 2 posições de ensaio) + 3 reservas. ⭐ **Duas saídas ficaram livres** quando os sinaleiros passaram para 5 V: elas levavam o positivo comum das lâmpadas e o COM do ULN2803. **Não confundir com o BD-POT** — este não cai com a emergência | |
 | **Bloco de distribuição DIN** — 1 entrada 2,5 mm² + **8 saídas** ⬆ | 1 | **BD-5V** — ⚠️ **Subiu de 6 para 8:** são **7 cargas** (Arduino, tela ES3C28P, RTC, lógica do BTS #1, lógica do BTS #2, placa PI-1 e os LEDs da maquete) + 1 reserva | |
 | ⭐ **Barra de distribuição / régua com pente — mín. 20 pontos** ⬆⬆ | 1 | **BD-0V** — o **star ground** do projeto. ⚠️ **Um bloco de 8 saídas NÃO serve:** aqui convergem **4 entradas + ~16 retornos**. Use uma **barra de neutro/terra de 16–20 furos** em suporte DIN, ou **dois blocos de 1×8 interligados** por ponte de 4 mm². Entrada de **10 mm²** | |
 
@@ -443,7 +443,7 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 > 🔧 **A seletora LOCAL / REMOTO continua fora**, e não volta: era a segunda camada de uma regra que a primeira já garante sozinha — *o `START` nunca é aceito por MQTT*. Libera o pino **D26**.
 
 | **Chave seccionadora 24 V no painel** | 1 | Rotativa 2 posições 22 mm — chave geral local da máquina. ⚠️ **Não confundir com a antiga seletora LOCAL/REMOTO, que foi removida** | |
-| **Sinaleiros LED 22 mm 24 V** | 4 | Verde (RUN), Azul (COOL), Amarelo (HEAT), Vermelho (FAULT). ⚠️ **24 V confirmado** — acionados pelo **ULN2803 da placa PI-1**, alimentados pelo **BD-24V permanente** (o vermelho de FALHA precisa continuar aceso com a emergência acionada). ~20 mA cada, resistor interno já incluso | |
+| **Sinaleiros LED 22 mm ⭐ 5 V** | 4 | Verde (RUN), Azul (COOL), Amarelo (HEAT), Vermelho (FAULT). ⭐ **5 V, e não mais 24 V** — cada um é aceso DIRETO por um pino do Arduino (D9 a D12), sem CI, sem relé e sem resistor externo: o resistor já vem dentro do sinaleiro. ⚠️ **Confirme ~20 mA no anúncio e MEÇA ao receber** (passo A-02) — 20 mA é o limite recomendado do pino do Mega. O vermelho de FALHA continua aceso na emergência porque quem o segura é o Arduino, alimentado pelo BD-5V, que não cai | |
 | **Prensa-cabo PG9** | 3 | Entrada **24 V de potência** (vindo do P1) · saída de potência para a câmara · saída de sinais | |
 | **Prensa-cabo PG7** | 2 | Entrada 5 V (do T2) e entrada 12 V auxiliar + 24 V (do T3) | |
 | ⭐ **Placa ilhada (padrão) 9 × 15 cm** | 3 | 2 em uso + 1 reserva. ⭐ **Cada placa rende AS DUAS**: um corte reto no meio dá dois pedaços de 34 × 29 furos — um vira a PI-1, o outro a PI-2. ⚠️ Conte os furos: há versões 34 × 58 e 35 × 59 | |
@@ -916,7 +916,7 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 | ⭐ **Caixa modular para trilho DIN — 6 módulos (105 mm)** | 2 | Invólucros da PI-1 e da PI-2, no trilho 3. ⚠️ **6 módulos, não 4:** as placas passaram a 86,4 mm de largura, e uma caixa de 4M só comporta 61 mm. A largura extra é o que permite rotear os fios em canais separados por baixo. Buscar `caixa para trilho din 6m modular` | |
 | ⭐ **Borne KF301 / KRE passo 5,08 mm — 3 vias** | 10 | 6 em uso + 4 reserva. **Encaixam lado a lado** — não se compra bloco de 11 vias, montam-se 3+3+3+2 | |
 | ⭐ **Borne KF301 / KRE passo 5,08 mm — 2 vias** | 12 | 7 em uso + 5 reserva. Junto com os de 3 vias formam as **32 vias** das duas placas | |
-| **CI ULN2803A** (DIP 18 pinos) | 2 | **Driver dos 4 sinaleiros de 24 V** — 8 canais Darlington, 500 mA/50 V, com diodos de proteção internos. 1 uso + 1 reserva (o CI é barato e é o único ponto onde 24 V encosta na lógica) | |
+| ~~CI ULN2803A (DIP 18 pinos)~~ | ~~2~~ | 🗑️ **NÃO COMPRE MAIS.** Ele existia para adaptar 5 V do pino a 24 V do sinaleiro. Com o sinaleiro de 5 V, o pino aciona direto e o CI perdeu a função — junto com o soquete DIP-18, 9 vias de borne da PI-1, 10 jumpers e 5 fios do painel. Ver [Doc 33 §33.8](../camada_3_eletrica/33_placa_interface_componentes.md) | |
 | **Soquete DIP 18 pinos** | 1 | ⚠️ **Solde o soquete, não o CI.** Permite trocar o chip sem dessoldar nada | |
 | ⭐ **Módulo relé 1 canal 5 V, optoacoplado** | 4 | **`KA3` e `KA4`** — 2 em uso + 2 reserva. ⚠️ **Exija três coisas no anúncio:** *optoacoplador*, **jumper de gatilho alto/baixo** e a variante de **5 V** (a foto costuma ser da de 24 V — confira no corpo do relé ao receber). Contato 10 A / 30 Vcc, 51 × 25,5 mm, 65 mA cada. Buscar `modulo rele 1 canal 5v optoacoplador`. ⭐ **O KA3 usa o `NO` e o KA4 usa o `NC`** — estados seguros opostos, de propósito. 💰 **E é aqui que o projeto economiza:** o KA3 conduz 37 mA e o KA4 conduz 0,36 A. Relé de 8 pinos de 10 A nestes dois seria R$ 75 de folga que ninguém usa — só o **KA2** precisa mesmo dos 10 A. Ver [Doc 31 §31.13 e §31.14](../camada_3_eletrica/31_comando_e_protecoes.md) | |
 | ⭐ **Caixa modular DIN 4 módulos (70 mm)** | 1 | Abriga os **dois** módulos de relé empilhados, no trilho 2. Buscar `caixa para trilho din 4m modular` | |
@@ -927,7 +927,7 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 | Termorretrátil Ø 2 mm | 30 cm | Isolação dos 2 resistores de 10 kΩ soldados nos BTS7960 | |
 | Etiqueta impressa em papel adesivo | 1 | Identificação das 20 vias na frente da caixa — **é o que torna a placa auditável** | |
 
-> 📌 **Componentes que vão NA placa PI-1:** 2× 100 nF (filtro IS) · 1× 22 kΩ + 1× 4,7 kΩ + 1× 100 nF (divisor D25) · 1× 4,7 kΩ (pull-up 1-Wire) · **1× ULN2803A** (driver dos sinaleiros). Os passivos já estão nas listas L.2 e L.4 — não compre de novo.
+> 📌 **Componentes que vão NA placa PI-1:** 2× 100 nF (filtro IS) · 1× 22 kΩ + 1× 4,7 kΩ + 1× 100 nF (divisor D25) · 1× 4,7 kΩ (pull-up 1-Wire). **São 6 peças e nenhum CI** — o ULN2803A saiu com a mudança dos sinaleiros para 5 V. Os passivos já estão nas listas L.2 e L.4 — não compre de novo.
 >
 > ⭐ **O KA3, o KA4 e seus resistores NÃO vão na PI-1.** Os dois módulos de relé moram numa **caixa DIN de 4 módulos, no trilho 2** — onde a canaleta de baixo já é de potência e serve o trilho 1 diretamente. A primeira versão punha um MOSFET na PI-1 e o `npm run valida` reprovou: o circuito da bobina teria de atravessar o painel duas vezes, uma delas pela canaleta de sinal. **Componente de ancoragem é de proximidade.**
 >
@@ -963,7 +963,7 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 |---|---|
 | **Energia** | 1× fonte 24 V/10 A ⚠️ **240 W é o mínimo** · 1× disjuntor 2P 6 A · **1× kit 2 LM2596 com display** · 3× porta-fusível |
 | **Proteção** | fusíveis **10 A (F1)** e 2 A (F2/F3) · **KA1 (2 contatos) + KA2 (10 A em DC)** · botão de REARME · **sem Zener, sem crowbar** |
-| **Controle** | 1× Arduino Mega · 1× ESP32 · 1× DNLCB30 · 1× tela ES3C28P · 1× RTC · **1× placa PI-1 com ULN2803** |
+| **Controle** | 1× Arduino Mega · 1× ESP32 · 1× DNLCB30 · 1× tela ES3C28P · 1× RTC · **1× placa PI-1 (6 passivos, sem CI)** |
 | **Potência** | 2× BTS7960 · **2× Peltier EM SÉRIE** (+1 reserva) · **1× PTC 24 V 80 W** · 4× fan interna · **2× cooler externo 3 fios** |
 | **Sensores** | 1× DS18B20 · 1× AM2315C |
 | **Maquete** | 3× poste Ø 8 mm · ~8 m de fio rígido ENCAPADO (4 cores, **R1 e 0 V mais grossos**) · 2× "transformador" + **1× caixa de derivação** · 3× janela de acrílico · 1× caixa de subestação |
@@ -979,7 +979,7 @@ Se você já tinha uma lista antiga em mãos, confira **estes seis** antes de fe
 - [ ] **Fusível F1 de 10 A**, não de 6 A
 - [ ] **Fio rígido vermelho 1,00 mm²** e **azul claro 1,50 mm²** (ambos subiram)
 - [ ] **Fonte de 240 W** — a de 150 W não atende mais
-- [ ] **2× CI ULN2803A + 1 soquete DIP 18** (driver dos sinaleiros de 24 V)
+- [ ] ⭐ **Sinaleiros 22 mm de 5 V** (não de 24 V) — e o ULN2803A e o soquete DIP-18 saíram da lista
 - [ ] **Resistores de 220 Ω** (não 2,2 kΩ) para os LEDs da maquete, que agora são de 5 V
 
 ---
@@ -1001,7 +1001,7 @@ Se você já tinha uma lista antiga em mãos, confira **estes seis** antes de fe
 | ~~Aquecedor PTC de 12 V~~ | Trocado pela **versão de 24 V**, alimentada direto do barramento |
 | ~~Resistor 220 Ω / 5 W (carga térmica do simulador)~~ | O DUT **não** simula carga térmica: é LED + resistor de ½ W, 0,37 W e 0,21 W ([Doc 13 §13.3b](../camada_1_maquete/13_posicoes_de_ensaio.md)) |
 | ~~Resistor 2,2 kΩ (LEDs da maquete em 24 V)~~ | A iluminação da maquete passou para **5 V** — o limitador virou **220 Ω** |
-| ~~4× resistor 220 Ω nos sinaleiros do painel~~ | Os sinaleiros viraram **módulos de 24 V** com **ULN2803**. Os 220 Ω não foram descartados: **migraram para os LEDs da maquete** |
+| ~~4× resistor 220 Ω nos sinaleiros do painel~~ | Os sinaleiros passaram por duas mudanças: viraram módulos de 24 V com ULN2803, e depois **módulos de 5 V acionados direto pelo pino** — que dispensa CI e resistor. Os 220 Ω migraram para os LEDs da maquete |
 | ~~Acrílico preto 3 mm (cobertura)~~ | Trocado por **branco**, visual de câmara frigorífica real |
 | ~~Porta simples de acrílico 10 mm~~ | Trocada por **porta dupla com câmara de ar** (metade da perda térmica) |
 | ~~XPS 20 mm~~ | Aumentado para **30 mm** |

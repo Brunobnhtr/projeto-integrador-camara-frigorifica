@@ -245,7 +245,7 @@ export const COMPONENTES = [
         via('A9'), via('A8', 1, 'RPM da ventoinha do radiador #2'), via('A7'), via('A6'),
         via('A5'), via('A4'), via('A3'),
         via('A2', 1, '⭐ PI-2 · SIG — os 16 canais entram por aqui'),
-        via('A1', 1, 'PI-1 J2-2 — corrente do BTS #2'), via('A0', 1, 'PI-1 J2-1 — corrente do BTS #1'), via('GND2'), via('IOREF'),
+        via('A1', 1, 'PI-1 J2-2 — corrente do BTS #2'), via('A0', 1, 'PI-1 J2-1 — corrente do BTS #1'), via('GND2', 1, 'retorno dos 4 sinaleiros da porta — mesma referência do pino que os acende'), via('IOREF'),
         via('AREF'), via('RESET'), via('+3V3'),
         via('GND3', 1, '⭐ BD-0V · R5 — o retorno da alimentação, no bloco POWER'),
         via('+5V', 1, 'BD-5V saída 1'), via('VIN'),
@@ -261,37 +261,31 @@ export const COMPONENTES = [
     ],
   },
   {
-    id: 'PI1', nome: 'PI-1 — filtros, divisores e driver dos sinaleiros', trilho: 3,
-    resumoFuncao: '🔎 O QUE ELA FAZ: limpa e adapta sinais entre o Arduino e o mundo. 1) filtra com 100 nF a leitura de corrente dos dois BTS; 2) divide os 24 V do BD-POT para 4,22 V, que e como o D25 sabe se a potencia chegou; 3) da o pull-up de 4,7 kΩ ao 1-Wire do DS18B20; 4) o ULN2803 deixa o Arduino de 5 V acender os 4 sinaleiros de 24 V. Nao comanda potencia nenhuma.',
-    x: 176, largura: 105, altura: 62, cor: '#f08c00',
-    nota: 'Caixa DIN de 6 módulos. A placa cresceu para 86 × 74 mm — a largura '
-        + 'extra é o que dá espaço para os fios correrem em canais separados por '
-        + 'baixo, em vez de amontoados. J1 só entra, J2 só sai.',
+    id: 'PI1', nome: 'PI-1 — filtros, divisor e pull-up', trilho: 3,
+    resumoFuncao: '🔎 O QUE ELA FAZ: limpa e adapta sinais entre o Arduino e o mundo. 1) filtra com 100 nF a leitura de corrente dos dois BTS; 2) divide os 24 V do BD-POT para 4,22 V, que e como o D25 sabe se a potencia chegou; 3) da o pull-up de 4,7 kΩ ao 1-Wire do DS18B20. Nao comanda potencia nenhuma. ⭐ O DRIVER DOS SINALEIROS SAIU DAQUI: com sinaleiro de 5 V o pino do Arduino aciona direto, e o ULN2803 perdeu a razao de existir (Doc 33 §33.8).',
+    x: 176, largura: 70, altura: 62, cor: '#f08c00',
+    nota: 'Caixa DIN de 4 módulos. A placa encolheu para 56 × 56 mm quando o CI, o '
+        + 'soquete e as 9 vias dos sinaleiros saíram. J1 só entra, J2 só sai.',
     grupos: [
-      { ref: 'J1', lado: 'cima', legenda: 'ENTRADAS (11 vias · KF301 5,08 mm)', pinos: [
+      { ref: 'J1', lado: 'cima', legenda: 'ENTRADAS (6 vias · KF301 5,08 mm)', pinos: [
         via('J1-1', 1, 'BTS #1 · R_IS'), via('J1-2', 1, 'BTS #2 · R_IS'),
         via('J1-3', 1, 'DS18B20 do radiador · DATA'), via('J1-4', 1, 'BD-5V saída 6'),
-        via('J1-5', 1, 'Mega D9'), via('J1-6', 1, 'Mega D10'),
-        via('J1-7', 1, 'Mega D11'), via('J1-8', 1, 'Mega D12'),
-        via('J1-9', 1, 'BD-0V'), via('J1-10', 1, 'BD-24V saída 5'),
-        via('J1-11', 1, 'BD-POT saída 3'),
+        via('J1-5', 1, 'BD-0V'), via('J1-6', 1, 'BD-POT saída 3'),
       ]},
-      { ref: 'J2', lado: 'baixo', legenda: 'SAÍDAS (8 vias · KF301 5,08 mm)', pinos: [
+      { ref: 'J2', lado: 'baixo', legenda: 'SAÍDAS (4 vias · KF301 5,08 mm)', pinos: [
         via('J2-1', 1, 'Mega A0'), via('J2-2', 1, 'Mega A1'),
-        via('J2-3', 1, 'Mega D2'), via('J2-4', 1, 'Sinaleiro H1 −'),
-        via('J2-5', 1, 'Sinaleiro H2 −'), via('J2-6', 1, 'Sinaleiro H3 −'),
-        via('J2-7', 1, 'Sinaleiro H4 −'), via('J2-8', 1, 'Mega D25'),
+        via('J2-3', 1, 'Mega D2'), via('J2-4', 1, 'Mega D25'),
       ]},
     ],
-    avisos: ['✅ 19 vias, 19 usadas, ZERO reserva — e é assim de propósito. A PI-1 é '
+    avisos: ['✅ 10 vias, 10 usadas, ZERO reserva — e é assim de propósito. A PI-1 é '
            + 'uma placa feita à mão para este projeto: se um dia precisar de outro '
            + 'sinal, ela é refeita de qualquer jeito. Borne sobrando só ocuparia '
            + 'espaço no trilho.',
-           '🔧 O Q1 CHEGOU A SER PROJETADO AQUI, E O VALIDADOR REPROVOU. Pôr o MOSFET '
-           + 'na PI-1 obrigaria o circuito da BOBINA do KA2 a subir do trilho 1 ao '
-           + 'trilho 3 e voltar — dois fios de bobina atravessando o painel, um deles '
-           + 'pela canaleta de SINAL. É exatamente o que a regra do §31.4 proíbe: '
-           + 'cadeia de comando é potência. O Q1 foi para junto do KA2.'],
+           '⭐ ELA JÁ FOI QUASE O DOBRO. Tinha 19 vias, um ULN2803A em soquete e 20 '
+           + 'jumpers — tudo por causa de uma diferença de tensão: sinaleiro de 24 V, '
+           + 'pino de 5 V. Trocado o sinaleiro por um de 5 V, metade da placa deixou de '
+           + 'ter função. Vale como lição de projeto: antes de adaptar dois lados, '
+           + 'pergunte se eles não podem falar a mesma língua.'],
   },
   {
     id: 'ESP32', nome: 'ESP32 — Wi-Fi, MQTT e dashboard remoto', trilho: 2,
@@ -717,17 +711,16 @@ export const COMPONENTES = [
            + 'das ventoinhas. Ventoinha é carga indutiva e nada mais a grampeia.'],
   },
   {
-    id: 'BD-24V', nome: 'BD-24V — 24 V PERMANENTE (comando e sinaleiros)', trilho: 1,
-    resumoFuncao: '🔎 O QUE ELE E: a barra dos 24 V que SOBREVIVE. Alimenta a cadeia de comando (o cogumelo, o rearme, os reles) e os 4 sinaleiros. ⭐ Tem de ser permanente: se a cadeia de comando fosse alimentada pela potencia que ela mesma comanda, nada nunca ligaria — e o sinaleiro vermelho de FALHA apagaria justamente na emergencia.',
+    id: 'BD-24V', nome: 'BD-24V — 24 V PERMANENTE (comando)', trilho: 1,
+    resumoFuncao: '🔎 O QUE ELE E: a barra dos 24 V que SOBREVIVE. Alimenta a cadeia de comando (o cogumelo, o rearme, os reles) e as duas posicoes de ensaio. ⭐ Tem de ser permanente: se a cadeia de comando fosse alimentada pela potencia que ela mesma comanda, nada nunca ligaria. ⭐ AS SAIDAS O3 E O5 FICARAM LIVRES quando os sinaleiros passaram para 5 V — antes elas levavam o positivo comum das lampadas e o COM do ULN2803.',
     x: 114, largura: 45, altura: 58, cor: '#e8590c',
     nota: 'PERMANENTE — não cai na emergência.',
     grupos: [
       { ref: 'IN', lado: 'cima', legenda: 'Entrada 2,5 mm² (1)', pinos: [via('IN', 1, 'prensa-cabo dos 24 V de serviços')] },
       { ref: 'OUT', lado: 'baixo', legenda: 'Saídas (6)', pinos: [
         via('O1', 1, 'DNLCB30 · VIN'), via('O2', 1, 'cadeia de comando · S0'),
-        via('O3', 1, 'positivo comum dos 4 sinaleiros'),
-        via('O4', 1, 'F-P1/F-P2 — entrada do porta-fusível'),
-        via('O5', 1, 'PI-1 J1-10 — COM do ULN2803'), via('O6'),
+        via('O3'), via('O4', 1, 'F-P1/F-P2 — entrada do porta-fusível'),
+        via('O5'), via('O6'),
       ]},
     ],
   },
@@ -856,17 +849,20 @@ export const COMPONENTES = [
   },
   ...['ENERGIZADO', 'RESFRIANDO', 'AQUECENDO', 'FALHA'].map((nome, i) => ({
     id: `H${i + 1}`, nome: `Sinaleiro H${i + 1} — ${nome}`, porta: true,
-    resumoFuncao: `🔎 O QUE ELE MOSTRA: ${nome}. ⭐ Sao de 24 V e vem do BD-24V PERMANENTE, acionados pelo ULN2803 da PI-1 — o vermelho de FALHA precisa continuar aceso com a emergencia acionada, e por isso nenhum deles pode pendurar no BD-POT.`,
+    resumoFuncao: `🔎 O QUE ELE MOSTRA: ${nome}. ⭐ Sao de 5 V e o pino do Arduino os acende DIRETO — nao ha CI, rele nem resistor no meio. O vermelho de FALHA continua aceso com a emergencia acionada porque o BD-5V nao cai: quem alimenta o Arduino sobrevive ao cogumelo, e e o Arduino que segura o pino em nivel alto.`,
     x: 52 + i * 42, y: 175, largura: 30, altura: 30,
     cor: ['#2f9e44', '#1971c2', '#e8590c', '#c92a2a'][i],
-    grupos: [{ ref: 'LMP', lado: 'baixo', legenda: 'Sinaleiro 22 mm · 24 V (2)', pinos: [
-      /* ⭐ SÓ O PRIMEIRO recebe fio do barramento. Os outros três pegam
-         do vizinho, em ponte curta na própria porta — três travessias de
-         dobradiça a menos, e 20 mA por lâmpada não justificam mais. */
-      via('+', 1, i === 0 ? 'BD-24V saída 3 — o positivo comum entra aqui'
-        : `ponte curta do H${i} · + (o +24 V vem encadeado)`),
-      via('−', 1, `PI-1 J2-${i + 4}`),
+    grupos: [{ ref: 'LMP', lado: 'baixo', legenda: 'Sinaleiro 22 mm · 5 V (2)', pinos: [
+      /* ⭐ AGORA CADA UM TEM SEU FIO DE COMANDO — o pino do Arduino é o
+         positivo dele. O que se encadeia é o NEGATIVO: três pontes curtas
+         na porta e um retorno só até o GND do Mega. */
+      via('+', 1, `Mega D${9 + i} — o pino acende direto (~20 mA)`),
+      via('−', 1, i === 3 ? 'retorno dos quatro → GND2 do Mega'
+        : `ponte curta para o H${i + 2} · −`),
     ]}],
+    avisos: ['⚠️ 20 mA é o limite recomendado do pino do Mega. Meça o sinaleiro com fonte '
+           + 'de bancada antes de ligar (passo A-02): se puxar mais que isso, ele não pode '
+           + 'ir direto no pino.'],
   })),
   {
     id: 'S1', nome: 'S1 · LIGAR (verde) — arma a potência, NÃO inicia o ensaio', porta: true,

@@ -27,7 +27,9 @@ const põe = (mapa, c, l, quem) => {
 };
 
 COMPONENTES_PI1.forEach(c => c.furos.forEach(([a, b]) => põe(passantes, a, b, c.ref)));
-CI1.pinos.forEach(p => põe(passantes, p.col, p.lin, `CI1.${p.nome}`));
+/* ⭐ a placa pode não ter CI nenhum — foi o que aconteceu quando o
+   sinaleiro virou de 5 V e o ULN2803A saiu (Doc 33 §33.8) */
+CI1?.pinos.forEach(p => põe(passantes, p.col, p.lin, `CI1.${p.nome}`));
 BORNES.forEach(b => b.vias.forEach(v => põe(passantes, v.col, b.linha, `${b.ref}-${v.n}`)));
 JUMPERS.forEach(j => {
   põe(jumpers, j.de[0], j.de[1], `jumper ${j.n}`);
@@ -66,17 +68,17 @@ for (const [k] of pernas) {
 }
 
 // 3. nada sob o corpo do CI
-for (let c = CI1.colEsq; c <= CI1.colDir; c++)
+if (CI1) for (let c = CI1.colEsq; c <= CI1.colDir; c++)
   for (let l = CI1.linhaTopo + 1; l < CI1.linhaBase; l++)
     if (pernas.has(`${c},${l}`)) erros.push(`algo sob o corpo do CI em (${c},${l})`);
 
 // 4. cada perna solta tem de estar num NÓ, no barramento ou num par direto
 const ligados = new Set();
 COMPONENTES_PI1.forEach(c => c.furos.forEach(([a, b]) => ligados.add(`${a},${b}`)));
-CI1.pinos.forEach(p => ligados.add(`${p.col},${p.lin}`));
+CI1?.pinos.forEach(p => ligados.add(`${p.col},${p.lin}`));
 JUMPERS.forEach(j => { ligados.add(j.de.join(',')); ligados.add(j.para.join(',')); });
 
-const livres = new Set(CI1.pinos.filter(p => p.livre).map(p => `${p.col},${p.lin}`));
+const livres = new Set((CI1?.pinos ?? []).filter(p => p.livre).map(p => `${p.col},${p.lin}`));
 for (const [k, quem] of passantes) {
   const [c, l] = k.split(',').map(Number);
   if (livres.has(k)) continue;                       // pino do CI sem uso: ok
@@ -159,7 +161,7 @@ let notaRede = null;
 
 if (notaFios) console.log(notaFios);
 if (notaRede) console.log(notaRede);
-console.log(`componentes: ${COMPONENTES_PI1.length} + CI  ·  jumpers: ${JUMPERS.length}`
+console.log(`componentes: ${COMPONENTES_PI1.length}${CI1 ? ' + CI' : ' (sem CI)'}  ·  jumpers: ${JUMPERS.length}`
           + `  ·  nós: ${NOS.length}`);
 avisos.forEach(a => console.log('  . ' + a));
 if (erros.length) {

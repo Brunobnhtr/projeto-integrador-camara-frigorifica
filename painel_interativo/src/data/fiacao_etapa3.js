@@ -39,7 +39,7 @@ export const FIOS_ETAPA3 = [
   { ...pot('D2', { comp: 'BD-POT', via: 'O2' }, { comp: 'BTS2', via: 'B+' }, 1.5,
       'Idem para o BTS do PTC.'),
     rota: ['CH-base', 'CV-esq', 'CH-2x1'] },
-  { ...pot('D3', { comp: 'BD-POT', via: 'O3' }, { comp: 'PI1', via: 'J1-11' }, 0.5,
+  { ...pot('D3', { comp: 'BD-POT', via: 'O3' }, { comp: 'PI1', via: 'J1-6' }, 0.5,
       'Amostra dos 24 V comutados, para a PI-1 vigiar.'),
     classe: 'alim', rota: ['CH-base', 'CV-esq', 'CH-topo'],
     porque: '⭐ Não alimenta nada: entra no divisor 22 k / 4,7 k e vira 4,22 V no D25. '
@@ -56,17 +56,6 @@ export const FIOS_ETAPA3 = [
     classe: 'alim', func: 'srv24', rota: ['CH-base', 'CV-esq', 'CH-3x2'],
     porque: 'As posições continuam energizadas na emergência — é o que permite '
           + 'registrar o que aconteceu.' },
-  { ...pot('D6', { comp: 'BD-24V', via: 'O5' }, { comp: 'PI1', via: 'J1-10' }, 0.5,
-      'O COM do ULN2803A — a referência dos diodos de retorno.'),
-    classe: 'alim', func: 'srv24', rota: ['CH-base', 'CV-esq', 'CH-topo'],
-    porque: '⭐ Este fio quase não conduz. O COM do ULN não alimenta os sinaleiros — o positivo deles vem do BD-24V O3 direto para a porta. O COM só ancora os diodos de roda-livre internos, e por isso pode correr na canaleta de sinal.',
-    aviso: '🔥 NÃO CONFUNDA COM O D3. Os dois saem do mesmo trilho e chegam na mesma '
-         + 'PI-1, um no J1-10 e outro no J1-11 — vias vizinhas. O J1-10 é PERMANENTE '
-         + '(sinaleiros) e o J1-11 é COMUTADO (o que o divisor vigia). Trocados, a '
-         + 'lâmpada de FALHA apaga na emergência e o Arduino acha que a potência '
-         + 'nunca cai.' },
-
-  /* ── BD-5V: a eletrônica ──────────────────────────────────────────── */
   { ...cinco('D7', { comp: 'BD-5V', via: 'O1' }, { comp: 'MEGA', via: '+5V' },
       'Alimenta o Arduino pelo pino 5V — não pelo USB.'),
     rota: ['CH-base', 'CV-esq', 'CH-topo'],
@@ -138,7 +127,7 @@ export const FIOS_ETAPA3 = [
           + 'destas ventoinhas na primeira versão.',
     aviso: '🔥 A SAÍDA É O CONTATO NC4, NÃO O NO4. Ao contrário do KA3, aqui o estado '
          + 'seguro é FECHADO: módulo sem energia, ventoinha girando (§31.14).' },
-  { ...zero('D20', { comp: 'PI1', via: 'J1-9' }, { comp: 'BD-0V', via: 'R6' },
+  { ...zero('D20', { comp: 'PI1', via: 'J1-5' }, { comp: 'BD-0V', via: 'R6' },
       'O 0 V da PI-1, que lá dentro vira o barramento de fio nu.'),
     rota: ['CH-topo', 'CV-dir', 'CH-base'] },
   { ...zero('D21', { comp: 'ESP32', via: '−' }, { comp: 'BD-0V', via: 'R7' },

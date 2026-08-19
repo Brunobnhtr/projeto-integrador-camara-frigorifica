@@ -29,7 +29,7 @@ export const FASES = [
   {
     id: 'B', nome: 'As duas placas', icone: '🟫',
     resumo: 'A PI-1 e a PI-2 saem do mesmo pedaço de placa ilhada. Solda-se na ordem que '
-          + 'deixa cada peça acessível: o que é reto primeiro, o CI por último.',
+          + 'deixa cada peça acessível: o barramento reto primeiro, os componentes depois.',
     onde: 'bancada, com ferro de solda',
   },
   {
@@ -60,17 +60,18 @@ export const PASSOS = [
 
   /* ═══ FASE A · BANCADA ═══════════════════════════════════════════ */
   {
-    id: 'A-01', fase: 'A', titulo: 'Cortar a placa ilhada ao meio', tempo: '10 min',
+    id: 'A-01', fase: 'A', titulo: 'Cortar a placa ilhada', tempo: '15 min',
     pegue: ['1 placa ilhada 9 × 15 cm', 'estilete', 'régua de metal', 'lixa fina'],
     antes: 'Nada. É o primeiro passo do projeto.',
     faca: [
       'Conte as fileiras e confirme: são 58 (há versões com 59 — se for a sua, o corte fica entre a 29 e a 30 mesmo assim).',
       'Risque dos DOIS lados, com o estilete apoiado na régua, na linha ENTRE furos — nunca em cima da fileira de furos.',
       'Apoie a placa na quina da bancada, alinhe o risco com a quina e quebre com um movimento firme.',
-      'Passe a lixa na borda cortada até ficar reta.',
+      'Do pedaço de 34 × 29, essa é a PI-2. Do outro, corte um retângulo de 22 × 22: essa é a PI-1.',
+      'Passe a lixa nas bordas cortadas até ficarem retas. Guarde as sobras — são o corpo das placas dos DUTs.',
     ],
-    confira: 'Os dois pedaços têm 34 colunas × 29 fileiras. Um vira a PI-1, o outro a PI-2 — não sobra placa.',
-    seErrar: 'Cortou torto ou lascou: a placa ainda serve se sobraram as 29 fileiras inteiras. Se quebrou uma fileira de furos, use o lado bom para a PI-1 (que é a mais cheia).',
+    confira: 'PI-2 com 34 × 29 furos, PI-1 com 22 × 22, e sobra guardada.',
+    seErrar: 'Cortou torto ou lascou: a placa ainda serve se as fileiras inteiras sobraram. Se quebrou uma fileira de furos, use o lado bom para a PI-2, que é a mais cheia.',
   },
   {
     id: 'A-02', fase: 'A', titulo: 'Conferir os módulos comprados, um por um', tempo: '20 min',
@@ -179,21 +180,9 @@ export const PASSOS = [
     seErrar: 'Borne torto solda torto e não aceita o fio. Reaqueça um pino de cada vez, empurrando o corpo.',
   },
   {
-    id: 'B-03', fase: 'B', titulo: 'PI-1: o soquete DIP-18', tempo: '10 min',
-    pegue: ['soquete DIP-18', 'ferro de solda'],
-    antes: 'Passo B-02.',
-    faca: [
-      '⭐ Chanfro do soquete à DIREITA — é a orientação deste projeto.',
-      'Solde dois pinos opostos, confira o assentamento e complete.',
-      'O CI NÃO entra agora: ele é o último passo da placa.',
-    ],
-    confira: 'Soquete rente à placa, chanfro à direita, nenhum pino dobrado por baixo.',
-    seErrar: 'Chanfro para o lado errado: dessolde tudo. Com o CI dentro na orientação errada, os 24 V entram na entrada e destroem o chip e o pino do Arduino.',
-  },
-  {
     id: 'B-04', fase: 'B', titulo: 'PI-1: os três resistores', tempo: '20 min',
     pegue: ['R3 4,7 kΩ', 'R1 22 kΩ', 'R2 4,7 kΩ', 'ferro de solda', 'multímetro'],
-    antes: 'Passo B-03.',
+    antes: 'Passo B-02.',
     discretos: ['PI1-R3', 'PI1-R1', 'PI1-R2'],
     faca: [
       '⚠️ MEÇA cada resistor antes de soldar. Faixa colorida se lê errado com facilidade, e o 22 kΩ e o 4,7 kΩ vão em circuitos diferentes.',
@@ -216,15 +205,15 @@ export const PASSOS = [
     seErrar: 'Se der zero ohm para o 0 V, uma perna caiu no furo errado ou há solda escorrida entre fileiras.',
   },
   {
-    id: 'B-06', fase: 'B', titulo: 'PI-1: as pontes de nó e os 20 jumpers', tempo: '60 min',
+    id: 'B-06', fase: 'B', titulo: 'PI-1: as pontes de nó e os 10 jumpers', tempo: '35 min',
     pegue: ['fio nu curto', 'fio isolado 0,25 mm²', 'ferro de solda', 'a lista de jumpers do aplicativo'],
     antes: 'Passos B-04 e B-05.',
     faca: [
       'Primeiro as pontes de nó (fio NU e curto), onde três ou quatro pernas se encontram.',
-      'Depois os 20 jumpers, por baixo, com fio ISOLADO — ele pode cruzar por cima do barramento sem problema.',
-      'Vá marcando cada jumper como soldado na tela da PI-1: são 20, e perder a conta é o normal.',
+      'Depois os 10 jumpers, por baixo, com fio ISOLADO — ele pode cruzar por cima do barramento sem problema.',
+      'Vá marcando cada jumper como soldado na tela da PI-1: são 10, e perder a conta é o normal.',
     ],
-    confira: 'Os 20 jumpers marcados, e nenhum fio isolado passando por cima de solda quente sem proteção.',
+    confira: 'Os 10 jumpers marcados, e nenhum fio isolado passando por cima de solda quente sem proteção.',
     seErrar: 'Jumper faltando é o defeito mais comum da placa. A tela da PI-1 mostra quais faltam.',
   },
   {
@@ -238,19 +227,6 @@ export const PASSOS = [
     ],
     confira: 'Todas as ligações da lista apitando, e nenhum curto entre vias vizinhas ou para o 0 V.',
     seErrar: 'Curto entre o 24 V e o 0 V: procure solda escorrida entre fileiras vizinhas, olhando contra a luz.',
-  },
-  {
-    id: 'B-08', fase: 'B', titulo: 'PI-1: encaixar o ULN2803A', tempo: '5 min',
-    pegue: ['ULN2803A'],
-    antes: 'Passo B-07 aprovado. Sem ele, não encaixe.',
-    discretos: ['PI1-CI1'],
-    faca: [
-      'Alinhe o chanfro do CI com o chanfro do soquete — os dois à direita.',
-      'Endireite os pinos numa superfície plana antes de encaixar.',
-      'Pressione uniformemente, conferindo que nenhum pino dobrou para fora.',
-    ],
-    confira: 'Chanfro à direita, os 18 pinos dentro do soquete, nenhum dobrado por baixo do corpo.',
-    seErrar: 'Pino dobrado por fora parece encaixado e não conduz. Puxe o CI e confira contra a luz.',
   },
   {
     id: 'B-09', fase: 'B', titulo: 'PI-2: barramento, bornes e barras de pinos', tempo: '45 min',
