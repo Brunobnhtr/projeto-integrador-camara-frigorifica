@@ -154,7 +154,7 @@ Quando precisarem se cruzar, cruze a **90°**. Cabos paralelos "conversam" por i
    │ BD-24V (24 V PERMANENTE, não passa pelo KA2)         │
    │  ← ramal RM3, derivação no poste P3                   │
    │  → DNLCB30/ESP32 · cadeia de comando (KA1/KA2) ·     │
-   │    POSITIVO DOS 4 SINALEIROS de 24 V (via ULN2803)   │
+   │    (os sinaleiros saíram daqui: viraram de 5 V)      │
    │    NÃO cai com a emergência — de propósito: o        │
    │    sinaleiro de FALHA precisa continuar aceso        │
    └──────────────────────────────────────────────────────┘
@@ -400,14 +400,13 @@ Esta seção descrevia uma placa com três diodos Zener (5V6 / 13 V / 15 V) que 
 | 55 | 12 V cooler dos BTS | 0,25 mm² | **BD-AUX** saída 1 → cooler 40 mm |
 | 56 | **24 V DNLCB30** | 0,5 mm² | **BD-24V** saída 1 → DNLCB30 `VIN` |
 | 57 | 24 V para a emergência | 0,5 mm² | **BD-24V** saída 2 → **S0 bloco NF de 24 V** entrada |
-| **57m–57p** | **Posições de ensaio P-1 e P-2** | 0,5 mm² | **BD-24V** saída 4 → **F-P1/F-P2** (fusíveis 500 mA) → INA219 → placa simuladora dentro da câmara. ⚠️ Barramento **permanente**: os dispositivos sob ensaio continuam energizados com a emergência acionada — ver [Doc 13](../camada_1_maquete/13_posicoes_de_ensaio.md) |
+| **57m** | **Posição de ensaio** | 0,5 mm² | **BD-24V** saída 4 → **F-P1** (fusível de 100 mA com chave) → 10 voltas no sensor **SC-1** → borne `+24 V` da posição, na câmara |
 | **57g** | **24 V dos sinaleiros** | 0,5 mm² | **BD-24V** saída 3 → **positivo comum dos 4 sinaleiros** na porta ⚠️ permanente, não cai com a emergência |
-| **57h** | **COM do ULN2803** | 0,25 mm² | **BD-24V** saída **5** → borne `24V-SRV` da **placa PI-1** (pino 10 do CI, retorno dos diodos internos) |
 
 > ⚠️ **Duas saídas estavam duplicadas e isso mudaria a compra.** O cabo 54b dividia a saída 6 do BD-5V com o cabo 54, e o 57h dividia a saída 3 do BD-24V com o 57g. Corrigido: cada carga tem a **sua** saída. Com isso o **BD-5V precisa de 8 saídas** (7 cargas + reserva) e o **BD-24V de 6** (5 cargas + reserva) — ver a tabela de conferência no [Doc 03](../camada_0_fundamentos/03_lista_materiais.md).
 >
 > 🔌 **A saída 4 do BD-24V alimenta os 4 porta-fusíveis das posições de ensaio com UM fio só.** Isso só funciona se o porta-fusível for de **4 vias com barramento de entrada comum** (ou 4 individuais unidos por um **pente**). Se você comprar 4 porta-fusíveis avulsos sem pente, precisará de **4 saídas** no BD-24V em vez de 1 — ou seja, um bloco de **9 saídas**.
-| **57i–57l** | Negativo dos 4 sinaleiros | 0,25 mm² | Bornes `L1−` a `L4−` da **PI-1** (saídas OUT1–OUT4 do ULN2803) → terminal negativo de cada sinaleiro |
+| ~~57i–57l~~ | ~~Negativo dos 4 sinaleiros~~ | — | 🗑️ **saíram:** o sinaleiro virou de 5 V e o pino do Arduino o acende direto. Sobrou um retorno só, do último sinaleiro ao `GND2` do Mega |
 | 57b | Cadeia do selo | 0,5 mm² | **S0 saída** → **S3 REARME (NA)** e **KA1 contato de selo (NA)**, em paralelo → **KA1 · A1** |
 | 57d | Retorno da bobina do KA1 | 0,5 mm² | **KA1 · A2** → **BD-0V** |
 | 57e | Saída do KA1 → STOP | 0,5 mm² | **KA1 contato de saída (NA)** → **S2 bloco NF de 24 V** |

@@ -255,7 +255,7 @@ for (const c of COMPONENTES)
       if (meus.every(f => f.de.comp === f.para.comp)) continue;
       /* ⭐ A ponta de FORA do painel não entra na auditoria de texto: o
          inventário fala do destino real (a peça na câmara), e às vezes
-         em forma NEGATIVA — "sem passar pela PI-2" citaria a PI-2 e
+         em forma NEGATIVA — "sem passar pela placa" citaria uma peça que saiu, e
          faria o auditor acusar o oposto do que o texto diz. */
       if (meus.every(f => !f.de.comp || !f.para.comp)) continue;
       const alvos = new Set(meus.map(f =>

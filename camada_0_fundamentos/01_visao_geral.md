@@ -36,7 +36,7 @@ Cada item que o edital pede tem um lugar concreto no projeto:
 | **Implementar o ESP32** com Wi-Fi/Bluetooth | ESP32 assume a **supervisão e o comando remoto**, em paralelo ao Arduino, sem parar o processo | [Doc 41](../camada_4_programacao/41_esp32_ihm_iot.md) |
 | **Monitoramento remoto em tempo real** | Telemetria por MQTT a cada segundo · dashboard | [Doc 41](../camada_4_programacao/41_esp32_ihm_iot.md) |
 | **Registro e rastreabilidade dos testes** | Log em cartão SD com data/hora do RTC · identificação de ensaio | [Doc 40](../camada_4_programacao/40_firmware_arduino.md) |
-| **Controle e precisão dos ciclos de temperatura** | Malha fechada **PID** com PWM lento de 1 Hz, banda morta de ±0,3 °C | [Doc 40](../camada_4_programacao/40_firmware_arduino.md) |
+| **Controle e precisão dos ciclos de temperatura** | Malha fechada **PID** com PWM de 20 kHz, banda morta de ±0,3 °C | [Doc 40](../camada_4_programacao/40_firmware_arduino.md) |
 | **Reduzir o tempo de diagnóstico de falhas** ⭐ | **Medição de corrente por posição de ensaio** — o sistema diz *qual* dispositivo falhou e *em que minuto* | [Doc 13](../camada_1_maquete/13_posicoes_de_ensaio.md) |
 | **Reduzir riscos elétricos / melhorar a infraestrutura** ⭐ | Barramento **24 Vcc SELV**, proteção seletiva, emergência em hardware, aterramento em estrela | [Doc 02](02_arquitetura_de_energia.md) · [Doc 31](../camada_3_eletrica/31_comando_e_protecoes.md) |
 | **Novos esquemas elétricos** | 7 desenhos técnicos + lista completa de cabos identificados | [`desenhos/`](../desenhos/) · [Doc 30](../camada_3_eletrica/30_forca_e_distribuicao.md) |
@@ -71,7 +71,7 @@ Uma **mini câmara** capaz de **aquecer ou resfriar** um volume interno de forma
 
 - **2× Célula Peltier TEC1-12706 ligadas em SÉRIE (24 V / 6 A / 144 W)** — resfria. Alimentadas **direto do barramento de 24 V** pelo BTS #1, sem conversor intermediário
 - **Aquecedor PTC cerâmico de 24 V / 80 W** — aquece (autolimitado por natureza: a resistência sobe com a temperatura). Também **direto no barramento de 24 V**, pelo BTS #2
-- **Controle PID com PWM lento (1 Hz)** — regula a potência entregue
+- **Controle PID com PWM de 20 kHz** — regula a potência entregue
 - **Intertravamento por software** — Peltier e PTC **nunca** ligam juntas
 - **Dreno de condensado** — obrigatório, item de segurança elétrica
 
@@ -129,7 +129,7 @@ Se cada posição tem a sua corrente medida o tempo todo, o sistema sabe na hora
 | O que cada posição tem | Para quê |
 |---|---|
 | **Fusível individual** | Proteção contra curto — é o *"disjuntores para energização dos dispositivos"* do edital |
-| **Sensor de corrente INA219** | Mede tensão e corrente. Detecta o dispositivo morto, que o fusível não pega |
+| **Sensor de corrente com saída digital** | Responde se ainda passa corrente. Detecta o dispositivo morto, que o fusível não pega |
 | **Placa simuladora** (resistor + LED) | Consome corrente e gera calor: é o *"modo de simulação funcional"* do edital |
 
 > 🎯 **O que o sistema passa a informar:** *"Posição 3 parou de consumir aos 47 min do ensaio, com a câmara a −2 °C."* Isso é rastreabilidade, e é o que transforma um ensaio "passou/não passou" em um diagnóstico.
@@ -226,7 +226,7 @@ A empresa **não pode parar os ensaios** enquanto o projeto acontece. Arrancar o
 | Conceito | Implementação |
 |---|---|
 | Malha de controle | **PID** sobre a temperatura do centro da câmara (DS18B20) |
-| Atuação | **PWM lento de 1 Hz** — adequado a cargas térmicas e à Peltier (chaveamento rápido degrada a pastilha) |
+| Atuação | **PWM de 20 kHz** — acima da audição e dentro do limite do BTS7960; a 1 Hz é que a pastilha) |
 | Seleção de modo | `setpoint < temperatura` → **Frio**; `setpoint > temperatura` → **Quente**; banda morta de ±0,3 °C |
 | Intertravamento | **Por software** — nunca os dois BTS ativos juntos |
 | Tempo de troca de modo | **30 s** de espera entre Frio ↔ Quente (evita choque térmico) |

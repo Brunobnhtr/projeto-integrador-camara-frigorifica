@@ -74,7 +74,7 @@ export const CABOS = [
   { n: 57, de: 'BD-24V:O2', para: 'S0:11', tensao: '24V_SRV', bitola: '0,5 mm²', cor: 'vermelho',
     nota: 'Início da cadeia de comando' },
   { n: 57.7, de: 'BD-24V:O3', para: 'PI1:J1-10', tensao: '24V_SRV', bitola: '0,25 mm²', cor: 'vermelho',
-    nota: 'COM do ULN2803 — é o que mantém o FAULT aceso na emergência' },
+    nota: '⭐ saída livre: era o COM do ULN2803, que saiu com os sinaleiros de 5 V' },
 
   // cadeia de comando
   { n: 57.1, de: 'S0:12', para: 'S3:13', tensao: '24V_SRV', bitola: '0,5 mm²', cor: 'vermelho',

@@ -163,7 +163,7 @@ Nenhuma ferramenta simula tudo. Cada uma resolve uma parte:
 | Validar o **modo ciclo**, tempos e nº de ciclos | Simulador do aplicativo, cenário de ciclagem | grátis |
 | Estimar a **duração real do ensaio** | Simulador do aplicativo | grátis |
 | **Rodar o código C++ de verdade** (o mesmo que vai para o Mega) | **Wokwi** — extensão do VS Code (já instalada) ou [wokwi.com](https://wokwi.com) | grátis |
-| Ver o **PWM lento piscando**, testar botões e interrupção de RPM | Wokwi | grátis |
+| Testar botões, máquina de estados e interrupção de RPM | Wokwi | grátis |
 | Simular o **circuito de comando** (KA1, KA2, selo, emergência) | **Falstad** — [falstad.com/circuit](https://www.falstad.com/circuit/) | grátis |
 | Simular relés, transistores e o lado **eletrônico analógico** | **SimulIDE** (desktop) | grátis |
 | Simulação completa com **BTS7960, motores e cargas reais** | **Proteus** (Labcenter) | pago |
@@ -262,7 +262,7 @@ instalar nada, com o firmware do [Doc 40](40_firmware_arduino.md).
 | DS18B20 (centro da câmara) | DS18B20 | **Clique nele e arraste a temperatura** para simular a câmara esquentando ou esfriando |
 | Botão START / STOP / EMERGÊNCIA | Pushbuttons | Clique |
 | KA1 + KA2 (**24 V** presentes) | Chave deslizante no D25 | Desligue para simular a emergência cortando em hardware |
-| BTS7960 #1 e #2 | LEDs ciano e laranja | **Você vê o PWM lento de 1 Hz piscando** |
+| BTS7960 #1 e #2 | LEDs ciano e laranja | ⚠️ **Com o PWM em 20 kHz o LED não pisca — ele varia de brilho.** Para ver o duty no Wokwi, olhe o valor impresso no Serial |
 | LEDs RUN / FRIO / QUENTE / FALHA | LEDs | Iguais aos do painel |
 | Fan do dissipador | Pino D30 ligado por fio ao D3 | O sketch gera os pulsos do tacômetro — **testa a interrupção de verdade** |
 | Tela ES3C28P | Monitor Serial | Mostra estado, fase, ciclo, duty e RPM a cada segundo |
@@ -272,7 +272,7 @@ instalar nada, com o firmware do [Doc 40](40_firmware_arduino.md).
 | # | Teste | Como | O que tem que acontecer |
 |---:|---|---|---|
 | 1 | **Interrupção de RPM** | Rode e olhe o `rpm1=` / `rpm2=` no Serial | ~2400 RPM nos dois. Se um ficar em 0, o `attachInterrupt` (D3) ou o PCINT (A8) está no pino errado |
-| 2 | **PWM lento** | Dê START com a temperatura em 25 °C | O LED ciano pisca a 1 Hz, com o tempo aceso proporcional ao duty |
+| 2 | **PWM** | Dê START com a temperatura em 25 °C | O LED ciano acende com brilho proporcional ao duty. ⚠️ Ele NÃO pisca: a 20 kHz o olho integra. Antes, a 1 Hz, ele piscava com o tempo aceso proporcional ao duty |
 | 3 | **Intertravamento** | Force um modo e olhe os dois LEDs | **Nunca** os dois acesos ao mesmo tempo |
 | 4 | **Intervalo de 30 s** | Passe rapidamente a temperatura de 30 °C para 0 °C | Os dois LEDs ficam apagados por 30 s antes de trocar de modo |
 | 5 | **START recusado sem potência** | Desligue a chave do D25 e aperte START | Serial: `START recusado: 24 V ausentes` |

@@ -120,9 +120,11 @@ nenhum — custa a forma de onda.
 
 ---
 
-## 43.5 O que isso implica sobre o PWM de 1 Hz
+## 43.5 O que isso implicou sobre o PWM de 1 Hz — e o que mudou por causa disso
 
-O [Doc 40 §40.5](40_firmware_arduino.md) justifica o PWM lento assim: *"cada liga-desliga dá
+⭐ **Esta análise foi adotada em 19/08/2026: o PWM passou de 1 Hz para 20 kHz.** O que vem abaixo é o raciocínio que levou à mudança.
+
+O Doc 40 §40.5 justificava o PWM lento assim: *"cada liga-desliga dá
 um pequeno choque térmico na pastilha; a 490 Hz são 490 choques por segundo"*.
 
 ⚠️ **Essa justificativa está invertida, e vale corrigir o texto mesmo que o código não

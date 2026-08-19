@@ -187,7 +187,7 @@ Na maquete, 3 condutores de +24 V na cruzeta + 1 condutor de 0 V embaixo fica **
 │              cooler dos BTS7960                                          │
 │                                                                          │
 │ 24 V SERV ─► DNLCB30 ─► ESP32 3,3 V · bobinas KA1/KA2 · 4 SINALEIROS    │
-│              (sinaleiros via ULN2803 — permanecem acesos na emergência)  │
+│        (sinaleiros de 5 V: o Arduino os acende, e ele não cai)           │
 └──────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -270,7 +270,7 @@ Esta é a tabela para colocar no relatório e usar na defesa. **É o que transfo
 | **Subtotal em 12 V** | **12** | 🔧 **1,25 A** | **15,0 W** | pior caso medido pelo simulador |
 | DNLCB30 + ESP32 (**direto em 24 V**) | 24 | 0,10 A | 2,4 W | |
 | Bobinas dos relés **KA1 + KA2** (**direto em 24 V**) | 24 | 0,10 A | 2,4 W | |
-| **4 sinaleiros LED 22 mm de 24 V** (via ULN2803) | 24 | 0,08 A | 1,9 W | **novos neste barramento** |
+| ~~4 sinaleiros LED 22 mm de 24 V~~ | ~~24~~ | — | — | 🗑️ **migraram para o BD-5V**: viraram de 5 V e são acesos direto pelo pino |
 | **Subtotal direto em 24 V** | **24** | **0,28 A** | **6,7 W** | |
 
 > ### 🔧 Correção — este ramal estava subestimado, e quem apontou foi o simulador

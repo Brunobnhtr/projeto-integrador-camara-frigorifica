@@ -214,7 +214,7 @@ for (const t of TRILHOS) {
 }
 
 /* ── ⭐ DOIS BLOCOS NA MESMA BORDA NÃO PODEM SE SOBREPOR ─────────────
-   A PI-2 tem o J2 e o J3 os dois na borda de baixo. Se cada um for
+   A antiga PI-2 tinha o J2 e o J3 os dois na borda de baixo. Se cada um for
    centrado na largura inteira, os bornes de um caem em cima dos do
    outro — e no desenho fica impossível saber qual fio entra onde. */
 console.log('\n=== blocos que dividem a mesma borda ===');

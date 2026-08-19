@@ -126,8 +126,8 @@ Duas armadilhas do Arduino Mega estão documentadas aqui, e as duas eram silenci
 | Pino | Destino | Função |
 |---|---|---|
 | **D4** | BTS #1 `R_EN` | Enable do driver da Peltier |
-| **D5** | BTS #1 `RPWM` | PWM lento de 1 Hz (frio) |
-| **D6** | BTS #2 `RPWM` | PWM lento de 1 Hz (quente) |
+| **D5** | BTS #1 `RPWM` | **PWM de 20 kHz** (frio) — Timer3 |
+| **D6** | BTS #2 `RPWM` | **PWM de 20 kHz** (quente) — Timer4 |
 | **D7** | BTS #2 `R_EN` | Enable do driver do PTC |
 | **A0** | BTS #1 `R_IS` | Diagnóstico de corrente — **capacitor 100 nF para 0 V** |
 | **A1** | BTS #2 `R_IS` | Diagnóstico de corrente — **capacitor 100 nF para 0 V** |
@@ -272,7 +272,7 @@ O pino que vagou aqui é o mesmo que resolve o maior buraco do projeto: o firmwa
 
 > 🎁 **Se um dia quiser controlar a rotação delas:** o caminho é **ventoinha de 4 fios (PWM)**. Nela o preto é 0 V de verdade, o tacômetro tem referência fixa, e o controle entra por um quarto fio de comando — que aí sim pode sair de um pino PWM do Mega, sem mexer no circuito de potência.
 
-> ⭐ **Cinco pinos para dezesseis canais.** É essa a economia que o multiplexador traz — e ela não muda quando o número de posições cresce. Quatro placas de multiplexador atendem 64 canais com 8 pinos, porque os S0–S3 são compartilhados entre elas.
+> 🗑️ ~~Cinco pinos para dezesseis canais~~ — a economia do multiplexador deixou de fazer sentido: com a detecção digital cada posição custa **um bit**, e a escala se resolve com expansores de porta ([Doc 13 §13.9](../camada_1_maquete/13_posicoes_de_ensaio.md)). O texto original dizia que a economia não muda quando o número de posições cresce. Quatro placas de multiplexador atendem 64 canais com 8 pinos, porque os S0–S3 são compartilhados entre elas.
 >
 > 🗑️ **O dimensionamento do shunt saiu daqui.** Ele explicava por que 47 Ω e não 0,1 Ω para ler 17,6 mA no A/D. Com a detecção digital não há shunt nem leitura analógica — o sensor entrega a decisão pronta num pino. A regra continua válida para quem for medir corrente algum dia, e está no histórico do Git.
 
@@ -309,7 +309,7 @@ ARDUINO MEGA 2560
 ├─ D16/D17 ── Serial2 ──[conversor de nível]──► tela ES3C28P
 ├─ D18/D19 ── Serial1 ────────────────────► DNLCB30 → ESP32
 ├─ D20/D21 ── I²C ────────────────────────► AM2315C · DS3231
-│                                            └─► 2× INA219 (posições de ensaio)
+│                                            (o I²C tem 2 dispositivos: RTC e AM2315C)
 ├─ D22     ── START (NA)
 ├─ D23     ── STOP (NA)
 ├─ D24     ── EMERGÊNCIA (NF)
@@ -520,7 +520,7 @@ Fans padrão geram 2 pulsos por rotação:
 - [ ] Capacitores de 100 nF em A0 e A1, **junto ao Arduino**
 - [ ] DS18B20 no D2 com pull-up de 4,7 kΩ para +5 V
 - [ ] AM2315C e DS3231 no I²C em **5 V**
-- [ ] ⭐ **2× INA219 no mesmo barramento I²C**, endereços 0x40/0x41/0x44/0x45 — scanner deve achar **6 dispositivos** ([Doc 13](../camada_1_maquete/13_posicoes_de_ensaio.md))
+- [ ] ⭐ **Scanner I²C encontra 2 dispositivos**: o RTC (0x68) e o AM2315C (0x5C). Eram 4 — os dois INA219 saíram com a detecção digital. Antes o scanner achava **6 dispositivos** ([Doc 13](../camada_1_maquete/13_posicoes_de_ensaio.md))
 - [ ] START D22 (NA), STOP D23 (NA), EMERG D24 (**NF**)
 - [ ] Divisor **22 kΩ / 4,7 kΩ** do BD-POT para o pino D25 (medir **~4,2 V** com potência presente)
 - [ ] **Pull-down de 10 kΩ em cada `R_EN`** dos BTS7960 — com o Arduino desligado, medir ~0 V

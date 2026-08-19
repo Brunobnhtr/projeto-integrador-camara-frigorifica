@@ -360,104 +360,23 @@ A PI-1 está no trilho 3 e o KA2 no trilho 1. Com o MOSFET na placa, o **circuit
 
 ---
 
-## 33.3 ✂️ Uma placa de 9 × 15 cm vira as duas placas — e ainda sobra
+## 33.3 ~~Uma placa de 9 × 15 cm vira as duas placas~~ — não vira mais nenhuma
 
-As placas ilhadas compradas são de **9 × 15 cm** (34 × 58 furos). Dela saem as duas placas do
-projeto, com sobra:
+> 🗑️ **Esta seção ensinava a cortar a placa ilhada em duas.** Não há mais placa: o divisor e o
+> pull-up viraram módulos comprados com borne, e os dois capacitores que sobraram entram
+> parafusados ([§33.4](#334--a-pi-1-deixou-de-existir--e-o-que-ficou-no-lugar-dela)).
 
-```
-   ┌──────────────────┐  ← placa comprada, 34 × 58 furos (90 × 150 mm)
-   │  PI-1   │ sobra  │     PI-1: 22 × 22 furos · 56 × 56 mm
-   │ 22×22   │  →DUTs │     a sobra vira o corpo das 2 placas simuladoras
-   ├ ─ ─ ─ ─ ┴ ─ ─ ─ ─┤  ← primeiro corte, entre as fileiras 29 e 30
-   │                  │
-   │      PI-2        │     34 × 29 furos  ·  86,4 × 73,7 mm
-   │                  │
-   └──────────────────┘
-```
+**O que sobrou de útil daqui:** uma placa ilhada pequena ainda serve para o corpo da **placa
+simuladora de DUT** (~30 × 40 mm), e o jeito de cortar continua o mesmo:
 
-⭐ **A PI-1 encolheu pela metade** quando o ULN2803A saiu: ela tinha 34 × 29 furos e uma caixa DIN
-de 6 módulos; hoje tem 22 × 22 e cabe numa de 4 módulos. A PI-2 não mudou.
+1. Risque com **estilete apoiado numa régua de metal**, na linha **entre** furos, nunca em cima deles
+2. Risque dos **dois lados**, 3 ou 4 passadas em cada
+3. Quebre apoiando na **quina da bancada**, com a linha do risco na borda
+4. Passe uma lixa fina na aresta
 
-### A altura é o teto; a largura é escolha
-
-Uma caixa modular DIN aceita placa de até **~74 mm de altura**, seja ela de 4, 6 ou 12 módulos —
-a altura é padronizada pelo trilho. A largura é que muda com o número de módulos.
-
-| Placa | Furos | Tamanho | Caixa DIN |
-|---|---|---|---|
-| **PI-1** | 22 × 22 | 56 × 56 mm | **4 módulos** |
-| **PI-2** | 34 × 29 | 86 × 74 mm | 6 módulos |
-
-⭐ **A PI-1 tinha 34 × 29 e uma caixa de 6 módulos** — encolheu quando o ULN2803A e as 9 vias dos
-sinaleiros saíram ([§33.8](#338--decisão-revisada--sinaleiros-de-5-v-no-painel-leds-de-5-v-na-maquete)).
-Sobrou espaço no trilho 3, que é onde o módulo do sensor de tensão caberia se um dia o divisor do
-D25 também sair da placa.
-
-
-### Como cortar sem lascar
-
-1. Marque a linha **entre as fileiras 29 e 30**
-2. Risque com **estilete apoiado numa régua de metal**, na linha **entre** furos, nunca em cima deles
-3. Risque dos **dois lados** da placa, 3 ou 4 passadas em cada
-4. Quebre apoiando na **quina da bancada**, com a linha do risco na borda
-5. Passe uma lixa fina na aresta
-
-> 💡 **Guarde as sobras.** Elas servem de gabarito — encaixe os bornes nelas primeiro para conferir o espaçamento das vias antes de soldar na placa boa — e ainda viram o corpo das duas placas simuladoras de DUT.
-
-> ⚠️ **Conte os furos quando a placa chegar.** Há versões de 9 × 15 cm com **35 × 59**. Se a sua vier assim, sobra uma coluna e uma fileira — o layout cabe igual. O `npm run valida:pi2` compara os dois números e reprova se não couber.
-
-### 🔎 O desenho da placa está no aplicativo, e não aqui
-
-Aba **🔧 Dentro do painel** → clique na PI-1 ou na PI-2. A tela mostra os **dois lados** da placa
-(componentes em cima, fiação por baixo), cada **furo é clicável** e diz o que existe nele e a que
-está ligado, e há uma caixa de conferido por jumper soldado. O endereço de cada furo segue a
-convenção de planilha — coluna em letra, fileira em número, e o campo *"ir para célula"* aceita
-`N6` direto.
-
-**Por que não repetir o desenho aqui:** ele é gerado do `pi1_fisico.js` e do `pi2_fisico.js`, os
-mesmos arquivos que os validadores conferem. Um desenho em ASCII neste documento seria uma segunda
-versão da verdade — e, quando a placa mudasse, ele ficaria errado em silêncio. Foi exatamente o
-que aconteceu com a versão anterior desta seção.
-
-
-### 🔩 Qual borne comprar — e a armadilha dos 5,00 mm
-
-**Borne KF301 (no Brasil, "KRE") de passo 5,08 mm.**
-
-O número que importa é o **passo**, porque ele tem que ser múltiplo exato dos 2,54 mm da placa:
-
-| Passo | Cai em quantos furos | Serve? |
-|---|---|---|
-| 2,54 mm | 1 furo | alinha, mas é apertado para parafusar |
-| **5,08 mm** | **2 furos** | ✅ **é este** |
-| 7,62 mm | 3 furos | alinha, mas ocupa espaço demais |
-| 3,50 / 3,81 mm | não alinha | ❌ |
-| **5,00 mm** | **quase 2 furos** | 🔥 **a armadilha** |
-
-> 🔥 **5,00 mm e 5,08 mm são vendidos lado a lado e parecem idênticos.** A diferença é de 0,08 mm por via — some no primeiro pino e some no segundo. Mas ela **acumula**: num bloco de 11 vias, o último pino sai **0,8 mm** fora do furo, que é quase o diâmetro do furo inteiro. Ou não entra, ou entra torto e forçado.
->
-> **Leia o passo no título do anúncio.** Tem que dizer **5.08**, não "5.0" nem "5mm".
-
-### Eles se encaixam — não compre bloco grande
-
-Os KF301 têm **rabo de andorinha nas laterais**: blocos de 2 e de 3 vias deslizam um no outro e viram um só. É assim que se fazem as contagens ímpares.
-
-| Placa | Borne | Vias | Largura | Monta-se com |
-|---|---|---:|---:|---|
-| PI-1 | J1 | 11 | 55,9 mm | 3 × 3 vias + 1 × 2 vias |
-| PI-1 | J2 | 8 | 40,6 mm | 2 × 3 vias + 1 × 2 vias |
-| PI-2 | J1 | 4 | 20,3 mm | 2 × 2 vias |
-| PI-2 | J2 | 2 | 10,2 mm | 1 × 2 vias |
-| PI-2 | J3 | 7 | 35,6 mm | 1 × 3 vias + 2 × 2 vias |
-
-**Total: 32 vias = 6 blocos de 3 + 7 blocos de 2.** Comprando com reserva: **10 de 3 vias e 12 de 2 vias**.
-
-📐 Rode `node scripts/lista_bornes.mjs` para recalcular — o script lê os layouts, refaz a conta e confere se os bornes de cada borda cabem nos 61 mm da placa. A lista escrita à mão **já ficou errada uma vez** (pedia 2 bornes de 8 vias quando o projeto precisava de 32), e é por isso que ela agora é gerada.
-
-⚠️ **Procure por:** `KF301-5.08 2P`, `KF301-5.08 3P`, ou no Brasil `borne KRE 5,08mm 2 vias`. Confira que o anúncio menciona **encaixável / splicable**, senão os blocos não deslizam um no outro.
-
-📌 **Corrente:** o KF301-5.08 é de 10 A / 300 V e aceita fio de 0,13 a 1,5 mm². Os fios que chegam nele são de 0,25 a 0,5 mm² e a maior corrente é de dezenas de miliampères — sobra de tudo. O que decide aqui é a **geometria**, não a corrente.
+⚠️ **E o passo do borne continua valendo para os módulos:** o que se parafusa nos bornes de trilho
+é fio de 0,25 a 0,5 mm² e perna de componente — use bornes de **2,5 mm²**, porque em dois deles
+entram três condutores de uma vez.
 
 ## 33.4 ⭐ A PI-1 deixou de existir — e o que ficou no lugar dela
 

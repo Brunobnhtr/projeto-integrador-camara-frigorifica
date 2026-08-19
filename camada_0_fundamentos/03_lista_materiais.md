@@ -112,7 +112,7 @@ Se um componente chegar morto, errado ou nunca chegar, **você não recebe outro
 | Peltier | **+1** (já na lista: 3) | É o que mais queima, e queima por erro de montagem |
 | LM2596 | **+1 kit** | São os únicos conversores do projeto |
 | BTS7960 | **+1** | Sem ele não há acionamento |
-| ULN2803 | **+1** (já na lista: 2) | Custa centavos |
+| ~~ULN2803~~ | ~~+1~~ | 🗑️ saiu do projeto com os sinaleiros de 5 V |
 | DS18B20 | **+1** | É o sensor que fecha a malha de controle |
 | ESP32 | **+1** | É o protagonista do edital |
 | Arduino Mega | **+1** (já na lista: 2) | Roda o PID, o intertravamento e as proteções |
@@ -140,7 +140,7 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 
 | Comprar **IMPORTADO** (vale muito a pena) | Economia típica |
 |---|---|
-| Peltier, PTC de 24 V, INA219, ULN2803, LM2596, BTS7960 | 3× a 5× mais barato |
+| Peltier, PTC de 24 V, LM2596, BTS7960, sensores e módulos | 3× a 5× mais barato |
 | ESP32, Arduino, tela ES3C28P, sensores, módulo RTC | 2× a 4× |
 | Coolers, dissipadores, botoeiras 22 mm, sinaleiros | 2× a 3× |
 
@@ -399,7 +399,7 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 | ⭐ **Espiral organizador Ø 12 mm** | 40 cm | A **passagem flexível** entre a placa e a porta. Protege o chicote nos ciclos de abertura | |
 | **Bloco de distribuição DIN** — 1 entrada 4 mm² + **4 saídas** | 1 | **BD-POT** — 24 V de potência comutados pelo KA2 → BTS #1, BTS #2, medição do D25 e 1 reserva. ⚠️ Cai com a emergência | |
 | **Bloco de distribuição DIN** — 1 entrada 2,5 mm² + **4 saídas** | 1 | **BD-AUX** — 12 V auxiliar (do T3): cooler dos BTS + 2 coolers das Peltier + 1 reserva | |
-| **Bloco de distribuição DIN** — 1 entrada 2,5 mm² + **6 saídas** | 1 | **BD-24V** — 24 V permanentes. São **3 cargas** (DNLCB30/ESP32, cadeia de comando e a alimentação das 2 posições de ensaio) + 3 reservas. ⭐ **Duas saídas ficaram livres** quando os sinaleiros passaram para 5 V: elas levavam o positivo comum das lâmpadas e o COM do ULN2803. **Não confundir com o BD-POT** — este não cai com a emergência | |
+| **Bloco de distribuição DIN** — 1 entrada 2,5 mm² + **6 saídas** | 1 | **BD-24V** — 24 V permanentes. São **3 cargas** (DNLCB30/ESP32, cadeia de comando e a alimentação das 2 posições de ensaio) + 3 reservas. ⭐ **Duas saídas ficaram livres** quando os sinaleiros passaram para 5 V: elas levavam o positivo comum das lâmpadas e o COM do o driver dos sinaleiros, que saiu. **Não confundir com o BD-POT** — este não cai com a emergência | |
 | **Bloco de distribuição DIN** — 1 entrada 2,5 mm² + **8 saídas** ⬆ | 1 | **BD-5V** — ⚠️ **Subiu de 6 para 8:** são **7 cargas** (Arduino, tela ES3C28P, RTC, lógica do BTS #1, lógica do BTS #2, placa PI-1 e os LEDs da maquete) + 1 reserva | |
 | ⭐ **Barra de distribuição / régua com pente — mín. 20 pontos** ⬆⬆ | 1 | **BD-0V** — o **star ground** do projeto. ⚠️ **Um bloco de 8 saídas NÃO serve:** aqui convergem **4 entradas + ~16 retornos**. Use uma **barra de neutro/terra de 16–20 furos** em suporte DIN, ou **dois blocos de 1×8 interligados** por ponte de 4 mm². Entrada de **10 mm²** | |
 
@@ -873,25 +873,6 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 | Item | Qtd | Especificação | Link |
 |---|---:|---|---|
 | ~~Módulo multiplexador 16 canais CD74HC4067~~ | ~~1~~ | 🗑️ **NÃO COMPRE.** Ele levava 16 canais analógicos a uma entrada A/D — e não há mais canal analógico para levar: a detecção virou um bit por posição | |
-
-> ### ✅ Placa com pinos, não o CI avulso
->
-> O CD74HC4067 é vendido de duas formas, e a diferença de preço é o contrário do que parece:
->
-> | | CI avulso DIP-24 | **Placa com pinos** |
-> |---|---:|---:|
-> | Preço | R$ 15,62 por **1** | **R$ 16,97 por 5** |
-> | Por unidade | R$ 15,62 | **R$ 3,40** |
-> | Capacitor de desacoplamento | você solda | **já tem** |
-> | Barra de pinos | você solda | **já tem** |
-> | Furos de fixação | não tem | **tem** |
->
-> **A placa é 4,6 vezes mais barata por unidade e já vem pronta.** O CI avulso ainda exigiria soquete, capacitor e uma placa ilhada para montar — mais trabalho, mais risco de erro e mais caro no fim.
->
-> 🎁 **E vir em pacote de 5 é bom:** um para montar, um de reserva, e se um dia a empresa escalar para 64 canais são exatamente **4 módulos** que ela vai precisar.
->
-> ⚠️ **Confira o pino `EN` (enable) na montagem.** O multiplexador só conduz com o EN em nível baixo. A maioria das placas já traz um resistor puxando para o GND, mas algumas deixam o pino solto — e aí nenhum canal funciona, o que parece defeito da placa.
-
 
 | ~~Resistor 47 Ω · 1% (shunt de medição)~~ | ~~4~~ | 🗑️ **NÃO COMPRE.** O shunt existia para transformar 17,6 mA em 0,83 V legíveis pelo A/D. Ninguém mede mais essa corrente | |
 | ⭐ **Sensor de corrente WCS2702** | 1 | 🔎 **A detecção de dispositivo morto inteira, num módulo.** Hall, ±2 A, 1,0 mV/mA, com saída digital ajustável por trimpot. O fio de força passa pelo furo — **10 voltas**, para o sensor enxergar 176 mA em vez de 17,6 mA. Buscar `sensor de corrente WCS2702 hall`. ⚠️ **Para equipamento em CA** (a planta real, não a maquete) o sensor é a **SZC23**, que fecha a partir de 0,5 A | |

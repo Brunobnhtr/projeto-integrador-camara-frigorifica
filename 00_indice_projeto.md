@@ -69,7 +69,7 @@
 | 11 | [Subestação e Postes](camada_1_maquete/11_subestacao_e_postes.md) | Caixa da subestação, pátio com brita e cerca, 3 postes com cruzeta e isoladores, 3 transformadores (um por poste) com leitor digital, rede compacta protegida |
 | 12 | [Câmara Térmica](camada_1_maquete/12_camara_termica.md) | Cálculo de carga térmica, escolha do isolante, barreira de vapor, **porta dupla anticondensação**, dreno com sifão, 28 peças de acrílico |
 | **13** ⭐ | [**Posições de Ensaio e Detecção de Falha**](camada_1_maquete/13_posicoes_de_ensaio.md) | **Os dispositivos energizados dentro da cabine, proteção por posição e detecção de dispositivo morto por SINAL DIGITAL** (sensor de corrente com saída ON/OFF). Inclui o roteiro de fiação passo a passo, como explicar na apresentação e a arquitetura de 50 canais com MCP23017 |
-| **14** ⭐ | [**Escala e cabeamento**](camada_1_maquete/14_escala_e_cabeamento.md) | **Quantos cabos entram no painel com 50 posições** — a resposta é 9, não 100. Quantos multiplexadores, onde a placa fica, e quando o RS-485 passa a ser necessário |
+| **14** ⭐ | [**Escala e cabeamento**](camada_1_maquete/14_escala_e_cabeamento.md) | ⚠️ **Histórico.** Ele calcula o cabeamento da versão em que cada posição era MEDIDA. A arquitetura de escala hoje é outra — 1 bit por posição e expansores MCP23017 ([Doc 13 §13.9](camada_1_maquete/13_posicoes_de_ensaio.md)) —, mas o raciocínio de cabeamento continua valendo |
 
 ### CAMADA 2 — PAINEL
 *Montagem mecânica. Nenhum fio ligado.*
@@ -93,7 +93,7 @@
 
 | Doc | Arquivo | Conteúdo |
 |---|---|---|
-| 40 | [Firmware Arduino](camada_4_programacao/40_firmware_arduino.md) | Máquina de estados, PID bipolar com PWM lento, intertravamento, trip em hardware, diagnóstico de corrente, degelo, log em SD |
+| 40 | [Firmware Arduino](camada_4_programacao/40_firmware_arduino.md) | Máquina de estados, PID bipolar com **PWM de 20 kHz**, intertravamento, trip em hardware, diagnóstico de corrente, degelo, log em SD |
 | 41 | [ESP32, IHM e IoT](camada_4_programacao/41_esp32_ihm_iot.md) | Protocolo JSON, gateway MQTT, telas da IHM, dashboard, segurança de rede |
 | **42** 🧪 | [**Simulação e Testes sem Hardware**](camada_4_programacao/42_simulacao_e_testes.md) | **Simulador de bancada em Python, projeto Wokwi rodando o código real, Falstad para o circuito de comando** |
 
@@ -172,18 +172,18 @@ podia significar duas peças diferentes. Ficou assim:
 | Prefixo | O que é | Exemplos |
 |---|---|---|
 | `R`, `C`, `D` | **Componente discreto** — resistor, capacitor, diodo | `R1` 22 kΩ da PI-1 · `C3` 100 nF · `D1` na bobina do KA2 |
-| `RS` | **Shunt** de medição de corrente | `RS1`, `RS2` — os 47 Ω da PI-2 |
+| ~~`RS`~~ | ~~Shunt de medição~~ | 🗑️ os 47 Ω saíram com a medição analógica — o prefixo fica reservado |
 | `RM` | **Ramal** de energia, na saída de cada fusível | `RM1` (potência) · `RM2` (5 V) · `RM3` (12 V) |
 | `Z` | **Ponto de retorno** no BD-0V, um parafuso por dispositivo | `Z1` … `Z21` |
 | `KA` | Relé | `KA1`, `KA2`, `KA3`, `KA4` |
 | `H` | Sinaleiro | `H1` … `H4` |
 | `S` | Botoeira | `S0` (emergência) · `S1` · `S2` · `S3` |
 | `BD-` | Bloco de distribuição | `BD-24V` · `BD-POT` · `BD-5V` · `BD-AUX` · `BD-0V` |
-| `J` | Borne de placa | `J1`, `J2` na PI-1 · `J1`–`J3` na PI-2 |
-| `PI-` | Placa de interface | `PI-1`, `PI-2` |
+| `J` | Borne de módulo ou de placa | hoje só nos módulos comprados |
+| ~~`PI-`~~ | ~~Placa de interface~~ | 🗑️ não há mais placa: os componentes moram em borne ou dentro de módulo |
 
 > 🔎 **Onde conferir:** o cadastro `painel_interativo/src/data/discretos.js` usa a forma
-> `PI1-R1` / `PI2-RS1` como identificador interno, para que dois componentes nunca disputem o
+> `BS1-C1` / `SV1-MODULO` como identificador interno, para que dois componentes nunca disputem o
 > mesmo nome nem por acidente. O `valida_discretos.mjs` avisa se uma ref voltar a ser usada por
 > dois componentes.
 
@@ -210,8 +210,8 @@ podia significar duas peças diferentes. Ficou assim:
 | Refrigeração | **2× TEC1-12706 em SÉRIE** · 24 V · 6,0 A · 144 W |
 | Capacidade das Peltier a ΔT = 20 K | **~60 W** (margem de 6,3×) |
 | Aquecimento | **PTC cerâmico de 24 V** · 80 W · 3,3 A |
-| Componentes discretos | **6 + 1 CI (ULN2803) na placa PI-1** · 2 soldados nos BTS7960 · 4 nos postes da maquete (Doc 33) |
-| Sinalização | **4 sinaleiros 22 mm de 24 V** no painel (via ULN2803, em barramento permanente) · **4 LEDs brancos de 5 V** na iluminação da maquete |
+| Componentes discretos | **16 registros / 22 peças, nenhuma soldada em placa** — 2 capacitores em borne, 3 nos bornes dos relés, 2 dentro dos BTS7960, 8 na maquete e na câmara, 3 módulos comprados (Doc 33) |
+| Sinalização | **4 sinaleiros 22 mm de 5 V** no painel, acesos direto pelo pino do Arduino · **4 LEDs brancos de 5 V** na iluminação da maquete |
 | Isolamento | XPS 30 mm + barreira de vapor · U = 0,86 W/m²·K |
 | Porta | Dupla, U = 2,42 W/m²·K (não condensa) |
 | Base da maquete | **1500 × 500 mm** · escala cenográfica 1:50 · rua externa + muro em X = 640 |

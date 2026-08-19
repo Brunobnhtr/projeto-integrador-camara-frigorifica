@@ -1,4 +1,4 @@
-# CAMADA 1 · Doc 14 — Escala e cabeamento: das 2 posições às 50
+# CAMADA 1 · Doc 14 — Escala e cabeamento: das 2 posições às 50 — 📚 arquitetura anterior (medição analógica)
 
 > ⭐ **Responde a pergunta que a banca vai fazer:** *"com 50 dispositivos, quantos cabos entram no painel?"*
 >

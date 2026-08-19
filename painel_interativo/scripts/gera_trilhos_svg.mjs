@@ -38,7 +38,9 @@ const CURTO = {
   'BD-POT': 'BD-POT', 'BD-AUX': 'BD-AUX', 'BD-24V': 'BD-24V', 'BD-5V': 'BD-5V',
   'BD-0V': 'BD-0V', 'KA1': 'KA1', 'KA2': 'KA2', 'KA3': 'KA3', 'KA4': 'KA4',
   'BTS1': 'BTS #1', 'BTS2': 'BTS #2', 'MV-1': 'MV-1', 'F-P': 'F-P',
-  'ESP32': 'ESP32', 'MEGA': 'ARDUINO MEGA', 'PI1': 'PI-1', 'PI-2': 'PI-2', 'RTC': 'RTC',
+  'ESP32': 'ESP32', 'MEGA': 'ARDUINO MEGA', 'RTC': 'RTC',
+  'SV-1': 'SENSOR V', 'AD-1': 'ADAPT. 1-WIRE', 'BS-1': 'BORNES IS', 'SC-1': 'SENSOR A',
+  'BD-0V-B': 'BD-0V-B',
 };
 const SUB = {
   'BD-POT': '24 V comutado', 'BD-AUX': '12 V perm.', 'BD-24V': '24 V perm.',
@@ -46,7 +48,8 @@ const SUB = {
   'KA1': 'emergência', 'KA2': '⚡ 6 A', 'KA3': '⭐ veto D27', 'KA4': '⭐ fan D30',
   'BTS1': 'Peltier · frio', 'BTS2': 'PTC · quente', 'MV-1': '5 fans int.',
   'F-P': 'fusíveis', 'ESP32': 'DNLCB30 · MQTT', 'MEGA': '2560 + Shield',
-  'PI1': 'filtros · ULN', 'PI-2': 'mux · INA219', 'RTC': 'DS3231',
+  'SV-1': 'divisor 5:1', 'AD-1': 'pull-up 4,7 k', 'BS-1': 'C1 · C2', 'SC-1': 'WCS2702',
+  'BD-0V-B': '0 V da eletrônica', 'RTC': 'DS3231',
 };
 
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');

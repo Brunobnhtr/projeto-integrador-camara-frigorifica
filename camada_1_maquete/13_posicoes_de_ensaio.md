@@ -40,15 +40,15 @@ Uma analogia: é a diferença entre um disjuntor e um monitor cardíaco. **O dis
 |---|---:|---:|
 | Posições de ensaio | até 50 | **4** |
 | Proteção individual | disjuntores | **porta-fusível DIN + fusível 100 mA** |
-| Medição de corrente | não existe (é a melhoria proposta) | **INA219 por posição** |
+| Detecção de dispositivo morto | não existe (é a melhoria proposta) | **sensor com saída digital por posição** |
 
 **4 é o número certo por três motivos:**
 
 1. **Demonstra o problema.** Com 1 posição, "qual delas falhou?" não faz sentido — a pergunta só existe quando há várias.
-2. **O INA219 tem 16 endereços I²C possíveis**, de 0x40 a 0x4F — os módulos prontos expõem 4 deles por jumper de solda. As duas posições usam **0x40 e 0x41**, no mesmo par de fios, sem multiplexador nenhum. É a solução mais limpa possível nessa escala. ⭐ Como isso escala para as 50 placas da empresa está em [§13.9](#139--e-na-empresa-com-50-placas--a-pergunta-da-escala).
+2. ~~O INA219 tem 16 endereços I²C possíveis~~ — ⚠️ **desatualizado:** a detecção virou digital e não há mais INA219. A escala hoje se resolve com expansores de porta ([§13.9](#139--o-projeto-em-escala-real--50-canais-com-mcp23017)). O texto original expunha que os módulos prontos mostram 4 endereços por jumper de solda. As duas posições usam **0x40 e 0x41**, no mesmo par de fios, sem multiplexador nenhum. É a solução mais limpa possível nessa escala. ⭐ Como isso escala para as 50 placas da empresa está em [§13.9](#139--e-na-empresa-com-50-placas--a-pergunta-da-escala).
 3. **Cabe no espaço e no orçamento** — ~R$ 120 no total.
 
-> 📌 **Como defender o número na banca:** *"a bancada reproduz o princípio com 2 posições porque a arquitetura é idêntica para 50 — muda a quantidade de canais, não o método. Com 50 posições usaríamos multiplexadores I²C ou módulos de aquisição em rede, que é o passo natural de escala."*
+> 📌 **Como defender o número na banca:** *"a bancada reproduz o princípio com UMA posição porque a arquitetura é idêntica em 1 ou em 50: o sensor decide se há corrente e entrega um bit. O que muda com a escala é apenas de onde vem o bit — do pino do Arduino aqui, de um expansor MCP23017 na planta real."*
 
 ---
 
@@ -64,7 +64,7 @@ Uma analogia: é a diferença entre um disjuntor e um monitor cardíaco. **O dis
 >
 > Com duas, você desliga a chave de uma e mostra as duas curvas na tela: uma cai a zero, a outra segue. É exatamente a demonstração que interessa, com metade das peças.
 >
-> **O que muda no projeto:** 2 INA219 em vez de 4, 1 porta-fusível de 2 vias em vez de 2, e a carga térmica dentro da câmara cai de ~12 W para ~6 W. Os endereços 0x44 e 0x45 ficam livres, então voltar a 4 posições depois é só acrescentar módulos.
+> **O que mudou desde então:** a medição saiu inteira, sobrou **1 posição de ensaio** com sensor digital, **1 fusível** e a carga térmica dentro da câmara cai de ~12 W para ~6 W. Os endereços 0x44 e 0x45 ficam livres, então voltar a 4 posições depois é só acrescentar módulos.
 
 ## 13.3 O que é uma "placa simuladora de DUT"
 
