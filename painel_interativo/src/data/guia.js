@@ -142,7 +142,7 @@ export const PASSOS = [
       + 'mesmo sentido, antes de mandá-lo para a câmara.',
       'Só então leve esse fio ao borne +24 V da posição de ensaio, e traga o retorno dela ao '
       + 'BD-0V · Z22.',
-      'Grave o firmware `firmware/detector_corrente/detector_corrente.ino` e abra o monitor '
+      'Grave o firmware `camada_4_programacao/firmware/detector_corrente/detector_corrente.ino` e abra o monitor '
       + 'serial em 115200.',
       'Ligue a chave do porta-fusível e ajuste o trimpot do sensor até o serial dizer '
       + '"Equipamento em funcionamento".',

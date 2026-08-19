@@ -213,6 +213,100 @@ menos corrente do que existe.
 
 ---
 
+## 13.4b 🎓 Como explicar isso na apresentação
+
+> Esta seção existe para ser lida em voz alta. Ela responde, em linguagem de banca, as três
+> perguntas que a escolha dos sensores provoca.
+
+### Pergunta 1 — "Por que dois sensores diferentes?"
+
+Porque são dois mundos diferentes, e cada sensor vive num deles.
+
+| | **SZC23** | **WCS2702** |
+|---|---|---|
+| Onde vive | equipamento real da planta: 127 V, amperes | maquete: 24 V, miliampères |
+| Tipo de corrente | **alternada** (vai e volta 120×/s) | **contínua** (sempre no mesmo sentido) |
+| Alimentação | ⭐ **nenhuma** — vive do vai-e-vem do próprio cabo | 5 V do Arduino |
+| Corrente mínima | **0,5 A** | enxerga miliampères |
+
+**A frase:** *"A SZC23 é auto-alimentada porque a corrente alternada troca de sentido 120 vezes por
+segundo, e é desse movimento que ela tira energia. Em corrente contínua não existe esse movimento
+— então ela nem liga. Por isso ela é o sensor da planta, e o WCS2702 é o da bancada."*
+
+### Pergunta 2 — "Por que ela não serve na maquete?"
+
+Por **dois** motivos, e cada um sozinho já bastaria:
+
+1. **A corrente é contínua** — ela não acorda (motivo acima).
+2. **A corrente é pequena demais** — ela fecha a partir de 0,5 A, e a nossa posição de ensaio
+   consome 0,0176 A. **Trinta vezes menos.**
+
+> 🎯 **A analogia:** é uma balança de caminhão. Ela funciona muito bem — para caminhões. Pondo uma
+> maçã em cima, ela não acusa nada, e não é defeito dela.
+
+### Pergunta 3 — "E por que dar 10 voltas no fio?"
+
+Esta é a melhor das três, porque a resposta mostra a diferença entre **ajustar** e **amplificar**.
+
+O WCS2702 tem um parafuso de ajuste (trimpot). É natural pensar que basta girá-lo até ele acusar
+17,6 mA. **Não é o que ele faz.**
+
+> 🎯 **A analogia, continuando:** troque a balança de caminhão por uma balança de cozinha. O
+> parafuso é onde você anota *"a partir de tanto, eu considero que tem alguma coisa em cima"*.
+> Isso não muda a balança — só move a linha. E se a balança treme sozinha 2 g para lá e para cá,
+> marcar 1 g faz ela apitar sozinha o dia inteiro.
+
+O WCS2702 entrega **1,0 mV por miliampère**. Nossa posição produz, então, **17,6 mV** — e o próprio
+sensor tem ruído e deriva térmica dessa mesma ordem. O parafuso não tem onde se apoiar.
+
+**A solução não é ajustar melhor: é dar mais sinal para ajustar.**
+
+```
+   1 volta pelo furo  →  o sensor sente  17,6 mA  →   17,6 mV  →  perdido no ruído
+  10 voltas pelo furo →  o sensor sente   176 mA  →    176 mV  →  o parafuso trabalha folgado
+```
+
+O fio é o mesmo e a corrente é a mesma. O que muda é **quantas vezes ela passa na frente do
+sensor** — e o campo magnético responde ao produto `corrente × número de espiras`.
+
+**A frase:** *"É o mesmo princípio de relação de espiras de um transformador de corrente. Em vez
+de comprar um sensor mais sensível, usamos dez espiras do condutor que já ia passar ali."*
+
+### O detalhe que fecha o raciocínio: o LED não decide nada
+
+Quem fixa os 17,6 mA da posição **é o resistor de 1,2 kΩ em série**, não o LED. O LED é apenas o
+indicador visual — a lâmpada que se vê pela porta da câmara dizendo "esta posição está viva".
+
+### 💡 E até quanto o LED aguenta, se quisermos mais corrente?
+
+Pergunta natural: já que o sensor gostaria de mais corrente, por que não aumentar a corrente da
+posição em vez de dar voltas?
+
+| LED 5 mm comum | Valor |
+|---|---|
+| Corrente **nominal** (o que ele foi feito para conduzir o dia inteiro) | **20 mA** |
+| Corrente **máxima absoluta** de catálogo | 25 a 30 mA — já encurtando a vida |
+| Acima disso | escurece o encapsulamento em horas e abre em dias |
+
+Nossa posição usa **17,6 mA**: dentro do nominal, com uma folga saudável de ~12 %. **Dá para
+mexer no resistor — mas pouco.** Para chegar aos 100 mA que deixariam o sensor confortável com
+uma volta só:
+
+```
+   R = (24 V − 2 V) ÷ 0,1 A = 220 Ω
+   Potência no resistor = 0,1² × 220 = 2,2 W  →  resistor de 5 W
+   E o LED?  100 mA é 5× o nominal  →  ele não sobrevive
+```
+
+Ou seja: seria preciso trocar o LED por um de potência **e** aceitar **2,2 W de calor a mais dentro
+da câmara** — justamente o que o [§13.3b](#133b--sem-carga-térmica--o-dut-é-só-led-e-resistor)
+decidiu evitar, porque falsearia o ensaio térmico.
+
+> ⭐ **Por isso as 10 voltas ganham da corrente maior:** elas resolvem o mesmo problema com zero
+> componente novo, zero calor e zero risco para o LED. **Custa um pedaço de fio a mais.**
+
+---
+
 ## 13.5 Esquema elétrico — passo a passo da fiação
 
 > 🧾 **Este é o roteiro de bancada.** A versão com caixa de conferido está na aba
@@ -237,7 +331,7 @@ menos corrente do que existe.
 
 ### C · Ajuste e prova (com o firmware já gravado)
 
-1. Grave `firmware/detector_corrente/detector_corrente.ino` e abra o monitor serial em **115200**.
+1. Grave `camada_4_programacao/firmware/detector_corrente/detector_corrente.ino` e abra o monitor serial em **115200**.
 2. Ligue a chave do porta-fusível. O LED da posição acende.
 3. Gire o **trimpot** do sensor devagar até o serial dizer `Equipamento em funcionamento`.
 4. **Desligue a chave.** Em menos de 1 s: `FALHA: Corrente Zero detectada`.
@@ -271,7 +365,7 @@ contato seco.
 ## 13.6 Como o firmware detecta a falha
 
 O código completo, comentado, está em
-[`firmware/detector_corrente/detector_corrente.ino`](../firmware/detector_corrente/detector_corrente.ino).
+[`detector_corrente.ino`](../camada_4_programacao/firmware/detector_corrente/detector_corrente.ino).
 A lógica cabe em cinco linhas de descrição:
 
 | Passo | O que faz | Por quê |
@@ -336,123 +430,176 @@ log em SD e o JSON do ESP32 — que já existiam. **A detecção mudou; o que se
 
 ---
 
-## 13.9 ⭐ E na empresa, com 50 placas? — a pergunta da escala
+## 13.9 🏭 O projeto em escala real — 50 canais com MCP23017
 
-Esta seção existe porque a banca vai perguntar, e porque a resposta é o que separa um protótipo escolar de um projeto de engenharia: **a bancada tem 1 posição, mas a empresa tem 50.**
+> 📌 **Decisão de arquitetura, 19/08/2026.** No protótipo, o sensor único vai **direto no D22 do
+> Mega** — é o caminho mais curto para validar a lógica. Para a máquina em escala real, com **50
+> dispositivos monitorados**, a leitura passa por **expansores de porta MCP23017**.
 
-> 📌 **A mudança para detecção digital muda a resposta desta seção, e para melhor.** O que vem
-> abaixo foi escrito quando cada posição era MEDIDA por um INA219 — e a discussão era como
-> multiplexar 50 medições. Com um bit por posição, o problema deixa de ser de instrumentação e
-> vira de **entrada digital**, que é bem mais barato de escalar:
->
-> | Como | Pinos gastos | Canais |
-> |---|---|---|
-> | Direto no Mega | 1 por canal | ~29 sobrando neste projeto |
-> | 74HC165 (registrador de deslocamento) | 3 no total | 8 por CI |
-> | **MCP23017 (expansor I²C)** | **2 no total** | **16 por CI** |
->
-> ⭐ **Quatro MCP23017 no mesmo par I²C que já existe** (por causa do RTC) dão **64 canais com 2
-> pinos**. E o cálculo de tempo de varredura abaixo continua valendo — a falha continua sem pressa.
->
-> O texto original fica porque a **lógica de escala** que ele ensina (a unidade não é o sensor, é
-> o suporte instrumentado) não mudou, e porque mostra o caminho percorrido.
+### O problema que ele resolve
 
-### Primeiro, um acerto: o INA219 tem 16 endereços, não 4
+Cinquenta sensores digitais significam cinquenta sinais chegando ao controlador. Feito do jeito
+direto, isso dá:
 
-Os módulos prontos trazem **dois jumpers** de solda, que dão 4 combinações — daí vem a ideia de que são 4 endereços. Mas o **chip** tem dois pinos de endereço (A0 e A1) e cada um aceita **quatro** ligações diferentes: GND, V+, SDA ou SCL.
-
-`4 × 4 = 16 endereços`, de **0x40 a 0x4F**.
-
-Então, no barramento, o limite não são 4 sensores — são **16**. Para chegar a 50, ainda falta, mas o problema real aparece antes disso.
-
-### O problema não é o endereço. É o módulo.
-
-Mesmo que houvesse 50 endereços, **50 plaquinhas dentro de um painel** seriam:
-
-- 50 × 4 fios de I²C para derivar
-- 50 pontos de solda de jumper de endereço, todos diferentes
-- um barramento I²C com capacitância alta demais para funcionar
-- e um painel impossível de manter
-
-**Pensar em "um módulo por canal" é pensar como maker.** A indústria não faz isso — e não porque seja cara, mas porque existe um jeito melhor.
-
-### Como a indústria resolve: multiplexação
-
-A ideia central é separar duas coisas que o módulo pronto junta:
-
-| | O que é | Quantos precisam |
+| | Ligação direta no Mega | **Com 4 × MCP23017** |
 |---|---|---|
-| **Ponto de medição** | um resistor *shunt* em série com a carga | **um por canal** — 50 |
-| **Circuito de medição** | o amplificador e o conversor A/D | **um só**, que visita os 50 |
+| Fios chegando ao controlador | **50** | ⭐ **4** (SDA, SCL, 5 V, GND) |
+| Pinos do Mega ocupados | 50 | **2** (e são os do I²C, já em uso pelo RTC) |
+| Pinos livres depois | ⚠️ **nenhum** — o Mega tem 54 e o projeto já usa ~25 | **~27** |
+| Caminho de cada sinal | 50 cabos atravessando o painel | cada sensor vai ao expansor **mais próximo** |
 
-Um **multiplexador analógico** é uma chave eletrônica que conecta um de vários pontos à mesma entrada. Um CD74HC4067 tem 16 canais e custa alguns reais; quatro deles dão 64 canais.
+### 1 · Redução de fiação — e onde ela realmente acontece
+
+⭐ **O ganho não é fazer 50 fios desaparecerem: é encurtá-los.** Cada sensor continua tendo o seu
+fio de sinal — mas ele vai até o expansor da própria fileira de posições, com 20 ou 30 cm, em vez
+de atravessar o painel inteiro até o Arduino.
 
 ```
-   shunt 1 ──┐
-   shunt 2 ──┤
-   shunt 3 ──┤──►[ MULTIPLEXADOR ]──►[ amplificador ]──►[ ADC ]──► leitura
-      ...    ┤          ▲
-   shunt 50 ─┘     o firmware escolhe
-                    qual canal ler
+   SEM expansor                          COM expansor
+   ────────────                          ────────────
+   50 sensores                           50 sensores
+      │ │ │ ... (50 cabos longos)           │ │ │  (50 cabos CURTOS, locais)
+      ▼ ▼ ▼                                 ▼ ▼ ▼
+   ┌──────────┐                        ┌─────────────┐
+   │   MEGA   │  ← 50 bornes,          │ 4× MCP23017 │  ← junto das posições
+   └──────────┘    canaleta lotada     └──────┬──────┘
+                                              │ 4 fios (SDA, SCL, 5 V, GND)
+                                              ▼
+                                        ┌──────────┐
+                                        │   MEGA   │
+                                        └──────────┘
 ```
 
-### ⭐ Por que isso funciona aqui: a falha não tem pressa
+O trecho longo — o que atravessa o painel, entra em canaleta, passa por prensa-cabo e precisa de
+segregação — cai de **50 condutores para 4**. É onde o "macarrão de fios" nasce, e é exatamente
+onde ele deixa de existir.
 
-Multiplexar significa **não medir todos ao mesmo tempo** — você lê um, depois o outro. Em muitos sistemas isso seria inaceitável. Aqui, não:
+### 2 · Escalabilidade — 4 chips, 64 canais, 50 usados
 
-> **Um dispositivo morto continua morto.** Ele não volta a funcionar enquanto você olha para o vizinho.
+| Item | Valor |
+|---|---|
+| Portas por chip | **16** (dois bancos: GPA0–GPA7 e GPB0–GPB7) |
+| Chips no barramento | **4** |
+| Canais disponíveis | **64** |
+| Canais usados | 50 |
+| ⭐ Sobra | **14 canais**, para posições futuras sem tocar na arquitetura |
 
-O ensaio dura **4 horas**. Detectar a falha em 5 segundos ou em 5 milissegundos dá exatamente no mesmo. Com um ADC lendo 100 canais por segundo, cada uma das 50 posições é visitada **duas vezes por segundo** — folgado.
+**O endereço é definido por três pinos** (`A0`, `A1`, `A2`), amarrados em 5 V ou 0 V no momento da
+montagem — o que dá **8 endereços possíveis: 0x20 a 0x27**. Usamos quatro:
 
-**É a natureza da falha que autoriza a simplificação.** Se o problema fosse detectar um pico de corrente de microssegundos, a multiplexação não serviria e cada canal precisaria do seu circuito.
+| Chip | A2 A1 A0 | Endereço | Posições |
+|---|---|---|---|
+| Expansor 1 | 0 0 0 | `0x20` | 1 a 16 |
+| Expansor 2 | 0 0 1 | `0x21` | 17 a 32 |
+| Expansor 3 | 0 1 0 | `0x22` | 33 a 48 |
+| Expansor 4 | 0 1 1 | `0x23` | 49 e 50 (+14 reservas) |
 
-### E na prática, numa fábrica?
+> ✅ **Sem conflito com o que já existe no barramento:** o RTC DS3231 responde em `0x68` e o sensor
+> AM2315C em `0x5C`. A faixa `0x20–0x27` está livre — e sobram ainda 4 endereços de expansor, ou
+> seja, **espaço para 128 canais** antes de precisar de um segundo barramento.
 
-Existe o caminho do **CLP**, com cartões de entrada analógica de 8 ou 16 canais num bastidor. É o padrão da indústria pesada, e funciona.
+### 3 · Pull-up integrado — o que faz a leitura funcionar sem componente externo
 
-> 🏭 **Mas neste caso específico ele não é a melhor resposta:** a empresa **já usa Arduino como padrão de fábrica**. Propor CLP significaria trocar de plataforma, de ferramenta de programação e de peça de reposição — e treinar de novo quem faz manutenção. O ganho técnico não paga esse custo.
->
-> **A solução para 50 posições cabe no Arduino**, e está detalhada no [Doc 14](14_escala_e_cabeamento.md): multiplexadores CD74HC4067 e shunts, ~R$ 100 no total.
+Cada uma das 16 portas do MCP23017 tem um **resistor de pull-up interno**, que se liga por
+software (registrador `GPPU`). Isso importa porque os dois sensores do projeto entregam a
+informação do mesmo jeito: **fechando ou não fechando um caminho para o 0 V**.
 
-| Escala | Solução | Observação |
-|---|---:|---|
-| 2 posições | **2 × INA219** no I²C | é o nosso protótipo |
-| até 16 | INA219 direto | usando os 16 endereços do chip |
-| até 64 | shunt + multiplexador + 1 ADC | ~R$ 150 em componentes |
-| 50+ industrial | **4 cartões analógicos de 16 canais em CLP** | ou I/O remoto em Modbus RTU |
-
-Um bastidor de CLP com quatro cartões de entrada analógica é **absolutamente banal** numa fábrica. O que parecia um problema insolúvel — "50 sensores!" — é, na verdade, o caso de uso normal de um equipamento que existe há décadas.
-
-📌 **I/O remoto merece nota.** Em vez de puxar 50 pares de fios analógicos até o painel, colocam-se módulos **junto das câmaras**, e eles conversam com o CLP por **Modbus RTU sobre RS-485** — dois fios para todos. Sinal analógico longo é sinal ruim; digitalizar perto da fonte é a regra.
-
-### 🔌 E no nosso protótipo, o que entra nas duas posições?
-
-Duas **placas simuladoras de DUT** — as mesmas descritas em §13.3: um LED em série com um resistor, consumindo uma corrente conhecida e estável.
-
-💡 **Vale montar as duas DIFERENTES**, e isso não é capricho:
-
-| | Posição 1 | Posição 2 |
+| Sensor | O que ele entrega | Com pull-up ligado |
 |---|---|---|
-| Resistor | 1,2 kΩ · 1/2 W | 2,2 kΩ · 1/2 W |
-| Corrente | **17,6 mA** | **9,8 mA** |
-| Leitura no shunt de 47 Ω | 0,83 V · 170 contagens | 0,46 V · 94 contagens |
+| **SZC23** (AC) | contato seco, sem alimentação | fechado = **0** = tem corrente · aberto = **1** = falha |
+| **WCS2702** (DC) | saída digital `DOUT` | aterra com corrente = **0** · em repouso = **1** |
 
-**Por quê:** com correntes diferentes, você prova que o sistema **não usa um limiar único**. Cada posição aprende a corrente normal dela e compara consigo mesma. Isso é o que acontece na empresa, onde as 50 placas nunca são idênticas — e com duas placas iguais essa qualidade do projeto fica invisível.
+⭐ **É o mesmo comportamento do `INPUT_PULLUP` do Arduino** que o protótipo usa — o firmware não
+muda de lógica ao escalar, só muda de onde vem o bit. E a propriedade que mais importa continua:
 
-📌 **Qualquer coisa que consuma uma corrente estável serve como DUT.** Não precisa ser uma placa de verdade: o que o sistema mede é corrente, não função. Se um dia quiser ensaiar uma placa real, é só ligá-la no lugar do simulador.
+> 🔥 **Fio partido, sensor sem alimentação ou módulo queimado deixam a entrada em nível ALTO — que
+> é o estado de FALHA.** O defeito cai do lado do alarme, nunca do lado do silêncio.
+
+⚠️ **Um cuidado honesto:** o pull-up interno do MCP23017 é de **~100 kΩ** — fraco. Ele resolve bem
+dentro do quadro, com cabos curtos, que é justamente o arranjo proposto. Se algum sensor ficar a
+vários metros do expansor, ponha um pull-up externo de **10 kΩ** naquele canal: cabo longo com
+pull-up fraco é antena, e antena vira leitura instável.
+
+### 4 · Liberação de recursos — o que o Mega passa a poder fazer
+
+Com 2 pinos no lugar de 50, o Arduino fica com **~27 pinos livres**, e eles têm destino previsto:
+
+| Recurso | Do que precisa | Situação |
+|---|---|---|
+| **IHM / display** | já está no projeto (tela ES3C28P) | ✔ |
+| **Cartão SD (datalogger)** | 4 pinos SPI | ✔ cabe com folga |
+| **Ethernet W5500** | compartilha o mesmo SPI + 1 CS | ✔ |
+| **Wi-Fi** | já existe, pelo ESP32 na serial | ✔ |
+| Mais posições de ensaio | **0 pinos** — entram nos 14 canais que sobram | ✔ |
+
+### ⭐ E um benefício que não estava na lista: interrupção por mudança
+
+O MCP23017 tem duas saídas de interrupção (`INTA` e `INTB`). Configurado em *interrupt-on-change*,
+**ele avisa o Arduino quando alguma entrada muda** — em vez de o Arduino ficar perguntando a
+todos os canais o tempo todo.
+
+| | Varredura (polling) | Interrupção |
+|---|---|---|
+| O Arduino gasta tempo | a cada ciclo, com todos os chips | só quando algo mudou |
+| Latência típica | tempo de um ciclo de varredura | quase imediata |
+| Fios a mais | nenhum | 1 por chip (ou os 4 em fio comum, dreno aberto) |
+
+Para este sistema **os dois servem** — uma falha de dispositivo não tem pressa de milissegundos, e
+o firmware já espera 1 s antes de declarar falha. Ler os 4 chips leva poucos milissegundos, então
+a varredura simples atende. A interrupção fica registrada como o caminho natural se o número de
+canais crescer muito.
+
+### Como fica o firmware
+
+A lógica **não muda**: continua "vi corrente / não vi corrente" com tempo de confirmação. O que
+muda é a origem do bit.
+
+```cpp
+/* Protótipo — 1 canal, direto no Mega */
+pinMode(22, INPUT_PULLUP);
+bool temCorrente = (digitalRead(22) == LOW);
+
+/* Escala real — 50 canais, 4 expansores */
+#include <Adafruit_MCP23X17.h>
+Adafruit_MCP23X17 exp[4];
+const uint8_t END[4] = { 0x20, 0x21, 0x22, 0x23 };
+
+void setup() {
+    for (uint8_t c = 0; c < 4; c++) {
+        exp[c].begin_I2C(END[c]);
+        for (uint8_t p = 0; p < 16; p++)
+            exp[c].pinMode(p, INPUT_PULLUP);   // ⭐ o mesmo pull-up, agora no chip
+    }
+}
+
+bool posicaoViva(uint8_t n) {                  // n = 0..49
+    return exp[n / 16].digitalRead(n % 16) == LOW;
+}
+```
+
+> 🎓 **A frase para a defesa:** *"O protótipo lê um canal direto no microcontrolador porque é o
+> caminho mais curto para validar a lógica. Na escala real são 50 canais, e ligá-los direto
+> esgotaria as portas do Mega e criaria 50 cabos longos atravessando o painel. Com quatro
+> MCP23017 no barramento I²C que já existe, os 50 sinais viram 4 fios no trecho longo, sobram 14
+> canais e o microcontrolador fica livre para o datalogger e a rede. O firmware não muda de
+> lógica — muda de onde vem o bit."*
 
 ---
 
-### 🏭 E o CLP? Seriam 50 entradas?
+## 13.10 📚 O caminho até aqui — quando a escala era de MEDIÇÃO
 
-**Não. E é aqui que a resposta muda de forma.**
+Esta seção existe porque a banca vai perguntar, e porque a resposta é o que separa um protótipo escolar de um projeto de engenharia: **a bancada tem 1 posição, mas a empresa tem 50.**
 
-Ligar 50 entradas analógicas no CLP funcionaria, mas é a solução cara e trabalhosa:
+> 📌 **Esta seção é histórico, e está mantida de propósito.** Ela foi escrita quando cada posição
+> era **medida** por um INA219, e discutia como multiplexar 50 medições: endereços I²C, TCA9548A,
+> tempo de varredura. Nada disso é mais necessário — a detecção virou um bit por posição
+> ([§13.4](#134--a-detecção-virou-digital--o-que-mudou-e-por-quê)) e a escala é resolvida por
+> expansores de porta ([§13.9](#139--o-projeto-em-escala-real--50-canais-com-mcp23017)).
+>
+> **O que sobrou aqui continua valendo, e é o mais importante:** o raciocínio de que a unidade de
+> escala não é o sensor, e sim o suporte instrumentado — e de que quem consome a informação lá em
+> cima não precisa de 50 valores, precisa de uma lista de quem falhou.
 
-- 4 cartões de entrada analógica, e cartão analógico é caro
-- **100 fios** (par por canal) atravessando a fábrica até o painel
-- 100 pontos de mau contato para procurar quando algo falhar
-- sinal analógico percorrendo dezenas de metros ao lado de motores
 
 ### A unidade de escala não é o sensor. É o suporte instrumentado.
 
