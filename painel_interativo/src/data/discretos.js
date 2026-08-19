@@ -128,7 +128,7 @@ export const ARRANJOS = {
    OS COMPONENTES
    ════════════════════════════════════════════════════════════════════
    Campos obrigatórios (o validador cobra):
-     id · ref · peca · host · arranjo · pernas · papel · porque · ensaio · passo
+     id · ref · peca · tipo · host · arranjo · pernas · papel · porque · ensaio · passo
    E, quando `polaridade: true`:  comoIdentificar · seInverter
 
    `pernas[].vai` aponta para { comp, via } — o mesmo par que a fiação usa,
@@ -138,7 +138,7 @@ export const DISCRETOS = [
   /* ───────────────────────── PLACA PI-1 ───────────────────────── */
   {
     id: 'PI1-C1', ref: 'C1', peca: 'Capacitor cerâmico 100 nF (marcado 104)',
-    valor: '100 nF', qtd: 1, host: 'PI1', arranjo: 'derivacao', polaridade: false,
+    tipo: 'capacitor', valor: '100 nF', qtd: 1, host: 'PI1', arranjo: 'derivacao', polaridade: false,
     pernas: [
       { nome: 'perna 1', vai: { comp: 'PI1', via: 'nó A0' } },
       { nome: 'perna 2', vai: { comp: 'PI1', via: 'barramento 0V' } },
@@ -153,7 +153,7 @@ export const DISCRETOS = [
   },
   {
     id: 'PI1-C2', ref: 'C2', peca: 'Capacitor cerâmico 100 nF (marcado 104)',
-    valor: '100 nF', qtd: 1, host: 'PI1', arranjo: 'derivacao', polaridade: false,
+    tipo: 'capacitor', valor: '100 nF', qtd: 1, host: 'PI1', arranjo: 'derivacao', polaridade: false,
     pernas: [
       { nome: 'perna 1', vai: { comp: 'PI1', via: 'nó A1' } },
       { nome: 'perna 2', vai: { comp: 'PI1', via: 'barramento 0V' } },
@@ -166,7 +166,7 @@ export const DISCRETOS = [
   },
   {
     id: 'PI1-R1', ref: 'R1', peca: 'Resistor 22 kΩ · ¼ W',
-    valor: '22 kΩ', qtd: 1, host: 'PI1', arranjo: 'serie', polaridade: false,
+    tipo: 'resistor', valor: '22 kΩ', qtd: 1, host: 'PI1', arranjo: 'serie', polaridade: false,
     pernas: [
       { nome: 'perna 1', vai: { comp: 'PI1', via: 'J1-11' } },
       { nome: 'perna 2', vai: { comp: 'PI1', via: 'nó D25' } },
@@ -181,7 +181,7 @@ export const DISCRETOS = [
   },
   {
     id: 'PI1-R2', ref: 'R2', peca: 'Resistor 4,7 kΩ · ¼ W',
-    valor: '4,7 kΩ', qtd: 1, host: 'PI1', arranjo: 'serie', polaridade: false,
+    tipo: 'resistor', valor: '4,7 kΩ', qtd: 1, host: 'PI1', arranjo: 'serie', polaridade: false,
     pernas: [
       { nome: 'perna 1', vai: { comp: 'PI1', via: 'nó D25' } },
       { nome: 'perna 2', vai: { comp: 'PI1', via: 'barramento 0V' } },
@@ -195,7 +195,7 @@ export const DISCRETOS = [
   },
   {
     id: 'PI1-C3', ref: 'C3', peca: 'Capacitor cerâmico 100 nF (marcado 104)',
-    valor: '100 nF', qtd: 1, host: 'PI1', arranjo: 'derivacao', polaridade: false,
+    tipo: 'capacitor', valor: '100 nF', qtd: 1, host: 'PI1', arranjo: 'derivacao', polaridade: false,
     pernas: [
       { nome: 'perna 1', vai: { comp: 'PI1', via: 'nó D25' } },
       { nome: 'perna 2', vai: { comp: 'PI1', via: 'barramento 0V' } },
@@ -209,7 +209,7 @@ export const DISCRETOS = [
   },
   {
     id: 'PI1-R3', ref: 'R3', peca: 'Resistor 4,7 kΩ · ¼ W',
-    valor: '4,7 kΩ', qtd: 1, host: 'PI1', arranjo: 'paralelo', polaridade: false,
+    tipo: 'resistor', valor: '4,7 kΩ', qtd: 1, host: 'PI1', arranjo: 'paralelo', polaridade: false,
     pernas: [
       { nome: 'perna 1', vai: { comp: 'PI1', via: 'nó 1-Wire' } },
       { nome: 'perna 2', vai: { comp: 'PI1', via: 'J1-4' } },
@@ -223,8 +223,8 @@ export const DISCRETOS = [
     passo: 'B-03', fonte: 'Doc 33 §33.2',
   },
   {
-    id: 'PI1-CI1', ref: 'CI1', peca: 'ULN2803A em soquete DIP-18', tipo: 'ci',
-    valor: 'ULN2803A', qtd: 1, host: 'PI1', arranjo: 'serie', polaridade: true,
+    id: 'PI1-CI1', ref: 'CI1', peca: 'ULN2803A em soquete DIP-18',
+    tipo: 'ci', valor: 'ULN2803A', qtd: 1, host: 'PI1', arranjo: 'serie', polaridade: true,
     comoIdentificar: '⭐ O chanfro (meia-lua) no corpo do CI marca o lado dos pinos 1 e 18. '
                    + 'Nesta montagem ele fica À DIREITA.',
     seInverter: '🔥 Girado 180°, os 24 V do pino COM entram na entrada de sinal e destroem o '
@@ -247,7 +247,7 @@ export const DISCRETOS = [
   /* ───────────────────────── PLACA PI-2 ───────────────────────── */
   {
     id: 'PI2-R1', ref: 'R1', peca: 'Resistor 47 Ω · 1 % · ¼ W',
-    valor: '47 Ω 1%', qtd: 1, host: 'PI2', arranjo: 'serie', polaridade: false,
+    tipo: 'resistor', valor: '47 Ω 1%', qtd: 1, host: 'PI2', arranjo: 'serie', polaridade: false,
     pernas: [
       { nome: 'perna de cima',  vai: { comp: 'PI2', via: 'nó RET-1' } },
       { nome: 'perna de baixo', vai: { comp: 'PI2', via: 'barramento 0V' } },
@@ -262,7 +262,7 @@ export const DISCRETOS = [
   },
   {
     id: 'PI2-R2', ref: 'R2', peca: 'Resistor 47 Ω · 1 % · ¼ W',
-    valor: '47 Ω 1%', qtd: 1, host: 'PI2', arranjo: 'serie', polaridade: false,
+    tipo: 'resistor', valor: '47 Ω 1%', qtd: 1, host: 'PI2', arranjo: 'serie', polaridade: false,
     pernas: [
       { nome: 'perna de cima',  vai: { comp: 'PI2', via: 'nó RET-2' } },
       { nome: 'perna de baixo', vai: { comp: 'PI2', via: 'barramento 0V' } },
@@ -280,7 +280,7 @@ export const DISCRETOS = [
   /* ─────────────────── NOS BORNES DOS RELÉS ──────────────────── */
   {
     id: 'KA2-D1', ref: 'D1', peca: 'Diodo 1N4007',
-    valor: '1N4007', qtd: 1, host: 'KA2', arranjo: 'antiparalelo', polaridade: true,
+    tipo: 'diodo', valor: '1N4007', qtd: 1, host: 'KA2', arranjo: 'antiparalelo', polaridade: true,
     comoIdentificar: '⭐ A faixa prateada impressa no corpo marca o CATODO. Ela vai no A1.',
     seInverter: '🔥 Invertido ele curto-circuita a bobina e derruba o fusível F2 (2 A) assim que '
               + 'o KA1 selar. Não queima nada — mas você vai procurar o defeito no lugar errado.',
@@ -301,7 +301,7 @@ export const DISCRETOS = [
   },
   {
     id: 'KA3-R10', ref: 'R10', peca: 'Resistor 10 kΩ · ¼ W',
-    valor: '10 kΩ', qtd: 1, host: 'KA34', arranjo: 'paralelo', polaridade: false,
+    tipo: 'resistor', valor: '10 kΩ', qtd: 1, host: 'KA34', arranjo: 'paralelo', polaridade: false,
     pernas: [
       { nome: 'perna 1', vai: { comp: 'KA34', via: 'IN3' } },
       { nome: 'perna 2', vai: { comp: 'KA34', via: '0V' } },
@@ -317,7 +317,7 @@ export const DISCRETOS = [
   },
   {
     id: 'KA4-R11', ref: 'R11', peca: 'Resistor 10 kΩ · ¼ W',
-    valor: '10 kΩ', qtd: 1, host: 'KA34', arranjo: 'paralelo', polaridade: false,
+    tipo: 'resistor', valor: '10 kΩ', qtd: 1, host: 'KA34', arranjo: 'paralelo', polaridade: false,
     pernas: [
       { nome: 'perna 1', vai: { comp: 'KA34', via: 'IN4' } },
       { nome: 'perna 2', vai: { comp: 'KA34', via: '0V' } },
@@ -335,7 +335,7 @@ export const DISCRETOS = [
   /* ──────────── SOLDADOS NO MÓDULO COMPRADO (BTS7960) ─────────── */
   {
     id: 'BTS1-R8', ref: 'R8', peca: 'Resistor 10 kΩ · ¼ W',
-    valor: '10 kΩ', qtd: 1, host: 'BTS1', arranjo: 'paralelo', polaridade: false,
+    tipo: 'resistor', valor: '10 kΩ', qtd: 1, host: 'BTS1', arranjo: 'paralelo', polaridade: false,
     pernas: [
       { nome: 'perna 1', vai: { comp: 'BTS1', via: 'R_EN' } },
       { nome: 'perna 2', vai: { comp: 'BTS1', via: 'GND' } },
@@ -357,7 +357,7 @@ export const DISCRETOS = [
   },
   {
     id: 'BTS2-R9', ref: 'R9', peca: 'Resistor 10 kΩ · ¼ W',
-    valor: '10 kΩ', qtd: 1, host: 'BTS2', arranjo: 'paralelo', polaridade: false,
+    tipo: 'resistor', valor: '10 kΩ', qtd: 1, host: 'BTS2', arranjo: 'paralelo', polaridade: false,
     pernas: [
       { nome: 'perna 1', vai: { comp: 'BTS2', via: 'R_EN' } },
       { nome: 'perna 2', vai: { comp: 'BTS2', via: 'GND' } },
@@ -373,7 +373,7 @@ export const DISCRETOS = [
   /* ───────────────── FORA DO PAINEL — MAQUETE ────────────────── */
   {
     id: 'POSTE-R', ref: 'R4–R7', peca: 'Resistor 220 Ω · ¼ W',
-    valor: '220 Ω', qtd: 4, host: 'POSTE-IL', arranjo: 'serie', polaridade: false,
+    tipo: 'resistor', valor: '220 Ω', qtd: 4, host: 'POSTE-IL', arranjo: 'serie', polaridade: false,
     pernas: [
       { nome: 'perna 1', vai: { comp: 'POSTE-IL', via: '+5V' } },
       { nome: 'perna 2', vai: { comp: 'POSTE-IL', via: 'LED+' } },
@@ -390,7 +390,7 @@ export const DISCRETOS = [
   },
   {
     id: 'POSTE-LED', ref: 'LED-P', peca: 'LED 3 mm branco quente',
-    valor: 'Vf ≈ 3,1 V · 8,6 mA', qtd: 4, host: 'POSTE-IL', arranjo: 'serie', polaridade: true,
+    tipo: 'led', valor: 'Vf ≈ 3,1 V · 8,6 mA', qtd: 4, host: 'POSTE-IL', arranjo: 'serie', polaridade: true,
     comoIdentificar: '⭐ A perna LONGA é o ânodo (+). Do lado do catodo (−) o corpo do LED tem um '
                    + 'chanfro reto — dá para sentir com a unha.',
     seInverter: 'Ele simplesmente não acende. Não queima — mas você vai procurar o defeito no fio.',
@@ -410,7 +410,7 @@ export const DISCRETOS = [
   /* ───────────────── FORA DO PAINEL — CÂMARA ─────────────────── */
   {
     id: 'VENT-D2', ref: 'D2', peca: 'Diodo 1N4007',
-    valor: '1N4007', qtd: 1, host: 'VENT-RAD', arranjo: 'antiparalelo', polaridade: true,
+    tipo: 'diodo', valor: '1N4007', qtd: 1, host: 'VENT-RAD', arranjo: 'antiparalelo', polaridade: true,
     comoIdentificar: '⭐ Faixa prateada = catodo, e ela vai no +12 V.',
     seInverter: '🔥 Invertido, ele curto-circuita a alimentação de 12 V das ventoinhas.',
     pernas: [
@@ -429,7 +429,7 @@ export const DISCRETOS = [
   },
   {
     id: 'DUT1-R', ref: 'R-DUT1', peca: 'Resistor 1,2 kΩ · ½ W',
-    valor: '1,2 kΩ', qtd: 1, host: 'DUT1', arranjo: 'serie', polaridade: false,
+    tipo: 'resistor', valor: '1,2 kΩ', qtd: 1, host: 'DUT1', arranjo: 'serie', polaridade: false,
     pernas: [
       { nome: 'perna 1', vai: { comp: 'DUT1', via: '+24V' } },
       { nome: 'perna 2', vai: { comp: 'DUT1', via: 'RET-1' } },
@@ -445,7 +445,7 @@ export const DISCRETOS = [
   },
   {
     id: 'DUT1-LED', ref: 'LED-DUT1', peca: 'LED 5 mm vermelho',
-    valor: 'vermelho', qtd: 1, host: 'DUT1', arranjo: 'serie', polaridade: true,
+    tipo: 'led', valor: 'vermelho', qtd: 1, host: 'DUT1', arranjo: 'serie', polaridade: true,
     comoIdentificar: 'Perna longa = ânodo (+), do lado do resistor.',
     seInverter: 'A posição não acende e o sistema lê corrente zero — exatamente o mesmo sintoma '
               + 'de "dispositivo morto". É o erro mais confuso possível aqui.',
@@ -461,7 +461,7 @@ export const DISCRETOS = [
   },
   {
     id: 'DUT1-J', ref: 'J-DUT1', peca: 'Micro-chave ou jumper de 2 vias',
-    valor: '—', qtd: 1, host: 'DUT1', arranjo: 'serie', polaridade: false,
+    tipo: 'chave', valor: '—', qtd: 1, host: 'DUT1', arranjo: 'serie', polaridade: false,
     pernas: [
       { nome: 'via 1', vai: { comp: 'DUT1', via: '+24V' } },
       { nome: 'via 2', vai: { comp: 'DUT1', via: 'RET-1' } },
@@ -475,7 +475,7 @@ export const DISCRETOS = [
   },
   {
     id: 'DUT2-R', ref: 'R-DUT2', peca: 'Resistor 2,2 kΩ · ½ W',
-    valor: '2,2 kΩ', qtd: 1, host: 'DUT2', arranjo: 'serie', polaridade: false,
+    tipo: 'resistor', valor: '2,2 kΩ', qtd: 1, host: 'DUT2', arranjo: 'serie', polaridade: false,
     pernas: [
       { nome: 'perna 1', vai: { comp: 'DUT2', via: '+24V' } },
       { nome: 'perna 2', vai: { comp: 'DUT2', via: 'RET-2' } },
@@ -489,7 +489,7 @@ export const DISCRETOS = [
   },
   {
     id: 'DUT2-LED', ref: 'LED-DUT2', peca: 'LED 5 mm verde',
-    valor: 'verde', qtd: 1, host: 'DUT2', arranjo: 'serie', polaridade: true,
+    tipo: 'led', valor: 'verde', qtd: 1, host: 'DUT2', arranjo: 'serie', polaridade: true,
     comoIdentificar: 'Perna longa = ânodo (+), do lado do resistor.',
     seInverter: 'Mesmo sintoma do LED da posição 1: parece dispositivo morto.',
     pernas: [
@@ -504,7 +504,7 @@ export const DISCRETOS = [
   },
   {
     id: 'DUT2-J', ref: 'J-DUT2', peca: 'Micro-chave ou jumper de 2 vias',
-    valor: '—', qtd: 1, host: 'DUT2', arranjo: 'serie', polaridade: false,
+    tipo: 'chave', valor: '—', qtd: 1, host: 'DUT2', arranjo: 'serie', polaridade: false,
     pernas: [
       { nome: 'via 1', vai: { comp: 'DUT2', via: '+24V' } },
       { nome: 'via 2', vai: { comp: 'DUT2', via: 'RET-2' } },

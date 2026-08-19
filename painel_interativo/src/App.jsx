@@ -3,6 +3,7 @@ import VistaMaquete from './components/VistaMaquete';
 import VistaPainelInterno from './components/VistaPainelInterno';
 import VistaSimulador from './components/VistaSimulador';
 import VistaMontagem from './components/VistaMontagem';
+import VistaComponentes from './components/VistaComponentes';
 
 /* A casca do aplicativo. Cada aba é uma forma diferente de olhar o mesmo
    projeto — da vista mais geral (a maquete inteira) para a mais detalhada
@@ -13,6 +14,8 @@ const ABAS = [
     dica: 'Por onde a energia entra e como ela chega até a câmara' },
   { id: 'painel',  nome: 'Dentro do painel',  icone: '🔧',
     dica: 'Todos os componentes e seus terminais, em escala real' },
+  { id: 'componentes', nome: 'Componentes soltos', icone: '🔩',
+    dica: 'Cada resistor, diodo e LED: onde ele vai, em que perna e o que medir' },
   { id: 'montagem', nome: 'Montar a câmara', icone: '📐',
     dica: 'Lista de corte em escala e a ordem de montagem, passo a passo' },
   { id: 'simulador', nome: 'Simulador', icone: '▶️',
@@ -54,6 +57,11 @@ export default function App() {
       <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
         {aba === 'maquete' && <VistaMaquete onIrPara={setAba} />}
         {aba === 'painel'  && <VistaPainelInterno />}
+        {aba === 'componentes' && (
+          <div style={{ position: 'absolute', inset: 0, overflow: 'auto' }}>
+            <VistaComponentes />
+          </div>
+        )}
         {aba === 'montagem' && (
           <div style={{ position: 'absolute', inset: 0, overflow: 'auto' }}>
             <VistaMontagem />

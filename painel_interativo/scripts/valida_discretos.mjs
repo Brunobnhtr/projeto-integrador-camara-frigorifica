@@ -49,7 +49,9 @@ for (const h of HOSTS) {
 }
 
 /* ── 3. cada componente, campo por campo ───────────────────────────── */
-const OBRIGATORIOS = ['ref', 'peca', 'host', 'arranjo', 'papel', 'porque', 'ensaio', 'passo'];
+const OBRIGATORIOS = ['ref', 'peca', 'tipo', 'host', 'arranjo', 'papel', 'porque', 'ensaio', 'passo'];
+/* o tipo escolhe o SÍMBOLO do desenho — inventar um tipo novo deixaria a ficha sem figura */
+const TIPOS = ['resistor', 'capacitor', 'diodo', 'led', 'ci', 'chave'];
 const vistos = new Set();
 
 for (const d of DISCRETOS) {
@@ -61,6 +63,9 @@ for (const d of DISCRETOS) {
 
   for (const campo of OBRIGATORIOS)
     if (!d[campo]) erros.push(`${eu}: falta o campo "${campo}"`);
+
+  if (d.tipo && !TIPOS.includes(d.tipo))
+    erros.push(`${eu}: tipo "${d.tipo}" não tem símbolo de desenho (use ${TIPOS.join(', ')})`);
 
   if (d.arranjo && !ARRANJOS[d.arranjo])
     erros.push(`${eu}: arranjo "${d.arranjo}" não existe (use ${Object.keys(ARRANJOS).join(', ')})`);
@@ -149,7 +154,9 @@ const varre = (dir) => {
     if (nome.startsWith('.') || nome === 'node_modules' || nome === 'painel_interativo') continue;
     const cheio = join(dir, nome);
     if (statSync(cheio).isDirectory()) varre(cheio);
-    else if (nome.endsWith('.md')) mds.push(cheio);
+    /* o plano de refatoração e as referências externas CITAM o que os documentos
+       diziam antes — varrê-los acusaria a própria descrição da correção */
+    else if (nome.endsWith('.md') && !/PLANO_REFATORACAO|referencias/.test(cheio)) mds.push(cheio);
   }
 };
 try { varre(RAIZ); } catch { avisos.push('nao consegui varrer os .md a partir de ' + RAIZ); }
