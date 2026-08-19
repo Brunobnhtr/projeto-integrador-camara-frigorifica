@@ -295,3 +295,53 @@ o gerador lê o Doc 03, então ela não é fonte duplicada de verdade.
 | O corte de redundância dentro dos documentos | A decisão foi "corte de verdade": cada explicação fica uma vez, no documento dono do assunto. São 13 mil linhas com repetição entre os docs 30, 31, 32 e 33 |
 | Decidir o **PWM de 1 Hz** na Peltier | O relatório em `referencias/` mostra que 1 Hz é praticamente liga/desliga: derruba o rendimento e encurta a vida da pastilha. A correção (frequência alta com filtro, ou corrente contínua controlada) muda o Doc 40 e talvez a BOM |
 | Renomear as refs que colidem | `R1`, `R2`, `R3` são resistores **e** ramais de energia **e** pontos do BD-0V; e as duas placas repetem `R1`/`R2` com valores diferentes. O cadastro já usa `PI1-R1` / `PI2-R1` por dentro |
+
+---
+
+## 8. As três decisões de 18/08/2026, e a pergunta que mudou o hardware
+
+### ⚡ PWM da Peltier: 1 Hz → 20 kHz ✅
+
+O Doc 43 já tinha provado que a justificativa do PWM lento estava invertida — a 1 Hz é que a
+junção da pastilha cicla termicamente. Agora o código mudou: Timer3 (D5) e Timer4 (D6) em Fast PWM
+com TOP em ICR, 20 kHz exatos, mais uma rampa de 5 % por atualização para a partida não puxar o
+pico inteiro de uma vez. **O filtro LC não foi adotado** (valeria ~17 W de frio, mas exige um
+indutor de 6 A) e fica documentado como trabalho futuro.
+
+### 🔤 Nomes: um nome, um dono ✅
+
+`R1`, `R2`, `R3` eram resistores, ramais de energia **e** pontos do BD-0V ao mesmo tempo. Agora:
+shunts são `RS1`/`RS2`, ramais são `RM1`–`RM3`, retornos do BD-0V são `Z1`–`Z21`, e `R` sobrou só
+para resistor. A tabela de convenção está no índice.
+
+### ✂️ Explicação repetida ✅ (primeiro passe)
+
+A varredura mostrou que **não havia texto copiado entre documentos** — nenhuma linha longa
+idêntica em dois arquivos. A duplicação estava dentro do doc 33, que tinha três seções repetidas.
+Doc 33: 1134 → 718 linhas. Documentação: 11.397 → 10.755.
+
+### 🔩 A pergunta do grupo que eliminou um circuito inteiro
+
+> *"Por que não usamos LED de 5 V, em vez de relé e circuito integrado?"*
+
+Porque o ULN2803A existia por **uma** diferença: pino de 5 V, sinaleiro de 24 V. Com sinaleiro de
+5 V (existe em 22 mm, mesmo corpo industrial), o pino aciona direto.
+
+| | Antes | Agora |
+|---|---|---|
+| Entre o pino e a lâmpada | ULN2803A + soquete + positivo comum de 24 V | **nada** |
+| Vias de borne na PI-1 | 19 | **10** |
+| Jumpers na PI-1 | 20 | **10** |
+| Tamanho da placa | 34 × 29 furos, caixa 6M | **22 × 22, caixa 4M** |
+| Limite a respeitar | 500 mA por canal do CI | ⚠️ **20 mA por pino do Arduino** |
+
+⚠️ **O limite mudou de lugar, não sumiu:** o passo A-02 do guia manda medir a corrente do
+sinaleiro antes de ligar, e o retorno dos quatro vai ao GND do Mega, não ao BD-0V.
+
+### O que continua na fila
+
+| O quê | Por quê |
+|---|---|
+| Segundo passe de corte nos documentos | O doc 40 tem 1.391 linhas e o doc 03, 1.014. Ainda não foram revisados linha a linha |
+| Módulos prontos no lugar do que sobrou na PI-1 | Divisor do D25 → módulo sensor de tensão; pull-up → adaptador do DS18B20. Sobrariam 2 capacitores, que dá para parafusar em borne. **Depende da sua decisão** |
+| Rever o trilho 3 | Com a PI-1 em 4 módulos sobrou espaço; o DNLCB30 tinha descido para o trilho 2 por falta dele |
