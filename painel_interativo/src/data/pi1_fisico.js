@@ -121,25 +121,25 @@ export const COMPONENTES_PI1 = [
   },
   {
     ref: 'R1', tipo: 'resistor', valor: '22 kΩ', circuito: 3,
-    furos: [[16, 14], [20, 14]],
+    furos: [[12, 14], [16, 14]],
     polaridade: false,
-    ligacao: 'Perna direita no 24V-POT (furo T14), perna esquerda no nó D25 (furo P14).',
+    ligacao: 'Perna esquerda no 24V-POT (furo L14), perna direita no nó D25 (furo P14).',
     papel: 'Braço de cima do divisor de tensão',
   },
   {
     ref: 'R2', tipo: 'resistor', valor: '4,7 kΩ', circuito: 3,
-    furos: [[18, 14], [18, 10]],
+    furos: [[17, 14], [17, 10]],
     polaridade: false,
-    ligacao: 'Perna de cima no nó D25 (furo R14), perna de baixo no 0 V (furo R10).',
+    ligacao: 'Perna de cima no nó D25 (furo Q14), perna de baixo no 0 V (furo Q10).',
     papel: 'Braço de baixo do divisor — 24 × 4,7/26,7 = 4,22 V',
     porque: 'O Arduino queima com 24 V num pino. O divisor entrega 4,22 V, '
           + 'que ele lê como "tem 24 V lá fora" sem morrer.',
   },
   {
     ref: 'C3', tipo: 'capacitor', valor: '100 nF', circuito: 3,
-    furos: [[17, 14], [17, 10]],
+    furos: [[20, 14], [20, 10]],
     polaridade: false,
-    ligacao: 'Perna de cima no nó D25 (furo Q14), perna de baixo no 0 V (furo Q10).',
+    ligacao: 'Perna de cima no nó D25 (furo T14), perna de baixo no 0 V (furo T10).',
     papel: 'Segura o nó do divisor, que é de alta impedância e capta ruído',
   },
 ];
@@ -164,9 +164,9 @@ export const NOS = [
     furos: { 12: 'chega o fio de J1-3 (DATA)', 13: 'perna esquerda do R3',
              14: 'sai o fio para J2-3 (D2)' },
     nota: 'O sensor e o Arduino conversam por este nó; o R3 só o mantém levantado.' },
-  { ref: 'nó D25', linha: 14, de: 16, ate: 19, circuito: 3,
-    furos: { 16: 'perna esquerda do R1', 17: 'perna de cima do C3',
-             18: 'perna de cima do R2', 19: 'sai o fio para J2-4 (D25)' },
+  { ref: 'nó D25', linha: 14, de: 16, ate: 20, circuito: 3,
+    furos: { 16: 'perna direita do R1', 17: 'perna de cima do R2',
+             19: 'sai o fio para J2-4 (D25)', 20: 'perna de cima do C3' },
     nota: 'Quatro pernas, quatro furos. É o ponto onde os 24 V já viraram 4,22 V.' },
 ];
 
@@ -185,7 +185,7 @@ export const JUMPERS = [
   { n: 6,  de: [14, 6],  para: [6, 20],  circuito: 2, sinal: 'nó 1-Wire → sai D2', cruzaBus: true },
   { n: 7,  de: [8, 2],   para: [17, 6],  circuito: 2, sinal: '+5 V → R3' },
   { n: 8,  de: [10, 2],  para: [10, 10], circuito: 0, sinal: '0 V do borne → barramento' },
-  { n: 9,  de: [12, 2],  para: [20, 14], circuito: 3, sinal: '24V-POT → R1', alerta: true },
+  { n: 9,  de: [12, 2],  para: [12, 14], circuito: 3, sinal: '24V-POT → R1', alerta: true },
   { n: 10, de: [19, 14], para: [8, 20],  circuito: 3, sinal: 'nó D25 → sai D25', cruzaBus: true },
 ];
 

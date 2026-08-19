@@ -20,7 +20,7 @@ import { conferePrensa } from '../lib/prensas';
    'real'   = módulo comprado, desenhado a partir da foto.        */
 const PLACAS = {
   PI1:  { tipo: 'ilhada', dados: PI1, titulo: 'Placa PI-1',
-          rotulo: 'a placa que você vai montar — 20 jumpers, 3 circuitos' },
+          rotulo: 'a placa que você vai montar — 10 jumpers, 3 circuitos' },
   'PI-2': { tipo: 'ilhada', dados: PI2, titulo: 'Placa PI-2',
           rotulo: 'a placa que você vai montar — shunts, mux e INA219' },
   BTS1: { tipo: 'real', chave: 'BTS1', rotulo: 'módulo comprado — pinagem tirada da foto' },
