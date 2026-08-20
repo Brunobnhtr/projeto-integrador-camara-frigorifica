@@ -177,7 +177,7 @@ Na maquete, 3 condutores de +24 V na cruzeta + 1 condutor de 0 V embaixo fica **
 ┌──────▼────────────────▼───────────────▼─────────────────────────────────┐
 │ NÍVEL 4 — CONSUMO                                    (PAINEL + CÂMARA)  │
 │                                                                          │
-│ 24 V POT ─[KA2]─► BTS #1 ─► 2× PELTIER EM SÉRIE   (6,0 A · 144 W)       │
+│ 24 V POT ─[KM1]─► BTS #1 ─► 2× PELTIER EM SÉRIE   (6,0 A · 144 W)       │
 │                   BTS #2 ─► PTC CERÂMICO 24 V     (3,3 A · 80 W)        │
 │                             ⤷ intertravados por software: nunca juntos  │
 │                                                                          │
@@ -186,7 +186,7 @@ Na maquete, 3 condutores de +24 V na cruzeta + 1 condutor de 0 V embaixo fica **
 │ 12 V AUX ──► 2× cooler externo das Peltier · 4 fans internas            │
 │              cooler dos BTS7960                                          │
 │                                                                          │
-│ 24 V SERV ─► DNLCB30 ─► ESP32 3,3 V · bobinas KA1/KA2 · 4 SINALEIROS    │
+│ 24 V SERV ─► DNLCB30 ─► ESP32 3,3 V · bobina do KM1 · 4 SINALEIROS      │
 │        (sinaleiros de 5 V: o Arduino os acende, e ele não cai)           │
 └──────────────────────────────────────────────────────────────────────────┘
 ```
@@ -195,10 +195,10 @@ Na maquete, 3 condutores de +24 V na cruzeta + 1 condutor de 0 V embaixo fica **
 
 ### Os dois barramentos de 24 V no painel — não confundir
 
-| Barramento | Origem | Passa pelo KA2? | Alimenta |
+| Barramento | Origem | Passa pelo KM1? | Alimenta |
 |---|---|---|---|
 | **BD-POT** — 24 V de **potência** | Ramal R1 (P1) | ✅ **Sim** — cai com a emergência | Entrada VCC dos 2 BTS7960 |
-| **BD-24V** — 24 V de **serviços** | Ramal R3 | ❌ Não — permanente | DNLCB30/ESP32, bobinas KA1/KA2, **4 sinaleiros 22 mm** |
+| **BD-24V** — 24 V de **serviços** | Ramal R3 | ❌ Não — permanente | DNLCB30/ESP32, bobina do KM1, **4 sinaleiros 22 mm** |
 
 > Essa separação é o que permite a emergência **derrubar a potência sem derrubar a supervisão**: com o botão socado, os atuadores morrem em hardware, mas o ESP32 continua ligado e publica o evento por MQTT. É exatamente o comportamento de um painel industrial de verdade.
 
@@ -250,12 +250,14 @@ Esta é a tabela para colocar no relatório e usar na defesa. **É o que transfo
 | Lógica (VCC) dos 2 BTS7960 | 5 | 0,02 A | 0,1 W |
 | ~~4 LEDs sinalizadores 22 mm~~ | — | — | — |
 | **4 LEDs da iluminação da maquete** (branco 3 mm, 220 Ω) | 5 | 0,04 A | 0,2 W |
-| ⭐ **KA3 + KA4 — módulos de relé** | 5 | **0,13 A** (0,065 cada, só com o relé atracado) | 0,7 W |
-| **Total do ramal** | **5** | **0,59 A** medido · **0,70 A** no pior caso | **3,0 W** |
+| ⭐ **KA1 + KA2 + KA3 — módulos de relé** | 5 | **0,195 A** (0,065 cada, só com o relé atracado) | 1,0 W |
+| **Total do ramal** | **5** | **0,655 A** medido · **0,765 A** no pior caso | **3,3 W** |
 
 > 🔄 **Os LEDs trocaram de ramal.** Os **4 sinaleiros do painel viraram módulos de 24 V** (acionados por um ULN2803, ver [Doc 33](../camada_3_eletrica/33_placa_interface_componentes.md)) e saíram do 5 V. No lugar deles entraram os **4 LEDs brancos da iluminação pública da maquete**, que passaram de 12 V para **5 V** — LED branco tem Vf ≈ 3,1 V e funciona melhor a partir de 5 V que de 12 V, com resistor menor e menos calor dissipado à toa.
 >
-> Resultado: o R2 **caiu** de 0,69 A para **0,57 A** — usa **38 % da corrente contínua segura do LM2596**.
+> Resultado: o R2 **caiu** de 0,69 A para **0,57 A** — usava **38 % da corrente contínua segura do LM2596**.
+>
+> 🔧 **E subiu de novo, de propósito: 0,635 A (42 %).** O **KA3** — terceiro módulo de relé — entrou no lugar do módulo MOSFET que ligava as 5 ventoinhas internas, e um relé custa **65 mA de bobina** onde o MOSFET custava ~10 mA de LED. **É o preço da troca, e ele cabia:** em troca vieram R$ 43,51 de economia, o chaveamento do lado **positivo** e uma família de componente a menos no painel ([Doc 31 §31.16](../camada_3_eletrica/31_comando_e_protecoes.md)).
 
 ### Ramal R3 — Serviços auxiliares (T3 · LM2596: 24 V → 12,0 V) + cargas diretas em 24 V
 
@@ -263,19 +265,19 @@ Esta é a tabela para colocar no relatório e usar na defesa. **É o que transfo
 |---|---:|---:|---:|---|
 | Cooler externo da Peltier **#1** (80 mm, 3 fios) | 12 | 0,25 A | 3,0 W | |
 | Cooler externo da Peltier **#2** (80 mm, 3 fios) | 12 | 0,25 A | 3,0 W | **novo** — cada pastilha tem o seu dissipador |
-| ⭐ **5 ventoinhas INTERNAS** (2 frias + 2 dos dutos + a do PTC) | 12 | **0,63 A** | 7,5 W | 🔧 **eram "2 ativas por modo"** — hoje as cinco dividem o canal 3 do MV-1 e ligam JUNTAS |
+| ⭐ **5 ventoinhas INTERNAS** (2 frias + 2 dos dutos + a do PTC) | 12 | **0,63 A** | 7,5 W | 🔧 **eram "2 ativas por modo"** — hoje as cinco dividem o contato do **KA3** e ligam JUNTAS |
 | Cooler 40 mm dos BTS7960 | 12 | 0,12 A | 1,5 W | sem comando |
 | ~~Cooler 40 mm do próprio T1~~ | — | — | — | **eliminado junto com o T1** |
 | ~~Iluminação da maquete~~ | — | — | — | **migrou para o 5 V (R2)** |
 | **Subtotal em 12 V** | **12** | 🔧 **1,25 A** | **15,0 W** | pior caso medido pelo simulador |
 | DNLCB30 + ESP32 (**direto em 24 V**) | 24 | 0,10 A | 2,4 W | |
-| Bobinas dos relés **KA1 + KA2** (**direto em 24 V**) | 24 | 0,10 A | 2,4 W | |
+| Bobina do relé **KM1** (**direto em 24 V**) | 24 | 0,04 A | 0,9 W | |
 | ~~4 sinaleiros LED 22 mm de 24 V~~ | ~~24~~ | — | — | 🗑️ **migraram para o BD-5V**: viraram de 5 V e são acesos direto pelo pino |
 | **Subtotal direto em 24 V** | **24** | **0,28 A** | **6,7 W** | |
 
 > ### 🔧 Correção — este ramal estava subestimado, e quem apontou foi o simulador
 >
-> A linha anterior somava *"2 fans internas ativas · 0,25 A"*, o que fazia sentido quando elas eram comutadas **por modo** — só as duas frias no resfriamento, só as do duto no aquecimento. **Isso deixou de ser verdade** quando as cinco (as 2 frias, as 2 dos dutos e a do PTC) passaram a dividir o canal 3 do MV-1 e a ligar juntas, com uma condição só: ensaio rodando.
+> A linha anterior somava *"2 fans internas ativas · 0,25 A"*, o que fazia sentido quando elas eram comutadas **por modo** — só as duas frias no resfriamento, só as do duto no aquecimento. **Isso deixou de ser verdade** quando as cinco (as 2 frias, as 2 dos dutos e a do PTC) passaram a dividir um comando só — hoje o contato do **KA3** — e a ligar juntas, com uma condição só: ensaio rodando.
 >
 > **Ninguém releu esta tabela depois daquela simplificação.** O `npm run simula` releu: ele mede o consumo do estado real a cada passo e guarda o pico, então o pior caso deixou de ser o que alguém imaginou e passou a ser o maior valor que de fato aconteceu.
 >
@@ -287,7 +289,7 @@ Esta é a tabela para colocar no relatório e usar na defesa. **É o que transfo
 >
 > ⚠️ **O dissipador colado no LM2596 do T3 deixou de ser recomendação e virou obrigação.** A 83 % da corrente segura, sem dissipador o módulo passa dos 100 °C e entra em proteção térmica no meio da apresentação.
 >
-> 💡 **Se quiser folga de volta, há uma saída barata:** as duas ventoinhas dos dutos não precisam girar durante o resfriamento com a mesma vazão do aquecimento. Um segundo canal do MV-1 (o 2 está livre) separaria os grupos e devolveria ~0,25 A. **Não fiz** — é complexidade nova para resolver um problema que ainda cabe na folga.
+> 💡 **Se quiser folga de volta, há uma saída barata:** as duas ventoinhas dos dutos não precisam girar durante o resfriamento com a mesma vazão do aquecimento. Um **quarto módulo de relé** (KA6, R$ 3,40, e a caixa de 6M ainda tem lugar) separaria os grupos e devolveria ~0,25 A. **Não fiz** — é complexidade nova para resolver um problema que ainda cabe na folga.
 
 > 📌 **Os sinaleiros de 24 V ficam no BD-24V permanente, não no BD-POT comutado.** É de propósito: **o sinaleiro vermelho de FALHA precisa continuar aceso com a emergência acionada.** Se estivesse no barramento comutado, apertar o cogumelo apagaria justamente a luz que informa que há um problema.
 
@@ -380,7 +382,7 @@ A versão anterior deste documento descartava o LM2596 com a nota "❌ fraco dem
 | XL4015 | XL4015 | 5 A | ~3 A | ❌ | Descartado — sem display, e não é mais necessária a corrente |
 | XL4016 | XL4016 | 8 A | ~6 A | ❌ | **Eliminado junto com o T1** |
 
-Carga real de cada conversor: **T2 = 0,57 A (38 % do limite seguro)** · **T3 = 0,87 A (58 % do limite seguro)**.
+Carga real de cada conversor: **T2 = 0,635 A (42 % do limite seguro)** · **T3 = 0,87 A (58 % do limite seguro)**.
 
 ### Especificação real do LM2596 (datasheet, não o anúncio)
 
@@ -429,7 +431,7 @@ O módulo traz um **display LED vermelho de 3 dígitos** soldado na própria pla
 
 | Conversor | Poste | Tensão alvo | Carga | Ocupação do limite |
 |---|---|---:|---:|---:|
-| **T2 · LM2596** | **P2** | **5,10 V** | 0,57 A | 38 % |
+| **T2 · LM2596** | **P2** | **5,10 V** | 0,635 A | 42 % |
 | **T3 · LM2596** | **P3** | **12,0 V** | 0,87 A | 58 % |
 
 > 🔧 **Procedimento obrigatório de ajuste (fazer ANTES de conectar qualquer carga):**
@@ -455,7 +457,7 @@ A proteção do projeto não está em um componente, está em **camadas**. Cada 
 | 2 | Fonte | **Proteções da fonte chaveada** (OCP / OVP / OTP) | Curto franco no barramento de 24 V | Interna à S-240-24 |
 | 3 | Ramais | **F1 (10 A) · F2 (2 A) · F3 (2 A)** | Curto em um ramal, com **seletividade**: cai só o ramal defeituoso | Trilho DIN da subestação |
 | 4 | Conversores | ⭐ **Limite de corrente + shutdown térmico do LM2596** | Sobrecarga, curto na saída e superaquecimento de T2 e T3 | Nativo no chip |
-| 5 | Comando | **KA1 + KA2 com a emergência em série com a bobina** | Corta os **24 V de potência em hardware**, independente do firmware | Painel |
+| 5 | Comando | **KM1 com selo e a emergência em série com a bobina** | Corta os **24 V de potência em hardware**, independente do firmware | Painel |
 | 6 | Drivers | **Pull-down de 10 kΩ em cada `R_EN`** | Pino solto ou Arduino resetado = driver **desligado** | Painel |
 | 7 | Firmware | **Intertravamento Peltier/PTC + watchdog de 2 s** | As duas cargas juntas; travamento do programa | Arduino |
 | 8 | Firmware | **Monitoramento de RPM dos 2 coolers externos** | Peltier operando sem dissipação | Arduino |
@@ -479,7 +481,7 @@ A versão anterior exigia um **circuito crowbar** — Zener de 5V6/13 V/15 V mai
 
 O limite de corrente e o shutdown térmico do LM2596 cobrem sobrecarga, curto e superaquecimento. **Não cobrem o caso raro do transistor interno falhar em curto**, em que a entrada apareceria na saída — e o F2 de 2 A não necessariamente abriria antes de a eletrônica de 5 V sofrer, porque um Arduino sendo destruído por sobretensão pode consumir menos que 2 A. **Esse risco residual está sendo aceito conscientemente**, em troca de um sistema com muito menos componentes soltos e a favor de um CI cujo modo de falha é bem documentado. Quem quiser eliminá-lo mesmo assim, basta um Zener 5V6/5 W no barramento de 5 V, na entrada do painel — a decisão de projeto é não usá-lo.
 
-> 📌 **Ponto novo de atenção do Plano B:** sem o T1, os **24 V de potência ficam presentes na entrada dos BTS7960 desde o instante em que a fonte liga** — antes, o tempo de partida do conversor funcionava como um atraso natural. Quem garante que nada acione nesse intervalo são as camadas **5 e 6** da tabela (KA2 aberto + pull-down nos `R_EN`). **Confira os dois no comissionamento antes de montar as Peltier** — ver [Doc 31 §31.0](../camada_3_eletrica/31_comando_e_protecoes.md).
+> 📌 **Ponto novo de atenção do Plano B:** sem o T1, os **24 V de potência ficam presentes na entrada dos BTS7960 desde o instante em que a fonte liga** — antes, o tempo de partida do conversor funcionava como um atraso natural. Quem garante que nada acione nesse intervalo são as camadas **5 e 6** da tabela (KM1 aberto + pull-down nos `R_EN`). **Confira os dois no comissionamento antes de montar as Peltier** — ver [Doc 31 §31.0](../camada_3_eletrica/31_comando_e_protecoes.md).
 
 ---
 
@@ -557,12 +559,12 @@ As duas Peltier são o maior movimento de calor do projeto e **não entram na co
 ```
 1. Disjuntor 2P ON            → só energiza a entrada da subestação
 2. Liga o disjuntor Q0        → fonte 24 V liga
-3. Fonte estabiliza (~0,5 s)  → 24 V nos 3 ramais, até o CONTATO do KA2
-                                 ⛔ BD-POT e BTS ainda em 0 V (KA2 é NA)
+3. Fonte estabiliza (~0,5 s)  → 24 V nos 3 ramais, até o CONTATO do KM1
+                                 ⛔ BD-POT e BTS ainda em 0 V (KM1 é NA)
 4. T2 parte                   → 5,10 V → Arduino boota, tela inicializa
                                  os pull-downs seguram R_EN = 0 durante o boot
 5. T3 parte                   → 12,0 V aux → 2 coolers externos e fans giram
-6. Emergência solta + REARME  → KA1 sela → KA2 fecha → 24 V chegam ao BD-POT
+6. Cogumelo destravado + LIGAR → o KM1 sela → 24 V chegam ao BD-POT
 7. Operador dá START          → botão do painel OU IHM
 8. Firmware confere RPM > 0   → nos DOIS coolers externos das Peltier
 9. Arduino habilita R_EN      → processo em malha fechada
@@ -572,10 +574,10 @@ As duas Peltier são o maior movimento de calor do projeto e **não entram na co
 
 > ### ⚡ Ao ligar o painel, os BTS7960 recebem 24 V?
 >
-> **Não.** O KA2 usa um **contato NA (normalmente aberto)**, e ele está no meio do caminho:
+> **Não.** O KM1 usa um **contato NA (normalmente aberto)**, e ele está no meio do caminho:
 >
 > ```
-> FONTE 24 V → F1 → poste P1 → prensa-cabo → KA2 (terminal 11)
+> FONTE 24 V → F1 → poste P1 → prensa-cabo → KM1 (terminal 11)
 >                                               │
 >                                        ⛔ CONTATO ABERTO
 >                                               │
@@ -584,21 +586,21 @@ As duas Peltier são o maior movimento de calor do projeto e **não entram na co
 >
 > | Ponto do circuito | Ao ligar o painel |
 > |---|---|
-> | Entrada do painel · KA2 terminal 11 | **24 V** ✅ |
-> | KA2 terminal 14 · **BD-POT** · **BTS `B+`** | **0 V** ⛔ |
+> | Entrada do painel · KM1 terminal 11 | **24 V** ✅ |
+> | KM1 terminal 14 · **BD-POT** · **BTS `B+`** | **0 V** ⛔ |
 >
-> Os BTS só recebem tensão no **passo 6**: emergência destravada → **REARME** → KA1 sela → KA1 alimenta a bobina do KA2 (pelo NF do STOP) → o contato fecha. **Antes disso eles estão eletricamente mortos.**
+> Os BTS só recebem tensão no **passo 6**: cogumelo destravado → **LIGAR verde** → a bobina do KM1 energiza pelos dois blocos NF em série → o contato 11-14 fecha. **Antes disso eles estão eletricamente mortos.**
 >
 > ✅ **E a ordem ajuda:** o Arduino boota no passo 4, **antes** de a potência existir. Quando os 24 V chegam, os pinos já estão sob controle do firmware.
 
-> ⚠️ **O que realmente mudou com a eliminação do T1.** Antes havia **duas barreiras em série** entre a fonte e os BTS: o tempo de partida do conversor T1 **e** o KA2. Hoje só existe uma — **o KA2**. Os 24 V chegam ao contato dele imediatamente, sem o atraso do conversor.
+> ⚠️ **O que realmente mudou com a eliminação do T1.** Antes havia **duas barreiras em série** entre a fonte e os BTS: o tempo de partida do conversor T1 **e** o KM1. Hoje só existe uma — **o KM1**. Os 24 V chegam ao contato dele imediatamente, sem o atraso do conversor.
 >
 > Isso não torna o sistema inseguro, mas concentra a responsabilidade:
 >
-> 1. **KA2** — se o contato dele soldar fechado, os BTS passam a receber 24 V permanentemente, e a emergência deixa de cortar. É por isso que o contato tem que ter folga sobre os 6,0 A ([Doc 03](03_lista_materiais.md))
+> 1. **KM1** — se o contato dele soldar fechado, os BTS passam a receber 24 V permanentemente, e a emergência deixa de cortar. É por isso que o contato tem que ter folga sobre os 6,0 A ([Doc 03](03_lista_materiais.md))
 > 2. **Pull-downs de 10 kΩ** nos `R_EN` — mantêm a saída desligada mesmo com o `B+` energizado, durante um reset ou travamento do Arduino
 >
-> **Nenhuma das duas é opcional.** Ensaio obrigatório antes de instalar as Peltier: energize com a saída dos BTS **desconectada** e confirme **0 V no BD-POT antes do REARME** e **24 V depois dele**.
+> **Nenhuma das duas é opcional.** Ensaio obrigatório antes de instalar as Peltier: energize com a saída dos BTS **desconectada** e confirme **0 V no BD-POT antes do LIGAR** e **24 V depois dele**.
 
 > O firmware deve esperar os **dois** coolers externos estarem girando (RPM > 0) antes de liberar as Peltier — com 2 pastilhas são 2 sinais de tacômetro a monitorar, e a falha de qualquer um dos dois já é motivo de bloqueio. Ver [Camada 4](../camada_4_programacao/40_firmware_arduino.md).
 
@@ -661,7 +663,7 @@ O **Plano A** era a arquitetura original: um conversor em cada um dos três post
 | 10 | **Fonte 24 V / 10 A / 240 W confirmada como mínimo** | Com 166 W de consumo, a folga é de 1,44×. **A fonte de 150 W foi descartada** |
 | 11 | **ESP32 alimentado pela DNLCB30 em 24 V** | A DNLCB30 aceita 7–35 V e já gera 3,3 V regulado — não precisa de um 3º conversor |
 | 12 | **Volta o disjuntor 2P 6 A curva C** | Ambiente industrial exige proteção de entrada; curva C por causa do inrush da fonte. Continua adequado com os 2,4 A do novo consumo |
-| 13 | **KA1 + KA2** com a emergência em série com a bobina do KA1 | Só a emergência precisa ser hardware; o **KA2 chaveia os 24 V de potência**. START/STOP viram software e funcionam pela IHM também — ver [Doc 31 §31.0](../camada_3_eletrica/31_comando_e_protecoes.md) |
+| 13 | **KM1** com selo, e a emergência em série com a bobina | Só a emergência precisa ser hardware; o **KM1 chaveia os 24 V de potência**. START/STOP viram software e funcionam pela IHM também — ver [Doc 31 §31.0](../camada_3_eletrica/31_comando_e_protecoes.md) |
 | 14 | **Linha com condutores encapados**, nunca nus | Em CC qualquer ponte metálica é curto franco, e o arco não se extingue sozinho |
 | 15 | **Blocos de distribuição por tensão** no painel, com **BD-POT e BD-24V separados** | Uma entrada, várias saídas. A separação permite a emergência derrubar a potência sem derrubar a supervisão |
 

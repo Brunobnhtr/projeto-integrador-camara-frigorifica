@@ -197,8 +197,9 @@ Um relatório que diz *"os 24 V foram medidos em 24,1 V no poste P3, com queda d
 - [ ] START funciona pelo **botão físico** e pela **IHM**
 - [ ] STOP funciona pelo **botão físico** e pela **IHM**
 - [ ] Emergência corta em carga → 0 V medidos no bloco BD-POT
-- [ ] Ao destravar o cogumelo **e apertar o REARME**, os **24 V** voltam mas **o processo não reinicia sozinho**
-- [ ] ⭐ **Antes do REARME: BD-POT em 0 V.** Depois do REARME: 24,0 V. Confirma que o KA2 é a barreira e que os BTS não recebem tensão ao ligar o painel
+- [ ] Ao destravar o cogumelo, **nada acontece** — o selo continua aberto e o BD-POT em 0 V
+- [ ] Ao apertar o **LIGAR verde** depois disso, os **24 V** voltam mas **o processo não reinicia sozinho**
+- [ ] ⭐ **Antes do LIGAR: BD-POT em 0 V.** Depois: 24,0 V. Confirma que o KM1 é a barreira e que os BTS não recebem tensão ao ligar o painel
 - [ ] ⭐ **Com a emergência acionada, o sinaleiro vermelho de FALHA continua aceso** — se apagar, os sinaleiros foram ligados no BD-POT em vez do BD-24V permanente
 - [ ] Rearme com novo START (painel ou IHM)
 - [ ] **Watchdog testado** e **pull-down dos `R_EN` medido** com o Arduino desligado
@@ -313,7 +314,7 @@ Comparar com o **valor calculado no Doc 02 §2.7: 0,17 V (0,71 %)**.
 |---|---|---|
 | 0–2 min | **O problema** | Por que controlar temperatura importa (alimentos, fármacos, processos) |
 | 2–5 min | **A cadeia de energia** ⭐ | Percorra a maquete: 127 V na entrada → 24 V no poste → **24 V passando direto pelo P1** (com a corrente das Peltier no amperímetro) → **5,10 V e 12,0 V nos displays dos LM2596**. **É o momento mais forte da apresentação** — e agora os valores estão visíveis de longe, sem multímetro |
-| 5–7 min | **Proteção e comando** | Diagrama unifilar, tabela de seletividade, o relé de interface KA1. Acione a emergência ao vivo e mostre os 0 V no BD-POT |
+| 5–7 min | **Proteção e comando** | Diagrama unifilar, tabela de seletividade, o selo do KM1. Acione a emergência ao vivo, mostre os 0 V no BD-POT e que **destravar não religa** |
 | 7–10 min | **Controle** | PID, intertravamento, proteção de RPM. Mostre a curva do ensaio 2 |
 | 10–12 min | **IoT** | Dashboard no celular, mude o setpoint remotamente, mostre o STOP remoto |
 | 12–15 min | **Resultados** | Tabela projetado × medido, curvas, rendimento |

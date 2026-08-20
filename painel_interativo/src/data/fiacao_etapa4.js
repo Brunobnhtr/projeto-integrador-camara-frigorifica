@@ -40,28 +40,28 @@ export const FIOS_ETAPA4 = [
         nome: `Mega ${d} → sinaleiro ${nome}` })),
 
   /* ── ⭐ os dois gatilhos dos módulos de relé ───────────────────────── */
-  { ...sig('S4b', meg('D27'), { comp: 'KA34', via: 'IN3' },
-      'Gatilho do KA3 — o relé que fica em série com a bobina do KA2.'),
-    nome: 'Mega D27 → gatilho do KA3', rota: ['CH-topo', 'CV-dir', 'CH-3x2'],
+  { ...sig('S4b', meg('D27'), { comp: 'KA123', via: 'IN1' },
+      'Gatilho do KA1 — o relé que fica em série com a bobina do KM1.'),
+    nome: 'Mega D27 → gatilho do KA1', rota: ['CH-topo', 'CV-dir', 'CH-3x2'],
     porque: '⭐ O ÚNICO FIO DO PAINEL QUE DÁ AO SOFTWARE PODER SOBRE A POTÊNCIA — e é de '
-          + 'propósito que ele seja só um. HIGH fecha o KA3 e a bobina do KA2 pode '
-          + 'energizar; LOW abre, o selo do KA2 se perde e o BD-POT vai a 0 V. Como o '
+          + 'propósito que ele seja só um. HIGH fecha o KA1 e a bobina do KM1 pode '
+          + 'energizar; LOW abre, o selo do KM1 se perde e o BD-POT vai a 0 V. Como o '
           + 'selo não se refaz sozinho, o corte é RETENTIVO: só o botão verde religa. '
           + 'Doc 31 §31.13.',
     aviso: '⚠️ JUMPER DO MÓDULO EM "H" e um resistor de 10 kΩ deste nó para o 0 V. É o '
          + 'que garante o fail-safe: Arduino resetado, desligado ou com este fio rompido '
          + '→ IN em 0 V → relé aberto → potência cortada.' },
 
-  { ...sig('S4c', meg('D30'), { comp: 'KA34', via: 'IN4' },
-      'Gatilho do KA4 — as duas ventoinhas do radiador.'),
-    nome: 'Mega D30 → gatilho do KA4', rota: ['CH-topo', 'CV-dir', 'CH-3x2'],
+  { ...sig('S4c', meg('D30'), { comp: 'KA123', via: 'IN2' },
+      'Gatilho do KA2 — as duas ventoinhas do radiador.'),
+    nome: 'Mega D30 → gatilho do KA2', rota: ['CH-topo', 'CV-dir', 'CH-3x2'],
     porque: '⭐ UM CONTATO SECO NÃO TEM LADO ALTO NEM LADO BAIXO. Era esse o problema '
           + 'que derrubou o comando destas ventoinhas: o MV-1 chaveia o NEGATIVO, e o '
           + 'tacômetro delas é referenciado nesse mesmo negativo. O relé chaveia o '
           + 'POSITIVO sem nenhum truque de nível — o preto fica em 0 V de verdade, '
           + 'sempre. Doc 31 §31.14.',
     aviso: '⚠️ Idem: jumper em "H" e pull-down de 10 kΩ. Arduino ausente = ventoinhas '
-         + 'paradas — aceitável porque, sem Arduino, o KA3 também abriu e a Peltier não '
+         + 'paradas — aceitável porque, sem Arduino, o KA1 também abriu e a Peltier não '
          + 'está gerando calor.' },
 
   /* ── o que a PI-1 devolve ao Arduino ──────────────────────────────── */
@@ -144,22 +144,24 @@ export const FIOS_ETAPA4 = [
       'Ponte curta no módulo.'), rota: [], nome: 'ponte R_EN–L_EN do BTS #2' },
 
   /* ── comando das ventoinhas ───────────────────────────────────────────
-     ⭐ ERAM TRÊS, E SOBRARAM DUAS. O canal do RADIADOR (S17, D27→IN1) foi
-     removido: as ventoinhas do lado quente ficaram permanentemente
-     ligadas no BD-AUX, porque o MV-1 chaveia o NEGATIVO e o tacômetro
-     delas tem o emissor referenciado nesse mesmo negativo. Ver X5/X6 na
-     etapa 6. O D27 do Mega e o canal 1 do MV-1 ficaram livres. */
-  { ...sig('S19', meg('D29'), { comp: 'MV-1', via: 'IN3' },
-      'Liga as CINCO ventoinhas internas: 2 frias, 2 do duto e a do PTC.'),
-    nome: 'Mega D29 → ventoinhas internas', rota: ['CH-topo', 'CV-dir', 'CH-3x2'],
+     ⭐ ERAM TRÊS CANAIS DE MOSFET, E VIRARAM DOIS GATILHOS DE RELÉ. O canal do
+     RADIADOR foi o primeiro a sair: o MV-1 chaveava o NEGATIVO e o tacômetro daquelas
+     ventoinhas tem o emissor referenciado nesse mesmo negativo (X5/X6, etapa 6). Quem
+     as comanda é o KA2. Depois saiu o próprio MV-1: as internas passaram para o KA3,
+     porque um módulo MOSFET de 4 canais a R$ 43,51 estava sendo usado como UM
+     interruptor, num pino que nem PWM tem. Doc 31 §31.16. */
+  { ...sig('S19', meg('D29'), { comp: 'KA123', via: 'IN3' },
+      'Gatilho do KA3 — liga as CINCO ventoinhas internas: 2 frias, 2 do duto e a do PTC.'),
+    nome: 'Mega D29 → gatilho do KA3', rota: ['CH-topo', 'CV-dir', 'CH-3x2'],
     porque: '🔧 ERAM DOIS CANAIS E VIRARAM UM. A ventoinha do PTC tinha canal próprio '
           + '(D28 → IN2) para poder continuar girando depois que o aquecedor desligava. '
           + 'Isso deixou de ser necessário: o PTC é AUTO-LIMITADO — sem fluxo de ar a '
           + 'resistência dele sobe e ele corta a própria potência. Com a mesma condição '
-          + 'das outras quatro (ensaio rodando), as cinco cabem num canal só.',
-    aviso: '⭐ Sumiram o pino D28, o canal 2 do MV-1 e DOIS condutores do prensa-cabo '
-         + 'PG13-2 — a ventoinha do PTC passou a entrar em paralelo com as outras, '
-         + 'dentro da câmara.' },
+          + 'das outras quatro (ensaio rodando), as cinco cabem num contato só.',
+    aviso: '⚠️ Jumper em "H" e pull-down de 10 kΩ (R12), como nos outros dois. Contato '
+         + 'NO: Arduino ausente = ventoinhas internas PARADAS — e aqui isso é o estado '
+         + 'seguro, porque sem Arduino o KA1 já cortou a potência e não há calor sendo '
+         + 'gerado. ⭐ O firmware não mudou uma linha: HIGH continua ligando.' },
 
   /* ── a detecção de dispositivo morto ────────────────────────────────
      ⭐ ERAM SEIS FIOS AQUI: quatro bits para escolher o canal do

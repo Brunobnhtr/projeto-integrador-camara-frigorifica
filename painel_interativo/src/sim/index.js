@@ -69,7 +69,7 @@ export function criarSimulador(opts = {}) {
     qcPeltier: 0,                                   // W bombeados agora
     // ⭐ VIGILÂNCIA MÚTUA — os dois ESP32 escutam o Mega e acusam a
     //   ausência dele. Nenhum deles ATUA: quem corta a potência quando
-    //   o Mega morre já é o pull-down no gate do KA3, em hardware.
+    //   o Mega morre já é o pull-down no IN do KA1, em hardware.
     //   O papel dos ESP é CONTAR, e é por isso que a vigilância não
     //   enfraquece a segurança: ninguém novo ganhou poder sobre nada.
     ultimoJson: 0,          // ms — quando o Mega falou pela última vez
@@ -81,21 +81,21 @@ export function criarSimulador(opts = {}) {
     //   "mais duty" nem sempre é "mais frio". null = controle normal.
     dutyForcado: opts.dutyForcado ?? null,
     tCamaraFixa: opts.tCamaraFixa ?? null,   // segura a câmara p/ medir o regime
-    botoes: { s0Emergencia: false, s1Verde: false, s2Stop: false, s3Rearme: false },
+    botoes: { s0Emergencia: false, s1Verde: false, s2Stop: false },
     falhas: {
       arduinoMorto: false,     // chip queimado ou removido
       btsPeltierEmCurto: false, // MOSFET colado: conduz ignorando o R_EN
       ds18Solto: false,        // sensor fora do barramento → −127 °C
       fanTravada: false,       // RPM = 0 com a ventoinha comandada
-      ka3Colado: false,        // contato do KA3 soldado fechado: o veto some
-      ka2Colado: false,        // contato de potência do KA2 soldado
-      // ⭐ O KA4 tem os DOIS sentidos de falha, e eles não são simétricos.
+      ka1Colado: false,        // contato do KA1 soldado fechado: o veto some
+      km1Colado: false,        // contato de potência do KM1 soldado
+      // ⭐ O KA2 tem os DOIS sentidos de falha, e eles não são simétricos.
       //   Com o contato NF, COLADO = ventoinha sempre girando (o velho
       //   comportamento "sem comando", que já era seguro) e ABERTO =
       //   ventoinha nunca girando, que era o pior caso do projeto e que
       //   até aqui não dava para simular.
-      ka4Colado: false,        // contato NF soldado: ventoinha nunca desliga
-      ka4Aberto: false,        // contato NF não fecha: ventoinha nunca liga
+      ka2Colado: false,        // contato NF soldado: ventoinha nunca desliga
+      ka2Aberto: false,        // contato NF não fecha: ventoinha nunca liga
       geralDesligada: false,   // alguém cortou a chave geral
     },
     eletrica: eletricaInicial(),
@@ -109,25 +109,25 @@ export function passo(sim, dt = 50) {
 
   // ── 1. A CADEIA ELÉTRICA, com as saídas do passo anterior ────────
   sim.eletrica = passoEletrica(sim.eletrica, sim.botoes, {
-    ka3Fechado: sim.falhas.ka3Colado || f.habPotencia,
+    ka1Fechado: sim.falhas.ka1Colado || f.habPotencia,
     geralLigada: !sim.falhas.geralDesligada,
-    ka2Colado: sim.falhas.ka2Colado,
+    km1Colado: sim.falhas.km1Colado,
   });
   const barras = barramentos(sim.eletrica, {
     geralLigada: !sim.falhas.geralDesligada,
-    ka2Colado: sim.falhas.ka2Colado,
+    km1Colado: sim.falhas.km1Colado,
   });
 
   // ── 2. OS PINOS DE ENTRADA ───────────────────────────────────────
   //   ⭐ Repare que NÃO existe entrada vinda dos relés. O firmware não
-  //     pergunta "o KA2 fechou?"; ele mede se os 24 V chegaram.
-  // ⭐ O CONTATO DO KA4 É NF: ele conduz quando a bobina está SOLTA.
+  //     pergunta "o KM1 fechou?"; ele mede se os 24 V chegaram.
+  // ⭐ O CONTATO DO KA2 É NF: ele conduz quando a bobina está SOLTA.
   //   Então "o firmware quer ventilar" (f.ventRadiador) = bobina solta =
   //   contato fechado. Colado, conduz sempre; aberto, nunca.
-  const contatoKa4 = sim.falhas.ka4Colado ? true
-    : sim.falhas.ka4Aberto ? false
+  const contatoKa2 = sim.falhas.ka2Colado ? true
+    : sim.falhas.ka2Aberto ? false
     : f.ventRadiador;
-  const radiadorGirando = contatoKa4 &&
+  const radiadorGirando = contatoKa2 &&
     barras['BD-AUX'] > 0 && !sim.falhas.fanTravada;
   sim.radiadorGirando = radiadorGirando;   // o que GIRA, não o que foi mandado
   const entradas = {
@@ -180,7 +180,7 @@ function termico(sim, barras, dt) {
   }
 
   // ⚠ O BTS em curto conduz mesmo com o R_EN baixo — é justamente o
-  //   modo de falha que o KA3 existe para cobrir.
+  //   modo de falha que o KA1 existe para cobrir.
   const peltierConduz = haPotencia &&
     (sim.falhas.btsPeltierEmCurto || (f.renPeltier && f.duty > 0));
   const ptcConduz = haPotencia && f.renPtc && f.duty > 0;
@@ -211,13 +211,13 @@ function termico(sim, barras, dt) {
   if (sim.tCamaraFixa !== null) sim.tCamara = sim.tCamaraFixa;
 
   // ── Dissipador do lado quente ────────────────────────────────────
-  // ⭐ MESMA REGRA DO CONTATO NF DO KA4 usada lá em cima: quem ventila é o
+  // ⭐ MESMA REGRA DO CONTATO NF DO KA2 usada lá em cima: quem ventila é o
   //   contato, não a ordem. Aqui isso decide o UA do dissipador — 4,0 W/K
   //   ventilado contra 0,8 W/K em convecção natural.
-  const contatoKa4t = sim.falhas.ka4Colado ? true
-    : sim.falhas.ka4Aberto ? false
+  const contatoKa2t = sim.falhas.ka2Colado ? true
+    : sim.falhas.ka2Aberto ? false
     : f.ventRadiador;
-  const ventilando = contatoKa4t &&
+  const ventilando = contatoKa2t &&
     barras['BD-AUX'] > 0 && !sim.falhas.fanTravada;
   const ua = ventilando ? TERMICO.UA_DISSIP_COM_FAN : TERMICO.UA_DISSIP_SEM_FAN;
   const qDissip = (sim.tAmbiente - sim.tDissipador) * ua + qh;
@@ -226,7 +226,7 @@ function termico(sim, barras, dt) {
 
 // ── AÇÕES DO OPERADOR ───────────────────────────────────────────────
 
-/** Aperta e solta um botão de pulso (verde, preto, azul). */
+/** Aperta e solta um botão de pulso (o verde e o preto). */
 export function apertar(sim, botao, dt = 50) {
   sim.botoes[botao] = true;
   passo(sim, dt);
@@ -256,15 +256,14 @@ export function avancar(sim, ms, dt = 50) {
 export function foto(sim) {
   const f = sim.firmware;
   return {
-    ka1: sim.eletrica.ka1Selado,
-    ka2: sim.eletrica.ka2Selado,
+    km1: sim.eletrica.km1Selado,
     bdPot: sim.barras?.['BD-POT'] ?? 0,
     bdAux: sim.barras?.['BD-AUX'] ?? 0,
     bd5v: sim.barras?.['BD-5V'] ?? 0,
     estado: f.estado,
     modo: f.modo,
     alerta: f.alerta,
-    ka3: f.habPotencia,
+    ka1: f.habPotencia,
     ventRadiador: f.ventRadiador,          // a ORDEM do firmware
     radiadorGirando: !!sim.radiadorGirando, // ⭐ o que de fato gira
     ventInternas: f.ventInternas,

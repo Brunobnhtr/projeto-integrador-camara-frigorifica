@@ -1,155 +1,137 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 1010" width="1240" height="1010" font-family="Segoe UI, Arial, sans-serif">
   <rect width="1240" height="1010" fill="#ffffff"/>
 
-  <text x="50" y="40" font-size="23" font-weight="700" fill="#111">DIAGRAMA DE COMANDO — DOIS SELOS, E ELES NÃO SÃO IGUAIS</text>
-  <text x="50" y="63" font-size="13" fill="#555">EMERGÊNCIA derruba o KA1 e trava (só o REARME azul devolve) · STOP derruba o KA2 e retém (só o START verde devolve) · o firmware só pode DERRUBAR, pelo KA3 · Projeto Integrador CF-01</text>
+  <text x="50" y="40" font-size="23" font-weight="700" fill="#111">DIAGRAMA DE COMANDO — UMA MALHA, UM SELO, UM BOTÃO PARA REFAZÊ-LO</text>
+<text x="50" y="63" font-size="13" fill="#555">EMERGÊNCIA e STOP abrem a MESMA malha, cada um pelo seu bloco NF · o selo do KM1 é a única memória · o LIGAR verde o refaz, venha a parada de onde vier</text>
 
-  <!-- ═══════════════════════ ESTÁGIO 1 · KA1 ═══════════════════════ -->
-  <rect x="50" y="88" width="700" height="340" fill="#fff5f5" stroke="#c92a2a" stroke-width="2.5"/>
-  <rect x="50" y="88" width="700" height="30" fill="#c92a2a"/>
-  <text x="400" y="109" font-size="14" font-weight="700" fill="#fff" text-anchor="middle">ESTÁGIO 1 · SEGURANÇA (KA1) — trava; só a EMERGÊNCIA derruba e só o REARME devolve</text>
+  <!-- ═══════════════════════ A CADEIA DE COMANDO ═══════════════════════ -->
+  <rect x="50" y="88" width="700" height="512" fill="#f8f9fa" stroke="#495057" stroke-width="2.5"/>
+  <rect x="50" y="88" width="700" height="30" fill="#495057"/>
+  <text x="400" y="109" font-size="14" font-weight="700" fill="#fff" text-anchor="middle">A CADEIA DE COMANDO — as duas paradas em SÉRIE, o selo em PARALELO com o verde</text>
 
-  <line x1="86" y1="152" x2="716" y2="152" stroke="#e8590c" stroke-width="4"/>
-  <text x="78" y="147" font-size="12" font-weight="700" fill="#a63e00" text-anchor="end">+24 V</text>
-  <text x="120" y="145" font-size="9.5" fill="#a63e00">BD-24V · O2 — permanente, não passa pelo KA2</text>
+  <line x1="86" y1="150" x2="716" y2="150" stroke="#e8590c" stroke-width="4"/>
+  <text x="78" y="145" font-size="12" font-weight="700" fill="#a63e00" text-anchor="end">+24 V</text>
+  <text x="120" y="143" font-size="9.5" fill="#a63e00">BD-24V · O2 — permanente, não passa pelo KM1</text>
 
-  <line x1="86" y1="398" x2="716" y2="398" stroke="#212529" stroke-width="4"/>
-  <text x="78" y="404" font-size="12" font-weight="700" fill="#212529" text-anchor="end">0 V</text>
+  <line x1="86" y1="530" x2="716" y2="530" stroke="#212529" stroke-width="4"/>
+  <text x="78" y="536" font-size="12" font-weight="700" fill="#212529" text-anchor="end">0 V</text>
 
-  <!-- S0 · emergência (NF) -->
-  <line x1="150" y1="152" x2="150" y2="182" stroke="#212529" stroke-width="2.5"/>
-  <circle cx="150" cy="186" r="4" fill="#212529"/>
-  <circle cx="150" cy="228" r="4" fill="#212529"/>
-  <line x1="136" y1="194" x2="170" y2="194" stroke="#c92a2a" stroke-width="3.5"/>
-  <line x1="150" y1="194" x2="150" y2="224" stroke="#c92a2a" stroke-width="3"/>
-  <path d="M164 202 L182 195" stroke="#c92a2a" stroke-width="2" fill="none"/>
-  <circle cx="190" cy="192" r="9" fill="#e03131" stroke="#7a0b0b" stroke-width="2.5"/>
-  <text x="207" y="188" font-size="12.5" font-weight="700" fill="#c92a2a">S0 — EMERGÊNCIA</text>
-  <text x="207" y="204" font-size="10.5" fill="#7a0b0b">bloco NF · cogumelo com trava</text>
-  <text x="207" y="219" font-size="9.5" fill="#7a0b0b">fio partido → abre → PARA (fail-safe)</text>
-  <line x1="150" y1="232" x2="150" y2="262" stroke="#212529" stroke-width="2.5"/>
+  <!-- S0 · emergência (NF de 24 V) -->
+  <line x1="150" y1="150" x2="150" y2="180" stroke="#212529" stroke-width="2.5"/>
+  <circle cx="150" cy="184" r="4" fill="#212529"/>
+  <circle cx="150" cy="226" r="4" fill="#212529"/>
+  <line x1="136" y1="192" x2="170" y2="192" stroke="#c92a2a" stroke-width="3.5"/>
+  <line x1="150" y1="192" x2="150" y2="222" stroke="#c92a2a" stroke-width="3"/>
+  <path d="M164 200 L182 193" stroke="#c92a2a" stroke-width="2" fill="none"/>
+  <circle cx="190" cy="190" r="9" fill="#e03131" stroke="#7a0b0b" stroke-width="2.5"/>
+  <text x="207" y="186" font-size="12.5" font-weight="700" fill="#c92a2a">S0 — EMERGÊNCIA</text>
+  <text x="207" y="202" font-size="10.5" fill="#7a0b0b">bloco NF de 24 V · cogumelo com trava</text>
+  <text x="207" y="217" font-size="9.5" fill="#7a0b0b">fio partido → abre → PARA (fail-safe) · o 2º bloco (NF, 5 V) avisa o D24</text>
+  <line x1="150" y1="230" x2="150" y2="258" stroke="#212529" stroke-width="2.5"/>
 
-  <!-- nó CMD -->
-  <line x1="150" y1="262" x2="480" y2="262" stroke="#212529" stroke-width="2.5"/>
-  <circle cx="290" cy="262" r="4.5" fill="#212529"/>
-  <text x="150" y="255" font-size="10" font-weight="700" fill="#495057">nó CMD · KA1 · 11 (e ponte curta até o 21)</text>
+  <!-- S2 · STOP (NF de 24 V), EM SÉRIE com o cogumelo -->
+  <circle cx="150" cy="262" r="4" fill="#212529"/>
+  <circle cx="150" cy="304" r="4" fill="#212529"/>
+  <line x1="136" y1="270" x2="170" y2="270" stroke="#212529" stroke-width="3.5"/>
+  <line x1="150" y1="270" x2="150" y2="300" stroke="#212529" stroke-width="3"/>
+  <path d="M164 278 L182 271" stroke="#212529" stroke-width="2" fill="none"/>
+  <circle cx="190" cy="268" r="9" fill="#343a40" stroke="#000" stroke-width="2"/>
+  <text x="207" y="264" font-size="12.5" font-weight="700" fill="#212529">S2 — STOP (preto)</text>
+  <text x="207" y="280" font-size="10.5" fill="#495057">bloco NF de 24 V · corta em HARDWARE, no mesmo caminho</text>
+  <text x="207" y="295" font-size="9.5" fill="#495057">o 2º bloco (NA, 5 V) só avisa o Arduino no D23</text>
+  <line x1="150" y1="308" x2="150" y2="336" stroke="#212529" stroke-width="2.5"/>
 
-  <!-- ramo 1: S3 REARME (NA) -->
-  <line x1="290" y1="262" x2="290" y2="292" stroke="#212529" stroke-width="2.5"/>
-  <circle cx="290" cy="296" r="4" fill="#212529"/>
-  <circle cx="290" cy="332" r="4" fill="#212529"/>
-  <line x1="276" y1="332" x2="310" y2="300" stroke="#1971c2" stroke-width="3.5"/>
-  <text x="318" y="303" font-size="12.5" font-weight="700" fill="#1971c2">S3 — REARME (azul)</text>
-  <text x="318" y="318" font-size="10" fill="#1864ab">bloco NA · o único jeito de a energia voltar</text>
-  <line x1="290" y1="336" x2="290" y2="360" stroke="#212529" stroke-width="2.5"/>
+  <text x="480" y="243" font-size="10.5" font-weight="700" fill="#c2410c">⭐ OS DOIS EM SÉRIE</text>
+  <text x="480" y="257" font-size="9.5" fill="#9a3412">qualquer um aberto derruba a mesma bobina</text>
 
-  <!-- ramo 2: selo KA1 (21→24, NA) -->
-  <line x1="480" y1="262" x2="480" y2="292" stroke="#212529" stroke-width="2.5"/>
-  <circle cx="480" cy="296" r="4" fill="#212529"/>
-  <circle cx="480" cy="332" r="4" fill="#212529"/>
-  <line x1="466" y1="332" x2="500" y2="300" stroke="#7048e8" stroke-width="3.5"/>
-  <text x="508" y="303" font-size="12" font-weight="700" fill="#5f3dc4">KA1 · 21→24 — O SELO</text>
-  <text x="508" y="318" font-size="10" fill="#5f3dc4">perdeu o selo, só o REARME devolve</text>
-  <line x1="480" y1="336" x2="480" y2="360" stroke="#212529" stroke-width="2.5"/>
+  <!-- nó do selo -->
+  <line x1="150" y1="336" x2="480" y2="336" stroke="#212529" stroke-width="2.5"/>
+  <circle cx="290" cy="336" r="4.5" fill="#212529"/>
+  <text x="150" y="329" font-size="10" font-weight="700" fill="#495057">nó do selo · S1 · 13 e KM1 · 21 (fio C4)</text>
+
+  <!-- ramo 1: S1 LIGAR verde (NA) -->
+  <line x1="290" y1="336" x2="290" y2="364" stroke="#212529" stroke-width="2.5"/>
+  <circle cx="290" cy="368" r="4" fill="#212529"/>
+  <circle cx="290" cy="404" r="4" fill="#212529"/>
+  <line x1="276" y1="404" x2="310" y2="372" stroke="#2f9e44" stroke-width="3.5"/>
+  <text x="318" y="375" font-size="12.5" font-weight="700" fill="#2b8a3e">S1 — LIGAR (verde)</text>
+<text x="318" y="390" font-size="10" fill="#2b8a3e">bloco NA · refaz o selo depois</text>
+<text x="318" y="404" font-size="9.5" fill="#2b8a3e">de QUALQUER parada. ⚠ arma a</text>
+<text x="318" y="417" font-size="9.5" fill="#2b8a3e">potência, não o ensaio — esse é da IHM</text>
+  <line x1="290" y1="408" x2="290" y2="432" stroke="#212529" stroke-width="2.5"/>
+
+  <!-- ramo 2: selo do KM1 (21→24, NA) -->
+  <line x1="480" y1="336" x2="480" y2="364" stroke="#212529" stroke-width="2.5"/>
+  <circle cx="480" cy="368" r="4" fill="#212529"/>
+  <circle cx="480" cy="404" r="4" fill="#212529"/>
+  <line x1="466" y1="404" x2="500" y2="372" stroke="#7048e8" stroke-width="3.5"/>
+  <text x="508" y="375" font-size="12" font-weight="700" fill="#5f3dc4">KM1 · 21→24 — O SELO</text>
+<text x="508" y="390" font-size="10" fill="#5f3dc4">a única memória do painel</text>
+<text x="508" y="404" font-size="9.5" fill="#5f3dc4">(fio C6, ponte na base)</text>
+<text x="508" y="417" font-size="9.5" fill="#5f3dc4">malha aberta = selo perdido</text>
+  <line x1="480" y1="408" x2="480" y2="432" stroke="#212529" stroke-width="2.5"/>
 
   <!-- os dois ramos em paralelo chegam ao A1 -->
-  <line x1="290" y1="360" x2="480" y2="360" stroke="#212529" stroke-width="2.5"/>
-  <circle cx="385" cy="360" r="4.5" fill="#212529"/>
-  <line x1="385" y1="360" x2="385" y2="368" stroke="#212529" stroke-width="2.5"/>
-  <rect x="349" y="368" width="72" height="26" fill="#f3f0ff" stroke="#5f3dc4" stroke-width="2.5"/>
-  <text x="385" y="386" font-size="13" font-weight="700" fill="#5f3dc4" text-anchor="middle">KA1</text>
-  <text x="342" y="378" font-size="9" fill="#5f3dc4" text-anchor="end">A1</text>
-  <text x="428" y="378" font-size="9" fill="#5f3dc4">A2</text>
-  <line x1="385" y1="394" x2="385" y2="398" stroke="#212529" stroke-width="2.5"/>
-  <text x="349" y="412" font-size="9.5" fill="#5f3dc4">bobina 24 Vcc · 2 contatos reversíveis</text>
-
-  <!-- saída do estágio 1 -->
-  <line x1="620" y1="262" x2="620" y2="200" stroke="#212529" stroke-width="2.5"/>
-  <circle cx="620" cy="262" r="4.5" fill="#212529"/>
-  <line x1="480" y1="262" x2="620" y2="262" stroke="#212529" stroke-width="2.5"/>
-  <circle cx="620" cy="196" r="4" fill="#212529"/>
-  <circle cx="620" cy="164" r="4" fill="#212529"/>
-  <line x1="606" y1="196" x2="640" y2="166" stroke="#7048e8" stroke-width="3.5"/>
-  <text x="650" y="180" font-size="11" font-weight="700" fill="#5f3dc4">KA1 · 11→14</text>
-  <text x="650" y="194" font-size="9.5" fill="#5f3dc4">a saída para o estágio 2</text>
-  <line x1="620" y1="160" x2="620" y2="140" stroke="#212529" stroke-width="2.5"/>
-  <path d="M620 140 L620 130 L742 130 L742 470" stroke="#212529" stroke-width="2.5" fill="none"/>
-  <text x="700" y="124" font-size="10" font-weight="700" fill="#495057" text-anchor="middle">desce para o estágio 2 ↓</text>
-
-  <!-- ═══════════════════════ ESTÁGIO 2 · KA2 ═══════════════════════ -->
-  <rect x="50" y="452" width="700" height="380" fill="#fff9db" stroke="#e67700" stroke-width="2.5"/>
-  <rect x="50" y="452" width="700" height="30" fill="#e67700"/>
-  <text x="400" y="473" font-size="14" font-weight="700" fill="#fff" text-anchor="middle">ESTÁGIO 2 · PROCESSO (KA2) — retém no STOP; o VERDE religa, sem rearme</text>
-
-  <path d="M742 470 L742 516 L716 516" stroke="#212529" stroke-width="2.5" fill="none"/>
-  <line x1="86" y1="516" x2="716" y2="516" stroke="#e8590c" stroke-width="4"/>
-  <text x="78" y="511" font-size="12" font-weight="700" fill="#a63e00" text-anchor="end">KA1 · 14</text>
-
-  <line x1="86" y1="800" x2="716" y2="800" stroke="#212529" stroke-width="4"/>
-  <text x="78" y="806" font-size="12" font-weight="700" fill="#212529" text-anchor="end">0 V</text>
-
-  <!-- S2 · STOP (NF de 24 V) -->
-  <line x1="150" y1="516" x2="150" y2="546" stroke="#212529" stroke-width="2.5"/>
-  <circle cx="150" cy="550" r="4" fill="#212529"/>
-  <circle cx="150" cy="592" r="4" fill="#212529"/>
-  <line x1="136" y1="558" x2="170" y2="558" stroke="#212529" stroke-width="3.5"/>
-  <line x1="150" y1="558" x2="150" y2="588" stroke="#212529" stroke-width="3"/>
-  <path d="M164 566 L182 559" stroke="#212529" stroke-width="2" fill="none"/>
-  <circle cx="190" cy="556" r="9" fill="#343a40" stroke="#000" stroke-width="2"/>
-  <text x="207" y="552" font-size="12.5" font-weight="700" fill="#212529">S2 — STOP (preto)</text>
-  <text x="207" y="568" font-size="10.5" fill="#495057">bloco NF de 24 V · corta em HARDWARE</text>
-  <text x="207" y="583" font-size="9.5" fill="#495057">o 2º bloco (NA, 5 V) só avisa o Arduino no D23</text>
-  <line x1="150" y1="596" x2="150" y2="626" stroke="#212529" stroke-width="2.5"/>
-
-  <!-- nó do selo do KA2 -->
-  <line x1="150" y1="626" x2="480" y2="626" stroke="#212529" stroke-width="2.5"/>
-  <circle cx="290" cy="626" r="4.5" fill="#212529"/>
-  <text x="150" y="619" font-size="10" font-weight="700" fill="#495057">nó do selo · KA2 · 21 e S1 · 13</text>
-
-  <!-- ramo 1: S1 START verde (NA) -->
-  <line x1="290" y1="626" x2="290" y2="656" stroke="#212529" stroke-width="2.5"/>
-  <circle cx="290" cy="660" r="4" fill="#212529"/>
-  <circle cx="290" cy="696" r="4" fill="#212529"/>
-  <line x1="276" y1="696" x2="310" y2="664" stroke="#2f9e44" stroke-width="3.5"/>
-  <text x="318" y="667" font-size="12.5" font-weight="700" fill="#2b8a3e">S1 — LIGAR (verde)</text>
-  <text x="318" y="682" font-size="10" fill="#2b8a3e">bloco NA · ARMA a potência refazendo o selo</text>
-  <text x="318" y="696" font-size="9.5" fill="#2b8a3e">⚠ não inicia o ensaio — isso é o INICIAR da tela</text>
-  <line x1="290" y1="700" x2="290" y2="724" stroke="#212529" stroke-width="2.5"/>
-
-  <!-- ramo 2: selo KA2 (21→24, NA) -->
-  <line x1="480" y1="626" x2="480" y2="656" stroke="#212529" stroke-width="2.5"/>
-  <circle cx="480" cy="660" r="4" fill="#212529"/>
-  <circle cx="480" cy="696" r="4" fill="#212529"/>
-  <line x1="466" y1="696" x2="500" y2="664" stroke="#7048e8" stroke-width="3.5"/>
-  <text x="508" y="667" font-size="12" font-weight="700" fill="#5f3dc4">KA2 · 21→24 — O SELO</text>
-  <text x="508" y="682" font-size="10" fill="#5f3dc4">aperte o STOP UMA vez: o selo abre junto</text>
-  <text x="508" y="696" font-size="9.5" fill="#5f3dc4">e nem soltando o botão ele volta</text>
-  <line x1="480" y1="700" x2="480" y2="724" stroke="#212529" stroke-width="2.5"/>
-
-  <!-- paralelo → bobina do KA2 -->
-  <line x1="290" y1="724" x2="480" y2="724" stroke="#212529" stroke-width="2.5"/>
-  <circle cx="385" cy="724" r="4.5" fill="#212529"/>
-  <line x1="385" y1="724" x2="385" y2="732" stroke="#212529" stroke-width="2.5"/>
-  <rect x="349" y="732" width="72" height="26" fill="#f3f0ff" stroke="#5f3dc4" stroke-width="2.5"/>
-  <text x="385" y="750" font-size="13" font-weight="700" fill="#5f3dc4" text-anchor="middle">KA2</text>
-  <text x="342" y="742" font-size="9" fill="#5f3dc4" text-anchor="end">A1</text>
-  <text x="428" y="742" font-size="9" fill="#5f3dc4">A2</text>
+  <line x1="290" y1="432" x2="480" y2="432" stroke="#212529" stroke-width="2.5"/>
+  <circle cx="385" cy="432" r="4.5" fill="#212529"/>
+  <line x1="385" y1="432" x2="385" y2="440" stroke="#212529" stroke-width="2.5"/>
+  <rect x="349" y="440" width="72" height="26" fill="#f3f0ff" stroke="#5f3dc4" stroke-width="2.5"/>
+  <text x="385" y="458" font-size="13" font-weight="700" fill="#5f3dc4" text-anchor="middle">KM1</text>
+  <text x="342" y="450" font-size="9" fill="#5f3dc4" text-anchor="end">A1</text>
+  <text x="428" y="450" font-size="9" fill="#5f3dc4">A2</text>
 
   <!-- D1 sobre a bobina -->
-  <path d="M349 728 L437 728 L437 762 L349 762" stroke="#868e96" stroke-width="1.6" fill="none" stroke-dasharray="4 3"/>
-  <path d="M441 738 l0 14 l-9 -7 z" fill="#868e96"/>
-  <text x="447" y="750" font-size="9" fill="#868e96">D1</text>
+  <path d="M349 436 L437 436 L437 470 L349 470" stroke="#868e96" stroke-width="1.6" fill="none" stroke-dasharray="4 3"/>
+  <path d="M441 446 l0 14 l-9 -7 z" fill="#868e96"/>
+  <text x="447" y="458" font-size="9" fill="#868e96">D1</text>
 
-  <!-- ⭐ KA3 em série com a bobina -->
-  <line x1="385" y1="758" x2="385" y2="766" stroke="#212529" stroke-width="2.5"/>
-  <circle cx="385" cy="770" r="4" fill="#212529"/>
-  <circle cx="385" cy="794" r="4" fill="#212529"/>
-  <line x1="371" y1="794" x2="405" y2="772" stroke="#c2410c" stroke-width="4"/>
-  <line x1="385" y1="794" x2="385" y2="800" stroke="#212529" stroke-width="2.5"/>
-  <rect x="418" y="756" width="292" height="52" fill="#fff4e6" stroke="#c2410c" stroke-width="2"/>
-  <text x="428" y="774" font-size="12.5" font-weight="700" fill="#c2410c">⭐ KA3 · 11→14 — O VETO DO FIRMWARE</text>
-  <text x="428" y="789" font-size="10" fill="#9a3412">Mega D27 → Q3 → bobina do KA3. EM SÉRIE: ele só pode</text>
-  <text x="428" y="802" font-size="10" fill="#9a3412">DERRUBAR, nunca segurar contra o S0 nem contra o S2.</text>
+  <!-- ⭐ KA1 em série com a bobina -->
+  <line x1="385" y1="466" x2="385" y2="474" stroke="#212529" stroke-width="2.5"/>
+  <circle cx="385" cy="478" r="4" fill="#212529"/>
+  <circle cx="385" cy="502" r="4" fill="#212529"/>
+  <line x1="371" y1="502" x2="405" y2="480" stroke="#c2410c" stroke-width="4"/>
+  <line x1="385" y1="502" x2="385" y2="530" stroke="#212529" stroke-width="2.5"/>
+  <rect x="418" y="464" width="316" height="52" fill="#fff4e6" stroke="#c2410c" stroke-width="2"/>
+<text x="428" y="482" font-size="12.5" font-weight="700" fill="#c2410c">⭐ KA1 · COM1→NO1 — O VETO DO FIRMWARE</text>
+<text x="428" y="497" font-size="10" fill="#9a3412">Mega D27 → IN1 do módulo. EM SÉRIE: ele só pode</text>
+  <text x="428" y="510" font-size="10" fill="#9a3412">DERRUBAR, nunca segurar contra o S0 nem contra o S2.</text>
+
+  <text x="86" y="556" font-size="11" font-weight="700" fill="#212529">Solte o verde e o relé se segura sozinho, pelo próprio contato. É o circuito clássico de partida-parada.</text>
+  <text x="86" y="574" font-size="10.5" fill="#495057">Abra a corrente em QUALQUER ponto — cogumelo, STOP, KA1, falta de energia — e o selo se perde. Só o verde o refaz.</text>
+  <text x="86" y="590" font-size="10.5" fill="#868e96">A bobina puxa ~37 mA. Quem interrompe os 6,0 A da carga é o CONTATO do KM1, à direita — nunca um bloco de botoeira.</text>
+
+  <!-- ═══════════════════════ COMO SE VOLTA ═══════════════════════ -->
+  <rect x="50" y="620" width="700" height="212" fill="#ebfbee" stroke="#2b8a3e" stroke-width="2.5"/>
+  <rect x="50" y="620" width="700" height="28" fill="#2b8a3e"/>
+  <text x="400" y="640" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">COMO SE VOLTA DE CADA PARADA — a resposta é sempre a mesma</text>
+
+  <text x="66" y="668" font-size="10.5" font-weight="700" fill="#2b8a3e">ORIGEM DA PARADA</text>
+  <text x="330" y="668" font-size="10.5" font-weight="700" fill="#2b8a3e">O QUE CAI</text>
+  <text x="540" y="668" font-size="10.5" font-weight="700" fill="#2b8a3e">COMO VOLTA</text>
+  <line x1="66" y1="674" x2="734" y2="674" stroke="#8ce99a" stroke-width="1.4"/>
+
+  <text x="66" y="694" font-size="11" font-weight="700" fill="#c92a2a">EMERGÊNCIA (cogumelo)</text>
+  <text x="330" y="694" font-size="11" fill="#495057">o selo do KM1</text>
+  <text x="540" y="694" font-size="11" font-weight="700" fill="#2b8a3e">destravar + LIGAR</text>
+
+  <text x="66" y="716" font-size="11" font-weight="700" fill="#212529">STOP preto</text>
+  <text x="330" y="716" font-size="11" fill="#495057">o selo do KM1</text>
+  <text x="540" y="716" font-size="11" font-weight="700" fill="#2b8a3e">LIGAR</text>
+
+  <text x="66" y="738" font-size="11" font-weight="700" fill="#c2410c">Trip do firmware (KA1)</text>
+  <text x="330" y="738" font-size="11" fill="#495057">o selo do KM1</text>
+  <text x="540" y="738" font-size="11" font-weight="700" fill="#2b8a3e">reconhecer + LIGAR</text>
+
+  <text x="66" y="760" font-size="11" font-weight="700" fill="#495057">Falta de energia</text>
+  <text x="330" y="760" font-size="11" fill="#495057">o selo do KM1</text>
+  <text x="540" y="760" font-size="11" font-weight="700" fill="#2b8a3e">LIGAR</text>
+
+  <line x1="66" y1="772" x2="734" y2="772" stroke="#8ce99a" stroke-width="1.4"/>
+  <text x="66" y="791" font-size="11" font-weight="700" fill="#1971c2">STOP pela IHM / MQTT</text>
+  <text x="330" y="791" font-size="11" fill="#495057">só o R_EN dos drivers</text>
+  <text x="540" y="791" font-size="11" font-weight="700" fill="#1971c2">pela própria IHM</text>
+  <text x="66" y="808" font-size="9.5" fill="#868e96">A única que NÃO derruba o selo: a potência segue armada e o INICIAR da tela volta a rodar (Cat. 2 da IEC 60204-1).</text>
+  <text x="66" y="824" font-size="9.5" fill="#868e96">Parada operacional não obriga ninguém a caminhar até o painel; parada por FALHA, sim — para que alguém olhe a máquina.</text>
 
   <!-- ═══════════════════════ CAMINHO DA POTÊNCIA ═══════════════════════ -->
   <rect x="790" y="88" width="400" height="340" fill="#fff5f5" stroke="#c92a2a" stroke-width="2"/>
@@ -169,7 +151,7 @@
   <line x1="861" y1="292" x2="895" y2="260" stroke="#7048e8" stroke-width="4"/>
   <text x="845" y="262" font-size="10" fill="#5f3dc4" text-anchor="end">11</text>
   <text x="845" y="298" font-size="10" fill="#5f3dc4" text-anchor="end">14</text>
-  <text x="908" y="272" font-size="12" font-weight="700" fill="#5f3dc4">KA2</text>
+  <text x="908" y="272" font-size="12" font-weight="700" fill="#5f3dc4">KM1</text>
   <text x="908" y="287" font-size="9.5" fill="#5f3dc4">contato ≥ 10 A em CC</text>
   <line x1="875" y1="296" x2="875" y2="322" stroke="#e03131" stroke-width="3.5"/>
 
@@ -179,54 +161,58 @@
   <text x="875" y="392" font-size="10.5" fill="#7a0b0b" text-anchor="middle">BTS #1 (Peltier) · BTS #2 (PTC)</text>
   <text x="875" y="408" font-size="9.5" fill="#868e96" text-anchor="middle">e o divisor 22k/4k7 que devolve o D25</text>
 
-  <rect x="960" y="136" width="212" height="120" fill="#fff" stroke="#adb5bd" stroke-width="1.4"/>
+  <rect x="960" y="136" width="212" height="130" fill="#fff" stroke="#adb5bd" stroke-width="1.4"/>
   <text x="972" y="155" font-size="10.5" font-weight="700" fill="#495057">Por que o botão não corta a carga:</text>
   <text x="972" y="172" font-size="10" fill="#495057">o bloco de um botão de 22 mm</text>
   <text x="972" y="186" font-size="10" fill="#495057">aguenta ~3 A em 24 Vcc. A carga</text>
   <text x="972" y="200" font-size="10" fill="#495057">é de 6,0 A em 24 Vcc.</text>
   <text x="972" y="220" font-size="10.5" font-weight="700" fill="#212529">O botão corta a BOBINA;</text>
   <text x="972" y="235" font-size="10.5" font-weight="700" fill="#212529">o relé corta a CARGA.</text>
-  <text x="972" y="250" font-size="9" fill="#868e96">Só o KA2 precisa de 10 A — o KA1 conduz mA.</text>
+  <text x="972" y="252" font-size="9" fill="#868e96">É por isso que existe relé aqui — e é</text>
+  <text x="972" y="262" font-size="9" fill="#868e96">por isso que UM já basta.</text>
 
   <!-- ═══════════════════════ O QUE O ARDUINO FAZ ═══════════════════════ -->
   <rect x="790" y="452" width="400" height="380" fill="#fff4e6" stroke="#c2410c" stroke-width="2"/>
   <rect x="790" y="452" width="400" height="28" fill="#c2410c"/>
-  <text x="990" y="472" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">O ARDUINO COMANDA DOIS RELÉS — E SÓ PARA CORTAR</text>
+<text x="990" y="472" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">O ARDUINO COMANDA TRÊS RELÉS — E SÓ PARA CORTAR</text>
 
-  <text x="806" y="502" font-size="11.5" font-weight="700" fill="#9a3412">KA3 · contato NA — o veto sobre a potência</text>
-  <text x="806" y="519" font-size="10" fill="#7c2d12">D27 → gate do Q3 (2N7000) → bobina de 24 V do KA3.</text>
-  <text x="806" y="533" font-size="10" fill="#7c2d12">O contato 11→14 fecha o retorno da bobina do KA2.</text>
-  <text x="806" y="551" font-size="10" fill="#7c2d12">HIGH = potência AUTORIZADA (quem arma é o verde).</text>
-  <text x="806" y="565" font-size="10" fill="#7c2d12">LOW = o selo do KA2 cai, e não volta sozinho.</text>
-  <text x="806" y="583" font-size="10" font-weight="700" fill="#c2410c">Relé solto = contato ABERTO = potência cortada.</text>
+<text x="806" y="500" font-size="11.5" font-weight="700" fill="#9a3412">KA1 · contato NO — o veto sobre a potência</text>
+<text x="806" y="516" font-size="10" fill="#7c2d12">D27 → IN1 do módulo (relé de 5 V, optoacoplado) + R10 de 10 kΩ.</text>
+<text x="806" y="529" font-size="10" fill="#7c2d12">O contato COM1→NO1 fecha o retorno da bobina do KM1.</text>
+<text x="806" y="542" font-size="10" fill="#7c2d12">HIGH = potência AUTORIZADA (quem arma é o verde).</text>
+<text x="806" y="555" font-size="10" font-weight="700" fill="#c2410c">Módulo solto = contato ABERTO = potência cortada.</text>
 
-  <line x1="806" y1="598" x2="1174" y2="598" stroke="#d9a066" stroke-width="1.2"/>
+<line x1="806" y1="566" x2="1174" y2="566" stroke="#d9a066" stroke-width="1.2"/>
 
-  <text x="806" y="620" font-size="11.5" font-weight="700" fill="#9a3412">KA4 · contato NF — as ventoinhas do radiador</text>
-  <text x="806" y="637" font-size="10" fill="#7c2d12">D30 → gate do Q4 → bobina de 24 V do KA4.</text>
-  <text x="806" y="651" font-size="10" fill="#7c2d12">O contato 11→12 chaveia o +12 V das duas ventoinhas.</text>
-  <text x="806" y="669" font-size="10" font-weight="700" fill="#c2410c">Relé solto = contato FECHADO = ventoinha GIRANDO.</text>
-  <text x="806" y="683" font-size="10" fill="#7c2d12">É o oposto do KA3, e é de propósito: o estado seguro</text>
-  <text x="806" y="697" font-size="10" fill="#7c2d12">deste lado é ventilar. Arduino morto → o KA3 corta a</text>
-  <text x="806" y="711" font-size="10" fill="#7c2d12">potência E o KA4 mantém o radiador girando.</text>
+<text x="806" y="584" font-size="11.5" font-weight="700" fill="#9a3412">KA2 · contato NC — as ventoinhas do radiador</text>
+<text x="806" y="600" font-size="10" fill="#7c2d12">D30 → IN2 + R11. O COM2→NC2 chaveia o +12 V das duas.</text>
+<text x="806" y="613" font-size="10" font-weight="700" fill="#c2410c">Módulo solto = contato FECHADO = ventoinha GIRANDO.</text>
+<text x="806" y="626" font-size="10" fill="#7c2d12">Oposto do KA1, e de propósito: aqui o seguro é VENTILAR</text>
+<text x="806" y="639" font-size="10" fill="#7c2d12">— dissipador quente mata a pastilha em menos de 1 min.</text>
 
-  <line x1="806" y1="726" x2="1174" y2="726" stroke="#d9a066" stroke-width="1.2"/>
+<line x1="806" y1="650" x2="1174" y2="650" stroke="#d9a066" stroke-width="1.2"/>
 
-  <text x="806" y="748" font-size="11" font-weight="700" fill="#495057">Três reforços de centavos, e o que cada um garante:</text>
-  <text x="806" y="766" font-size="10" fill="#495057">• pull-down de 10 kΩ em cada gate → fio rompido = relé solto</text>
-  <text x="806" y="780" font-size="10" fill="#495057">• pull-down de 10 kΩ em cada R_EN → pino solto = driver off</text>
-  <text x="806" y="794" font-size="10" fill="#495057">• watchdog de 2 s → travou, reseta, os pull-downs agem</text>
-  <text x="806" y="814" font-size="10" font-weight="700" fill="#212529">E o D25 CONFERE: mandou cortar, os 24 V caíram mesmo?</text>
+<text x="806" y="668" font-size="11.5" font-weight="700" fill="#9a3412">KA3 · contato NO — as 5 ventoinhas internas</text>
+<text x="806" y="684" font-size="10" fill="#7c2d12">D29 → IN3 + R12. O COM3→NO3 chaveia o +12 V das cinco.</text>
+<text x="806" y="697" font-size="10" font-weight="700" fill="#c2410c">Módulo solto = contato ABERTO = ventoinhas PARADAS.</text>
+<text x="806" y="710" font-size="10" fill="#7c2d12">E parado aqui É seguro: sem Arduino o KA1 já cortou a</text>
+<text x="806" y="723" font-size="10" fill="#7c2d12">potência, e o PTC é auto-limitado.</text>
+
+<line x1="806" y1="734" x2="1174" y2="734" stroke="#d9a066" stroke-width="1.2"/>
+
+<text x="806" y="752" font-size="11" font-weight="700" fill="#495057">Três reforços de centavos, e o que cada um garante:</text>
+<text x="806" y="767" font-size="10" fill="#495057">• pull-down de 10 kΩ em cada IN → fio rompido = relé solto</text>
+<text x="806" y="780" font-size="10" fill="#495057">• pull-down de 10 kΩ em cada R_EN → pino solto = driver off</text>
+<text x="806" y="793" font-size="10" fill="#495057">• watchdog de 2 s → travou, reseta, os pull-downs agem</text>
+<text x="806" y="813" font-size="10" font-weight="700" fill="#212529">E o D25 CONFERE: mandou cortar, os 24 V caíram mesmo?</text>
 
   <!-- ═══════════════════════ RODAPÉ ═══════════════════════ -->
   <rect x="50" y="852" width="1140" height="118" fill="#f8f9fa" stroke="#adb5bd" stroke-width="1.4"/>
-  <text x="66" y="874" font-size="12.5" font-weight="700" fill="#212529">OS DOIS SELOS NÃO SÃO IGUAIS — trocá-los na montagem inverte a norma</text>
+  <text x="66" y="874" font-size="12.5" font-weight="700" fill="#212529">DESTRAVAR NÃO RELIGA — e é por isso que um selo só basta para atender a ISO 13850</text>
 
-  <text x="66" y="898" font-size="11" font-weight="700" fill="#5f3dc4">Selo do KA1</text>
-  <text x="150" y="898" font-size="11" fill="#495057">desfaz-se na EMERGÊNCIA · refaz-se com o REARME azul · trava, e é a única coisa que trava</text>
-  <text x="66" y="918" font-size="11" font-weight="700" fill="#5f3dc4">Selo do KA2</text>
-  <text x="150" y="918" font-size="11" fill="#495057">desfaz-se no STOP (ou num trip do firmware, pelo KA3) · refaz-se com o START verde, no painel ou pela IHM</text>
+  <text x="66" y="898" font-size="11" fill="#495057">A norma não exige um botão de rearme separado: exige que soltar o cogumelo <tspan font-weight="700">não</tspan> religue a máquina, e que religar seja um ato deliberado. Aqui o cogumelo derruba o selo;</text>
+  <text x="66" y="915" font-size="11" fill="#495057">destravá-lo apenas devolve tensão à malha, com o selo ainda aberto; e o ato deliberado é apertar o verde. O botão azul de REARME fazia esse papel em um segundo relé — e virou um passo a mais.</text>
 
-  <text x="66" y="943" font-size="10.5" fill="#868e96">Aperte o STOP uma vez e solte: a bobina cai, o selo abre junto, e a potência NÃO volta. Memória sem uma linha de código — é o circuito clássico de partida-parada.</text>
-  <text x="66" y="960" font-size="10.5" fill="#868e96">Trocados na montagem, o STOP passa a exigir rearme e a emergência religa no botão verde — exatamente o inverso do que a norma pede.</text>
+  <text x="66" y="941" font-size="10.5" fill="#868e96">⭐ O que se ganhou ao juntar os dois: uma botoeira, um relé, um bloco de contato e seis fios a menos — e o fim do erro de montagem mais caro do painel, que era trocar os dois selos entre si.</text>
+  <text x="66" y="958" font-size="10.5" fill="#868e96">⚠ O que continua sem cobertura: o CONTATO do KM1 soldado. Ele conduz com a bobina desenergizada, e nem o cogumelo nem o preto agem sobre o contato. Só a chave geral resolve — §31.0.</text>
 </svg>

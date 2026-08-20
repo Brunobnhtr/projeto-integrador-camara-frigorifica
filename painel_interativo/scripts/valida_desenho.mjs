@@ -5,7 +5,7 @@
    consegue TERMINAR o risco em algum ponto. E não conseguia: os 21 fios
    da etapa 6 tinham uma ponta na câmara, que não é componente do
    painel, então a função de desenho devolvia nulo e o fio sumia.
-   O dado dizia que a ligação existia; a tela mostrava o MV-1 com os
+   O dado dizia que a ligação existia; a tela mostrava o módulo com os
    bornes de baixo vazios.
 
    Aqui a pergunta é a do montador: "abri o painel — todo borne que a
@@ -147,18 +147,23 @@ if (!cortaTrilho) ok('nenhum fio atravessa trilho onde não tem borne');
 /* ── 6. o retorno de quem manda sinal é 0 V DE VERDADE? ────────────────
    ⭐ A REGRA QUE FALTAVA, e ela pegou um erro que ia queimar o Mega.
 
-   As ventoinhas do radiador estavam no canal 1 do MV-1, que chaveia o
-   NEGATIVO. O tacômetro delas — o terceiro fio — tem o emissor
-   referenciado nesse mesmo negativo. Com o canal desligado, o negativo
-   sobe para perto de 12 V e empurra corrente pelo diodo de proteção do
-   pino do Arduino. E antes mesmo de estragar, a leitura já mentia:
-   canal desligado = "ventoinha parada", que é justamente o alarme que
-   deveria salvar a pastilha.
+   As ventoinhas do radiador estavam num canal do módulo MOSFET (o
+   MV-1), que chaveia o NEGATIVO. O tacômetro delas — o terceiro fio —
+   tem o emissor referenciado nesse mesmo negativo. Com o canal
+   desligado, o negativo sobe para perto de 12 V e empurra corrente pelo
+   diodo de proteção do pino do Arduino. E antes mesmo de estragar, a
+   leitura já mentia: canal desligado = "ventoinha parada", que é
+   justamente o alarme que deveria salvar a pastilha.
 
-   Quem manda sinal precisa de uma referência que NUNCA se mexe.      */
+   ⭐ O MV-1 saiu do projeto, e a regra FICA. Ela é o que impede o erro
+   de voltar: qualquer negativo comutado que apareça no caminho de um
+   sinal reprova aqui, venha ele de um MOSFET de lado baixo, de um
+   contato mal escolhido ou da saída M− de um BTS. Doc 31 §31.16.     */
 console.log('\n=== quem manda sinal tem 0 V firme como referência? ===');
 const chaveado = a => (a.comp === 'MV-1' && /^O\d[+−]$/.test(a.via))
   || (/^BTS/.test(a.comp ?? '') && /^M[+−]$/.test(a.via));
+/* O 'MV-1' continua na regra de propósito: se algum dia entrar de novo um
+   módulo de lado baixo com esse nome, o desenho reprova antes da bancada. */
 const pecaDe = a => a.camara ?? a.tampa ?? null;
 const porPeca = new Map();
 for (const f of FIOS)

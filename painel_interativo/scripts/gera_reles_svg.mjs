@@ -7,9 +7,12 @@
  *    D1, os pull-downs e os diodos de roda-livre não apareciam em lugar
  *    nenhum. Aqui eles aparecem — e no lugar físico onde são soldados.
  *
- *    KA1 e KA2 são relés de 8 pinos em base PTF08A (2 fileiras de 4
- *    parafusos). KA3 e KA4 são os dois canais de módulos de relé de 5 V,
- *    empilhados numa caixa DIN de 4M. São desenhos diferentes de propósito.
+ *    O KM1 é um relé de 8 pinos em base PTF08A (2 fileiras de 4
+ *    parafusos). KA1, KA2 e KA3 são três módulos de relé de 5 V,
+ *    empilhados numa caixa DIN de 6M. São desenhos diferentes de propósito.
+ *
+ *    ⭐ O KA3 é o mais novo: ele substituiu o módulo MOSFET de 4 canais
+ *    (MV-1) que ligava as 5 ventoinhas internas. Doc 31 §31.16.
  *
  *    Uso:  node scripts/gera_reles_svg.mjs            (confere)
  *          node scripts/gera_reles_svg.mjs --escreve  (redesenha)
@@ -30,32 +33,38 @@ const PAPEL = {
 
 /* ── os componentes discretos, e onde cada um mora ───────────────── */
 const DISCRETOS = {
-  KA2: [{ ref: 'D1', peca: '1N4007', onde: 'nos bornes A1 / A2', entre: ['A1', 'A2'],
-          porque: 'grampeia o pico da bobina — sem ele o contato do KA3 abre arco e solda',
+  KM1: [{ ref: 'D1', peca: '1N4007', onde: 'nos bornes A1 / A2', entre: ['A1', 'A2'],
+          porque: 'grampeia o pico da bobina — sem ele o contato do KA1 abre arco e solda',
           cuidado: 'catodo (faixa prateada) no A1. Invertido, curto-circuita a bobina' }],
-  KA3: [{ ref: 'R10', peca: '10 kΩ · ¼ W', onde: 'entre o IN3 e o 0 V, no borne do módulo',
+  KA1: [{ ref: 'R10', peca: '10 kΩ · ¼ W', onde: 'entre o IN1 e o 0 V, no borne do módulo',
           porque: 'fio do D27 rompido ou Arduino ausente → IN em 0 V → relé aberto → potência cortada',
           cuidado: 'é o que torna o fail-safe MEDÍVEL: ohmímetro entre IN e 0 V deve dar ~10 kΩ' }],
-  KA4: [{ ref: 'R11', peca: '10 kΩ · ¼ W', onde: 'entre o IN4 e o 0 V, no borne do módulo',
+  KA2: [{ ref: 'R11', peca: '10 kΩ · ¼ W', onde: 'entre o IN2 e o 0 V, no borne do módulo',
           porque: 'mesma função do R10 — mas aqui relé aberto significa ventoinha LIGADA',
           cuidado: 'idem: ~10 kΩ entre IN e 0 V' },
         { ref: 'D2', peca: '1N4007', onde: '⚠️ não fica aqui — vai junto das ventoinhas, na câmara',
           porque: 'roda-livre do motor: ventoinha é carga indutiva e nada mais a grampeia',
           cuidado: 'catodo no +12 V' }],
+  KA3: [{ ref: 'R12', peca: '10 kΩ · ¼ W', onde: 'entre o IN3 e o 0 V, no borne do módulo',
+          porque: 'mesma função do R10 e do R11 — pino solto = 0 V no IN = ventoinhas paradas',
+          cuidado: 'idem: ~10 kΩ entre IN e 0 V' },
+        { ref: 'D3', peca: '1N4007', onde: '⚠️ não fica aqui — vai junto das 5 internas, na câmara',
+          porque: 'roda-livre dos 5 motores: com MOSFET o diodo vinha dentro do módulo; com contato seco ele é peça de projeto',
+          cuidado: 'catodo no +12 V, emendado no mesmo ponto dos cinco positivos' }],
 };
 
-const COR = { KA1: '#5f3dc4', KA2: '#5f3dc4', KA3: '#c2410c', KA4: '#c2410c' };
+const COR = { KM1: '#5f3dc4', KA1: '#c2410c', KA2: '#c2410c', KA3: '#c2410c' };
 const SUB = {
-  KA1: 'SEGURANÇA — cai na emergência, só o REARME azul devolve',
-  KA2: 'PROCESSO — cai no STOP, só o START verde devolve · ⚡ contato de 6 A',
-  KA3: 'VETO DO FIRMWARE — em série com a bobina do KA2 · contato NO',
-  KA4: 'VENTOINHAS DO RADIADOR — chaveia o +12 V · contato NC ⭐',
+  KM1: 'O ÚNICO SELO — cai na emergência, no STOP e no trip; só o LIGAR verde devolve · ⚡ contato de 6 A',
+  KA1: 'VETO DO FIRMWARE — em série com a bobina do KM1 · contato NO',
+  KA2: 'VENTOINHAS DO RADIADOR — chaveia o +12 V · contato NC ⭐',
+  KA3: 'AS 5 VENTOINHAS INTERNAS — chaveia o +12 V · contato NO · entrou no lugar do MV-1 ⭐',
 };
 const ONDE = {
-  KA1: 'relé 8 pinos + base PTF08A · trilho 1',
-  KA2: 'relé 8 pinos + base PTF08A · trilho 1',
-  KA3: 'módulo de relé 1 canal 5 V · caixa DIN 4M, trilho 2',
-  KA4: 'módulo de relé 1 canal 5 V · mesma caixa do KA3',
+  KM1: 'relé 8 pinos + base PTF08A · trilho 1',
+  KA1: 'módulo de relé 1 canal 5 V · caixa DIN 6M, trilho 2',
+  KA2: 'módulo de relé 1 canal 5 V · mesma caixa do KA1',
+  KA3: 'módulo de relé 1 canal 5 V · mesma caixa, 3º módulo · trilho 2',
 };
 
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -74,7 +83,7 @@ function linhas(txt, max = 24) {
 
 const P_W = 600, P_H = 470, B_X = 92, B_W = 416, COL = B_W / 4;
 
-/* ═══ painel de um relé de 8 pinos (KA1, KA2) ═══════════════════════ */
+/* ═══ painel de um relé de 8 pinos (o KM1) ═════════════════════════ */
 function painelRele(id, ox, oy) {
   const c = COMPONENTES.find((k) => k.id === id);
   const cor = COR[id];
@@ -111,15 +120,15 @@ function painelRele(id, ox, oy) {
   return o.join('\n');
 }
 
-/* ═══ painel de um canal de módulo de relé (KA3, KA4) ═══════════════ */
+/* ═══ painel de um canal de módulo de relé (KA1, KA2) ═══════════════ */
 function painelModulo(id, ox, oy) {
-  const c = COMPONENTES.find((k) => k.id === 'KA34');
-  const n = id === 'KA3' ? '3' : '4';
+  const c = COMPONENTES.find((k) => k.id === 'KA123');
+  const n = id.slice(-1);
   const cor = COR[id];
   const usados = new Map();
   for (const g of c.grupos) for (const p of g.pinos) if (p.usa) usados.set(p.nome, p.para);
 
-  const o = [cabecalho(id, ox, oy, cor, `trilho ${c.trilho} · caixa DIN 4M`)];
+  const o = [cabecalho(id, ox, oy, cor, `trilho ${c.trilho} · caixa DIN 6M`)];
   const by = oy + 196;
   const MX = ox + 130, MW = 340;
 
@@ -141,9 +150,10 @@ function painelModulo(id, ox, oy) {
   });
 
   /* saída (embaixo): COM e o contato usado */
-  const contato = id === 'KA3' ? `NO${n}` : `NC${n}`;
-  const naoUsado = id === 'KA3' ? `NC${n}` : `NO${n}`;
-  const sai = [[`COM${n}`, 'comum do contato'], [contato, id === 'KA3' ? 'NO — aberto em repouso' : '⭐ NC — FECHADO em repouso']];
+  const usaNC = id === 'KA2';
+  const contato = usaNC ? `NC${n}` : `NO${n}`;
+  const naoUsado = usaNC ? `NO${n}` : `NC${n}`;
+  const sai = [[`COM${n}`, 'comum do contato'], [contato, usaNC ? '⭐ NC — FECHADO em repouso' : 'NO — aberto em repouso']];
   sai.forEach(([nome, papel], i) => {
     const cx = MX + 84 + i * 118, cy = by + 64;
     o.push(`    <circle cx="${cx}" cy="${cy}" r="11" fill="${cor}22" stroke="${cor}" stroke-width="2"/>`);
@@ -195,7 +205,7 @@ function discretos(id, ox, oy, cor) {
   if (!lista) {
     return [`    <rect x="${ox + 14}" y="${y}" width="${P_W - 28}" height="60" fill="#f8f9fa" stroke="#dee2e6" stroke-width="1"/>`,
       `    <text x="${ox + 24}" y="${y + 24}" font-size="11" font-weight="700" fill="#868e96">Sem componente discreto</text>`,
-      `    <text x="${ox + 24}" y="${y + 42}" font-size="9.5" fill="#adb5bd">Só fio nos parafusos e duas pontes curtas na própria base. O KA1 não é comandado por pino nenhum.</text>`];
+      `    <text x="${ox + 24}" y="${y + 42}" font-size="9.5" fill="#adb5bd">Só fio nos parafusos e ponte curta na própria base — nada de solda.</text>`];
   }
   const o = [`    <rect x="${ox + 14}" y="${y}" width="${P_W - 28}" height="60" fill="#fff9db" stroke="#e8a33d" stroke-width="1.2"/>`,
     `    <text x="${ox + 24}" y="${y + 17}" font-size="10.5" font-weight="700" fill="#8a6116">⚡ COMPONENTES DISCRETOS — não vão em placa nenhuma, vão nos bornes</text>`];
@@ -208,22 +218,22 @@ function discretos(id, ox, oy, cor) {
   return o;
 }
 
-const W = 1280, H = 1078;
+const W = 1280, H = 1650;
 const svg = [
   `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" font-family="Segoe UI, Arial, sans-serif">`,
   `  <rect width="${W}" height="${H}" fill="#ffffff"/>`,
   '  <!-- GERADO por painel_interativo/scripts/gera_reles_svg.mjs — NÃO EDITE À MÃO -->',
-  '  <text x="40" y="36" font-size="22" font-weight="700" fill="#111">LIGAÇÃO DOS RELÉS KA1 A KA4 — e os componentes que ficam nos bornes</text>',
-  '  <text x="40" y="57" font-size="12" fill="#555">KA1 e KA2: relé de 8 pinos em base PTF08A, trilho 1 · KA3 e KA4: módulos de relé de 5 V numa caixa DIN 4M, trilho 2 · Projeto Integrador CF-01</text>',
-  '  <text x="40" y="77" font-size="11.5" font-weight="700" fill="#c2410c">⚠ No relé de 8 pinos, o número GRAVADO na base não é o nome do desenho: o diagrama diz KA1·14, o parafuso tem gravado 5. É o erro de montagem mais comum.</text>',
-  painelRele('KA1', 40, 96),
-  painelRele('KA2', 660, 96),
-  painelModulo('KA3', 40, 586),
-  painelModulo('KA4', 660, 586),
+  '  <text x="40" y="36" font-size="22" font-weight="700" fill="#111">LIGAÇÃO DOS RELÉS KM1, KA1, KA2 E KA3 — e os componentes que ficam nos bornes</text>',
+  '  <text x="40" y="57" font-size="12" fill="#555">KM1: relé de 8 pinos em base PTF08A, trilho 1 — é o único da cadeia de comando · KA1, KA2 e KA3: módulos de relé de 5 V numa caixa DIN 6M, trilho 2 · Projeto Integrador CF-01</text>',
+  '  <text x="40" y="77" font-size="11.5" font-weight="700" fill="#c2410c">⚠ No relé de 8 pinos, o número GRAVADO na base não é o nome do desenho: o diagrama diz KM1·14, o parafuso tem gravado 5. É o erro de montagem mais comum.</text>',
+  painelRele('KM1', 340, 96),
+  painelModulo('KA1', 40, 586),
+  painelModulo('KA2', 660, 586),
+  painelModulo('KA3', 340, 1076),
   `  <rect x="40" y="${H - 82}" width="1200" height="62" fill="#f8f9fa" stroke="#adb5bd" stroke-width="1.3"/>`,
-  `  <text x="54" y="${H - 61}" font-size="11.5" font-weight="700" fill="#212529">O KA3 usa o NO e o KA4 usa o NC — e isso não é descuido.</text>`,
-  `  <text x="54" y="${H - 44}" font-size="10.5" fill="#495057">KA3: módulo sem energia = contato aberto = potência cortada. Estado seguro é DESLIGADO. · KA4: módulo sem energia = contato fechado = ventoinha girando. Estado seguro é LIGADO.</text>`,
-  `  <text x="54" y="${H - 27}" font-size="10.5" fill="#495057">Arduino morto, os dois caem juntos e para lados opostos: o KA3 corta a potência e o KA4 mantém o radiador. Primeiro para de gerar calor, depois continua tirando o que sobrou.</text>`,
+  `  <text x="54" y="${H - 61}" font-size="11.5" font-weight="700" fill="#212529">O KA1 e o KA3 usam o NO, o KA2 usa o NC — e isso não é descuido: cada um tem o estado seguro DELE.</text>`,
+  `  <text x="54" y="${H - 44}" font-size="10.5" fill="#495057">KA1: sem energia, contato aberto = potência cortada. · KA2: sem energia, contato fechado = ventoinha do radiador girando, porque dissipador quente mata a pastilha. · KA3: sem energia, ventoinhas internas paradas — não queimam nada, o PTC é auto-limitado.</text>`,
+  `  <text x="54" y="${H - 27}" font-size="10.5" fill="#495057">Arduino morto, os três caem juntos: o KA1 corta a potência, o KA2 mantém o radiador e o KA3 para o ar de dentro. Primeiro para de gerar calor, depois continua tirando o que sobrou.</text>`,
   '</svg>',
   '',
 ].join('\n');
@@ -240,4 +250,4 @@ if (!process.argv.includes('--escreve')) {
   process.exit(1);
 }
 writeFileSync(SAIDA, svg, 'utf8');
-console.log('desenhos/11_reles_ligacao.svg gerado — 2 relés de 8 pinos + 2 canais de módulo');
+console.log('desenhos/11_reles_ligacao.svg gerado — 1 relé de 8 pinos + 3 módulos de relé');

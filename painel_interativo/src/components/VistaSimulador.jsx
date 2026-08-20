@@ -62,8 +62,7 @@ export default function VistaSimulador() {
     };
     marca('estado', `estado → ${novo.estado}${novo.alerta ? ` (${novo.alerta})` : ''}`,
       novo.estado === 'EMERGENCIA' || novo.estado === 'FALHA' ? ALERTA : CX.texto);
-    marca('ka1', `selo do KA1 ${novo.ka1 ? 'FEITO' : 'PERDIDO'}`, novo.ka1 ? VIVO : ALERTA);
-    marca('ka2', `selo do KA2 ${novo.ka2 ? 'FEITO' : 'PERDIDO'}`, novo.ka2 ? VIVO : ALERTA);
+    marca('km1', `selo do KM1 ${novo.km1 ? 'FEITO' : 'PERDIDO'}`, novo.km1 ? VIVO : ALERTA);
     marca('bdPot', `BD-POT → ${novo.bdPot} V`, novo.bdPot ? VIVO : ALERTA);
     marca('ventRadiador', `ventoinha do radiador ${novo.ventRadiador ? 'ligada' : 'desligada'}`, CX.fraco);
     if (ev.length) setLog(l => [...ev, ...l].slice(0, 40));
@@ -137,8 +136,8 @@ export default function VistaSimulador() {
 
 /* ═══ O GUIA — sem ele, apertar botão "não faz nada" ═══════════════
    ⭐ Este painel tem uma SEQUÊNCIA, e ela é a coisa mais importante do
-     projeto: azul → verde → INICIAR. Apertar fora de ordem não faz
-     nada, e isso é o comportamento CORRETO — os dois selos existem
+     projeto: destravar → verde → INICIAR. Apertar fora de ordem não
+     faz nada, e isso é o comportamento CORRETO — o selo existe
      justamente para impedir atalho.
 
      Mas "correto e silencioso" é indistinguível de "quebrado" para
@@ -152,20 +151,17 @@ function Guia({ s }) {
     passo = 'Ligue a chave geral'; porque = 'Sem ela não há tensão em lugar nenhum.'; cor = ALERTA;
   } else if (b.s0Emergencia) {
     passo = '1. Destrave o cogumelo';
-    porque = 'Ele está socado e TRAVADO. Destravar não religa nada — é só o primeiro de três passos.';
+    porque = 'Ele está socado e TRAVADO. Destravar não religa nada — só devolve a tensão à cadeia. Com ele socado, o verde não faz nada.';
     cor = ALERTA;
-  } else if (!s.ka1) {
-    passo = '2. Aperte o REARME (azul)';
-    porque = 'O selo do KA1 está aberto, então a cadeia de comando está morta. O verde não faz nada enquanto isso.';
-  } else if (!s.ka2) {
-    passo = '3. Aperte o LIGAR (verde)';
-    porque = 'O KA1 já está selado, mas a potência ainda não foi armada — o BD-POT está em 0 V. O INICIAR da IHM vai recusar.';
+  } else if (!s.km1) {
+    passo = '2. Aperte o LIGAR (verde)';
+    porque = 'O selo do KM1 está aberto e o BD-POT está em 0 V. O verde refaz o selo — é o mesmo botão depois de um STOP, de uma emergência ou de um trip. O INICIAR da IHM vai recusar antes disso.';
   } else if (s.estado === 'FALHA') {
     passo = 'Reconheça o alarme: aperte o STOP';
     porque = `Trip por ${s.alerta}. Depois de reconhecer, ainda será preciso o verde para rearmar a potência.`;
     cor = ALERTA;
   } else if (s.estado !== 'RODANDO') {
-    passo = '4. Aperte INICIAR na IHM';
+    passo = '3. Aperte INICIAR na IHM';
     porque = 'A potência está armada (24 V no BD-POT) e a máquina está pronta. Agora sim o ensaio começa.';
     cor = '#2f9e44';
   } else {
@@ -189,7 +185,7 @@ function Guia({ s }) {
      por 3 s = o Mega morreu, e os dois acusam INDEPENDENTEMENTE.
 
      O ponto sutil: eles CONTAM, não ATUAM. Quando o Mega morre, quem
-     corta a potência é o pull-down no gate do KA3 — hardware, sem
+     corta a potência é o pull-down no IN do KA1 — hardware, sem
      software nenhum no caminho. Dar poder de atuação aos ESP faria a
      história de segurança PIOR, não melhor: seriam três atores no
      mesmo circuito em vez de um.                                    */
@@ -209,7 +205,7 @@ function Vigilancia({ s }) {
           basta cronometrar o silêncio. A IHM mostra e o dashboard publica.
           <br /><br />
           ⭐ <b>E repare que a potência já estava cortada.</b> Quem cortou foi o pull-down
-          no gate do KA3, em hardware. Os ESP não agiram — eles <b>contaram</b>. É essa
+          no `IN` do KA1, em hardware. Os ESP não agiram — eles <b>contaram</b>. É essa
           divisão que faz a vigilância não enfraquecer a segurança.
         </Aviso>
       )}
@@ -233,48 +229,40 @@ function Cadeia({ s: f }) {
   const vivoAte = {
     entrada: f.bd5v > 0,
     posEmerg: f.bd5v > 0 && !b.s0Emergencia,
-    ka1: f.ka1,
-    posStop: f.ka1 && !b.s2Stop,
-    ka2: f.ka2,
+    posStop: f.bd5v > 0 && !b.s0Emergencia && !b.s2Stop,
+    km1: f.km1,
   };
   const fio = (ok) => ({ stroke: ok ? VIVO : MORTO, strokeWidth: ok ? 3.5 : 2 });
 
   return (
     <Cartao titulo="A cadeia de comando" sub="verde = tem tensão · cinza = morto">
-      <svg viewBox="0 0 430 210" style={{ width: '100%' }}>
-        <text x="6" y="14" fontSize="9" fill={CX.fraco}>ESTÁGIO 1 · SEGURANÇA</text>
-        <line x1="12" y1="42" x2="60" y2="42" {...fio(vivoAte.entrada)} />
-        <text x="12" y="34" fontSize="8" fill={CX.fraco}>BD-24V</text>
-        <Contato x={60} y={42} on={!b.s0Emergencia} rot="S0 · NF" cor={b.s0Emergencia ? ALERTA : VIVO} />
-        <line x1="100" y1="42" x2="150" y2="42" {...fio(vivoAte.posEmerg)} />
-        <Contato x={150} y={42} on={b.s3Rearme} rot="S3 · NA" cor={b.s3Rearme ? VIVO : MORTO} />
-        <Contato x={150} y={72} on={f.ka1} rot="SELO KA1" cor={f.ka1 ? VIVO : MORTO} />
-        <line x1="150" y1="42" x2="150" y2="72" {...fio(vivoAte.posEmerg)} />
-        <line x1="190" y1="42" x2="230" y2="42" {...fio(vivoAte.ka1)} />
-        <line x1="190" y1="72" x2="230" y2="72" {...fio(vivoAte.ka1)} />
-        <line x1="230" y1="42" x2="230" y2="72" {...fio(vivoAte.ka1)} />
-        <Bobina x={230} y={42} nome="KA1" on={f.ka1} />
-
-        <text x="6" y="118" fontSize="9" fill={CX.fraco}>ESTÁGIO 2 · PROCESSO</text>
-        <line x1="12" y1="146" x2="60" y2="146" {...fio(vivoAte.ka1)} />
-        <text x="12" y="138" fontSize="8" fill={CX.fraco}>KA1 · 14</text>
-        <Contato x={60} y={146} on={!b.s2Stop} rot="S2 · NF" cor={b.s2Stop ? ALERTA : VIVO} />
-        <line x1="100" y1="146" x2="150" y2="146" {...fio(vivoAte.posStop)} />
-        <Contato x={150} y={146} on={b.s1Verde} rot="S1 · NA" cor={b.s1Verde ? VIVO : MORTO} />
-        <Contato x={150} y={176} on={f.ka2} rot="SELO KA2" cor={f.ka2 ? VIVO : MORTO} />
-        <line x1="150" y1="146" x2="150" y2="176" {...fio(vivoAte.posStop)} />
-        <line x1="190" y1="146" x2="230" y2="146" {...fio(vivoAte.ka2)} />
-        <line x1="190" y1="176" x2="230" y2="176" {...fio(vivoAte.ka2)} />
-        <line x1="230" y1="146" x2="230" y2="176" {...fio(vivoAte.ka2)} />
-        <Bobina x={230} y={146} nome="KA2" on={f.ka2} />
-        <line x1="272" y1="161" x2="310" y2="161" {...fio(vivoAte.ka2)} />
-        <Contato x={310} y={161} on={f.ka3} rot="KA3 · firmware" cor={f.ka3 ? VIVO : ALERTA} />
-        <line x1="350" y1="161" x2="400" y2="161" {...fio(vivoAte.ka2)} />
-        <text x="356" y="153" fontSize="8" fill={CX.fraco}>0 V</text>
+      <svg viewBox="0 0 430 150" style={{ width: '100%' }}>
+        <text x="6" y="14" fontSize="9" fill={CX.fraco}>AS DUAS PARADAS EM SÉRIE · UM SELO SÓ</text>
+        <line x1="12" y1="46" x2="46" y2="46" {...fio(vivoAte.entrada)} />
+        <text x="12" y="38" fontSize="8" fill={CX.fraco}>BD-24V</text>
+        <Contato x={46} y={46} on={!b.s0Emergencia} rot="S0 · NF" cor={b.s0Emergencia ? ALERTA : VIVO} />
+        <line x1="86" y1="46" x2="106" y2="46" {...fio(vivoAte.posEmerg)} />
+        <Contato x={106} y={46} on={!b.s2Stop} rot="S2 · NF" cor={b.s2Stop ? ALERTA : VIVO} />
+        <line x1="146" y1="46" x2="176" y2="46" {...fio(vivoAte.posStop)} />
+        <Contato x={176} y={46} on={b.s1Verde} rot="S1 · NA (LIGAR)" cor={b.s1Verde ? VIVO : MORTO} />
+        <Contato x={176} y={86} on={f.km1} rot="SELO KM1" cor={f.km1 ? VIVO : MORTO} />
+        <line x1="176" y1="46" x2="176" y2="86" {...fio(vivoAte.posStop)} />
+        <line x1="216" y1="46" x2="252" y2="46" {...fio(vivoAte.km1)} />
+        <line x1="216" y1="86" x2="252" y2="86" {...fio(vivoAte.km1)} />
+        <line x1="252" y1="46" x2="252" y2="86" {...fio(vivoAte.km1)} />
+        <Bobina x={252} y={46} nome="KM1" on={f.km1} />
+        <line x1="294" y1="61" x2="316" y2="61" {...fio(vivoAte.km1)} />
+        <Contato x={316} y={61} on={f.ka1} rot="KA1 · firmware" cor={f.ka1 ? VIVO : ALERTA} />
+        <line x1="356" y1="61" x2="400" y2="61" {...fio(vivoAte.km1)} />
+        <text x="362" y="53" fontSize="8" fill={CX.fraco}>0 V</text>
+        <line x1="294" y1="120" x2="400" y2="120" {...fio(f.bdPot > 0)} />
+        <text x="294" y="113" fontSize="8" fill={CX.fraco}>contato 11-14 ──► BD-POT</text>
       </svg>
       <p style={{ margin: '2px 4px 0', fontSize: 11, color: CX.fraco, lineHeight: 1.5 }}>
-        O <b>KA3</b> está <b>em série</b> com a bobina do KA2 — em série ele só pode
-        derrubar, nunca segurar contra uma botoeira.
+        Os dois blocos <b>NF</b> estão em série: qualquer um dos dois abre a mesma bobina.
+        O <b>KA1</b> também está <b>em série</b> — em série ele só pode derrubar, nunca
+        segurar contra uma botoeira. E quem refaz o selo, venha a parada de onde vier, é
+        sempre o <b>verde</b>.
       </p>
     </Cartao>
   );
@@ -676,11 +664,9 @@ function Botoeiras({ s: f, pulso, alternar }) {
   return (
     <Cartao titulo="Botoeiras da porta" sub="pulso — aperta e solta, como na vida real">
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 7 }}>
-        <Botao cor="#2f9e44" pisca={f.ka1 && !f.ka2 && !emerg}
+        <Botao cor="#2f9e44" pisca={!f.km1 && !emerg}
                onClick={() => pulso('s1Verde')}>S1 · LIGAR (verde)</Botao>
         <Botao cor="#212529" onClick={() => pulso('s2Stop')}>S2 · STOP (preto)</Botao>
-        <Botao cor="#1971c2" pisca={!f.ka1 && !emerg}
-               onClick={() => pulso('s3Rearme')}>S3 · REARME (azul)</Botao>
         <Botao cor={emerg ? '#e03131' : '#c92a2a'}
                onClick={() => alternar('botoes', 's0Emergencia')}>
           {emerg ? '↻ destravar cogumelo' : '⛔ S0 · EMERGÊNCIA'}
@@ -688,13 +674,14 @@ function Botoeiras({ s: f, pulso, alternar }) {
       </div>
       {emerg && (
         <Aviso cor={ALERTA}>
-          Cogumelo <b>socado e travado</b>. Destravar não religa nada — só o REARME azul
-          refaz o selo do KA1, e depois ainda falta o verde.
+          Cogumelo <b>socado e travado</b>. Destravar não religa nada — o selo do KM1 já se
+          perdeu, e quem o refaz é o <b>verde</b>. São três botoeiras na porta: o azul de
+          rearme deixou de existir justamente porque o verde faz o serviço dele.
         </Aviso>
       )}
-      {!f.ka2 && f.ka1 && !emerg && (
+      {!f.km1 && !emerg && (
         <Aviso cor={ATENCAO}>
-          Selo do KA2 perdido. <b>Só o botão verde</b> traz os 24 V de volta — a IHM não consegue.
+          Selo do KM1 perdido. <b>Só o botão verde</b> traz os 24 V de volta — a IHM não consegue.
         </Aviso>
       )}
     </Cartao>
@@ -725,14 +712,14 @@ function Comandos({ s: f, mexer }) {
 }
 
 const FALHAS = [
-  ['arduinoMorto', 'Arduino morre', 'o KA3 abre e a potência cai — e não volta sozinha'],
-  ['btsPeltierEmCurto', '🔥 BTS7960 em curto', 'conduz ignorando o R_EN. Só o KA3 ou as botoeiras param'],
+  ['arduinoMorto', 'Arduino morre', 'o KA1 abre e a potência cai — e não volta sozinha'],
+  ['btsPeltierEmCurto', '🔥 BTS7960 em curto', 'conduz ignorando o R_EN. Só o KA1 ou as botoeiras param'],
   ['fanTravada', 'Ventoinha travada', 'RPM = 0 → trip em 5 s, com corte físico'],
   ['ds18Solto', 'DS18B20 solto', 'lê −127 °C → conta como QUENTE e a ventoinha LIGA'],
-  ['ka3Colado', 'Contato do KA3 soldado', 'o veto do firmware some; as botoeiras seguem'],
-  ['ka4Aberto', '🔥 Contato do KA4 aberto', 'o radiador nunca ventila — só o trip por RPM acusa'],
-  ['ka4Colado', 'Contato do KA4 soldado', 'ventoinha do radiador sempre ligada: seguro, gasta 5 W à toa'],
-  ['ka2Colado', '🔥 Contato do KA2 soldado', 'nem o STOP nem a emergência cortam. Só a chave geral'],
+  ['ka1Colado', 'Contato do KA1 soldado', 'o veto do firmware some; as botoeiras seguem'],
+  ['ka2Aberto', '🔥 Contato do KA2 aberto', 'o radiador nunca ventila — só o trip por RPM acusa'],
+  ['ka2Colado', 'Contato do KA2 soldado', 'ventoinha do radiador sempre ligada: seguro, gasta 5 W à toa'],
+  ['km1Colado', '🔥 Contato do KM1 soldado', 'nem o STOP nem a emergência cortam. Só a chave geral'],
   ['geralDesligada', 'Chave geral desligada', 'tudo morre, inclusive a eletrônica'],
 ];
 

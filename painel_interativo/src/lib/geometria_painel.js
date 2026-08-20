@@ -164,9 +164,9 @@ export const calhaDe = classe =>
    ⭐ ESTAS SUMIAM. Eram desenhadas como um L de um borne ao outro, em
    linha reta pelo meio do componente — e como os componentes são
    desenhados POR CIMA da fiação, a ponte ficava escondida atrás do
-   corpo do relé. No KA1 isso deixava DOIS bornes amarelos
+   corpo do relé. No KM1 isso deixa DOIS bornes amarelos
    aparentemente soltos: o 21 e o 24. E o do 24 é o SELO, que é o fio
-   que segura o relé ligado depois que você solta o rearme.
+   que segura o relé ligado depois que você solta o botão verde.
 
    Ponte de verdade contorna o componente por fora, que é onde a chave
    de fenda alcança o parafuso. É assim que ela se desenha agora.     */
@@ -205,7 +205,7 @@ function tracarPonte(f, a, b) {
   const sb = paraFora(b.p, b.lado ?? b.grupo.lado, folga);
   const pts = [a.p.slice(), sa];
   /* ⭐ BORDAS DIFERENTES: dá a volta pelo lado. Comparar as COORDENADAS
-     não bastava — o 11 e o 21 do KA1 estão um em cada fileira mas no
+     não bastava — o 11 e o 21 do KM1 estão um em cada fileira mas no
      mesmo x, e a ponte saía como um risco reto de cima a baixo,
      atravessando o relé por dentro. Quem manda é a BORDA. */
   if ((a.lado ?? a.grupo.lado) !== (b.lado ?? b.grupo.lado)) {

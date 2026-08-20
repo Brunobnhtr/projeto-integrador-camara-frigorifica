@@ -131,8 +131,8 @@ Quando precisarem se cruzar, cruze a **90°**. Cabos paralelos "conversam" por i
    ═══╪═════════════╪════════════╪═══════╪════ ENTRA NO PAINEL
       │             │            │       │      (3 prensa-cabos separados)
   ┌───┴────┐        │            │       │
-  │  KA2   │        │            │       │   ⚡ relé de interface 24 V, contato 10 A
-  │ 11→14  │        │            │       │      bobina: KA1 → STOP → KA2
+  │  KM1   │        │            │       │   ⚡ relé de interface 24 V, contato 10 A
+  │ 11→14  │        │            │       │      bobina: EMERG → STOP → KM1
   └───┬────┘        │            │       │
       ▼             ▼            ▼       ▼
  ┌─────────┐  ┌─────────┐  ┌─────────┐ ┌──────────┐
@@ -151,22 +151,22 @@ Quando precisarem se cruzar, cruze a **90°**. Cabos paralelos "conversam" por i
                              todos os retornos convergem aqui
 
    ┌──────────────────────────────────────────────────────┐
-   │ BD-24V (24 V PERMANENTE, não passa pelo KA2)         │
+   │ BD-24V (24 V PERMANENTE, não passa pelo KM1)         │
    │  ← ramal RM3, derivação no poste P3                   │
-   │  → DNLCB30/ESP32 · cadeia de comando (KA1/KA2) ·     │
+   │  → DNLCB30/ESP32 · cadeia de comando (KM1) ·         │
    │    (os sinaleiros saíram daqui: viraram de 5 V)      │
    │    NÃO cai com a emergência — de propósito: o        │
    │    sinaleiro de FALHA precisa continuar aceso        │
    └──────────────────────────────────────────────────────┘
 ```
 
-> ⚠️ **Os dois barramentos de 24 V não são a mesma coisa.** O **BD-POT** vem do ramal RM1, passa pelo KA2 e **cai com a emergência**. O **BD-24V** vem do ramal RM3, é **permanente**, e é o que mantém o ESP32 vivo para publicar o evento. Anilhas de cores diferentes nos dois.
+> ⚠️ **Os dois barramentos de 24 V não são a mesma coisa.** O **BD-POT** vem do ramal RM1, passa pelo KM1 e **cai com a emergência**. O **BD-24V** vem do ramal RM3, é **permanente**, e é o que mantém o ESP32 vivo para publicar o evento. Anilhas de cores diferentes nos dois.
 
 > 🔄 **Onde fica o corte de emergência:** entre o prensa-cabo de entrada e o bloco BD-POT.
 >
-> Quem corta é o **KA2**, um **relé de interface** de 24 V com contato de 10 A. A bobina dele é alimentada pelo **KA1** (o relé de habilitação, que tem selo e cai na emergência) através do **bloco NF do STOP**. Assim, **STOP e EMERGÊNCIA cortam os dois em hardware** — e só a emergência trava. Ver [Doc 31 §31.0](31_comando_e_protecoes.md).
+> Quem corta é o **KM1**, um **relé de interface** de 24 V com contato de 10 A. A bobina dele é alimentada pelo BD-24V através dos **dois blocos NF em série** — o do cogumelo e o do STOP — e se segura por um **selo** (o contato 21-24 do próprio relé). Assim, **STOP e EMERGÊNCIA cortam em hardware, os dois retêm**, e só o botão verde religa. Ver [Doc 31 §31.0](31_comando_e_protecoes.md).
 
-> ⚠️ **Mudou o que o KA2 chaveia.** Antes eram 12 V / 6,3 A; agora são **24 V / 6,0 A**. A corrente é praticamente a mesma, mas **a tensão dobrou** — e corrente contínua em 24 V é mais difícil de interromper que em 12 V, porque o arco custa mais a extinguir. **Confirme que o contato do relé é declarado para 10 A em DC**, não só "10 A / 250 VAC": muitos modelos caem para 5 A ou menos em corrente contínua.
+> ⚠️ **Mudou o que o KM1 chaveia.** Antes eram 12 V / 6,3 A; agora são **24 V / 6,0 A**. A corrente é praticamente a mesma, mas **a tensão dobrou** — e corrente contínua em 24 V é mais difícil de interromper que em 12 V, porque o arco custa mais a extinguir. **Confirme que o contato do relé é declarado para 10 A em DC**, não só "10 A / 250 VAC": muitos modelos caem para 5 A ou menos em corrente contínua.
 
 ---
 
@@ -263,12 +263,12 @@ Em cada poste, tira-se **dois fios** da linha: o positivo daquele ramal e o reto
 | ~~29~~ | ~~Alimentação do leitor~~ | — | **Não existe mais** — display integrado ao LM2596 |
 | 30 | **Saída 12 V AUX** | **0,75 mm²** ⬆ | **T3 OUT+** → desce pelo tubo → base → **PG7 do painel** |
 | 31 | **Retorno AUX** | **0,75 mm²** ⬆ | **T3 OUT−** → desce pelo tubo → base → painel |
-| 32 | **+24 V serviços** | 0,5 mm² | Derivação R3 no P3 → desce pelo tubo → painel (**DNLCB30 e bobinas KA1/KA2**) |
+| 32 | **+24 V serviços** | 0,5 mm² | Derivação R3 no P3 → desce pelo tubo → painel (**DNLCB30 e bobina do KM1**) |
 | 33 | **Retorno do 24 V** | 0,5 mm² | Derivação 0 V no P3 → painel |
 
 > ⬆ **A saída do T3 subiu para 0,75 mm²:** o ramal auxiliar passou de 0,59 A para **0,87 A**, porque herdou as 4 fans internas do antigo ramal de 12 V e ganhou o segundo cooler externo da Peltier.
 
-> ⚠️ **O cabo #32 é fácil de esquecer.** A DNLCB30 (que alimenta o ESP32) e as bobinas dos relés **KA1 e KA2** trabalham em **24 V**, não em 12 nem em 5. Esse par de fios desce junto com a saída do T3, pelo mesmo tubo do poste P3.
+> ⚠️ **O cabo #32 é fácil de esquecer.** A DNLCB30 (que alimenta o ESP32) e a bobina do relé **KM1** trabalham em **24 V**, não em 12 nem em 5. Esse par de fios desce junto com a saída do T3, pelo mesmo tubo do poste P3.
 
 > 🗑️ **Os cabos 24 e 29 foram eliminados.** Eles alimentavam os voltímetros avulsos que ficavam na frente de T2 e T3. Com o **LM2596 de display integrado**, o instrumento é o próprio conversor — e o que se vê pela janela de acrílico é o display dele. Sobrou **um** medidor comprado à parte, o do P1 (cabo #19), que mostra tensão **e corrente**.
 
@@ -295,10 +295,10 @@ Num painel de verdade **não existem 24 cores de fio**. A cor diz **que circuito
 
 | Cor | Função | Onde aparece |
 |---|---|---|
-| 🔴 **vermelho** | +24 V de **POTÊNCIA** | entra pelo PG9-1, passa pelo KA2, alimenta o BD-POT e os dois BTS. **Cai na emergência** |
+| 🔴 **vermelho** | +24 V de **POTÊNCIA** | entra pelo PG9-1, passa pelo KM1, alimenta o BD-POT e os dois BTS. **Cai na emergência** |
 | 🟠 **laranja** | +24 V de **SERVIÇOS** | cadeia de comando, DNLCB30, sinaleiros, posições de ensaio. **Permanece energizado** |
-| 🟡 amarelo | +12 V auxiliar | do T3 até o MV-1 |
-| 🟣 violeta | +5 V de lógica | Arduino, tela, RTC, PI-1, sensor de corrente, lado de comando do MV-1 |
+| 🟡 amarelo | +12 V auxiliar | do T3 até o BD-AUX e daí aos contatos do KA2 e do KA3 |
+| 🟣 violeta | +5 V de lógica | Arduino, tela, RTC, PI-1, sensor de corrente, os três módulos de relé |
 | 🔵 azul escuro | 0 V comum | todos os retornos |
 | 🟢 verde | analógico e medição | IS dos BTS, SIG do mux, retornos das posições |
 | ⚫ cinza | sinal digital | Arduino ↔ módulos |
@@ -345,8 +345,8 @@ Num painel de verdade **não existem 24 cores de fio**. A cor diz **que circuito
 
 | # | Cabo | Cor | Seção | De → Para |
 |---|---|---|---|---|
-| 34 | **24 V potência** | Vermelho | 1,5 mm² | PG9-1 (X=50) → **KA2 · contato 11** (comum) |
-| 35 | **24 V potência comandado** | Vermelho | 1,5 mm² | **KA2 · contato 14** (NA) → **BD-POT** entrada |
+| 34 | **24 V potência** | Vermelho | 1,5 mm² | PG9-1 (X=50) → **KM1 · contato 11** (comum) |
+| 35 | **24 V potência comandado** | Vermelho | 1,5 mm² | **KM1 · contato 14** (NA) → **BD-POT** entrada |
 | ⭐ **36** | **0 V comum — o único** | **Azul claro** | **1,5 mm²** | PG9-1 (X=50) → **BD-0V** entrada. Conduz a soma de tudo: **6,9 A** no pior caso |
 | 37 | 5 V | Laranja | 0,5 mm² | PG7-1 (X=110) → **BD-5V** entrada (direto, sem fusível) |
 | ~~38~~ | — | — | — | **vago** — era o "retorno 5 V" |
@@ -407,10 +407,10 @@ Esta seção descrevia uma placa com três diodos Zener (5V6 / 13 V / 15 V) que 
 >
 > 🔌 **A saída 4 do BD-24V alimenta os 4 porta-fusíveis das posições de ensaio com UM fio só.** Isso só funciona se o porta-fusível for de **4 vias com barramento de entrada comum** (ou 4 individuais unidos por um **pente**). Se você comprar 4 porta-fusíveis avulsos sem pente, precisará de **4 saídas** no BD-24V em vez de 1 — ou seja, um bloco de **9 saídas**.
 | ~~57i–57l~~ | ~~Negativo dos 4 sinaleiros~~ | — | 🗑️ **saíram:** o sinaleiro virou de 5 V e o pino do Arduino o acende direto. Sobrou um retorno só, do último sinaleiro ao `GND2` do Mega |
-| 57b | Cadeia do selo | 0,5 mm² | **S0 saída** → **S3 REARME (NA)** e **KA1 contato de selo (NA)**, em paralelo → **KA1 · A1** |
-| 57d | Retorno da bobina do KA1 | 0,5 mm² | **KA1 · A2** → **BD-0V** |
-| 57e | Saída do KA1 → STOP | 0,5 mm² | **KA1 contato de saída (NA)** → **S2 bloco NF de 24 V** |
-| 57f | Bobina do KA2 | 0,5 mm² | **S2 saída** → **KA2 · A1**. O A2 vai ao **BD-0V** |
+| 57b | As duas paradas em série | 0,5 mm² | **S0 saída (NF)** → **S2 bloco NF de 24 V** |
+| 57e | Nó do selo | 0,5 mm² | **S2 saída** → **S1 · 13 (LIGAR, NA)** e **KM1 · 21** (comum do contato de selo) |
+| 57f | Bobina do KM1 | 0,5 mm² | **S1 · 14 (NA)** e **KM1 · 24 (o selo)**, em paralelo → **KM1 · A1** |
+| 57d | Retorno da bobina do KM1 | 0,5 mm² | **KM1 · A2** → **contato do KA1** → **BD-0V** |
 | 57c | Realimentação D25 | 0,25 mm² | **BD-POT (24 V)** → borne `+24V` da **placa PI-1** (divisor **22 kΩ / 4,7 kΩ**) → borne `D25` → **Arduino D25**. ⚠️ Os resistores ficam **na PI-1**, não no meio do cabo — ver [Doc 33 §33.2](33_placa_interface_componentes.md) |
 | 58 | 0 V (todos os módulos) | 0,25–0,5 mm² | **BD-0V** → GND de Arduino, tela ES3C28P, RTC, DNLCB30, cooler |
 
@@ -440,13 +440,13 @@ Esta seção descrevia uma placa com três diodos Zener (5V6 / 13 V / 15 V) que 
 
 > 🔥 **Correção — o DS18B20 é de TRÊS fios, e a tabela listava um.** Faltavam o VCC e o GND (itens 64f e 64g). Sem o VCC o sensor não liga; sem o GND o barramento 1-Wire não tem referência e a leitura sai lixo — quando sai. A versão de dois fios existe (alimentação parasita) mas **não é a usada aqui**.
 
-> 🔥 **Correção — os coolers do radiador NÃO passam pelo MV-1.** Este documento já dizia que eles ficam sempre ligados (ver a nota logo abaixo), mas o [Doc 32](32_sinais_e_sensores.md) os tinha posto no canal 1 do MV-1, e a fiação seguiu o Doc 32. O canal 1 chaveia o **negativo** — e o tacômetro da ventoinha tem o emissor referenciado nesse mesmo negativo. Com o canal desligado o preto sobe para perto de 12 V e empurra corrente pelo diodo de proteção do pino D3. **O canal 1 do MV-1 e o D27 do Mega ficaram livres.**
+> 🔥 **Correção — os coolers do radiador NÃO passam pelo MV-1.** Este documento já dizia que eles ficam sempre ligados (ver a nota logo abaixo), mas o [Doc 32](32_sinais_e_sensores.md) os tinha posto no canal 1 do MV-1, e a fiação seguiu o Doc 32. O canal 1 chaveia o **negativo** — e o tacômetro da ventoinha tem o emissor referenciado nesse mesmo negativo. Com o canal desligado o preto sobe para perto de 12 V e empurra corrente pelo diodo de proteção do pino D3. **O canal 1 do MV-1 e o D27 do Mega ficaram livres.** 📌 E, mais tarde, o MV-1 inteiro saiu do painel: as 5 ventoinhas internas passaram para o **KA3**, terceiro módulo de relé na caixa DIN do trilho 2 ([Doc 31 §31.16](31_comando_e_protecoes.md)).
 
 > ⚠️ **Duas Peltier significam dois coolers e dois sinais de RPM.** O pino D2 já é do 1-Wire, então o **segundo tacômetro precisa de outro pino de interrupção**. No Mega, as interrupções externas ficam em D2, D3, D18, D19, D20 e D21 — e D18–D21 já estão ocupados por Serial1 e I²C. **Use D3 (INT1) para o cooler #1 e uma interrupção por mudança de pino (PCINT) para o cooler #2**, ou realoque a Serial1. 📌 **Definir em [Doc 32](32_sinais_e_sensores.md) e [Doc 40](../camada_4_programacao/40_firmware_arduino.md) antes de fechar a fiação.**
 
 > ⚠️ **Os coolers externos das Peltier NÃO passam pelos BTS.** Vêm do ramal auxiliar, então **sobrevivem ao STOP e à emergência** — se dependessem do BTS, ao desligar a Peltier os dissipadores parariam de ser ventilados justamente quando ainda estão cheios de calor.
 >
-> 🔧 **Mas eles já não ficam ligados o tempo todo.** A revisão de [Doc 31 §31.14](31_comando_e_protecoes.md) devolveu o comando: o **contato NF do KA4** (relé de 8 pinos, igual ao KA1/KA2) chaveia o **lado positivo** dos 12 V — nunca o negativo, que é a referência do tacômetro e foi o que quebrou antes. A regra é uma só: **ligados enquanto a Peltier resfria OU enquanto o DS18B20 disser que o dissipador está quente.** Eles param apenas depois de a pós-ventilação terminar, e o `!sensorOK` conta sensor com defeito como *quente*. Economiza ~5 W de marcha lenta e os ~2,5 W de fuga térmica que atrapalhavam o PTC.
+> 🔧 **Mas eles já não ficam ligados o tempo todo.** A revisão de [Doc 31 §31.14](31_comando_e_protecoes.md) devolveu o comando: o **contato NF do KA2** (módulo de relé de 5 V) chaveia o **lado positivo** dos 12 V — nunca o negativo, que é a referência do tacômetro e foi o que quebrou antes. A regra é uma só: **ligados enquanto a Peltier resfria OU enquanto o DS18B20 disser que o dissipador está quente.** Eles param apenas depois de a pós-ventilação terminar, e o `!sensorOK` conta sensor com defeito como *quente*. Economiza ~5 W de marcha lenta e os ~2,5 W de fuga térmica que atrapalhavam o PTC.
 
 ### Distribuição dentro da câmara
 
@@ -543,7 +543,7 @@ Não há mais crowbar no projeto. Em substituição, confirme as proteções que
 
 > Retire fisicamente Arduino, ESP32, tela ES3C28P, RTC **e a placa PI-1** dos suportes antes deste teste.
 
-- [ ] **BD-POT**: **24,0 V** (após apertar o REARME; os LEDs do KA1 e do KA2 acendem)
+- [ ] **BD-POT**: **24,0 V** (após apertar o LIGAR verde; o LED do KM1 acende)
 - [ ] **BD-5V**: 5,10 V
 - [ ] **BD-AUX**: 12,0 V
 - [ ] **BD-24V**: 24,0 V
@@ -555,7 +555,7 @@ Não há mais crowbar no projeto. Em substituição, confirme as proteções que
 ### Teste 4b — Placa de interface PI-1 e pull-downs dos BTS
 
 - [ ] Ensaios de continuidade da PI-1 aprovados **antes** de encaixá-la ([Doc 33 §33.3](33_placa_interface_componentes.md))
-- [ ] Com o KA2 fechado, medir o borne `D25` da PI-1: **4,2 V ± 0,3 V**. Com a emergência acionada: **0 V**
+- [ ] Com o KM1 fechado, medir o borne `D25` da PI-1: **4,2 V ± 0,3 V**. Com a emergência acionada: **0 V**
 - [ ] Com o Arduino fora, medir `R_EN` de cada BTS7960 contra o `GND` dele: **~0 V** com o painel energizado, e **~10 kΩ** de resistência
 
 ### Teste 5 — Eletrônica
@@ -582,10 +582,10 @@ Recoloque os módulos **um de cada vez**, medindo os 5 V antes de cada inserçã
 - [ ] **5 entradas separadas** no painel, uma por tensão
 - [ ] **5 blocos de distribuição** ligados e conferidos saída por saída
 - [ ] ⭐ **BD-POT e BD-24V confirmados como circuitos independentes** (teste da emergência, §30.8 Teste 4)
-- [ ] **KA1** (2 contatos) com selo, emergência em série com a bobina
-- [ ] **KA2** cortando os **24 V** (contatos 11 → 14), STOP em série com a bobina
-- [ ] Contato do KA2 confirmado como **≥ 10 A em DC** (a carga é 6,0 A em 24 Vcc)
-- [ ] Botão azul de **REARME** ligado em paralelo com o contato de selo do KA1
+- [ ] **KM1** (2 contatos): o `11-14` cortando os **24 V** e o `21-24` fazendo o **selo**
+- [ ] **Emergência e STOP em série** com a bobina do KM1, nessa ordem
+- [ ] Contato do KM1 confirmado como **≥ 10 A em DC** (a carga é 6,0 A em 24 Vcc)
+- [ ] Botão **verde** ligado em paralelo com o contato de selo (`24` → `A1`)
 - [ ] ⭐ **Placa PI-1 montada e ensaiada**; **10 kΩ soldados nos 2 BTS7960** — [Doc 33](33_placa_interface_componentes.md)
 - [ ] ⭐ **As 2 Peltier em SÉRIE** — resistência do conjunto = 2× a de uma pastilha isolada
 - [ ] ⭐ **As 4 fans internas alimentadas pelo BD-AUX (12 V)**, nunca pelo borne de 24 V

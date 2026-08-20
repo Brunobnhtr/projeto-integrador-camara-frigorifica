@@ -92,13 +92,13 @@ def termo_de_busca(item: str) -> str:
         return [p for p in t.split() if p not in RUIDO]
 
     # Normalmente o que interessa está ANTES do travessão ("Fonte — 24 V ...").
-    # Mas em itens como "KA1 — Relé de interface 24 Vcc" o rótulo do projeto
+    # Mas em itens como "KM1 — Relé de interface 24 Vcc" o rótulo do projeto
     # vem antes e o nome do produto vem depois. Se o começo render menos de
     # 2 palavras úteis, ele é rótulo: usa-se o nome completo.
     palavras = palavras_de(texto.split("—")[0].split("·")[0])
     if len(palavras) < 2:
         palavras = palavras_de(texto.replace("—", " ").replace("·", " "))
-        # "KA1", "T2", "F1" são identificadores do projeto, não do produto.
+        # "KM1", "T2", "F1" são identificadores do projeto, não do produto.
         # Numa busca em loja eles só atrapalham.
         while palavras and re.fullmatch(r"[a-z]{1,3}\d{1,2}", palavras[0]):
             palavras.pop(0)
@@ -132,8 +132,7 @@ BUSCA_ALIEXPRESS = {
     # Reles: so entram com MARCA e MODELO. O criterio nao e "importado e
     # ruim" - e que o datasheet precisa declarar a corrente em DC, e
     # anuncio generico ("24V 10A Relay Module") nao declara.
-    "ka1":                       "JQX-13F LY2N 24VDC relay 8 pin 2CO with socket",
-    "ka2":                       "JQX-13F LY2N 24VDC relay 10A 8 pin PTF08A socket",
+    "km1":                       "JQX-13F LY2N 24VDC relay 10A 8 pin PTF08A socket",
     "kit duplo de refrigera":     "dual TEC1-12706 peltier cooler kit 12V",
     "peltier tec1-12706":        "TEC1-12706 peltier module",
     "ventoinha de reposi":       "80mm fan 12V 3 pin PWM tachometer",
@@ -167,8 +166,7 @@ BUSCA_ALIEXPRESS = {
     "sinaleiros led 22":         "22mm LED pilot indicator lamp 24V",
     "botão de emergência":       "22mm emergency stop mushroom button",
     "botão start":               "22mm push button switch green",
-    "botão stop":                "22mm push button switch red",
-    "botão rearme":              "22mm push button switch blue",
+    "botão stop":                "22mm push button switch black",
     "blocos de contato":         "22mm push button contact block NO NC",
     "voltímetro + amperímetro":  "DC voltmeter ammeter 100V 10A digital",
     "pigtail":                   "IPEX u.FL to SMA pigtail cable",
@@ -309,8 +307,8 @@ REACT_INVENTARIO = [
     ("Painel", "BD-5V", 1, "5 V, 1 entrada + 8 saidas", "painel_interativo/src/data/painel_completo.js"),
     ("Painel", "BD-0V", 1, "barra star ground, minimo 20 pontos", "painel_interativo/src/data/painel_completo.js"),
     ("Painel", "BTS7960", 2, "1 para Peltier; 1 para PTC", "painel_interativo/src/data/painel_completo.js"),
-    ("Painel", "Rele 8 pinos + base DIN", 2, "KA1 e KA2, bobina 24 Vcc; KA2 com contato 10 A em CC", "painel_interativo/src/data/reles_fisico.js"),
-    ("Painel", "Modulo rele 1 canal 5 V", 2, "KA3 NO e KA4 NC, optoacoplados", "painel_interativo/src/data/reles_fisico.js"),
+    ("Painel", "Rele 8 pinos + base DIN", 2, "KM1 (1 em uso + 1 reserva), bobina 24 Vcc, contato 10 A em CC", "painel_interativo/src/data/reles_fisico.js"),
+    ("Painel", "Modulo rele 1 canal 5 V", 3, "KA1 NO, KA2 NC e KA3 NO, optoacoplados; caixa DIN 6M", "painel_interativo/src/data/reles_fisico.js"),
     ("Painel", "Arduino Mega 2560", 1, "Controlador principal", "painel_interativo/src/data/painel_completo.js"),
     ("Painel", "Placa PI-1", 1, "Placa ilhada com ULN2803A, filtros e divisor D25", "painel_interativo/src/data/pi1_fisico.js"),
     ("Painel", "Placa PI-2", 1, "Placa ilhada com CD74HC4067, shunts e INA219", "painel_interativo/src/data/pi2_fisico.js"),
@@ -318,7 +316,7 @@ REACT_INVENTARIO = [
     ("Painel", "ES3C28P ESP32-S3", 1, "IHM 2,8 pol, touch, microSD; alimentacao pelo Type-C", "painel_interativo/src/data/pinagens.js"),
     ("Painel", "Conversor de nivel UART", 1, "2 canais, 5 V <-> 3,3 V", "painel_interativo/src/data/pinagens.js"),
     ("Painel", "Sinaleiro LED 22 mm 24 V", 4, "RUN verde, COOL azul, HEAT amarelo, FAULT vermelho", "painel_interativo/src/data/painel.js"),
-    ("Painel", "Botoeiras", 4, "Emergencia, START, STOP e REARME", "painel_interativo/src/data/painel.js"),
+    ("Painel", "Botoeiras", 3, "Emergencia (cogumelo), LIGAR verde e STOP preto", "painel_interativo/src/data/painel.js"),
     ("Camara", "Peltier TEC1-12706", 2, "Ligadas em serie, carga de 24 V / aproximadamente 6 A", "painel_interativo/src/data/camara.js"),
     ("Camara", "PTC 24 V", 1, "Aquecedor; comandado pelo BTS #2", "painel_interativo/src/data/camara.js"),
     ("Camara", "Ventoinhas internas 12 V", 5, "4 de circulacao + 1 do PTC, em paralelo", "painel_interativo/src/data/camara_ligacoes.js"),
@@ -333,7 +331,7 @@ REACT_INVENTARIO = [
 
 REACT_FIACAO = [
     ("127 V CA", "preto / azul / verde-amarelo", "1,5 mm2", "Tomada -> disjuntor -> fonte; PE aterra a carcaça", "painel_interativo/src/data/maquete.js"),
-    ("24 V potencia", "vermelho", "1,5 mm2", "P1/painel -> KA2 -> BD-POT -> BTS", "painel_interativo/src/data/fiacao.js"),
+    ("24 V potencia", "vermelho", "1,5 mm2", "P1/painel -> KM1 -> BD-POT -> BTS", "painel_interativo/src/data/fiacao.js"),
     ("0 V comum", "preto ou azul escuro", "1,5 mm2", "Retorno geral e star ground BD-0V", "painel_interativo/src/data/fiacao.js"),
     ("24 V linha R1", "vermelho rigido encapado", "1,00 mm2", "Ramal das Peltier, 6,0 A", "painel_interativo/src/data/maquete.js"),
     ("24 V linha R2", "marrom rigido encapado", "0,50 mm2", "Ramal do T2 e 24 V de servicos", "painel_interativo/src/data/maquete.js"),
@@ -390,12 +388,12 @@ def aplicar_react_como_fonte(itens: list[dict]) -> list[dict]:
         elif "arduino mega 2560" in item:
             reg["qtd"] = "1"
             reg["espec"] = "1 controlador em uso; reserva opcional"
-        elif "ka1 e ka2" in item:
+        elif "km1" in item:
             reg["qtd"] = "2"
-            reg["espec"] = "2 conjuntos em uso; 24 Vcc, 2 contatos reversiveis, KA2 com 10 A em CC"
+            reg["espec"] = "1 conjunto em uso + 1 reserva; 24 Vcc, 2 contatos reversiveis de 10 A em CC"
         elif "modulo rele 1 canal 5 v" in item:
-            reg["qtd"] = "2"
-            reg["espec"] = "KA3 (NO) e KA4 (NC), optoacoplados; reservas opcionais"
+            reg["qtd"] = "3"
+            reg["espec"] = "KA1 (NO), KA2 (NC) e KA3 (NO), optoacoplados, caixa DIN 6M; reservas opcionais"
         elif item.startswith("sensor ds18b20"):
             reg["espec"] = "1-Wire, 3 fios, colado no dissipador quente; nao fica no centro da camara"
         elif "placa ilhada (padrao" in item:

@@ -2,7 +2,7 @@
 
 > A BOM está organizada **na ordem de construção (por camada)**, não por tipo de peça. Assim você compra o que precisa quando precisa, e não fica com R$ 800 em componentes parados esperando a maquete ficar pronta.
 >
-> 🔄 **Mudanças em relação à versão anterior:** a **fonte ATX saiu** (não tem 24 V — ver [Doc 02 §2.1](02_arquitetura_de_energia.md)); entraram a **fonte chaveada de 24 V**, os **conversores step-down**, o **disjuntor**, os **relés de interface KA1/KA2** e todo o material de cenografia da maquete.
+> 🔄 **Mudanças em relação à versão anterior:** a **fonte ATX saiu** (não tem 24 V — ver [Doc 02 §2.1](02_arquitetura_de_energia.md)); entraram a **fonte chaveada de 24 V**, os **conversores step-down**, o **disjuntor**, o **relé de interface KM1** e todo o material de cenografia da maquete.
 >
 > ✅ **Revisão "Potência em 24 V" (Plano B) — o que mudou nesta BOM:**
 >
@@ -79,7 +79,7 @@ Se você já tinha uma lista antiga em mãos, **confira estes seis antes de fech
 
 > 📌 **Esta seção é o retrato do carrinho real, com os preços do dia.** Ela existe porque
 > conferir anúncio contra projeto é o momento em que os erros de compra aparecem — e aqui já
-> apareceram cinco.
+> apareceram seis.
 
 ### ✅ O que está certo e pode fechar
 
@@ -87,18 +87,17 @@ Se você já tinha uma lista antiga em mãos, **confira estes seis antes de fech
 |---|---:|---|---|
 | Módulo sensor de tensão DC 0-25 V (5 pçs) | 16,07 | ⭐ **SV-1** — vigia do 24 V, substituiu o divisor soldado | **Meça a saída com 24 V: ~4,8 V.** Ver [Doc 33 §33.4](../camada_3_eletrica/33_placa_interface_componentes.md) |
 | Sensor WCS2702 ajustável | 25,41 | ⭐ **SC-1** — detector de dispositivo morto | Que tenha **furo de passagem** para o fio (é por ele que entram as 10 voltas) |
-| Módulo MOSFET 4 canais optoacoplado PWM | 43,51 | **MV-1** — chaveia as 5 ventoinhas internas | Jumper/entrada em 5 V; ele chaveia o **negativo** |
 | Conversor de nível lógico 4 canais I²C | 10,44 | **CONV** — 5 V ↔ 3,3 V entre Mega e ESP32 | Bidirecional, com os dois lados alimentados |
 | BTS7960 ponte-H 43 A (2 pçs) | 20,96 | **BTS1 e BTS2** | Barra de pinos com `R_EN`, `L_EN`, `R_IS`, `GND` |
 | LM2596 com display (2 pçs) | 21,16 | **T2 (5 V)** e **T3 (12 V)** | ⚠️ **Ajuste na bancada antes de fechar no poste** |
-| Módulo relé 1 canal 5 V (2 pçs) | 6,79 | **KA3** (veto) e **KA4** (ventoinha) | ⭐ **"5VDC" no corpo do relé** e jumper em **H** |
+| Módulo relé 1 canal 5 V (2 pçs) | 6,79 | **KA1** (veto), **KA2** e **KA3** (ventoinhas) — ⚠️ **compre 2 pares**: são 3 em uso | ⭐ **"5VDC" no corpo do relé** e jumper em **H** |
 | AM2315C I²C | 68,59 | Sensor de temperatura e umidade da câmara | Endereço 0x38, não conflita com o RTC (0x68) |
 | ESP32-WROOM-32U DevKitC | 31,72 | **ESP32** — MQTT e dashboard | Versão **U** = conector de antena externa ✔ |
 | Antena 2,4 GHz RP-SMA + cabo U.FL→SMA + flange | 42,00 | A antena do ESP32, do lado de **fora** da caixa | ⚠️ **RP-SMA e SMA não encaixam entre si** — confira que antena e flange são o mesmo padrão |
 | Aquecedor PTC 24 V com ventilador | 78,08 | **PTC** — o lado quente da câmara | ⚠️ Confirme **24 V** (o anúncio vende 12/24/110/220) |
 | DS18B20 à prova d'água, cabo 1 m | 6,90 | Sonda do dissipador (1-Wire) | ⚠️ **VEJA O ALERTA ABAIXO** |
 
-### ⚠️ Os cinco pontos de atenção do carrinho
+### ⚠️ Os seis pontos de atenção do carrinho
 
 **1 · O DS18B20 do carrinho parece ser só a sonda — e o projeto precisa do adaptador.**
 O anúncio fala em sonda de aço com cabo de 1 m, e não menciona a plaquinha de terminais. É o
@@ -147,6 +146,22 @@ de resistor em série (`(5 − 3) ÷ 0,02 = 100 Ω`) ou de fonte própria. E, se
 **entram no balanço do BD-5V** ([Doc 02](02_arquitetura_de_energia.md)) — hoje ele já está com
 12 de 14 saídas usadas.
 
+**6 · 🗑️ O módulo MOSFET de 4 canais (R$ 43,51) SAIU do projeto — não feche este item.**
+Ele era o **MV-1**, e ficou prestando **um** serviço: ligar e desligar as 5 ventoinhas internas.
+12 V, 0,63 A, **uma comutação por ensaio**, num pino (`D29`) que **nem PWM tem** — e um MOSFET
+só se paga quando é preciso modular ou comutar milhares de vezes por hora.
+
+| | MV-1 (MOSFET 4 canais) | **KA3 (módulo de relé)** |
+|---|---:|---:|
+| Preço | R$ 43,51 | **R$ 3,40** |
+| Canais usados | 1 de 4 | 1 de 1 |
+| Chaveia | o **negativo** (canal N de lado baixo) | ⭐ o **positivo**, contato seco |
+| Espaço no trilho | 66 mm | cabe na caixa dos outros dois relés |
+
+💰 **O que muda no pedido:** tire o módulo MOSFET, compre **2 pares** de módulo de relé de 1 canal
+(R$ 13,58 pelos 4, com 1 de reserva) e troque a caixa DIN de 4M pela de **6M**. Economia líquida de
+**~R$ 33**. Justificativa completa em [Doc 31 §31.16](../camada_3_eletrica/31_comando_e_protecoes.md).
+
 ### 🔎 O que ainda falta comprar
 
 Nada disso aparece no carrinho, e tudo é necessário para montar:
@@ -157,12 +172,12 @@ Nada disso aparece no carrinho, e tudo é necessário para montar:
 | **Bornes de passagem DIN 2,5 mm²** | 6 | O **BS-1** (filtros) e reservas. ⚠️ 2,5 mm²: em dois deles entram 3 condutores |
 | **Blocos de distribuição DIN** | ver ponto 3 | BD-24V, BD-POT, BD-5V, BD-AUX, BD-0V e BD-0V-B |
 | **Botoeira cogumelo com trava** | 1 | **S0** — a emergência |
-| **Botoeiras 22 mm** (verde, preta, azul) | 3 | S1 START · S2 STOP · S3 REARME |
-| **Relé 24 V 8 pinos + base PTF08A** | 2 | KA1 e KA2 *(consta como item nacional)* |
+| **Botoeiras 22 mm** (verde e preta) | 2 | S1 LIGAR · S2 STOP |
+| **Relé 24 V 8 pinos + base PTF08A** | 1 | KM1 *(consta como item nacional)* |
 | **RTC DS3231** | 1 | Data e hora do log |
 | **Capacitor cerâmico 100 nF** | 4 | C1 e C2 + reservas |
-| **Resistores** ¼ W | ~10 | 2× 10 kΩ (BTS) · 4× 220 Ω (postes) · 1,2 kΩ (DUT) + reservas |
-| **Diodo 1N4007** | 4 | D1 (bobina do KA2) e D2 (ventoinhas) + reservas |
+| **Resistores** ¼ W | ~10 | 2× 10 kΩ (BTS) · 3× 10 kΩ (pull-down dos KA1/KA2/KA3) · 4× 220 Ω (postes) · 1,2 kΩ (DUT) + reservas |
+| **Diodo 1N4007** | 4 | D1 (bobina do KM1), D2 (ventoinhas do radiador) e D3 (ventoinhas internas) + reserva |
 | **LED 3 mm branco** | 4 | Iluminação dos postes |
 | **Fusíveis** | 8 | F1 10 A · F2/F3 2 A · F-P 100 mA + reservas |
 | **Trilho DIN, canaleta, caixa do painel, cabo e anilhas** | — | A infraestrutura do painel ([Doc 20](../camada_2_painel/20_painel_projeto_e_layout.md)) |
@@ -227,7 +242,7 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 |---|---|
 | **Disjuntor 2P 6 A curva C** | É a proteção da entrada em 127 V. Certificação não é detalhe |
 | **Fonte chaveada 24 V / 240 W** | Faz a barreira entre 127 V e a parte SELV. Além disso é pesada — frete inviabiliza |
-| **Relés KA1 e KA2** | Aqui você **vê o produto, tem nota fiscal e consegue trocar** se vier errado. Importado, um relé sem marca chega em 40 dias e sem recurso — e relé é peça de segurança, no caminho crítico da montagem |
+| **Relé KM1** | Aqui você **vê o produto, tem nota fiscal e consegue trocar** se vier errado. Importado, um relé sem marca chega em 40 dias e sem recurso — e relé é peça de segurança, no caminho crítico da montagem |
 | **Porta-fusíveis, trilho DIN, canaleta, bornes** | Baratos aqui, volumosos para importar |
 | **Cabos e terminais** | Peso e volume |
 | **MDF, acrílico, tintas, cenografia** | Óbvio |
@@ -491,7 +506,7 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 | **Canaleta perfurada 30 × 30 mm** | 3 m | Com tampa. **Placa de montagem:** 4 horizontais + 2 verticais ≈ 2,8 m | |
 | ⭐ **Canaleta perfurada 25 × 25 mm** | 2 m | **PORTA** — 5 horizontais + 1 vertical na dobradiça ≈ 1,5 m. Mais estreita que a da placa porque a porta tem menos fio e não pode ficar pesada | |
 | ⭐ **Espiral organizador Ø 12 mm** | 40 cm | A **passagem flexível** entre a placa e a porta. Protege o chicote nos ciclos de abertura | |
-| **Bloco de distribuição DIN** — 1 entrada 4 mm² + **4 saídas** | 1 | **BD-POT** — 24 V de potência comutados pelo KA2 → BTS #1, BTS #2, medição do D25 e 1 reserva. ⚠️ Cai com a emergência | |
+| **Bloco de distribuição DIN** — 1 entrada 4 mm² + **4 saídas** | 1 | **BD-POT** — 24 V de potência comutados pelo KM1 → BTS #1, BTS #2, medição do D25 e 1 reserva. ⚠️ Cai com a emergência | |
 | **Bloco de distribuição DIN** — 1 entrada 2,5 mm² + **4 saídas** | 1 | **BD-AUX** — 12 V auxiliar (do T3): cooler dos BTS + 2 coolers das Peltier + 1 reserva | |
 | **Bloco de distribuição DIN** — 1 entrada 2,5 mm² + **6 saídas** | 1 | **BD-24V** — 24 V permanentes. São **3 cargas** (DNLCB30/ESP32, cadeia de comando e a alimentação das 2 posições de ensaio) + 3 reservas. ⭐ **Duas saídas ficaram livres** quando os sinaleiros passaram para 5 V: elas levavam o positivo comum das lâmpadas e o COM do o driver dos sinaleiros, que saiu. **Não confundir com o BD-POT** — este não cai com a emergência | |
 | **Bloco de distribuição DIN** — 1 entrada 2,5 mm² + **8 saídas** ⬆ | 1 | **BD-5V** — ⚠️ **Subiu de 6 para 8:** são **7 cargas** (Arduino, tela ES3C28P, RTC, lógica do BTS #1, lógica do BTS #2, placa PI-1 e os LEDs da maquete) + 1 reserva | |
@@ -516,23 +531,21 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 | Identificadores de borne e de cabo | 1 kit | Anilhas numeradas — **exigido em painel industrial** | |
 | Trava-fim de trilho DIN | 8 | Impede os componentes de deslizarem | |
 | **Botão de Emergência cogumelo 22 mm** | 1 | Com trava (girar p/ destravar) — **2 blocos NF** (1 para o comando 24 V, 1 para a leitura do Arduino) | |
-| **Botão START / LIGAR 22 mm** | 1 | **Verde**, momentâneo — **1 bloco NA de 24 V**. ⭐ Fica na **cadeia de comando**, refazendo o selo do KA2: é ele que traz os 24 V de volta ao BD-POT depois de um STOP. **Não é lido por pino nenhum.** ⚠️ Etiquete-o como `LIGAR` — o `INICIAR ENSAIO` é o da tela | |
-| **Botão STOP 22 mm** | 1 | Preto, momentâneo — **1 NF de 24 V + 1 NA de 5 V**. O NF fica **dentro da malha do selo do KA2** e corta a potência de verdade, retendo; o NA avisa o `D23` | |
-| **Botão REARME 22 mm** | 1 | **AZUL**, momentâneo — **1 bloco NA**. Refaz o selo do KA1 após a emergência. Buscar `botão pulsador azul 22mm` | |
-| **Blocos de contato 22 mm avulsos** | 4 | **3 NF + 1 NA**: emergência (2 NF), STOP (1 NF + 1 NA). Os blocos NA do START e do REARME vêm com as próprias botoeiras. Ver [Doc 31 §31.6](../camada_3_eletrica/31_comando_e_protecoes.md) | |
+| **Botão START / LIGAR 22 mm** | 1 | **Verde**, momentâneo — **1 bloco NA de 24 V**. ⭐ Fica na **cadeia de comando**, refazendo o selo do KM1: é ele que traz os 24 V de volta ao BD-POT depois de um STOP. **Não é lido por pino nenhum.** ⚠️ Etiquete-o como `LIGAR` — o `INICIAR ENSAIO` é o da tela | |
+| **Botão STOP 22 mm** | 1 | Preto, momentâneo — **1 NF de 24 V + 1 NA de 5 V**. O NF fica **dentro da malha do selo do KM1**, em série com o do cogumelo, e corta a potência de verdade, retendo; o NA avisa o `D23` | |
+| **Blocos de contato 22 mm avulsos** | 3 | **3 NF**: emergência (2 NF) e STOP (1 NF). ⭐ O NA de 5 V do STOP e o NA de 24 V do LIGAR vêm com as próprias botoeiras. Ver [Doc 31 §31.6](../camada_3_eletrica/31_comando_e_protecoes.md) | |
 
-> ### ⭐ A porta: QUATRO botoeiras e a tela
+> ### ⭐ A porta: TRÊS botoeiras e a tela
 >
-> **EMERGÊNCIA (vermelho) · STOP (preto) · START/LIGAR (verde) · REARME (azul)**, mais a IHM.
+> **EMERGÊNCIA (vermelho) · STOP (preto) · LIGAR (verde)**, mais a IHM.
 >
-> 🔥 **São dois selos e dois botões de rearme, e eles não são intercambiáveis:**
+> ⭐ **Um selo só, e um botão só para refazê-lo:**
 >
 > | | cai com | refeito por |
 > |---|---|---|
-> | Selo do **KA1** | EMERGÊNCIA | **REARME azul** |
-> | Selo do **KA2** | STOP | **START verde** |
+> | Selo do **KM1** | EMERGÊNCIA · STOP · trip do KA1 · falta de energia | **LIGAR verde** |
 >
-> Trocá-los na montagem faz o STOP exigir rearme e **a emergência religar com o botão verde** — o inverso do que a norma manda. É o erro mais caro possível neste painel.
+> 🔧 **O botão azul de REARME saiu daqui**, junto com o **segundo relé de selo**. Ele existia para refazer esse selo, e depois dele ainda era preciso apertar o verde — dois botões para a mesma decisão. Hoje destravar o cogumelo devolve tensão à malha e o verde religa, que é exatamente o que a ISO 13850 pede: soltar o atuador não religa; religar é um ato deliberado. **E some junto o erro mais caro do painel, que era trocar os dois selos entre si.**
 >
 > 🔧 **A seletora LOCAL / REMOTO continua fora**, e não volta: era a segunda camada de uma regra que a primeira já garante sozinha — *o `START` nunca é aceito por MQTT*. Libera o pino **D26**.
 
@@ -778,8 +791,8 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 | Driver ponte-H **BTS7960** | 2 | 43 A, pino IS de diagnóstico | |
 | Suporte SPCI4 trilho DIN | 2 | Fixa PCI 100 × 79 mm | |
 | Cooler 40 mm 12 V | 1 | Refrigeração dos BTS | |
-| **KA1 e KA2 — Relé 8 pinos 24 Vcc + base DIN** | **3** | ⭐ **UM MODELO SÓ para os dois relés** — 2 em uso + 1 reserva. Relé eletromecânico **8 pinos, bobina 24 Vcc, 2 contatos reversíveis (2 NA + 2 NF) de 10 A cada**, com **base para trilho DIN inclusa**. Buscar `relé 8 pinos 24v 10a base din` · `JQX-13F 24v` · `LY2N 24vdc`. ~R$ 39 o conjunto. **KA1** usa os 2 contatos (selo + saída para o KA2); **KA2** usa 1 contato para os 6,0 A e sobra o outro | |
-| *Alternativa premium (só se sobrar orçamento)* | — | **Finder 46.61 24VDC** (1 reversível **16 A**) + base **95.05** para o KA2, ~R$ 80–110. Vale se você quiser folga grande sobre os 6,0 A e datasheet publicado | |
+| **KM1 — Relé 8 pinos 24 Vcc + base DIN** | **2** | 1 em uso + 1 reserva. Relé eletromecânico **8 pinos, bobina 24 Vcc, 2 contatos reversíveis (2 NA + 2 NF) de 10 A cada**, com **base para trilho DIN inclusa**. Buscar `relé 8 pinos 24v 10a base din` · `JQX-13F 24v` · `LY2N 24vdc`. ~R$ 39 o conjunto. Ele usa os **2 contatos**: o `11-14` para os 6,0 A da carga e o `21-24` para o selo | |
+| *Alternativa premium (só se sobrar orçamento)* | — | **Finder 46.61 24VDC** (1 reversível **16 A**) + base **95.05** para o KM1, ~R$ 80–110. Vale se você quiser folga grande sobre os 6,0 A e datasheet publicado | |
 | **Resistor 10 kΩ 1/4 W** | 4 | **Pull-down** em cada `R_EN` dos BTS7960 (2) + reservas. ⚠️ Garante que **pino solto = driver desligado** — ficou ainda mais crítico com os 24 V permanentes na entrada dos BTS | |
 | **Resistor 22 kΩ 1/4 W** ⬆ | 2 | **Braço superior** do divisor de realimentação de tensão para o pino D25 | |
 | **Resistor 4,7 kΩ 1/4 W** | 2 | **Braço inferior** do mesmo divisor | |
@@ -791,14 +804,13 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 > | | Finder 49.52 · R$ 58 | **Genérico 8 pinos · R$ 39** |
 > |---|---|---|
 > | Contatos | 2 reversíveis · **8 A** | 2 reversíveis · **10 A** |
-> | Serve para o **KA1**? | ✅ | ✅ |
-> | Serve para o **KA2** (6,0 A)? | ❌ **8 A é abaixo do mínimo** | ⚠️ Sim, no limite aceitável |
+> | Serve para o **KM1** (6,0 A)? | ❌ **8 A é abaixo do mínimo** | ⚠️ Sim, no limite aceitável |
 > | Base inclusa? | ⚠️ Não informado | ✅ Relé **+ base** |
-> | Custo para resolver os 2 relés | R$ 58 + outro modelo para o KA2 | **R$ 78** (2 iguais) |
+> | Custo para resolver o relé + reserva | R$ 116 (2 iguais) — e nenhum atende | **R$ 78** (2 iguais) |
 >
-> ✅ **Escolhido: o genérico de 8 pinos.** O Finder é melhor relé, mas 8 A não atende o KA2 — você compraria o Finder e ainda precisaria de um segundo modelo diferente para a potência.
+> ✅ **Escolhido: o genérico de 8 pinos.** O Finder é melhor relé, mas 8 A não atende os 6,0 A da carga com margem nenhuma.
 >
-> **A ressalva do genérico, e por que ela é aceitável aqui:** sem marca, não há datasheet para conferir a corrente em DC. Mas **desgaste de contato é cumulativo — depende de quantas VEZES ele interrompe corrente**, não de quanto tempo fica ligado. O KA2 só abre com 6 A quando alguém aperta STOP ou a emergência: ao longo da vida do projeto, algumas dezenas de vezes. Um contato de 10 A aguenta isso com folga. O risco seria real num equipamento industrial partindo o dia inteiro — não é o caso.
+> **A ressalva do genérico, e por que ela é aceitável aqui:** sem marca, não há datasheet para conferir a corrente em DC. Mas **desgaste de contato é cumulativo — depende de quantas VEZES ele interrompe corrente**, não de quanto tempo fica ligado. O KM1 só abre com 6 A quando alguém aperta STOP ou a emergência: ao longo da vida do projeto, algumas dezenas de vezes. Um contato de 10 A aguenta isso com folga. O risco seria real num equipamento industrial partindo o dia inteiro — não é o caso.
 >
 > ⚠️ **Se optar pelo Finder mesmo assim, confira duas coisas:** o anúncio informa *"Tipo de montagem: Circuito impresso"* — se for literal, é relé de **soldar em placa** e não encaixa no trilho. E ele **não menciona a base**, que pode custar mais R$ 20–30.
 >
@@ -821,9 +833,9 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 > | `relé 8 pinos 24vdc base trilho din` |
 > | `relé 24v trilho din` |
 >
-> ⚠️ **Descoberta importante da pesquisa de mercado:** praticamente **todo relé acoplador vendido no Brasil é de 6 a 8 A**. Isso resolve o **KA1** (que conduz miliampères) mas **não resolve o KA2** (6,0 A de carga = 100 % da capacidade, sem margem nenhuma).
+> ⚠️ **Descoberta importante da pesquisa de mercado:** praticamente **todo relé acoplador vendido no Brasil é de 6 a 8 A**. Isso serviria para uma bobina de miliampères, mas **não resolve o KM1** (6,0 A de carga = 100 % da capacidade, sem margem nenhuma).
 >
-> **Para o KA2, o caminho prático é o relé de 8 pinos + base** — o arranjo clássico de painel brasileiro, com 2 contatos de 10 A, barato e disponível em qualquer lugar. E como ele também atende o KA1, dá para padronizar: **2 iguais + 1 reserva**.
+> **O caminho prático é o relé de 8 pinos + base** — o arranjo clássico de painel brasileiro, com 2 contatos de 10 A, barato e disponível em qualquer lugar: **1 em uso + 1 reserva**.
 
 > ### 🛒 Como ler um anúncio de relé — o vocabulário que engana
 >
@@ -831,9 +843,9 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 >
 > | Português | No anúncio | Serve? |
 > |---|---|---|
-> | 1 contato **NA** só | `SPST-NO` · `1A` · `1 Form A` | ❌ Não serve para o KA1 |
-> | **1 reversível** | `SPDT` · **`1CO`** · `1Z` · `1 Form C` | ✅ KA2 |
-> | **2 reversíveis** | `DPDT` · **`2CO`** · `2Z` · `2 Form C` | ✅ **KA1** |
+> | 1 contato **NA** só | `SPST-NO` · `1A` · `1 Form A` | ❌ Não serve — faltaria o contato do selo |
+> | **1 reversível** | `SPDT` · **`1CO`** · `1Z` · `1 Form C` | ⚠️ Só se o selo for feito em outro lugar |
+> | **2 reversíveis** | `DPDT` · **`2CO`** · `2Z` · `2 Form C` | ✅ **é o do KM1** — um contato para a carga, outro para o selo |
 >
 > 🔑 **"CO" = changeover = reversível.** Buscar `2CO 24VDC relay` já filtra quase tudo que não serve.
 >
@@ -846,7 +858,7 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 > 📌 **Sobre importar:** a recomendação de comprar nacional existe por causa do **datasheet com a corrente em DC**, que anúncio genérico não fornece. Isso não impede importar — impede comprar **sem marca**. Um Omron, Finder ou Hongfa com número de modelo você consulta antes de clicar; um "24V 10A Relay Module" sem fabricante, não.
 
 > ⚠️ **O divisor de realimentação mudou de escala.** Ele antes lia os 12 V do T1 (10 kΩ + 4,7 kΩ → 3,84 V no ADC). Agora precisa ler o **barramento de 24 V**, e com os resistores antigos entregaria **7,67 V no pino D25 — o suficiente para danificar a entrada do Arduino**. Com **22 kΩ + 4,7 kΩ** a leitura fica em `24 × 4,7/26,7 = 4,22 V`, dentro da faixa segura e com margem para o barramento oscilar. 📌 **Sinalizar em [Doc 32](../camada_3_eletrica/32_sinais_e_sensores.md):** o esquema do divisor e a constante de conversão do firmware precisam ser atualizados junto.
-| Diodo 1N4007 | 4 | **2 usos + 2 reservas.** `D1` na bobina do KA2 (catodo no `A1`) e `D2` nas ventoinhas do radiador (catodo no `+12 V`). 🔎 **Antes de montar o `D1`:** multímetro em *teste de diodo* entre `A1` e `A2` do KA2 — se já conduzir num sentido só, o relé tem diodo interno e o `D1` é dispensável. **O `D2` é sempre obrigatório** — o motor é indutivo e nada mais o grampeia. Ver [Doc 31 §31.9](../camada_3_eletrica/31_comando_e_protecoes.md) | |
+| Diodo 1N4007 | 4 | **2 usos + 2 reservas.** `D1` na bobina do KM1 (catodo no `A1`) e `D2` nas ventoinhas do radiador (catodo no `+12 V`). 🔎 **Antes de montar o `D1`:** multímetro em *teste de diodo* entre `A1` e `A2` do KM1 — se já conduzir num sentido só, o relé tem diodo interno e o `D1` é dispensável. **O `D2` é sempre obrigatório** — o motor é indutivo e nada mais o grampeia. Ver [Doc 31 §31.9](../camada_3_eletrica/31_comando_e_protecoes.md) | |
 
 ## L.3 — Atuadores térmicos e ventilação
 
@@ -854,40 +866,33 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 |---|---:|---|---|
 | ⭐ **Kit duplo de refrigeração Peltier** (2× TEC1-12706) | 1 | **Adotado — kit já conferido por foto** ([`imagens/peltir.avif`](../imagens/peltir.avif)): 2 conjuntos lado a lado, **cada pastilha com seu par de fios** e **cada ventoinha com cabo próprio**, o que viabiliza as modificações 1 e 2 sem cortar nada. Traz **2 pastilhas + radiador + 2 blocos frios + ventoinhas + montagem térmica pronta**. Anunciado como **12 V / 15 A**, ou seja, **vem ligado em PARALELO** — ⚠️ **religar em SÉRIE** para 24 V / 6,0 A (ver as 3 modificações abaixo). ~200 × 115 × 85 mm. Buscar `kit peltier duplo TEC1-12706 refrigeração` | |
 | Pastilha Peltier TEC1-12706 avulsa | 1 | **Reserva.** ⚠️ Trocar uma pastilha do kit exige desmontar a junta térmica — tenha a peça, mas conte com o trabalho | |
-| ⭐ **Módulo MOSFET 4 canais isolado — LR7843** (MV-1) | 1 | 66 × 50,5 mm, optoacoplador por canal, jumper H/L por canal, 60 W por canal. Comanda os 3 grupos de ventoinha e sobra 1 canal. Buscar `modulo mosfet 4 canais optoacoplador LR7843` | |
+| ~~Módulo MOSFET 4 canais — LR7843 (MV-1)~~ | ~~1~~ | 🗑️ **NÃO COMPRE — R$ 43,51 economizados.** Ele ficou usando **1 dos 4 canais**, para ligar e desligar as 5 ventoinhas internas: 12 V, 0,63 A, uma comutação por ensaio, num pino (`D29`) que **nem PWM tem**. Um MOSFET só se paga quando precisa MODULAR ou comutar milhares de vezes por hora. Quem faz o serviço agora é o **KA3**, um terceiro módulo de relé de R$ 3,40 na mesma caixa DIN do KA1 e do KA2 ([Doc 31 §31.16](../camada_3_eletrica/31_comando_e_protecoes.md)) | |
 
-> ### ⭐ O módulo de 4 canais resolve melhor que três de 1 canal
+> ### 🗑️ Por que este módulo saiu — e a regra que ficou no lugar dele
 >
-> | | 3 × 1 canal | **1 × 4 canais** |
-> |---|---|---|
-> | Espaço no trilho | 114 mm | **66 mm** |
-> | Fios de alimentação | 3 × VIN + 3 × GND | **1 de cada** |
-> | Retornos no BD-0V | 6 | **2** |
-> | Canal de reserva | nenhum | **1** |
+> A escolha do módulo de 4 canais foi **certa dentro da pergunta errada**. A pergunta era *"um módulo de 4 canais ou três de 1 canal?"*, e o de 4 ganhava fácil: 66 mm contra 114 mm de trilho, um par de alimentação em vez de três, dois retornos em vez de seis, e ainda sobrava um canal.
 >
-> ### ⚠️ Mas o transistor dele é o LR7843, de 30 V — e isso impõe uma condição
+> A pergunta que faltava era **anterior a essa: MOSFET ou contato?**
 >
-> **Em 12 V ele é perfeito**, com margem de sobra. O problema só apareceria em 24 V: quando a ventoinha desliga, o enrolamento devolve um pico acima da tensão de alimentação, e a margem de 30 V ficaria apertada.
+> | Quando o módulo entrou | Quando ele saiu |
+> |---|---|
+> | 3 grupos de ventoinha para comandar | **1 grupo** — o radiador foi para o KA2 e o PTC entrou junto com as internas |
+> | 3 dos 4 canais em uso | **1 dos 4 canais** em uso |
+> | R$ 43,51 por 3 acionamentos | R$ 43,51 por **um interruptor** |
 >
-> Como **todas as ventoinhas do projeto são de 12 V**, o módulo serve. Mas guarde a condição:
+> 🎯 **A regra, e ela vale para o projeto inteiro:** um MOSFET só se paga quando é preciso **modular** (PWM) ou comutar **milhares de vezes por hora**. As 5 internas ligam **uma vez por ensaio**, comandadas pelo `D29` — que **nem é pino de PWM** no Mega. Quem modula aqui são os **BTS7960**, na Peltier e no PTC, a 20 kHz. Ver [Doc 31 §31.16](../camada_3_eletrica/31_comando_e_protecoes.md).
 >
-> 🚨 **Os 4 canais dividem o MESMO VIN.** Se um dia as ventoinhas do radiador virarem 24 V — como já se cogitou —, elas **não podem** compartilhar este módulo. Precisariam de um segundo, com transistor de tensão maior.
+> ### ⚠️ E havia uma segunda razão, que é elétrica e não de preço
 >
-> 📌 **O anúncio diz "5 V a 36 V", mas o LR7843 é de 30 V.** Confie no componente, não no anúncio. É comum o vendedor descrever a placa e esquecer o limite do transistor que ele mesmo montou nela.
+> **O LR7843 é canal N de lado baixo: ele chaveia o NEGATIVO.** Foi isso que já tinha derrubado o comando das ventoinhas do radiador — o tacômetro delas é referenciado nesse mesmo negativo, e com o canal desligado o preto subia para ~12 V e a leitura de RPM mentia "parada".
 >
-> ### 🔧 Os 4 jumpers H/L — deixe todos em **H**
+> Nas internas o defeito ficava **dormindo**, porque elas são de 2 fios e não têm tacômetro. Bastaria trocar uma por outra de 3 fios para ele acordar. Com o **KA3** no lado positivo, o preto das cinco é 0 V de verdade — ligadas ou paradas.
 >
-> Cada canal tem um jumper que escolhe se ele liga com nível **alto** ou **baixo**. Em **H**, `digitalWrite(pino, HIGH)` acende a ventoinha — a mesma convenção dos sinaleiros e do resto do firmware.
+> ### 📌 O que este box ensinava e continua valendo
 >
-> Em **L** o comando fica invertido, e aí o código passa a ter dois significados para `HIGH` dependendo do periférico. É o tipo de inconsistência que ninguém lembra seis meses depois.
->
-> ### 🎁 O optoacoplador vale mais do que parece
->
-> Esse módulo isola o comando da carga. Como o projeto tem **um único 0 V**, a isolação galvânica em si acaba desfeita no star ground — mas o ganho real é outro: **o pino do Arduino só acende um LED de ~10 mA**. Quem fornece a corrente de gate é a alimentação da própria ventoinha.
->
-> Sem o optoacoplador, o pino do Arduino teria que carregar e descarregar o gate do MOSFET a cada chaveamento, e esses picos voltariam pela trilha de terra da placa — bem ao lado das entradas analógicas que leem a corrente das Peltier.
->
-> ⚠️ **Confira a serigrafia do borne azul de 3 vias** antes de ligar: a ordem `V+ / L− / GND` varia entre fabricantes.
+> - **O anúncio dizia "5 V a 36 V", mas o transistor é de 30 V.** Confie no componente, não no anúncio: é comum o vendedor descrever a placa e esquecer o limite do transistor que ele mesmo montou nela. **É esse hábito de leitura que a banca procura.**
+> - **Jumper H/L existe para não haver dois significados de `HIGH`** no firmware. Os três módulos de relé herdaram a mesma regra: todos em **H**.
+> - **O optoacoplador entrega imunidade a ruído, não isolação galvânica**, num projeto de 0 V único. O mesmo vale para os módulos de relé — e neles a isolação de verdade está no **contato**, que é seco.
 | 🔄 **DS18B20 à prova d'água** | 1 | **Mudou de lugar:** saiu de dentro da câmara e foi para o **dissipador do lado quente**. É ele que diz quando a pós-ventilação pode parar | |
 | 🔄 **AM2315C** | 1 | **Passou a ser o único sensor de dentro da câmara.** Mede temperatura **e umidade** no mesmo encapsulamento, e já estava no barramento I²C | |
 | ~~PI-2 — caixa DIN 4 módulos~~ | ~~1~~ | 🗑️ **NÃO COMPRE.** Ela abrigava o multiplexador, os shunts e o INA219 — as três peças saíram com a detecção digital ([Doc 13 §13.4](../camada_1_maquete/13_posicoes_de_ensaio.md)) | |
@@ -995,10 +1000,10 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 | ⭐ **DS18B20 à prova d'água + adaptador com pull-up** | 2 | **AD-1** — substituiu o `R3`. ⚠️ **O pull-up de 4,7 kΩ está no ADAPTADOR, não na sonda.** Se comprar só a sonda, compre também 1 resistor de 4,7 kΩ. **Meça ao receber:** ~4,7 kΩ entre `DAT` e `VCC` | 6,90 |
 | ⭐ **Borne de passagem DIN 2,5 mm²** | 6 | **BS-1** — 3 em uso (`A0`, `A1`, `0V`) + 3 reserva. ⚠️ **2,5 mm², não 1,5:** em dois deles entram **três** condutores (fio do BTS, fio do Arduino e perna do capacitor) | — |
 | **Capacitor cerâmico 100 nF** | 4 | `C1` e `C2` + reservas — parafusados no BS-1, sem solda | — |
-| ⭐ **Módulo relé 1 canal 5 V, optoacoplado** | 4 | **`KA3`** (veto, contato `NO`) e **`KA4`** (ventoinha, contato `NC`) — 2 em uso + 2 reserva. ⚠️ Exija *optoacoplador*, **jumper H/L** e a variante de **5 V** (a foto costuma ser da de 24 V). 💰 Relé de 8 pinos aqui seria R$ 75 de folga que ninguém usa — só o **KA2** precisa dos 10 A | 6,79 |
-| ⭐ **Caixa modular DIN 4 módulos (70 mm)** | 1 | Abriga os **dois** módulos de relé empilhados, no trilho 2 | — |
-| ⭐ **Resistor 10 kΩ · ¼ W** | 4 | `R10` e `R11` (pull-down dos `IN`) + `R8` e `R9` (soldados nos BTS7960). ⚠️ **É o que torna o fail-safe medível:** Arduino ausente ou fio rompido → `IN` em 0 V → potência cortada e ventoinha girando | — |
-| ⭐ **Diodo 1N4007** | 4 | `D1` (bobina do KA2) e `D2` (ventoinhas) + 2 reservas. 🔎 **O `D1` pode ser dispensável:** teste o KA2 em *teste de diodo* entre `A1` e `A2` — se conduzir num sentido só, ele já tem diodo interno. ⚠️ **O `D2` é obrigatório** | — |
+| ⭐ **Módulo relé 1 canal 5 V, optoacoplado** | 4 | **`KA1`** (veto, contato `NO`), **`KA2`** (ventoinhas do radiador, contato `NC`) e ⭐ **`KA3`** (as 5 ventoinhas internas, contato `NO`) — **3 em uso + 1 reserva**. ⚠️ Exija *optoacoplador*, **jumper H/L** e a variante de **5 V** (a foto costuma ser da de 24 V). 💰 Relé de 8 pinos aqui seria R$ 75 de folga que ninguém usa — só o **KM1** precisa dos 10 A | 6,79 |
+| ⭐ **Caixa modular DIN 6 módulos (105 mm)** | 1 | Abriga os **três** módulos de relé empilhados, no trilho 2. ⚠️ **NÃO a de 4M:** 3 × 25,5 mm = 76,5 mm e a de 4M tem 70 mm. Mesmo assim o trilho 2 ficou mais folgado — o MV-1, que saiu, media 66 mm | — |
+| ⭐ **Resistor 10 kΩ · ¼ W** | 5 | `R10`, `R11` e ⭐ `R12` (pull-down dos `IN` dos três módulos) + `R8` e `R9` (soldados nos BTS7960). ⚠️ **É o que torna o fail-safe medível:** Arduino ausente ou fio rompido → `IN` em 0 V → potência cortada e ventoinha girando | — |
+| ⭐ **Diodo 1N4007** | 4 | `D1` (bobina do KM1), `D2` (ventoinhas do radiador) e ⭐ `D3` (as 5 internas) + 1 reserva. 🔎 **O `D1` pode ser dispensável:** teste o KM1 em *teste de diodo* entre `A1` e `A2` — se conduzir num sentido só, ele já tem diodo interno. ⚠️ **O `D2` e o `D3` são obrigatórios** — o `D3` entrou quando o MV-1 saiu: o módulo MOSFET trazia o roda-livre dentro da placa, o contato do KA3 não traz nada | — |
 | Termorretrátil Ø 2 mm | 30 cm | Isolação dos 10 kΩ soldados nos BTS7960 e das emendas nos postes | — |
 | Etiqueta impressa em papel adesivo | 1 | Identificação dos bornes — **é o que torna a montagem auditável** | — |
 
@@ -1011,13 +1016,13 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 > | Lugar | Peças |
 > |---|---|
 > | Bornes do **BS-1** | `C1`, `C2` (100 nF) |
-> | Bornes dos relés | `D1` no KA2 · `R10` e `R11` nos módulos |
+> | Bornes dos relés | `D1` no KM1 · `R10`, `R11` e `R12` nos três módulos |
 > | Dentro dos **BTS7960** | `R8`, `R9` (10 kΩ, soldados no módulo) |
 > | Na **maquete** | `R4`–`R7` (220 Ω) + 4 LEDs brancos, nas bases dos postes |
 > | Na **câmara** | `D2` nas ventoinhas · resistor, LED e jumper do DUT |
 > | **Módulos comprados** | `SV-1`, `AD-1`, `SC-1` |
 
-> 📌 **O KA3, o KA4 e seus resistores ficam no trilho 2**, não junto do Arduino — onde a canaleta
+> 📌 **O KA1, o KA2 e seus resistores ficam no trilho 2**, não junto do Arduino — onde a canaleta
 > de baixo já é de potência e serve o trilho 1 diretamente. A primeira versão punha um MOSFET na
 > PI-1 e o `npm run valida` reprovou: o circuito da bobina teria de atravessar o painel duas
 > vezes, uma delas pela canaleta de sinal. **Componente de ancoragem é de proximidade.**
@@ -1028,12 +1033,12 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 | Grupo | Itens-chave |
 |---|---|
 | **Energia** | 1× fonte 24 V/10 A ⚠️ **240 W é o mínimo** · 1× disjuntor 2P 6 A · **1× kit 2 LM2596 com display** · 3× porta-fusível |
-| **Proteção** | fusíveis **10 A (F1)** e 2 A (F2/F3) · **KA1 (2 contatos) + KA2 (10 A em DC)** · botão de REARME · **sem Zener, sem crowbar** |
+| **Proteção** | fusíveis **10 A (F1)** e 2 A (F2/F3) · **KM1 (10 A em DC, 2 contatos: carga + selo)** · **3× módulo de relé 5 V (KA1, KA2, KA3) em caixa DIN 6M** · **sem Zener, sem crowbar** |
 | **Controle** | 1× Arduino Mega · 1× ESP32 · 1× DNLCB30 · 1× tela ES3C28P · 1× RTC · **1× placa PI-1 (6 passivos, sem CI)** |
-| **Potência** | 2× BTS7960 · **2× Peltier EM SÉRIE** (+1 reserva) · **1× PTC 24 V 80 W** · 4× fan interna · **2× cooler externo 3 fios** |
+| **Potência** | 2× BTS7960 · **2× Peltier EM SÉRIE** (+1 reserva) · **1× PTC 24 V 80 W** · 4× fan interna · **2× cooler externo 3 fios** · 🗑️ **sem módulo MOSFET** |
 | **Sensores** | 1× DS18B20 · 1× AM2315C |
 | **Maquete** | 3× poste Ø 8 mm · ~8 m de fio rígido ENCAPADO (4 cores, **R1 e 0 V mais grossos**) · 2× "transformador" + **1× caixa de derivação** · 3× janela de acrílico · 1× caixa de subestação |
-| **Comando** | 1× emergência (2 NF) · 1× START · 1× STOP (NF+NA) · 1× **REARME azul** · 1× seccionadora · **4× sinaleiro 22 mm de 24 V** |
+| **Comando** | 1× emergência (2 NF) · 1× LIGAR (NA) · 1× STOP (NF+NA) · 1× seccionadora · **4× sinaleiro 22 mm de 5 V** |
 
 ### ✅ Checklist de compra dos 6 itens que o Plano B mudou
 

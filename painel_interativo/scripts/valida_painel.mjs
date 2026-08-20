@@ -18,7 +18,7 @@ const erros = [], avisos = [];
 
 /* ── os componentes cabem no trilho, e nenhum invade o vizinho? ───────
    ⭐ ESTA REGRA FALTAVA, e o preço apareceu: o BD-0V estava 1 mm dentro do
-   KA1 havia semanas, e ninguém viu — o desenho é pequeno demais para o
+   relé vizinho havia semanas, e ninguém viu — o desenho é pequeno demais para o
    olho pegar 1 mm. Quando o BD-0V cresceu para 24 saídas, o erro virou
    21 mm de invasão. Máquina confere milímetro; pessoa não. */
 {

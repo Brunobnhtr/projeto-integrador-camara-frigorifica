@@ -190,26 +190,26 @@ Duas armadilhas do Arduino Mega estão documentadas aqui, e as duas eram silenci
 | **D23** | Botão STOP — bloco NA de 5 V | `INPUT_PULLUP` | `LOW` = pressionado |
 | **D24** | Emergência — bloco **NF** de 5 V | `INPUT_PULLUP` | `HIGH` = **acionada** |
 | **D25** | Presença dos **24 V** no BD-POT (divisor **22 k / 4,7 k** + 100 nF) | `INPUT` (**sem** pull-up) | `HIGH` = **potência disponível** |
-| **D27** | ⭐ **`HAB_POTENCIA`** → `IN3` do **KA3** → bobina do **KA2** | `OUTPUT` | `HIGH` = potência **autorizada** · `LOW` = **selo do KA2 cai, 0 V no BD-POT**. Usa o contato **`NO`** — o oposto do KA4, de propósito |
-| **D29** | ⭐ MV-1 canal 3 → **as 5 ventoinhas internas** (2 frias + 2 do duto + PTC) | `OUTPUT` | `HIGH` = ligadas |
-| **D30** | ⭐ `IN4` do **KA4** → **ventoinhas do radiador** | `OUTPUT` | 🔥 **LÓGICA INVERTIDA:** `HIGH` fecha o relé, o contato **`NC`** abre e as ventoinhas **PARAM**. `LOW` ou Hi-Z = elas **GIRAM**. Chaveia o **positivo**, e usa o **`NC`** — ver §31.14 |
+| **D27** | ⭐ **`HAB_POTENCIA`** → `IN1` do **KA1** → bobina do **KM1** | `OUTPUT` | `HIGH` = potência **autorizada** · `LOW` = **selo do KM1 cai, 0 V no BD-POT**. Usa o contato **`NO`** — o oposto do KA2, de propósito |
+| **D29** | ⭐ `IN3` do **KA3** → **as 5 ventoinhas internas** (2 frias + 2 do duto + PTC) | `OUTPUT` | `HIGH` = ligadas. Chaveia o **positivo**, e usa o **`NO`** — como o KA1, e ao contrário do KA2. Ver [§31.16](31_comando_e_protecoes.md) |
+| **D30** | ⭐ `IN2` do **KA2** → **ventoinhas do radiador** | `OUTPUT` | 🔥 **LÓGICA INVERTIDA:** `HIGH` fecha o relé, o contato **`NC`** abre e as ventoinhas **PARAM**. `LOW` ou Hi-Z = elas **GIRAM**. Chaveia o **positivo**, e usa o **`NC`** — ver §31.14 |
 
-> ### 🔧 Simplificação — três pinos e um canal do MV-1 devolvidos
+> ### 🔧 Simplificação — três pinos devolvidos
 >
 > | Pino | Era | Por que saiu |
 > |---|---|---|
-> | **D22** | leitura do botão START | O botão verde **voltou**, mas como comando de **24 V** na cadeia do selo do KA2 — ele não precisa de pino. O firmware descobre que a potência foi armada pelo divisor no `D25`, como já ignora o REARME azul |
+> | **D22** | leitura do botão START | O botão verde **voltou**, mas como comando de **24 V** na cadeia do selo do KM1 — ele não precisa de pino. O firmware descobre que a potência foi armada pelo divisor no `D25` |
 > | **D26** | seletora LOCAL / REMOTO | Era a **segunda** camada de uma regra que a primeira já garante: o `START` nunca é aceito por MQTT. Ver [Doc 41 §41.3](../camada_4_programacao/41_esp32_ihm_iot.md) |
-> | **D28** | canal 2 do MV-1, ventoinha do PTC | A ventoinha do PTC e as de circulação passaram a ter **a mesma condição** — ensaio rodando —, então cabem **num canal só** |
+> | **D28** | canal próprio da ventoinha do PTC | A ventoinha do PTC e as de circulação passaram a ter **a mesma condição** — ensaio rodando —, então cabem **num comando só** |
 >
-> **Também saiu o bloco NF de 24 V do STOP.** O S2 ficou com um bloco só (NA, 5 V → `D23`), e com isso sumiu o fio dele até a bobina do KA2 — e sumiu **um dos três erros de montagem catalogados em [§31.5](31_comando_e_protecoes.md)**, o de trocar os blocos e queimar o `D23`.
+> **Também saiu o bloco NF de 24 V do STOP.** O S2 ficou com um bloco só (NA, 5 V → `D23`), e com isso sumiu o fio dele até a bobina do KM1 — e sumiu **um dos três erros de montagem catalogados em [§31.5](31_comando_e_protecoes.md)**, o de trocar os blocos e queimar o `D23`.
 >
-> 🎯 **O MV-1 usa 1 dos 4 canais** (o 3, das cinco ventoinhas internas) e o Mega tem `D22`, `D26`, `D28` e `D50–D53` livres.
+> 🎯 **Sobrou 1 pino de comando para as cinco ventoinhas internas** (o `D29`, hoje no gatilho do KA3) e o Mega tem `D22`, `D26`, `D28` e `D50–D53` livres.
 | ~~D31–D34~~ | 🗑️ **livres** — eram os 4 bits de seleção do multiplexador | — | Ver [Doc 13 §13.4](../camada_1_maquete/13_posicoes_de_ensaio.md) |
 | ⭐ **D22** | **SC-1 · DOUT** — detecção de dispositivo morto | `INPUT_PULLUP` | 1 bit: nível BAIXO enquanto houver corrente. Fio partido = ALTO = falha |
 | ~~A2~~ | 🗑️ **livre** — era a entrada analógica dos 16 canais do mux | — | |
 
-#### 🔥 Correção — as ventoinhas do radiador saíram do MV-1
+#### 🔥 Correção — as ventoinhas do radiador saíram do MV-1 (e depois o MV-1 saiu inteiro)
 
 Este documento colocava as duas no **canal 1 do MV-1** (`D27`). Estava errado, e o erro tinha duas caras.
 
@@ -239,32 +239,34 @@ Este documento colocava as duas no **canal 1 do MV-1** (`D27`). Estava errado, e
 **Primeira correção adotada: as duas ficaram permanentemente ligadas, direto no BD-AUX.** Resolvia o defeito elétrico, e garantia o que o [Doc 30](30_forca_e_distribuicao.md) já mandava:
 
 - o lado quente precisa continuar sendo resfriado **depois** que tudo desliga, porque o calor que já está no dissipador não some junto com o comando;
-- o BD-AUX vem direto do prensa-cabo e não passa pelo KA2, então elas **sobrevivem até à emergência**;
+- o BD-AUX vem direto do prensa-cabo e não passa pelo KM1, então elas **sobrevivem até à emergência**;
 - o preto vai à barra de 0 V, em ponto próprio (`R20`), e aí os dois tacômetros passam a ter uma referência que nunca se mexe.
 
-📌 **E o canal 1 continuou livre.** Chegou a ser projetado um P-MOSFET comandado por ele, para devolver o controle das ventoinhas do radiador chaveando o lado positivo — mas **um contato de relé faz o mesmo sem inversor de nível nenhum**, e o KA4 assumiu o serviço ([Doc 31 §31.14](31_comando_e_protecoes.md)).
+📌 **E o canal 1 continuou livre.** Chegou a ser projetado um P-MOSFET comandado por ele, para devolver o controle das ventoinhas do radiador chaveando o lado positivo — mas **um contato de relé faz o mesmo sem inversor de nível nenhum**, e o KA2 assumiu o serviço ([Doc 31 §31.14](31_comando_e_protecoes.md)).
 
-📌 **Sobram os canais 1, 2 e 4** — o MV-1 usa só o 3, para as cinco ventoinhas internas.
+📌 **E o módulo acabou saindo do projeto.** Sobrando com 3 dos 4 canais livres, o MV-1 custava R$ 43,51 para prestar UM serviço de liga/desliga — num pino que nem PWM tem. As cinco internas passaram para o **KA3**, um terceiro módulo de relé na mesma caixa DIN do KA1 e do KA2, também no lado **positivo**. Ver [Doc 31 §31.16](31_comando_e_protecoes.md).
+
+> ⭐ **A mesma frase resolve os dois grupos, e agora sem exceção:** *um contato seco não tem lado alto nem lado baixo.* O preto das ventoinhas — das de fora e das de dentro — é 0 V de verdade, ligadas ou paradas. Se um dia uma ventoinha interna virar de 3 fios, o tacômetro dela já tem referência firme para nascer.
 
 #### ⭐ E o `D27` foi reaproveitado: ele virou o veto do firmware sobre a potência
 
-O pino que vagou aqui é o mesmo que resolve o maior buraco do projeto: o firmware não tinha como **cortar** a potência, só como desabilitar os drivers. Hoje ele comanda o **KA3**, um módulo de relé em série com a bobina do KA2 ([Doc 31 §31.13](31_comando_e_protecoes.md)).
+O pino que vagou aqui é o mesmo que resolve o maior buraco do projeto: o firmware não tinha como **cortar** a potência, só como desabilitar os drivers. Hoje ele comanda o **KA1**, um módulo de relé em série com a bobina do KM1 ([Doc 31 §31.13](31_comando_e_protecoes.md)).
 
 ```
    TRILHO 3                     TRILHO 2                   TRILHO 1
    ─────────                    ─────────                  ─────────
-   MEGA · D27 ──── sinal ─────► IN  ┌───────┐              bobina do KA2
-        │                           │  KA3  │  COM ──────► A2
+   MEGA · D27 ──── sinal ─────► IN  ┌───────┐              bobina do KM1
+        │                           │  KA1  │  COM ──────► A2
    [ R10 · 10 kΩ ]                  └───────┘  NO  ──────► BD-0V · Z12
         │
        0 V           (jumper do módulo em "H": HIGH fecha o contato)
 ```
 
-> ⭐ **Por que os módulos ficam no trilho 2, e não junto do KA2.** O circuito da bobina precisa de canaleta de **potência** nas duas pontas ([§31.4](31_comando_e_protecoes.md)) — e o trilho 2 tem a **CH-2x1** logo abaixo, que é justamente a canaleta de potência que serve o trilho 1. **O circuito da bobina nunca sobe até o trilho 3**, onde correm o `IS` analógico e o 1-Wire; só o fio de gatilho faz esse caminho, e ele não conduz corrente nenhuma.
+> ⭐ **Por que os módulos ficam no trilho 2, e não junto do KM1.** O circuito da bobina precisa de canaleta de **potência** nas duas pontas ([§31.4](31_comando_e_protecoes.md)) — e o trilho 2 tem a **CH-2x1** logo abaixo, que é justamente a canaleta de potência que serve o trilho 1. **O circuito da bobina nunca sobe até o trilho 3**, onde correm o `IS` analógico e o 1-Wire; só o fio de gatilho faz esse caminho, e ele não conduz corrente nenhuma.
 >
-> 🔧 **A alternativa descartada** era um MOSFET 2N7000 soldado no próprio KA2 (R$ 1,10). Tecnicamente melhor — não desgasta, não consome —, mas exigia solda e não tinha LED de estado. **E, decisiva para o KA4: um contato seco não tem lado alto nem lado baixo**, o que apagou um problema inteiro de projeto.
+> 🔧 **A alternativa descartada** era um MOSFET 2N7000 soldado no próprio KM1 (R$ 1,10). Tecnicamente melhor — não desgasta, não consome —, mas exigia solda e não tinha LED de estado. **E, decisiva para o KA2: um contato seco não tem lado alto nem lado baixo**, o que apagou um problema inteiro de projeto.
 
-| Se o D27… | O KA2 | O BD-POT |
+| Se o D27… | O KM1 | O BD-POT |
 |---|---|---|
 | `HIGH` | **autoriza** — a bobina pode energizar quando alguém apertar o botão verde | 24 V, **depois do verde** |
 | `LOW` | **cai** | **0 V** |

@@ -10,7 +10,7 @@
  *
  *   Foi assim que se descobriu que a tabela do Doc 02 ainda somava
  *   "2 fans internas ativas" depois de as cinco terem sido juntadas
- *   num canal só do MV-1.
+ *   num contato só, o do KA3.
  *
  * Números: Doc 02 §2.4 (tabelas dos ramais R1, R2 e R3).
  */
@@ -32,11 +32,11 @@ export const CARGAS = {
   sdRtc: 0.06,
   logicaBts: 0.02,
   ledsMaquete: 0.04,
-  moduloReleCada: 0.065, // ⭐ KA3 e KA4 — os que este projeto acrescentou
+  moduloReleCada: 0.065, // ⭐ KA1, KA2 e KA3 — os que este projeto acrescentou
 
   // ── BD-24V · 24 V permanente ─────────────────────────────────────
   esp32: 0.10,           // DNLCB30 + ESP32
-  bobinaRele: 0.037,     // 24 V / 650 Ω — são o KA1 e o KA2
+  bobinaRele: 0.037,     // 24 V / 650 Ω — a bobina do KM1
   sinaleiroCada: 0.02,   // ⭐ agora em 5 V, acesos direto pelo pino do Mega
 };
 
@@ -79,11 +79,11 @@ export function consumo(sim) {
   // ── BD-AUX (12 V) ────────────────────────────────────────────────
   let i12 = 0;
   if (haAux) {
-    // ⭐ quem gasta é o CONTATO do KA4, não a ordem do firmware
-    const contatoKa4 = sim.falhas.ka4Colado ? true
-      : sim.falhas.ka4Aberto ? false
+    // ⭐ quem gasta é o CONTATO do KA2, não a ordem do firmware
+    const contatoKa2 = sim.falhas.ka2Colado ? true
+      : sim.falhas.ka2Aberto ? false
       : f.ventRadiador;
-    if (contatoKa4) i12 += 2 * CARGAS.radiadorCada;
+    if (contatoKa2) i12 += 2 * CARGAS.radiadorCada;
     if (f.ventInternas) i12 += 5 * CARGAS.internaCada;
     i12 += CARGAS.coolerBts;      // sem comando: enquanto houver 12 V
   }
@@ -94,8 +94,13 @@ export function consumo(sim) {
     i5 += CARGAS.mega + CARGAS.ihm + CARGAS.sdRtc +
           CARGAS.logicaBts + CARGAS.ledsMaquete;
     // ⭐ os módulos só consomem com o relé ATRACADO
-    if (f.habPotencia) i5 += CARGAS.moduloReleCada;   // KA3
-    if (f.ventRadiador) i5 += CARGAS.moduloReleCada;  // KA4
+    if (f.habPotencia) i5 += CARGAS.moduloReleCada;   // KA1
+    if (f.ventRadiador) i5 += CARGAS.moduloReleCada;  // KA2
+    /* ⭐ KA3 — as 5 ventoinhas internas. Ele entrou no lugar do módulo
+       MOSFET (MV-1), que gastava ~10 mA de LED de optoacoplador contra os
+       65 mA de bobina deste. É o preço da troca, e ele cabe: o T2 fecha em
+       0,635 A, 42 % do limite seguro do LM2596. Doc 31 §31.16. */
+    if (f.ventInternas) i5 += CARGAS.moduloReleCada;  // KA3
     /* ⭐ OS SINALEIROS MIGRARAM PARA CÁ. Eram de 24 V no BD-24V, acionados
        pelo ULN2803; hoje são de 5 V e cada um sai de um pino do Mega —
        então quem paga a conta é o ramal de 5 V, e o pino é o limite
@@ -107,8 +112,7 @@ export function consumo(sim) {
   let i24srv = 0;
   if (geral) {
     i24srv += CARGAS.esp32;
-    if (sim.eletrica.ka1Selado) i24srv += CARGAS.bobinaRele;
-    if (sim.eletrica.ka2Selado) i24srv += CARGAS.bobinaRele;
+    if (sim.eletrica.km1Selado) i24srv += CARGAS.bobinaRele;
   }
 
   // ── O que a fonte de 24 V enxerga ────────────────────────────────

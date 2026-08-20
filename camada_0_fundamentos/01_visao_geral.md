@@ -41,7 +41,7 @@ Cada item que o edital pede tem um lugar concreto no projeto:
 | **Reduzir riscos elétricos / melhorar a infraestrutura** ⭐ | Barramento **24 Vcc SELV**, proteção seletiva, emergência em hardware, aterramento em estrela | [Doc 02](02_arquitetura_de_energia.md) · [Doc 31](../camada_3_eletrica/31_comando_e_protecoes.md) |
 | **Novos esquemas elétricos** | 7 desenhos técnicos + lista completa de cabos identificados | [`desenhos/`](../desenhos/) · [Doc 30](../camada_3_eletrica/30_forca_e_distribuicao.md) |
 | **Manter a continuidade operacional** | O Arduino **não sai** — o ESP32 entra ao lado dele, com arbitragem Local/Remoto | [§1.3](#13-arquitetura-de-controle--dois-cérebros-uma-regra-clara) |
-| **Conformidade com normas de segurança** | Emergência conforme ISO 13850 (trava e exige rearme) · demarcação NR-10 | [Doc 31](../camada_3_eletrica/31_comando_e_protecoes.md) |
+| **Conformidade com normas de segurança** | Emergência conforme ISO 13850 (trava; destravar não religa, e religar é um ato deliberado no botão LIGAR) · demarcação NR-10 | [Doc 31](../camada_3_eletrica/31_comando_e_protecoes.md) |
 
 ### E por que a maquete tem subestação e postes?
 
@@ -173,7 +173,7 @@ A empresa **não pode parar os ensaios** enquanto o projeto acontece. Arrancar o
 | **STOP** | botoeira da porta · IHM · **dashboard remoto** | Leva ao estado **seguro**. Quem vê um problema tem que poder agir, esteja onde estiver |
 | **START** | ⭐ **botão verde na porta** (arma a potência) + **IHM** (inicia o ensaio) | Leva ao estado **energizado**. Partida é ato local e deliberado, com o operador vendo a câmara |
 | **Setpoint / `ACK`** | IHM · dashboard | Não energizam nada. O Arduino valida a faixa e recusa o que for absurdo |
-| **EMERGÊNCIA / REARME** | ⛔ **só a botoeira física** | Não passam por software em ponto nenhum |
+| **EMERGÊNCIA / religar a potência** | ⛔ **só as botoeiras físicas** | Não passam por software em ponto nenhum |
 
 > 🔧 **Havia uma seletora LOCAL / REMOTO no painel, e ela foi removida.** Olhando a tabela acima fica claro por quê: nas duas linhas que importam para a segurança ela não mudava nada — o `START` já era bloqueado sempre e o `STOP` já era aceito sempre. Ela só arbitrava setpoint e reconhecimento de alarme, que não energizam nada. **Saíram uma seletora, um bloco de contato, dois fios e um pino do Arduino. Não saiu nenhuma proteção.**
 
@@ -187,7 +187,7 @@ A empresa **não pode parar os ensaios** enquanto o projeto acontece. Arrancar o
 
 ```
    IHM na porta          Botoeiras                  Dashboard / MQTT
-   INICIAR · STOP · cfg  LIGAR · STOP · EMERG · REARME   STOP  (⛔ nunca START)
+   INICIAR · STOP · cfg     LIGAR · STOP · EMERG        STOP  (⛔ nunca START)
         │                    │                     │
         └────────┬───────────┘                     │
                  ▼                                 ▼
@@ -232,7 +232,7 @@ A empresa **não pode parar os ensaios** enquanto o projeto acontece. Arrancar o
 | Tempo de troca de modo | **30 s** de espera entre Frio ↔ Quente (evita choque térmico) |
 | Diagnóstico de carga | Pino **IS** de cada BTS7960 lido pelo ADC (detecta atuador desconectado/queimado) |
 | Segurança da Peltier | **Monitoramento de RPM das 2 fans externas** — sem dissipação a pastilha queima em < 1 min. Com 2 pastilhas, são **2 conjuntos dissipador+cooler e 2 sinais de RPM** a vigiar |
-| Emergência | Relé de interface **KA1** com a botoeira **em série com a bobina** — abre o **KA2**, que corta os **24 V de potência** em hardware, independente do firmware |
+| Emergência | Botoeira **em série com a bobina** do relé **KM1**, que corta os **24 V de potência** em hardware, independente do firmware — e o selo do KM1 não se refaz sozinho |
 | START / STOP | Software — funcionam pelo **botão do painel ou pela IHM**, indiferentemente |
 | Proteção contra travamento | **Watchdog de 2 s** + **pull-down de 10 kΩ** em cada `R_EN`: pino solto = driver desligado |
 

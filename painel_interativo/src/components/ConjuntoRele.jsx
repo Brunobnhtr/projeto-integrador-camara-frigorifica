@@ -80,12 +80,12 @@ function Base8({ usados, cor }) {
   );
 }
 
-/* ── os dois canais de módulo ───────────────────────────────────────── */
+/* ── os canais de módulo (hoje três: KA1, KA2 e KA3) ────────────────── */
 function Modulos({ dados, usados, cor }) {
   return (
     <div style={{ display: 'grid', gap: 12 }}>
       {dados.canais.map((ch) => {
-        const n = ch.id === 'KA3' ? '3' : '4';
+        const n = ch.id.slice(-1);
         const bornes = [
           ['IN' + n, 'gatilho · Mega ' + ch.gatilho],
           ['COM' + n, 'comum do contato'],
@@ -211,7 +211,7 @@ export default function ConjuntoRele({ compId, onFechar }) {
           <Secao titulo="O borne físico"
                  sub={dados.tipo === 'rele8'
                    ? 'Vista de cima da base. Os bornes vêm do modelo do painel — não são digitados aqui.'
-                   : 'Os dois canais, com o contato que cada um usa.'}>
+                   : `Os ${dados.canais.length} canais, com o contato que cada um usa.`}>
             {dados.tipo === 'rele8'
               ? <Base8 usados={usados} cor={cor} />
               : <Modulos dados={dados} usados={usados} cor={cor} />}

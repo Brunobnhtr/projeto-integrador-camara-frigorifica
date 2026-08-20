@@ -35,19 +35,20 @@ export const HOSTS = [
     onde: 'trilho 3 do painel, ao lado do Arduino', compPainel: 'BS-1',
     diz: '⭐ AQUI HAVIA UMA PLACA. A PI-1 tinha 6 peças soldadas; o divisor e o pull-up '
        + 'viraram módulos comprados, e sobraram dois capacitores — que entram parafusados '
-       + 'no borne, junto com o fio, do mesmo jeito que o D1 entra na bobina do KA2.',
+       + 'no borne, junto com o fio, do mesmo jeito que o D1 entra na bobina do KM1.',
   },
   {
-    id: 'KA2', tipo: 'borne', nome: 'Base PTF08A do KA2',
-    onde: 'trilho 1 do painel', compPainel: 'KA2',
+    id: 'KM1', tipo: 'borne', nome: 'Base PTF08A do KM1',
+    onde: 'trilho 1 do painel', compPainel: 'KM1',
     diz: 'Componente parafusado direto no borne da base, sem placa nenhuma. '
        + 'Dobre as pernas em U e aperte cada uma no seu parafuso.',
   },
   {
-    id: 'KA34', tipo: 'borne', nome: 'Bornes dos módulos KA3 e KA4',
-    onde: 'caixa DIN de 4M, trilho 2', compPainel: 'KA34',
-    diz: 'Os dois módulos dividem a mesma caixa. Os resistores entram nos '
-       + 'bornes de parafuso do próprio módulo.',
+    id: 'KA123', tipo: 'borne', nome: 'Bornes dos módulos KA1, KA2 e KA3',
+    onde: 'caixa DIN de 6M, trilho 2', compPainel: 'KA123',
+    diz: 'Os três módulos dividem a mesma caixa. Os resistores entram nos '
+       + 'bornes de parafuso do próprio módulo. 🔧 A caixa era de 4M com dois '
+       + 'módulos; o KA3 entrou no lugar do MV-1 e ela passou para 6M.',
   },
   {
     id: 'BTS1', tipo: 'modulo', nome: 'Driver BTS7960 #1 (Peltier)',
@@ -73,6 +74,15 @@ export const HOSTS = [
     terminais: ['+12V', '0V'],
     diz: 'O diodo vai junto das ventoinhas, e não no painel: o pico tem que '
        + 'ser grampeado onde ele nasce.',
+  },
+  {
+    id: 'VENT-INT', tipo: 'camara', nome: 'As 5 ventoinhas internas (2 frias, 2 dos dutos e a do PTC)',
+    onde: 'dentro da câmara, todas em paralelo no par X9 / X10',
+    terminais: ['+12V', '0V'],
+    diz: '⭐ HOST NOVO, E ELE NASCEU DE UMA TROCA DE COMPONENTE. Enquanto quem '
+       + 'ligava estas cinco era um módulo MOSFET (o MV-1), o diodo de roda-livre '
+       + 'vinha escondido dentro da placa comprada. Com o KA3 — contato seco — ele '
+       + 'volta a ser peça de projeto, e vai onde o pico nasce: junto dos motores.',
   },
   {
     id: 'SV-1', tipo: 'modulo', nome: 'Módulo sensor de tensão (vigia do 24 V)',
@@ -176,57 +186,74 @@ export const DISCRETOS = [
 
   /* ─────────────────── NOS BORNES DOS RELÉS ──────────────────── */
   {
-    id: 'KA2-D1', ref: 'D1', peca: 'Diodo 1N4007',
-    tipo: 'diodo', valor: '1N4007', qtd: 1, host: 'KA2', arranjo: 'antiparalelo', polaridade: true,
+    id: 'KM1-D1', ref: 'D1', peca: 'Diodo 1N4007',
+    tipo: 'diodo', valor: '1N4007', qtd: 1, host: 'KM1', arranjo: 'antiparalelo', polaridade: true,
     comoIdentificar: '⭐ A faixa prateada impressa no corpo marca o CATODO. Ela vai no A1.',
     seInverter: '🔥 Invertido ele curto-circuita a bobina e derruba o fusível F2 (2 A) assim que '
-              + 'o KA1 selar. Não queima nada — mas você vai procurar o defeito no lugar errado.',
+              + 'o verde for apertado. Não queima nada — mas você vai procurar o defeito no lugar errado.',
     pernas: [
-      { nome: 'catodo (faixa prateada)', vai: { comp: 'KA2', via: 'A1' } },
-      { nome: 'anodo',                   vai: { comp: 'KA2', via: 'A2' } },
+      { nome: 'catodo (faixa prateada)', vai: { comp: 'KM1', via: 'A1' } },
+      { nome: 'anodo',                   vai: { comp: 'KM1', via: 'A2' } },
     ],
-    papel: 'Roda-livre da bobina do KA2',
-    porque: 'Quando o contato do KA3 abre, o campo da bobina colapsa e induz centenas de volts. '
-          + 'Sem o diodo esse pico aparece NO CONTATO DO KA3 e abre arco — contato que pita acaba '
-          + 'soldando, e um KA3 soldado é o veto do firmware perdido em silêncio.',
-    seFaltar: 'O contato do KA3 se degrada a cada desligamento e um dia solda fechado.',
+    papel: 'Roda-livre da bobina do KM1',
+    porque: 'Quando o contato do KA1 abre, o campo da bobina colapsa e induz centenas de volts. '
+          + 'Sem o diodo esse pico aparece NO CONTATO DO KA1 e abre arco — contato que pita acaba '
+          + 'soldando, e um KA1 soldado é o veto do firmware perdido em silêncio.',
+    seFaltar: 'O contato do KA1 se degrada a cada desligamento e um dia solda fechado.',
     ensaio: 'Multímetro em TESTE DE DIODO entre A1 e A2 → conduz num sentido só (~0,55 V com a '
           + 'ponta vermelha no A2, nada no sentido inverso).',
-    antesDeMontar: '🔎 Faça o teste de diodo no KA2 ANTES: se ele já conduzir num sentido só, o relé '
+    antesDeMontar: '🔎 Faça o teste de diodo no KM1 ANTES: se ele já conduzir num sentido só, o relé '
                  + 'tem diodo interno e o D1 é dispensável. Se conduzir nos dois, monte o D1.',
     passo: 'C-07', fonte: 'Doc 31 §31.9',
   },
   {
-    id: 'KA3-R10', ref: 'R10', peca: 'Resistor 10 kΩ · ¼ W',
-    tipo: 'resistor', valor: '10 kΩ', qtd: 1, host: 'KA34', arranjo: 'paralelo', polaridade: false,
+    id: 'KA1-R10', ref: 'R10', peca: 'Resistor 10 kΩ · ¼ W',
+    tipo: 'resistor', valor: '10 kΩ', qtd: 1, host: 'KA123', arranjo: 'paralelo', polaridade: false,
     pernas: [
-      { nome: 'perna 1', vai: { comp: 'KA34', via: 'IN3' } },
-      { nome: 'perna 2', vai: { comp: 'KA34', via: '0V' } },
+      { nome: 'perna 1', vai: { comp: 'KA123', via: 'IN1' } },
+      { nome: 'perna 2', vai: { comp: 'KA123', via: '0V' } },
     ],
-    papel: 'Pull-down do gatilho do KA3 — define o estado com o Arduino ausente',
+    papel: 'Pull-down do gatilho do KA1 — define o estado com o Arduino ausente',
     porque: 'Fio do D27 rompido ou Arduino desligado → o resistor leva o IN a 0 V → relé aberto → '
           + 'a potência nunca é armada. Ele torna MEDÍVEL o que antes era confiado.',
     seFaltar: '⚠️ O IN fica alto-impedante e o módulo pode fechar por ruído — potência autorizada '
             + 'sem ninguém mandar.',
-    ensaio: 'Ohmímetro entre o IN3 e o 0 V → ~10 kΩ. Com o painel energizado e o Arduino desligado, '
-          + 'o IN3 deve medir ~0 V.',
+    ensaio: 'Ohmímetro entre o IN1 e o 0 V → ~10 kΩ. Com o painel energizado e o Arduino desligado, '
+          + 'o IN1 deve medir ~0 V.',
     passo: 'C-08', fonte: 'Doc 31 §31.13',
   },
   {
-    id: 'KA4-R11', ref: 'R11', peca: 'Resistor 10 kΩ · ¼ W',
-    tipo: 'resistor', valor: '10 kΩ', qtd: 1, host: 'KA34', arranjo: 'paralelo', polaridade: false,
+    id: 'KA2-R11', ref: 'R11', peca: 'Resistor 10 kΩ · ¼ W',
+    tipo: 'resistor', valor: '10 kΩ', qtd: 1, host: 'KA123', arranjo: 'paralelo', polaridade: false,
     pernas: [
-      { nome: 'perna 1', vai: { comp: 'KA34', via: 'IN4' } },
-      { nome: 'perna 2', vai: { comp: 'KA34', via: '0V' } },
+      { nome: 'perna 1', vai: { comp: 'KA123', via: 'IN2' } },
+      { nome: 'perna 2', vai: { comp: 'KA123', via: '0V' } },
     ],
-    papel: 'Pull-down do gatilho do KA4 — e aqui o resultado é o oposto, de propósito',
-    porque: '⭐ O KA4 usa o contato NC: relé solto significa ventoinha do radiador GIRANDO. É o R11 '
+    papel: 'Pull-down do gatilho do KA2 — e aqui o resultado é o oposto, de propósito',
+    porque: '⭐ O KA2 usa o contato NC: relé solto significa ventoinha do radiador GIRANDO. É o R11 '
           + 'que garante que um Arduino morto ventile.',
     seFaltar: 'A ventoinha do lado quente pode parar sozinha por ruído — e o lado quente sem '
             + 'ventilação leva a Peltier à fuga térmica.',
-    ensaio: 'Ohmímetro entre o IN4 e o 0 V → ~10 kΩ. Puxar o fio do D30 com o ensaio rodando: as '
+    ensaio: 'Ohmímetro entre o IN2 e o 0 V → ~10 kΩ. Puxar o fio do D30 com o ensaio rodando: as '
           + 'ventoinhas CONTINUAM girando.',
     passo: 'C-08', fonte: 'Doc 31 §31.14',
+  },
+  {
+    id: 'KA3-R12', ref: 'R12', peca: 'Resistor 10 kΩ · ¼ W',
+    tipo: 'resistor', valor: '10 kΩ', qtd: 1, host: 'KA123', arranjo: 'paralelo', polaridade: false,
+    pernas: [
+      { nome: 'perna 1', vai: { comp: 'KA123', via: 'IN3' } },
+      { nome: 'perna 2', vai: { comp: 'KA123', via: '0V' } },
+    ],
+    papel: 'Pull-down do gatilho do KA3 — as 5 ventoinhas internas',
+    porque: 'Mesma regra do R10: pino solto ou Arduino ausente → IN em 0 V → contato aberto → '
+          + 'ventoinhas paradas. ⭐ Aqui parado É o estado seguro: sem Arduino o KA1 já cortou a '
+          + 'potência, e o PTC é auto-limitado.',
+    seFaltar: 'O IN fica alto-impedante e as ventoinhas internas podem partir sozinhas por ruído, '
+            + 'com o painel parado.',
+    ensaio: 'Ohmímetro entre o IN3 e o 0 V → ~10 kΩ. Com o Arduino desligado, as 5 internas ficam '
+          + 'paradas e o LED do KA3 apagado.',
+    passo: 'C-08', fonte: 'Doc 31 §31.16',
   },
 
   /* ──────────── SOLDADOS NO MÓDULO COMPRADO (BTS7960) ─────────── */
@@ -401,13 +428,36 @@ export const DISCRETOS = [
     ],
     papel: 'Roda-livre do motor das ventoinhas do lado quente',
     porque: 'Ventoinha é carga indutiva e nada mais a grampeia. Sem ele o pico aparece no contato '
-          + 'do KA4 toda vez que a pós-ventilação termina.',
-    seFaltar: 'O contato do KA4 se degrada a cada parada da ventoinha.',
+          + 'do KA2 toda vez que a pós-ventilação termina.',
+    seFaltar: 'O contato do KA2 se degrada a cada parada da ventoinha.',
     ensaio: 'Teste de diodo entre os terminais da ventoinha, com ela desconectada → conduz num '
           + 'sentido só.',
     montagem: '⚠️ NÃO fica no painel: vai junto das ventoinhas, onde o pico nasce.',
     passo: 'A-05', fonte: 'Doc 31 §31.14',
     aviso: '⚠️ Não confunda com o D1: mesmo componente, funções e lugares diferentes.',
+  },
+  {
+    id: 'VENT-D3', ref: 'D3', peca: 'Diodo 1N4007',
+    tipo: 'diodo', valor: '1N4007', qtd: 1, host: 'VENT-INT', arranjo: 'antiparalelo', polaridade: true,
+    comoIdentificar: '⭐ Faixa prateada = catodo, e ela vai no +12 V.',
+    seInverter: '🔥 Invertido, ele curto-circuita a alimentação de 12 V das ventoinhas.',
+    pernas: [
+      { nome: 'catodo (faixa prateada)', vai: { comp: 'VENT-INT', via: '+12V' } },
+      { nome: 'anodo',                   vai: { comp: 'VENT-INT', via: '0V' } },
+    ],
+    papel: 'Roda-livre dos 5 motores das ventoinhas internas',
+    porque: '⭐ ELE APARECEU QUANDO O MOSFET SAIU. O MV-1 trazia a proteção dentro da placa '
+          + 'comprada; o KA3 é um contato seco e não protege nada sozinho. São cinco motores em '
+          + 'paralelo desligando ao mesmo tempo no fim de cada ensaio — o pico soma.',
+    seFaltar: 'O contato do KA3 abre arco a cada fim de ensaio e vai se degradando. É o modo de '
+            + 'falha clássico de relé em carga indutiva CC, onde não há passagem por zero.',
+    ensaio: 'Teste de diodo entre os dois fios do chicote das internas, desconectado do painel → '
+          + 'conduz num sentido só.',
+    montagem: '⚠️ NÃO fica no painel: vai dentro da câmara, na emenda onde os cinco positivos e os '
+            + 'cinco negativos se juntam. Um diodo só serve as cinco — elas estão em paralelo.',
+    passo: 'A-05', fonte: 'Doc 31 §31.16',
+    aviso: '⚠️ D1, D2 e D3 são o MESMO componente (1N4007) em três lugares diferentes: bobina do '
+         + 'KM1, ventoinhas do radiador e ventoinhas internas.',
   },
   {
     id: 'DUT1-R', ref: 'R-DUT1', peca: 'Resistor 1,2 kΩ · ½ W',
@@ -499,7 +549,7 @@ export const FATOS_VIGIADOS = [
   },
   {
     id: 'diodos-montados',
-    diz: 'D1 e D2 são montados no projeto — não são peça sobressalente',
+    diz: 'D1, D2 e D3 são montados no projeto — não são peça sobressalente',
     porque: 'O Doc 33 §33.7 ainda manda guardá-los no saquinho, enquanto o Doc 31, a fiação, o '
           + 'desenho dos relés e o cadastro mandam montá-los.',
     arquivos: /\.md$/,

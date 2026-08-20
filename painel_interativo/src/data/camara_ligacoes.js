@@ -34,13 +34,15 @@ export const BLOCOS_LIGACAO = [
       '⭐ O RPM é o TERCEIRO fio da ventoinha, normalmente amarelo. Ventoinha de 2 fios '
       + 'não serve aqui — sem RPM não há como proteger a pastilha.',
     ],
-    aviso: '🔥 ESTAS DUAS NÃO PASSAM PELO MV-1 — FICAM SEMPRE LIGADAS. O MV-1 chaveia o '
-         + 'NEGATIVO, e o tacômetro da ventoinha tem o emissor referenciado nesse mesmo '
-         + 'negativo. Com o canal desligado o preto sobe para perto de 12 V e empurra '
-         + 'corrente para dentro do pino do Arduino. E antes de estragar nada, o RPM já '
-         + 'leria "parada" sempre — justo o alarme que deveria salvar a pastilha. Ligadas '
-         + 'direto no BD-AUX, elas continuam girando até depois da emergência, que é '
-         + 'quando o dissipador ainda está quente. SE UM COOLER PARAR, A PASTILHA DAQUELE '
+    aviso: '🔥 ESTAS DUAS SÃO COMANDADAS PELO CONTATO NC DO KA2, NO LADO POSITIVO — e o '
+         + 'projeto chegou aqui pelo caminho errado. Elas nasceram num canal de módulo '
+         + 'MOSFET, que chaveia o NEGATIVO, e o tacômetro da ventoinha tem o emissor '
+         + 'referenciado nesse mesmo negativo: com o canal desligado o preto subia para '
+         + 'perto de 12 V e empurrava corrente para dentro do pino do Arduino. E antes de '
+         + 'estragar nada, o RPM já leria "parada" sempre — justo o alarme que deveria '
+         + 'salvar a pastilha. Um contato seco não tem lado alto nem lado baixo: o KA2 vai '
+         + 'no POSITIVO e o preto fica em 0 V sempre. No NC, elas continuam girando até '
+         + 'depois da emergência, que é quando o dissipador ainda está quente. SE UM COOLER PARAR, A PASTILHA DAQUELE '
          + 'LADO MORRE EM MENOS DE UM MINUTO — por isso são dois RPM separados, e não a '
          + 'média dos dois.',
   },
@@ -76,8 +78,8 @@ export const BLOCOS_LIGACAO = [
     cor: '#4dabf7',
     diz: 'Sopram para BAIXO, empurrando o ar frio para dentro do volume.',
     externo: [
-      { fio: 'X9', o: 'MV-1 · O3+', para: '⚠️ os positivos das CINCO internas (4 de circulação + a do PTC)' },
-      { fio: 'X10', o: 'MV-1 · O3−', para: 'os cinco negativos' },
+      { fio: 'X9', o: 'KA3 · NO3', para: '⚠️ os positivos das CINCO internas (4 de circulação + a do PTC)' },
+      { fio: 'X10', o: 'BD-0V · Z13', para: 'os cinco negativos — direto na barra, 0 V de verdade' },
     ],
     interno: [
       'As 2 frias e as 2 dos dutos ficam TODAS em paralelo nestes dois fios — quatro '
@@ -142,12 +144,12 @@ export const BLOCOS_LIGACAO = [
     externo: [
       { fio: 'X3', o: 'BTS #2 · M+', para: 'PTC · positivo' },
       { fio: 'X4', o: 'BTS #2 · M−', para: 'PTC · negativo' },
-      { fio: 'X9', o: 'MV-1 · O3+', para: '⭐ em paralelo com as 4 de circulação (12 V)' },
-      { fio: 'X10', o: 'MV-1 · O3−', para: 'idem, no mesmo par' },
+      { fio: 'X9', o: 'KA3 · NO3', para: '⭐ em paralelo com as 4 de circulação (12 V)' },
+      { fio: 'X10', o: 'BD-0V · Z13', para: 'idem, no mesmo par' },
     ],
     interno: [
       '⭐ A VENTOINHA NÃO SE LIGA NO PTC. O aquecedor é 24 V comandado pelo BTS #2; a '
-      + 'ventoinha é 12 V comandada pelo canal 2 do MV-1. Dois pares distintos.',
+      + 'ventoinha é 12 V comandada pelo contato do KA3. Dois pares distintos.',
       'É por serem separados que o firmware consegue duas coisas: não ligar o PTC sem a '
       + 'ventoinha girando, e manter a ventoinha girando depois que o PTC desliga.',
     ],
@@ -160,8 +162,8 @@ export const BLOCOS_LIGACAO = [
     cor: '#74c0fc',
     diz: 'Uma em cada duto, soprando para CIMA — é o retorno do circuito de ar.',
     externo: [
-      { fio: 'X9', o: 'MV-1 · O3+', para: 'em paralelo com as 2 frias' },
-      { fio: 'X10', o: 'MV-1 · O3−', para: 'idem' },
+      { fio: 'X9', o: 'KA3 · NO3', para: 'em paralelo com as 2 frias' },
+      { fio: 'X10', o: 'BD-0V · Z13', para: 'idem' },
     ],
     interno: [
       'Mesmo par de fios das ventoinhas frias — as quatro são um circuito só.',

@@ -75,16 +75,16 @@ export const PASSOS = [
   },
   {
     id: 'A-02', fase: 'A', titulo: 'Conferir os módulos comprados, um por um', tempo: '20 min',
-    pegue: ['multímetro', 'os 2 BTS7960', 'os 2 módulos de relé', 'o KA1 e o KA2', 'lupa ou celular com zoom'],
+    pegue: ['multímetro', 'os 2 BTS7960', 'os 3 módulos de relé', 'o KM1', 'lupa ou celular com zoom'],
     antes: 'As compras chegaram. Faça isto ANTES de montar qualquer coisa — devolução tem prazo.',
     faca: [
       '⭐ Nos módulos de relé: confirme "5VDC" escrito no corpo do relé. O mesmo anúncio vende 12 e 24 V.',
       '⭐ Ponha o jumper dos dois módulos em H (nível alto aciona). Em L a lógica inverte e o firmware vira armadilha.',
-      'No KA2: multímetro em TESTE DE DIODO entre A1 e A2. Anote se conduz num sentido só — se conduzir, ele já tem roda-livre interno e o D1 do passo C-07 é dispensável.',
-      'No KA1 e no KA2: confirme "24VDC" na bobina e o contato declarado em CORRENTE CONTÍNUA.',
+      'No KM1: multímetro em TESTE DE DIODO entre A1 e A2. Anote se conduz num sentido só — se conduzir, ele já tem roda-livre interno e o D1 do passo C-07 é dispensável.',
+      'No KM1: confirme "24VDC" na bobina e o contato declarado em CORRENTE CONTÍNUA.',
       'Nos BTS7960: confirme que há barra de pinos com R_EN, L_EN, R_IS, L_IS, VCC e GND.',
     ],
-    confira: 'Todos os relés com a tensão certa no corpo, os dois jumpers em H, e uma anotação dizendo se o KA2 tem ou não diodo interno.',
+    confira: 'Todos os relés com a tensão certa no corpo, os dois jumpers em H, e uma anotação dizendo se o KM1 tem ou não diodo interno.',
     seErrar: 'Relé de tensão errada não tem conserto na montagem: a bobina de 12 V queima em 24 V, e a de 24 V não atraca em 12 V. Troque com o vendedor.',
   },
   {
@@ -116,17 +116,22 @@ export const PASSOS = [
     seErrar: 'Não acendeu: inverta o LED antes de suspeitar do resistor. LED invertido não queima, só não acende.',
   },
   {
-    id: 'A-05', fase: 'A', titulo: 'Montar o diodo nas ventoinhas do radiador', tempo: '10 min',
-    pegue: ['1 diodo 1N4007', 'ferro de solda', 'termorretrátil', 'multímetro'],
+    id: 'A-05', fase: 'A', titulo: 'Montar os diodos das ventoinhas — radiador e internas', tempo: '20 min',
+    pegue: ['2 diodos 1N4007', 'ferro de solda', 'termorretrátil', 'multímetro'],
     antes: 'As ventoinhas do lado quente já escolhidas (3 fios, com tacômetro).',
-    discretos: ['VENT-D2'],
+    discretos: ['VENT-D2', 'VENT-D3'],
     faca: [
       'Localize a faixa prateada do diodo: ela é o catodo, e vai no fio VERMELHO (+12 V).',
-      'Solde o diodo em antiparalelo, direto nos terminais da ventoinha.',
-      'Isole com termorretrátil — este componente vive perto do dissipador quente.',
+      'D2: solde em antiparalelo, direto nos terminais das ventoinhas do radiador.',
+      '⭐ D3: as 5 internas ficam todas em paralelo num par só (X9 / X10). Solde UM diodo '
+      + 'na emenda onde os cinco positivos e os cinco negativos se juntam — ele serve as cinco.',
+      'Isole com termorretrátil — o D2 vive perto do dissipador quente.',
     ],
-    confira: 'Teste de diodo entre os terminais da ventoinha desconectada: conduz num sentido só.',
+    confira: 'Teste de diodo entre os terminais de cada chicote desconectado: conduz num sentido só.',
     seErrar: 'Invertido, ele curto-circuita os 12 V assim que a ventoinha liga, e o fusível F3 desarma. Confira a faixa antes de energizar.',
+    porque: '⭐ O D3 ENTROU QUANDO O MOSFET SAIU. Enquanto as internas eram ligadas pelo módulo '
+          + 'MV-1, o diodo de roda-livre vinha dentro da placa comprada. Com o KA3 — contato '
+          + 'seco — a proteção passou a ser peça de projeto. Doc 31 §31.16.',
   },
   {
     id: 'A-06', fase: 'A', titulo: 'Montar o canal detector: fusível, chave e sensor', tempo: '40 min',
@@ -249,10 +254,10 @@ export const PASSOS = [
     seErrar: 'Componente fora de posição obriga a refazer rota de fio depois. Confira contra o desenho antes de seguir.',
   },
   {
-    id: 'C-07', fase: 'C', titulo: 'O diodo de roda-livre na bobina do KA2', tempo: '5 min',
+    id: 'C-07', fase: 'C', titulo: 'O diodo de roda-livre na bobina do KM1', tempo: '5 min',
     pegue: ['1 diodo 1N4007', 'chave de fenda 3 mm', 'alicate de bico', 'multímetro'],
-    antes: 'Etapa 2 da fiação concluída, painel DESENERGIZADO. E a anotação do passo A-02: se o KA2 já tem diodo interno, este passo é dispensável.',
-    discretos: ['KA2-D1'],
+    antes: 'Etapa 2 da fiação concluída, painel DESENERGIZADO. E a anotação do passo A-02: se o KM1 já tem diodo interno, este passo é dispensável.',
+    discretos: ['KM1-D1'],
     faca: [
       'Dobre as pernas do diodo em U, com ~25 mm entre as pontas.',
       'Faixa prateada (catodo) no parafuso A1 — o A1 é o positivo.',
@@ -263,17 +268,17 @@ export const PASSOS = [
     seErrar: 'Invertido, o fusível F2 desarma no primeiro START. Não queima nada — mas o sintoma engana.',
   },
   {
-    id: 'C-08', fase: 'C', titulo: 'Os pull-downs nos gatilhos do KA3 e do KA4', tempo: '10 min',
-    pegue: ['2 resistores de 10 kΩ', 'chave de fenda pequena', 'multímetro'],
+    id: 'C-08', fase: 'C', titulo: 'Os pull-downs nos gatilhos do KA1, do KA2 e do KA3', tempo: '15 min',
+    pegue: ['3 resistores de 10 kΩ', 'chave de fenda pequena', 'multímetro'],
     antes: 'Etapa 4 da fiação (os sinais do Arduino) concluída.',
-    discretos: ['KA3-R10', 'KA4-R11'],
+    discretos: ['KA1-R10', 'KA2-R11', 'KA3-R12'],
     faca: [
       'Dobre as pernas em U, medindo a distância entre os bornes IN e 0 V do módulo.',
       'Aperte uma perna no IN e a outra no 0 V, junto com o fio que já está no borne.',
-      'Repita no segundo módulo.',
+      'Repita no segundo e no terceiro módulo — os três dividem a mesma caixa DIN de 6M.',
     ],
     confira: 'Ohmímetro entre cada IN e o 0 V: ~10 kΩ. Com o painel energizado e o Arduino desligado, cada IN medindo ~0 V.',
-    seErrar: 'Sem eles, um módulo pode fechar por ruído: o KA3 armaria a potência sem comando, e o KA4 pararia a ventoinha sem comando.',
+    seErrar: 'Sem eles, um módulo pode fechar por ruído: o KA1 armaria a potência sem comando, o KA2 pararia a ventoinha do radiador e o KA3 poria as internas para girar com o painel parado.',
   },
 
   /* ═══ FASE D · ENERGIZAÇÃO ═══════════════════════════════════════ */
@@ -310,8 +315,8 @@ export const PASSOS = [
     pegue: ['multímetro', 'o Doc 31 aberto'],
     antes: 'Fase D concluída, firmware gravado.',
     faca: [
-      'Emergência: socar o cogumelo derruba a potência, e soltar NÃO religa — só o rearme azul religa.',
-      'STOP: derruba o KA2, e só o verde religa.',
+      'Emergência: socar o cogumelo derruba a potência, e destravar NÃO religa — só o LIGAR verde religa.',
+      'STOP: derruba o KM1, e só o verde religa.',
       'Arduino desligado: a potência não arma nem apertando o verde.',
       '⭐ Arduino desligado: as ventoinhas do radiador GIRAM.',
     ],

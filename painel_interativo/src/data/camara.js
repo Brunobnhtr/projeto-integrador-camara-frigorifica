@@ -51,11 +51,11 @@ export const COMPONENTES = [
     porque: 'Sem elas o frio fica colado na pastilha e a câmara estratifica — topo '
           + 'gelado, fundo morno. O ar precisa ser empurrado.',
     terminais: [
-      { t: '+', de: 'MV-1 · O3+', ref: ['MV-1', 'O3+'], fio: '0,5 mm² vermelho' },
-      { t: '−', de: 'MV-1 · O3−', ref: ['MV-1', 'O3−'], fio: '0,5 mm² preto' },
+      { t: '+', de: 'KA3 · NO3', ref: ['KA123', 'NO3'], fio: '0,5 mm² vermelho' },
+      { t: '−', de: 'BD-0V · Z13', ref: ['BD-0V', 'Z13'], fio: '0,5 mm² preto' },
     ],
     avisos: [
-      '📌 DIVIDEM O CANAL 3 COM AS 2 DO DUTO. São 4 ventoinhas no mesmo par de fios — '
+      '📌 DIVIDEM O CONTATO DO KA3 COM AS 2 DO DUTO. São 4 ventoinhas no mesmo par de fios — '
       + 'ligam e desligam juntas, o que é o correto: elas formam um circuito de ar só.',
       '⭐ CONTINUAM GIRANDO DEPOIS DE DESLIGAR (pós-ventilação). O calor acumulado no '
       + 'dissipador precisa sair, senão volta para dentro da câmara.',
@@ -71,8 +71,8 @@ export const COMPONENTES = [
           + 'uma ventoinha de 40 mm não cabe folgada num vão de 30, e enfiada lá dentro '
           + 'ela sopra contra a parede em vez de empurrar o ar para a entrada.',
     terminais: [
-      { t: '+', de: 'MV-1 · O3+', ref: ['MV-1', 'O3+'], fio: 'em paralelo com as frias' },
-      { t: '−', de: 'MV-1 · O3−', ref: ['MV-1', 'O3−'], fio: '—' },
+      { t: '+', de: 'KA3 · NO3', ref: ['KA123', 'NO3'], fio: 'em paralelo com as frias' },
+      { t: '−', de: 'BD-0V · Z13', ref: ['BD-0V', 'Z13'], fio: '—' },
     ],
     avisos: ['📌 O duto fica FORA da parede de acrílico, dentro do isolamento. O ar circula '
            + 'sem furar o volume útil.',
@@ -91,8 +91,8 @@ export const COMPONENTES = [
     porque: 'Idem à esquerda — o retorno tem que ser simétrico, senão um lado da câmara '
           + 'fica mais frio que o outro.',
     terminais: [
-      { t: '+', de: 'MV-1 · O3+', ref: ['MV-1', 'O3+'], fio: 'em paralelo' },
-      { t: '−', de: 'MV-1 · O3−', ref: ['MV-1', 'O3−'], fio: '—' },
+      { t: '+', de: 'KA3 · NO3', ref: ['KA123', 'NO3'], fio: 'em paralelo' },
+      { t: '−', de: 'BD-0V · Z13', ref: ['BD-0V', 'Z13'], fio: '—' },
     ],
     avisos: [],
   },
@@ -147,11 +147,11 @@ export const COMPONENTES = [
     x: 405, y: 396, w: 70, h: 26, cor: '#4dabf7', sopra: 'baixo',
     onde: 'Logo acima do PTC, soprando PARA BAIXO — no MESMO sentido das de cima.',
     porque: 'Empurra o ar sobre o PTC e para dentro do plenum, de onde ele sobe pelos '
-          + 'dutos. 🔧 Antes tinha canal próprio no MV-1; hoje entra em PARALELO com as '
+          + 'dutos. 🔧 Antes tinha canal próprio; hoje entra em PARALELO com as '
           + 'outras quatro internas, porque todas têm a mesma condição — ensaio rodando.',
     terminais: [
-      { t: '+', de: 'MV-1 · O3+ (emenda com as 4 de circulação)', ref: ['MV-1', 'O3+'], fio: '0,5 mm² vermelho' },
-      { t: '−', de: 'MV-1 · O3− (emenda com as 4 de circulação)', ref: ['MV-1', 'O3−'], fio: '0,5 mm² preto' },
+      { t: '+', de: 'KA3 · NO3 (emenda com as 4 de circulação)', ref: ['KA123', 'NO3'], fio: '0,5 mm² vermelho' },
+      { t: '−', de: 'BD-0V · Z13 (emenda com as 4 de circulação)', ref: ['BD-0V', 'Z13'], fio: '0,5 mm² preto' },
     ],
     avisos: [
       '🔥 SOPRA PARA BAIXO, IGUAL ÀS DE CIMA — e isto NÃO é engano. Uma ventoinha DC não '
@@ -192,7 +192,7 @@ export const COMPONENTES = [
 export const TAMPA3D = [
   { id: 'RAD', nome: '2 coolers do radiador', cor: '#e8590c',
     /* ⭐ ALIMENTAÇÃO À ESQUERDA, TACÔMETRO À DIREITA. Não é capricho de
-       desenho: os 12 V vêm do MV-1 e sobem pelo lado da POTÊNCIA; os
+       desenho: os 12 V vêm do KA2 e sobem pelo lado da POTÊNCIA; os
        dois RPM vão para o Mega e sobem pelo lado do SINAL. Postos na
        ordem em que chegam, nenhum dos cinco precisa cruzar o outro. */
     bornes: [{ b:'+', lado:'base', t:0.12 }, { b:'−', lado:'base', t:0.30 },
@@ -237,7 +237,7 @@ export const PRENSAS = [
 export const TRAVESSIA = [
   { pc: 'PC-1', g: 'Potência',   n: 2, o: 'Peltier + e −', de: 'BTS #1', mm: '1,5 mm²' },
   { pc: 'PC-1', g: 'Potência',   n: 2, o: 'PTC + e −', de: 'BTS #2', mm: '1,5 mm²' },
-  { pc: 'PC-1', g: 'Ventilação', n: 2, o: '⭐ as 5 internas (4 de circulação + a do PTC, em paralelo)', de: 'MV-1 · O3', mm: '0,5 mm²' },
+  { pc: 'PC-1', g: 'Ventilação', n: 2, o: '⭐ as 5 internas (4 de circulação + a do PTC, em paralelo)', de: 'KA3 · NO3 (+) e BD-0V · Z13 (−)', mm: '0,5 mm²' },
   { pc: 'PC-2', g: 'Ensaio',     n: 1, o: 'positivo da posição de ensaio', de: 'F-P1', mm: '0,5 mm²' },
   { pc: 'PC-2', g: 'Ensaio',     n: 1, o: 'retorno da posição de ensaio', de: 'BD-0V-B · Z22', mm: '0,5 mm²' },
   { pc: 'PC-2', g: 'Sinal',      n: 4, o: 'AM2315C (VCC GND SDA SCL)', de: 'Mega + BD-5V', mm: '0,25 mm²' },
@@ -357,9 +357,9 @@ export const EMENDAS_CAMARA = [
   { de:{ p:'VF', b:'−' }, para:{ p:'VD2', b:'−' }, diz:'' },
   { de:{ p:'VF', b:'+' }, para:{ p:'VP', b:'+' },
     diz:'🔧 A ventoinha do PTC entrou nesta emenda. Ela tinha canal e par próprios '
-      + '(MV-1 · O2, fios X7/X8) para continuar girando depois do aquecedor — não '
+      + '(fios X7/X8) para continuar girando depois do aquecedor — não '
       + 'precisa: o PTC é AUTO-LIMITADO, sem fluxo de ar a resistência sobe e ele '
-      + 'corta a própria potência. Saíram 2 condutores da parede, 1 canal do MV-1 '
-      + 'e o pino D28 do Mega.' },
+      + 'corta a própria potência. Saíram 2 condutores da parede e o pino D28 '
+      + 'do Mega.' },
   { de:{ p:'VF', b:'−' }, para:{ p:'VP', b:'−' }, diz:'' },
 ];

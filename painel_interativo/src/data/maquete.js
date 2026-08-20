@@ -176,7 +176,7 @@ export const FIOS = [
             + '24 V.' },
       { onde: 'Desce no P4 · 1ª entrada', diz: 'Desce pelo padrão de entrada, na '
             + 'primeira das três entradas.' },
-      { onde: 'Entra no painel', diz: 'Vai direto ao relé KA2, que liga e desliga a '
+      { onde: 'Entra no painel', diz: 'Vai direto ao relé KM1, que liga e desliga a '
             + 'potência.' },
     ],
     atencao: 'É o único fio de 1,00 mm² da rede aérea. Os outros são mais finos porque '

@@ -11,7 +11,7 @@
  *   BD-24V  (permanente) → continua vivo: DNLCB30, sinaleiros, as
  *                          posições de ensaio, o COM do ULN
  *   BD-5V                → toda a eletrônica
- *   BD-AUX  (12 V)       → só as ventoinhas, pelo MV-1
+ *   BD-AUX  (12 V)       → só as ventoinhas, pelos contatos do KA2 e do KA3
  *   BD-0V                → o retorno de tudo, um ponto por fio
  */
 
@@ -76,18 +76,20 @@ export const FIOS_ETAPA3 = [
   { ...cinco('D12', { comp: 'BD-5V', via: 'O8' }, { comp: 'SC-1', via: 'VCC' },
       'Alimenta o sensor de corrente da posição de ensaio.'),
     rota: ['CH-base', 'CV-esq', 'CH-3x2'] },
-  { ...cinco('D13', { comp: 'BD-5V', via: 'O9' }, { comp: 'MV-1', via: 'VCC' },
-      'Lado do COMANDO do módulo MOSFET, opticamente isolado.'),
-    rota: ['CH-base', 'CV-esq', 'CH-3x2'],
-    aviso: '⚠️ VCC e VIN do MV-1 são mundos separados pelo optoacoplador. VCC = 5 V do '
-         + 'comando; VIN = 12 V das ventoinhas. Trocados, os 12 V entram no lado do '
-         + 'Arduino.' },
+  /* 🗑️ O D13 SAIU. Ele levava 5 V do BD-5V · O9 até o VCC do módulo MOSFET (MV-1),
+     que deixou de existir: as 5 ventoinhas internas passaram para o KA3, um terceiro
+     módulo de relé na mesma caixa DIN do KA1 e do KA2 — e a caixa já recebe 5 V por
+     UM par de fios só (o D26, para o O12), com o DC+ pontelhado lá dentro.
+     ⭐ A saída O9 do BD-5V ficou LIVRE. Ver Doc 31 §31.16. */
 
   /* ── BD-AUX: as ventoinhas ────────────────────────────────────────── */
   { n: 'D14', etapa: 3, classe: 'alim', func: 'aux12', mm2: 0.75,
     de: { comp: 'BD-AUX', via: 'O1' },
-    para: { comp: 'MV-1', via: 'VIN' }, rota: ['CH-base', 'CV-esq', 'CH-2x1'],
-    diz: 'Os 12 V que os quatro canais do MV-1 chaveiam.' },
+    para: { comp: 'KA123', via: 'COM3' }, rota: ['CH-base', 'CV-esq', 'CH-2x1'],
+    diz: 'Os 12 V permanentes que o contato do KA3 entrega às 5 ventoinhas internas.',
+    porque: '🔧 IA AO VIN DO MV-1, que alimentava os 4 canais do módulo MOSFET. Agora vai '
+          + 'ao COM do KA3 — mesmo barramento, mesma bitola, mesma rota. O que mudou é o '
+          + 'que está do outro lado: um CONTATO SECO no lugar de um dreno.' },
 
   /* ── BD-0V: um ponto por fio ──────────────────────────────────────── */
   { ...zero('D15', { comp: 'BTS1', via: 'B−' }, { comp: 'BD-0V', via: 'Z1' },
@@ -105,27 +107,27 @@ export const FIOS_ETAPA3 = [
       'Idem para o BTS #2.'), rota: ['CH-2x1', 'CV-esq', 'CH-base'] },
   { ...zero('D19', { comp: 'MEGA', via: 'GND3' }, { comp: 'BD-0V', via: 'Z5' },
       'O 0 V do Arduino.'), rota: ['CH-3x2', 'CV-dir', 'CH-base'] },
-  { ...cinco('D7b', { comp: 'BD-5V', via: 'O12' }, { comp: 'KA34', via: '+5V' },
-      '⭐ Alimenta os DOIS módulos de relé — o DC+ é pontelhado entre eles na caixa.'),
-    rota: ['CH-base', 'CV-esq', 'CH-2x1'], nome: '5 V dos módulos KA3/KA4',
+  { ...cinco('D7b', { comp: 'BD-5V', via: 'O12' }, { comp: 'KA123', via: '+5V' },
+      '⭐ Alimenta os TRÊS módulos de relé — o DC+ é pontelhado entre eles na caixa.'),
+    rota: ['CH-base', 'CV-esq', 'CH-2x1'], nome: '5 V dos módulos KA1/KA2',
     aviso: '⚠️ 65 mA CADA, com o relé fechado. São 130 mA a mais no ramal T2 — some com '
          + 'o Arduino, a tela e o ESP32 antes de fechar o projeto de energia.' },
-  { ...zero('D20b', { comp: 'KA34', via: '0V' }, { comp: 'BD-0V-B', via: 'Z21' },
+  { ...zero('D20b', { comp: 'KA123', via: '0V' }, { comp: 'BD-0V-B', via: 'Z21' },
       '⭐ O DC− dos dois módulos, em ponto próprio da barra.'),
     rota: ['CH-2x1', 'CV-dir', 'CH-3x2'],
     porque: '📌 PONTO PRÓPRIO, e não pendurado. O DC− carrega os 130 mA das duas bobinas '
           + 'e é também a referência do sinal de gatilho — a entrada do módulo tem só '
           + 'três bornes, então o DC− É o 0 V do IN. Pendurá-lo num retorno de medição '
           + 'somaria corrente chaveada a uma referência.' },
-  { ...pot('D6b', { comp: 'BD-AUX', via: 'O2' }, { comp: 'KA34', via: 'COM4' }, 0.5,
-      '⭐ Os 12 V permanentes entrando no contato do KA4.'),
+  { ...pot('D6b', { comp: 'BD-AUX', via: 'O2' }, { comp: 'KA123', via: 'COM2' }, 0.5,
+      '⭐ Os 12 V permanentes entrando no contato do KA2.'),
     classe: 'alim', func: 'aux12', rota: ['CH-base', 'CV-esq', 'CH-2x1'],
-    nome: '12 V → contato do KA4',
-    porque: '⭐ O KA4 fica EM SÉRIE com o lado POSITIVO das ventoinhas do radiador. O '
+    nome: '12 V → contato do KA2',
+    porque: '⭐ O KA2 fica EM SÉRIE com o lado POSITIVO das ventoinhas do radiador. O '
           + 'negativo delas (X6) vai direto ao BD-0V-B · Z20 e NUNCA é chaveado — é a '
           + 'referência dos dois tacômetros, e mexer nela foi o erro que tirou o comando '
           + 'destas ventoinhas na primeira versão.',
-    aviso: '🔥 A SAÍDA É O CONTATO NC4, NÃO O NO4. Ao contrário do KA3, aqui o estado '
+    aviso: '🔥 A SAÍDA É O CONTATO NC2, NÃO O NO2. Ao contrário do KA1, aqui o estado '
          + 'seguro é FECHADO: módulo sem energia, ventoinha girando (§31.14).' },
   { ...zero('D20', { comp: 'BS-1', via: '0V' }, { comp: 'BD-0V', via: 'Z6' },
       'O 0 V da PI-1, que lá dentro vira o barramento de fio nu.'),
@@ -134,16 +136,13 @@ export const FIOS_ETAPA3 = [
       'Retorno do DNLCB30.'), rota: ['CH-2x1', 'CV-esq', 'CH-base'] },
   { ...zero('D22', { comp: 'RTC', via: 'GND' }, { comp: 'BD-0V', via: 'Z8' },
       'Retorno do relógio.'), rota: ['CH-3x2', 'CV-esq', 'CH-base'] },
-  { ...zero('D23', { comp: 'MV-1', via: 'GND-P' }, { comp: 'BD-0V', via: 'Z13' },
-      'Retorno das CARGAS do MV-1 — o lado dos 12 V das ventoinhas.'),
-    rota: ['CH-2x1', 'CV-esq', 'CH-base'] },
-  { ...zero('D25', { comp: 'MV-1', via: 'GND-C' }, { comp: 'BD-0V', via: 'Z14' },
-      'Retorno do COMANDO do MV-1 — o lado de 5 V do Arduino.'),
-    rota: ['CH-3x2', 'CV-dir', 'CH-base'],
-    aviso: '🔥 DOIS FIOS SEPARADOS, e não uma ponte entre os dois GND do módulo. O '
-         + 'optoacoplador existe para isolar o lado das ventoinhas do lado do Arduino; '
-         + 'unir os dois no módulo anula esse isolamento e traz o ruído de partida das '
-         + 'ventoinhas para dentro da lógica.' },
+  /* 🗑️ O D23 E O D25 SAÍRAM COM O MV-1. Eram os DOIS retornos que um módulo
+     optoacoplado exige — o GND das cargas (12 V) e o GND do comando (5 V), obrigados a
+     ir para pontos DIFERENTES do BD-0V para não anular o isolamento. Um contato seco
+     não tem lado de carga nem lado de comando: o KA3 devolve o 5 V dele pela mesma
+     ponte interna do KA1 e do KA2 (fio Z21, no BD-0V-B), e o negativo das ventoinhas
+     vai direto da câmara para a barra, pelo X10. ⭐ Dois fios e uma armadilha a menos.
+     O ponto Z13 do BD-0V agora recebe o X10; o Z14 ficou livre. */
   { ...zero('D24', { comp: 'SC-1', via: 'GND' }, { comp: 'BD-0V-B', via: 'Z17' },
       'O 0 V do sensor de corrente.'),
     rota: ['CH-3x2'],

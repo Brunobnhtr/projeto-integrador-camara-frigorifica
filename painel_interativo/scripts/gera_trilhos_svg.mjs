@@ -36,8 +36,8 @@ const TITULO = {
 /* Rótulo curto: o `nome` do modelo é longo demais para caber em 30 px. */
 const CURTO = {
   'BD-POT': 'BD-POT', 'BD-AUX': 'BD-AUX', 'BD-24V': 'BD-24V', 'BD-5V': 'BD-5V',
-  'BD-0V': 'BD-0V', 'KA1': 'KA1', 'KA2': 'KA2', 'KA3': 'KA3', 'KA4': 'KA4',
-  'BTS1': 'BTS #1', 'BTS2': 'BTS #2', 'MV-1': 'MV-1', 'F-P': 'F-P',
+  'BD-0V': 'BD-0V', 'KM1': 'KM1', 'KA123': 'KA1+KA2+KA3',
+  'BTS1': 'BTS #1', 'BTS2': 'BTS #2', 'F-P': 'F-P',
   'ESP32': 'ESP32', 'MEGA': 'ARDUINO MEGA', 'RTC': 'RTC',
   'SV-1': 'SENSOR V', 'AD-1': 'ADAPT. 1-WIRE', 'BS-1': 'BORNES IS', 'SC-1': 'SENSOR A',
   'BD-0V-B': 'BD-0V-B',
@@ -45,8 +45,8 @@ const CURTO = {
 const SUB = {
   'BD-POT': '24 V comutado', 'BD-AUX': '12 V perm.', 'BD-24V': '24 V perm.',
   'BD-5V': '5,10 V', 'BD-0V': 'star ground',
-  'KA1': 'emergência', 'KA2': '⚡ 6 A', 'KA3': '⭐ veto D27', 'KA4': '⭐ fan D30',
-  'BTS1': 'Peltier · frio', 'BTS2': 'PTC · quente', 'MV-1': '5 fans int.',
+  'KM1': '⚡ 6 A · o selo', 'KA123': '⭐ D27 · D30 · D29',
+  'BTS1': 'Peltier · frio', 'BTS2': 'PTC · quente',
   'F-P': 'fusíveis', 'ESP32': 'DNLCB30 · MQTT', 'MEGA': '2560 + Shield',
   'SV-1': 'divisor 5:1', 'AD-1': 'pull-up 4,7 k', 'BS-1': 'C1 · C2', 'SC-1': 'WCS2702',
   'BD-0V-B': '0 V da eletrônica', 'RTC': 'DS3231',

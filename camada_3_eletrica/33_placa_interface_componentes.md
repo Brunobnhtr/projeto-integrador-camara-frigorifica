@@ -140,7 +140,7 @@ Os componentes são necessários. Soldá-los no meio do cabo com fita isolante, 
 | **Quantidade** | 1 conjunto (2 resistores + 1 capacitor) |
 | **Onde fica** | Placa PI-1 |
 
-**O que faz:** informa ao Arduino se a potência de 24 V está realmente presente no BD-POT — ou seja, se o relé KA2 fechou e a emergência está liberada. É como o firmware sabe a diferença entre "eu mandei ligar" e "ligou de verdade".
+**O que faz:** informa ao Arduino se a potência de 24 V está realmente presente no BD-POT — ou seja, se o relé KM1 fechou e a emergência está liberada. É como o firmware sabe a diferença entre "eu mandei ligar" e "ligou de verdade".
 
 **Por que precisa:** o pino D25 do Arduino suporta no máximo 5 V. O barramento a medir tem 24 V. **Ligar direto destrói a entrada.** O divisor reduz proporcionalmente:
 
@@ -153,7 +153,7 @@ V_D25 = 24 V × 4,7 kΩ / (22 kΩ + 4,7 kΩ) = 24 × 0,176 = 4,22 V   ✅ dentro
 > ⚠️ **Este divisor mudou com a adoção do Plano B.** Ele antes lia 12 V com 10 kΩ / 4,7 kΩ. Se você mantiver os valores antigos lendo 24 V, chegam **7,67 V** no pino D25 e a entrada do Arduino é danificada. **Confira os valores antes de soldar.**
 
 ```
-   BD-POT (+24 V, depois do KA2)
+   BD-POT (+24 V, depois do KM1)
         │
       ┌─┴─┐
       │R1 │  22 kΩ
@@ -167,7 +167,7 @@ V_D25 = 24 V × 4,7 kΩ / (22 kΩ + 4,7 kΩ) = 24 × 0,176 = 4,22 V   ✅ dentro
 
 | Componente | Perna | Vai para |
 |---|---|---|
-| **R1** (22 kΩ) | 1 | **+24 V** do bloco **BD-POT** (o barramento comutado pelo KA2) |
+| **R1** (22 kΩ) | 1 | **+24 V** do bloco **BD-POT** (o barramento comutado pelo KM1) |
 | | 2 | Nó **D25** |
 | **R2** (4,7 kΩ) | 1 | Nó **D25** |
 | | 2 | **0 V** (BD-0V) |
@@ -177,7 +177,7 @@ V_D25 = 24 V × 4,7 kΩ / (22 kΩ + 4,7 kΩ) = 24 × 0,176 = 4,22 V   ✅ dentro
 
 **Por que o C3 (novo):** o nó D25 é um ponto de alta impedância (~3,9 kΩ equivalente) dentro de um painel com chaveamento. Sem o capacitor, ruído captado pode fazer o pino oscilar entre HIGH e LOW e o firmware enxergar a potência "piscando". Custa centavos e elimina a classe inteira de problema.
 
-**Ensaio:** com o KA2 fechado, medir o nó D25 contra 0 V. Deve dar **4,2 V ± 0,3 V**. Com a emergência acionada, deve cair para **0 V**.
+**Ensaio:** com o KM1 fechado, medir o nó D25 contra 0 V. Deve dar **4,2 V ± 0,3 V**. Com a emergência acionada, deve cair para **0 V**.
 
 ---
 
@@ -352,9 +352,9 @@ Chegou a ser projetado aqui: um **MOSFET 2N7000** com resistor e diodo, dando ao
   X C10 chega em PI1.J2-9 (borda baixo) usando a CH-topo — esse borne alcança CH-3x2
 ```
 
-A PI-1 está no trilho 3 e o KA2 no trilho 1. Com o MOSFET na placa, o **circuito da bobina** teria de subir três trilhos e voltar — dois fios de bobina atravessando o painel, um deles pela canaleta de **sinal**, colado ao `IS` analógico e ao 1-Wire. É o contrário da regra de [§31.4](31_comando_e_protecoes.md), que foi quem decidiu em que trilho os relés moram.
+A PI-1 está no trilho 3 e o KM1 no trilho 1. Com o MOSFET na placa, o **circuito da bobina** teria de subir três trilhos e voltar — dois fios de bobina atravessando o painel, um deles pela canaleta de **sinal**, colado ao `IS` analógico e ao 1-Wire. É o contrário da regra de [§31.4](31_comando_e_protecoes.md), que foi quem decidiu em que trilho os relés moram.
 
-✅ **A função virou o `KA3`**, um **módulo de relé de 1 canal, 5 V**, pronto, numa caixa DIN de 4 módulos no **trilho 2** — onde a canaleta de baixo (CH-2x1) já é de potência e serve o trilho 1 diretamente. Circuito completo em [Doc 31 §31.13](31_comando_e_protecoes.md).
+✅ **A função virou o `KA1`**, um **módulo de relé de 1 canal, 5 V**, pronto, numa caixa DIN de 6 módulos no **trilho 2** (ela abriga também o KA2 e o KA3) — onde a canaleta de baixo (CH-2x1) já é de potência e serve o trilho 1 diretamente. Circuito completo em [Doc 31 §31.13](31_comando_e_protecoes.md).
 
 > 🎓 **Duas lições que valem a defesa.** A primeira: **componente de ancoragem é de proximidade** — é a mesma razão pela qual os pull-downs de 10 kΩ do `R_EN` são soldados nos próprios BTS7960, logo acima. A segunda: um script de validação escrito por você mesmo reprovando uma decisão sua é o argumento mais forte que existe a favor de ter escrito o script.
 
@@ -391,7 +391,7 @@ entram três condutores de uma vez.
 | 19/08 | R1 + R2 + C3, e o R3 | viraram **módulos comprados com borne de parafuso** |
 
 **Sobraram dois capacitores.** E dois capacitores não justificam uma placa: eles entram
-**parafusados num borne**, exatamente como o D1 entra na bobina do KA2.
+**parafusados num borne**, exatamente como o D1 entra na bobina do KM1.
 
 ### O que existe hoje no lugar
 
@@ -475,7 +475,7 @@ Os dois pull-downs **não vão na placa PI-1**, pelo motivo explicado na §33.2:
 
 | Componente | Quantidade na BOM | Destino |
 |---|---:|---|
-| ~~Diodo 1N4007~~ | ~~4~~ | ⚠️ **CORRIGIDO — os diodos FICAM no projeto.** Esta linha supunha que os relés KA1/KA2 já trouxessem o roda-livre embutido. Quem traz são os **módulos de 5 V do KA3/KA4**; o KA1 e o KA2 são relés de 8 pinos em base PTF08A, e a base não tem componente nenhum. Monte o **`D1`** na bobina do KA2 e o **`D2`** nas ventoinhas do radiador — ver [Doc 31 §31.9](31_comando_e_protecoes.md) e o cadastro `painel_interativo/src/data/discretos.js`. Sobram 2 diodos de reserva |
+| ~~Diodo 1N4007~~ | ~~4~~ | ⚠️ **CORRIGIDO — os diodos FICAM no projeto.** Esta linha supunha que o relé da cadeia já trouxesse o roda-livre embutido. Quem traz são os **módulos de 5 V do KA1/KA2**; o KM1 é um relé de 8 pinos em base PTF08A, e a base não tem componente nenhum. Monte o **`D1`** na bobina do KM1 e o **`D2`** nas ventoinhas do radiador — ver [Doc 31 §31.9](31_comando_e_protecoes.md) e o cadastro `painel_interativo/src/data/discretos.js`. Sobram 2 diodos de reserva |
 | ~~Diodo Zener 5V6 / 13 V / 15 V~~ | ~~6~~ | 🗑️ Já eliminados na revisão do Plano B — proteção nativa do LM2596. Ver [Doc 02 §2.6](../camada_0_fundamentos/02_arquitetura_de_energia.md) |
 
 > 💡 **Repare no padrão:** os componentes que saíram são justamente os da categoria "proteção" — e saíram porque **os módulos realmente já protegem**. Os que ficaram são todos de **interface**. A sua intuição sobre proteção estava correta; ela só não se aplicava a estes nove componentes, porque eles nunca foram proteção.
@@ -562,11 +562,11 @@ com o cogumelo. Quem segura o pino em nível alto é o firmware, que continua ro
 - [ ] Foto dos resistores soldados anexada ao relatório
 
 ### Demais verificações
-- [ ] Divisor lendo **4,2 V ± 0,3 V** em D25 com o KA2 fechado, e **0 V** com a emergência acionada
+- [ ] Divisor lendo **4,2 V ± 0,3 V** em D25 com o KM1 fechado, e **0 V** com a emergência acionada
 - [ ] Pull-up do 1-Wire medindo ~4,7 kΩ entre D2 e +5 V
 - [ ] **4× 220 Ω montados na base dos postes de iluminação da maquete**, com termorretrátil
 - [ ] **Nenhum componente solto ou soldado no meio de cabo em todo o projeto**
-- [ ] **`D1` montado nos bornes `A1`/`A2` do KA2** — ou o teste de diodo provando que o relé já tem o interno — e **`D2` montado junto às ventoinhas do radiador**, catodo no `+12 V`. Os outros 2 diodos ficam de reserva
+- [ ] **`D1` montado nos bornes `A1`/`A2` do KM1** — ou o teste de diodo provando que o relé já tem o interno — e **`D2` montado junto às ventoinhas do radiador**, catodo no `+12 V`. Os outros 2 diodos ficam de reserva
 
 ---
 

@@ -159,7 +159,7 @@ derruba:
   também.
 - ✅ **O `DISSIPADOR_ALVO` de 52 °C continua um ponto de operação razoável** — com corrente
   contínua ele passa a ser atingido com folga, em vez de ser um teto que aperta.
-- ✅ **Nada disso afeta o KA3, o KA4 nem a cadeia de segurança.** É análise de eficiência
+- ✅ **Nada disso afeta o KA1, o KA2 nem a cadeia de segurança.** É análise de eficiência
   térmica, não de proteção.
 
 > 📌 **A decisão de projeto, registrada:** a etapa 1 foi adotada (o PWM subiu de 1 Hz para

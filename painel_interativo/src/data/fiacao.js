@@ -100,14 +100,14 @@ export const PRENSAS_PAINEL = [
 const FIOS_ETAPA1 = [
   {
     n: 'E1', etapa: 1, func: 'pot24', nome: '24 V de POTÊNCIA', classe: 'potencia',
-    de: { prensa: 'PG9-1' }, para: { comp: 'KA2', via: '11' },
+    de: { prensa: 'PG9-1' }, para: { comp: 'KM1', via: '11' },
     mm2: 1.5,
     rota: ['CH-base'],
     diz: 'Vem do ramal RM1, que desce no poste 4. Conduz os 6 A das Peltier — é o fio '
        + 'mais carregado do painel.',
-    porque: '⭐ Ele NÃO vai direto ao barramento. Entra pelo contato 11 do KA2, e só sai '
+    porque: '⭐ Ele NÃO vai direto ao barramento. Entra pelo contato 11 do KM1, e só sai '
           + 'pelo 14 se o relé estiver energizado. É isso que faz o cogumelo de '
-          + 'emergência cortar a potência: sem o KA2, o BD-POT fica morto.',
+          + 'emergência cortar a potência: sem o KM1, o BD-POT fica morto.',
   },
   {
     n: 'E2', etapa: 1, func: 'zero', nome: '0 V comum', classe: 'comum',
@@ -135,7 +135,7 @@ const FIOS_ETAPA1 = [
     de: { prensa: 'PG7-2' }, para: { comp: 'BD-AUX', via: 'IN' },
     mm2: 0.75,
     rota: ['CH-base', 'CV-esq', 'CH-2x1'],
-    diz: 'Só o positivo, vindo do T3 no poste 3. Alimenta as ventoinhas pelo MV-1.',
+    diz: 'Só o positivo, vindo do T3 no poste 3. Alimenta as ventoinhas pelos contatos do KA2 e do KA3.',
     porque: '📐 0,75 mm² e não 0,5: as ventoinhas somam ~265 mA em regime, mas uma '
           + 'travada puxa corrente de rotor bloqueado. A bitola maior é a margem para '
           + 'isso.',
@@ -161,7 +161,7 @@ export const ETAPAS = [
     resumo: '5 condutores entram pela base: 24 V de potência, 0 V, 5 V, 12 V e '
           + '24 V de serviços. Todos pela canaleta de potência.' },
   { n: 2, nome: 'Comando e emergência', feito: true,
-    resumo: 'KA1, KA2, o cogumelo e a seletora LOCAL/REMOTO.' },
+    resumo: 'O KM1, o cogumelo, o STOP e o LIGAR — a malha do único selo.' },
   { n: 3, nome: 'Distribuição — dos barramentos aos consumidores', feito: true,
     resumo: '24 fios saindo dos quatro barramentos para quem consome, dentro '
           + 'da placa de montagem. A porta fica para a etapa 5.' },

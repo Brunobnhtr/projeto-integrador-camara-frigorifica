@@ -281,15 +281,15 @@ O ESP32 repassa pela mesma serial, em formato simples e curto:
 
 > ### ⭐ Por que o STOP remoto é Categoria 2, e não corta a energia
 >
-> Parece uma fraqueza e é o contrário. Com o **selo do KA2** ([Doc 31 §31.0](../camada_3_eletrica/31_comando_e_protecoes.md)), qualquer corte físico da potência **retém** — e só o **botão verde**, no painel, o desfaz.
+> Parece uma fraqueza e é o contrário. Com o **selo do KM1** ([Doc 31 §31.0](../camada_3_eletrica/31_comando_e_protecoes.md)), qualquer corte físico da potência **retém** — e só o **botão verde**, no painel, o desfaz.
 >
 > Se o `STOP` remoto derrubasse o selo, quem parasse a máquina do celular condenaria alguém a **caminhar até o painel** para religá-la. O comando remoto viraria uma armadilha.
 >
 > | Origem | O que cai | Como volta |
 > |---|---|---|
 > | **MQTT / IHM** | só o `R_EN` — Categoria 2 | pela própria tela |
-> | **Botão preto** (porta) | o selo do KA2, em hardware — Cat. 1 | botão verde, na porta |
-> | **Trip** do firmware | o selo do KA2, pelo KA3 — Cat. 1 | reconhecimento **+** botão verde |
+> | **Botão preto** (porta) | o selo do KM1, em hardware — Cat. 1 | botão verde, na porta |
+> | **Trip** do firmware | o selo do KM1, pelo KA1 — Cat. 1 | reconhecimento **+** botão verde |
 >
 > 🎯 **A regra por trás: quem para de longe, religa de longe. Quem para de perto ou por falha, exige alguém de perto.** A parada por **falha** é a que precisa de um humano olhando a máquina — e é justamente a que retém.
 >
@@ -460,7 +460,7 @@ void loop() {
 | **T0 — Principal** | Temperatura grande, setpoint, modo, estado, **botões INICIAR e PARAR**, ícone de Wi-Fi | Padrão ao ligar |
 | **T1 — Ajuste** | Setpoint com botões `+` / `−`, passo de 0,5 °C | Botão "AJUSTE" na T0 |
 | **T2 — Diagnóstico** | Umidade, correntes, RPM, duty, tempo de operação | Botão "DIAG" na T0 |
-| **T3 — Alarme** | Fundo vermelho, mensagem do alerta, instrução de rearme | Automática ao entrar em `FALHA`/`EMERGENCIA` |
+| **T3 — Alarme** | Fundo vermelho, mensagem do alerta e a instrução: destrave o cogumelo, se for o caso, e **aperte o LIGAR verde** | Automática ao entrar em `FALHA`/`EMERGENCIA` |
 
 ### Comandos do Arduino para a Nextion
 

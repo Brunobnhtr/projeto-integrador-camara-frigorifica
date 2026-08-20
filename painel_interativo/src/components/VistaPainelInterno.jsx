@@ -4,7 +4,7 @@ import PlacaReal from './PlacaReal';
 import { PINAGENS } from '../data/pinagens';
 import { PRENSAS_PAINEL, FIOS, ETAPAS, CORES } from '../data/fiacao';
 import CamaraNoPainel from './CamaraNoPainel';
-import { ROTAS_CAMARA } from '../data/camara';
+import { ROTAS_CAMARA, COMPONENTES as PECAS_CAMARA, TAMPA3D } from '../data/camara';
 import { SUBIDAS, naTampa } from '../lib/rota_camara';
 import {
   geoTerminal, posicoes, comporPainel, foraDoPainel, tracarFio, setaEm,
@@ -24,9 +24,8 @@ const PLACAS = {
   /* ⭐ 'rele' = não é placa nem módulo comprado: é um borne com componente
      pendurado nele. O D1 e os pull-downs não apareciam em vista nenhuma
      do painel, porque a vista do painel só sabe desenhar FIO. */
-  KA1:  { tipo: 'rele', comp: 'KA1',  rotulo: 'a base, as pontes do selo e o que se mede' },
-  KA2:  { tipo: 'rele', comp: 'KA2',  rotulo: 'a base, o selo e o diodo D1 da bobina' },
-  KA34: { tipo: 'rele', comp: 'KA34', rotulo: 'os 2 canais, os pull-downs R10/R11 e o D2' },
+  KM1:  { tipo: 'rele', comp: 'KM1',  rotulo: 'a base, o selo e o diodo D1 da bobina' },
+  KA123: { tipo: 'rele', comp: 'KA123', rotulo: 'os 3 canais, os pull-downs R10/R11/R12 e os diodos D2 e D3' },
 };
 import {
   CAIXA, PLACA, TRILHOS, COMPONENTES, CANALETAS, CANALETAS_PORTA, LATERAIS,
@@ -53,6 +52,72 @@ export default function VistaPainelInterno() {
   const [fio, setFio] = useState(null);
   const [etapa, setEtapa] = useState(0);   // 0 = todas
   const rolagem = useRef(null);
+  const desenho = useRef(null);   // o <svg>, para saber onde um ponto caiu na tela
+  const arrasto = useRef(null);   // pan com o botao do meio
+
+  /* ⭐ O BOTAO DO MEIO ARRASTA O DESENHO — e, mais importante, DEIXA DE
+     ligar o auto-scroll do Windows. Sem o preventDefault aqui, apertar a
+     rodinha abre aquele alvo de setas que rola a pagina sozinha: com o
+     desenho em 3x, dentro de um container que rola, isso vira bagunca
+     imediata. Aqui a rodinha vira uma ferramenta: segura e arrasta. */
+  const aoApertar = e => {
+    if (e.button !== 1) return;
+    e.preventDefault();
+    const el = rolagem.current;
+    if (!el) return;
+    arrasto.current = { x: e.clientX, y: e.clientY, sl: el.scrollLeft, st: el.scrollTop };
+    el.style.cursor = 'grabbing';
+  };
+  const aoMover = e => {
+    const a = arrasto.current, el = rolagem.current;
+    if (!a || !el) return;
+    el.scrollLeft = a.sl - (e.clientX - a.x);
+    el.scrollTop  = a.st - (e.clientY - a.y);
+  };
+  const aoSoltar = () => {
+    arrasto.current = null;
+    if (rolagem.current) rolagem.current.style.cursor = '';
+  };
+
+  /* posiciona cada componente no seu trilho */
+  const comps = useMemo(() => comporPainel(CAIXA.largura + 40), []);
+
+  /* ⭐ O caminho de cada fio, andando pela LINHA DE CENTRO das canaletas
+     da rota. Horizontal manda no Y, vertical manda no X.
+
+     A porta é outro plano: as canaletas dela têm coordenadas próprias,
+     e o pulo de um plano para o outro é a PASSAGEM FLEXÍVEL — desenhada
+     como um laço, que é como o chicote fica de verdade. */
+  const PORTA_X0 = CAIXA.largura + 40;
+  const tracados = useMemo(
+    () => FIOS.map((f, i) => tracarFio(f, comps, i, PORTA_X0)), [comps, PORTA_X0]);
+
+  /* ⭐ CLICAR NUM FIO TEM DE MOSTRAR O FIO. Com zoom de 3x o desenho tem
+     ~3700 px de largura para uma janela de ~1200: dois tercos dele estao
+     fora da vista. Selecionar um fio apaga todos os outros — se o
+     escolhido estava fora da tela, o que sobra na tela e' um retangulo
+     vazio, e parece que o aplicativo quebrou. Entao a vista vai ate ele. */
+  const centralizaFio = n => {
+    const t = tracados.find(x => x.n === n);
+    const el = rolagem.current, svg = desenho.current;
+    if (!t?.pts?.length || !el || !svg) return;
+    const xs = t.pts.map(p => p[0]), ys = t.pts.map(p => p[1]);
+    const cx = (Math.min(...xs) + Math.max(...xs)) / 2;
+    const cy = (Math.min(...ys) + Math.max(...ys)) / 2;
+    const r = svg.getBoundingClientRect(), c = el.getBoundingClientRect();
+    /* o viewBox comeca em (-14, -52), por isso o deslocamento */
+    el.scrollBy({
+      left: (r.left + (cx + 14) * zoom) - (c.left + c.width / 2),
+      top:  (r.top  + (cy + 52) * zoom) - (c.top  + c.height / 2),
+      behavior: 'smooth',
+    });
+  };
+  /* um lugar so' para escolher fio: o desenho, a lista e a camara usam este */
+  const escolheFio = n => {
+    setFio(n);
+    setSel(null);
+    if (n != null) requestAnimationFrame(() => centralizaFio(n));
+  };
 
   /* scroll do mouse dá zoom, mantendo sob o cursor o que estava sob ele */
   const aoRolar = e => {
@@ -72,19 +137,6 @@ export default function VistaPainelInterno() {
     }
   };
 
-  /* posiciona cada componente no seu trilho */
-  const comps = useMemo(() => comporPainel(CAIXA.largura + 40), []);
-
-  /* ⭐ O caminho de cada fio, andando pela LINHA DE CENTRO das canaletas
-     da rota. Horizontal manda no Y, vertical manda no X.
-
-     A porta é outro plano: as canaletas dela têm coordenadas próprias,
-     e o pulo de um plano para o outro é a PASSAGEM FLEXÍVEL — desenhada
-     como um laço, que é como o chicote fica de verdade. */
-  const PORTA_X0 = CAIXA.largura + 40;
-  const tracados = useMemo(
-    () => FIOS.map((f, i) => tracarFio(f, comps, i, PORTA_X0)), [comps, PORTA_X0]);
-
   const PORTA_X = CAIXA.largura + 40, PORTA_W = 250;
   /* ⭐ Com a tampa FECHADA a porta some do desenho e a câmara encosta
      no painel — que é como a bancada fica de verdade. */
@@ -95,6 +147,8 @@ export default function VistaPainelInterno() {
   return (
     <div style={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
       <div ref={rolagem} onWheel={aoRolar}
+           onMouseDown={aoApertar} onMouseMove={aoMover}
+           onMouseUp={aoSoltar} onMouseLeave={aoSoltar}
            style={{ flex: 1, overflow: 'auto', padding: 14, background: '#eef1f5' }}>
         <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 10,
                       background: '#fff', padding: '8px 13px', borderRadius: 7,
@@ -140,11 +194,11 @@ export default function VistaPainelInterno() {
                  onChange={e => setZoom(+e.target.value)}
                  style={{ flex: 1, minWidth: 110, maxWidth: 240 }} />
           <span style={{ fontSize: 11, color: '#868e96' }}>
-            {zoom.toFixed(1)}× · 🖱️ role o mouse sobre o desenho
+            {zoom.toFixed(1)}× · 🖱️ role para o zoom · arraste com o botão do meio
           </span>
         </div>
 
-        <svg width={larguraTotal * zoom}
+        <svg ref={desenho} width={larguraTotal * zoom}
              viewBox={`-14 -52 ${larguraTotal + 34} ${CAIXA.altura + 190}`}
              style={{ background: '#fff', borderRadius: 8, boxShadow: '0 1px 6px #0002' }}>
 
@@ -314,7 +368,7 @@ export default function VistaPainelInterno() {
           {/* ── ⭐ A CÂMARA FRIA, e os cabos indo até ela por BAIXO ── */}
           <CamaraNoPainel x0={CAM_X} y0={CAM_Y} largura={CAM_W} altura={CAM_H}
                           sel={pecaCam} onSel={setPecaCam}
-                          fio={fio} onFio={n => { setFio(n); setSel(null); }}
+                          fio={fio} onFio={escolheFio}
                           apagado={!!etapa && etapa !== 6} />
           {/* ── ⭐ OS CORREDORES SOB A BANCADA ────────────────────────
                  Estavam em quatro linhas de 18 px com as legendas se
@@ -434,8 +488,8 @@ export default function VistaPainelInterno() {
             const pts = t.pts.map(p => p.join(',')).join(' ');
             const m = t.pts[Math.floor(t.pts.length / 2)];
             return (
-              <g key={t.n} onClick={() => { setFio(fio === t.n ? null : t.n); setSel(null); }}
-                 style={{ cursor: 'pointer' }} opacity={on ? 1 : 0.1}>
+              <g key={t.n} onClick={() => escolheFio(fio === t.n ? null : t.n)}
+                 style={{ cursor: 'pointer' }} opacity={on ? 1 : 0.28}>
                 <polyline points={pts} fill="none" stroke="transparent" strokeWidth={6} />
                 <polyline points={pts} fill="none" stroke="#fff"
                           strokeWidth={fio === t.n ? 3.4 : 2.2}
@@ -585,7 +639,11 @@ export default function VistaPainelInterno() {
 
       <aside style={{ width: 380, background: '#fff', borderLeft: '1px solid #dee2e6',
                       overflowY: 'auto', flexShrink: 0 }}>
-        {!sel && (
+        {/* ⭐ O INVENTÁRIO SAI DE CENA QUANDO UM FIO É ESCOLHIDO. A ficha do
+            fio já existia, mas era desenhada DEPOIS do inventário inteiro:
+            para ler o trajeto era preciso rolar a lateral ate' o fim, e
+            quem clicava num cabo achava que nada tinha acontecido. */}
+        {!sel && !fio && (
           <div style={{ padding: 16 }}>
             <h3 style={{ fontSize: 12, margin: '0 0 10px', color: '#868e96',
                          letterSpacing: 0.4 }}>INVENTÁRIO DE TERMINAIS</h3>
@@ -674,7 +732,7 @@ export default function VistaPainelInterno() {
             {FIOS.filter(f => !etapa || f.etapa === etapa).map(f => {
               const on = fio === f.n;
               return (
-                <div key={f.n} onClick={() => setFio(on ? null : f.n)} style={{
+                <div key={f.n} onClick={() => escolheFio(on ? null : f.n)} style={{
                   display: 'flex', gap: 7, alignItems: 'center', cursor: 'pointer',
                   padding: '5px 8px', marginBottom: 3, borderRadius: 4,
                   background: on ? '#fff3bf' : '#f8f9fa',
@@ -741,13 +799,31 @@ export default function VistaPainelInterno() {
           const ponta = a => {
             if (a.prensa) {
               const pr = PRENSAS_PAINEL.find(x => x.id === a.prensa);
-              return { titulo: pr.id, sub: pr.nome, det: pr.diz };
+              return pr ? { titulo: pr.id, sub: pr.nome, det: pr.diz }
+                        : { titulo: a.prensa, sub: 'prensa-cabo' };
+            }
+            /* ⭐ A PONTA PODE NÃO SER DO PAINEL. Os fios da etapa 6 morrem
+               DENTRO da câmara (ou em cima da tampa), e lá o terminal se
+               chama `borne`, não `via`. Sem este ramo a ficha mostrava
+               "undefined · undefined" justamente nos cabos que atravessam a
+               parede — os que mais gente clica para entender o trajeto. */
+            if (a.camara || a.tampa) {
+              const naTampa = !!a.tampa;
+              const id = a.camara || a.tampa;
+              const pc = naTampa ? TAMPA3D.find(x => x.id === id)
+                                 : PECAS_CAMARA.find(x => x.id === id);
+              return {
+                titulo: `${id} · ${a.borne ?? a.via ?? ''}`.trim(),
+                sub: pc?.nome ?? 'peça da câmara',
+                det: pc?.diz ?? pc?.onde,
+                onde: naTampa ? 'em cima da TAMPA (lado quente)' : 'DENTRO da câmara',
+              };
             }
             const c = COMPONENTES.find(x => x.id === a.comp);
             const p = c?.grupos.flatMap(g => g.pinos).find(x => x.nome === a.via);
             const g = c?.grupos.find(gg => gg.pinos.some(x => x.nome === a.via));
             return {
-              titulo: `${a.comp} · ${a.via}${p?.pino ? ` (pino ${p.pino})` : ''}`,
+              titulo: `${a.comp} · ${a.via ?? a.borne ?? ''}${p?.pino ? ` (pino ${p.pino})` : ''}`,
               sub: c?.nome, det: p?.para,
               onde: c?.porta ? 'na PORTA' : `trilho ${c?.trilho} · borda ${g?.lado}`,
             };

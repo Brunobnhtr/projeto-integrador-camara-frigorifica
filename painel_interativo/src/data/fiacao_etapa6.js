@@ -61,19 +61,19 @@ export const FIOS_ETAPA6 = [
      Não é só conserto de erro, é o comportamento certo: o lado quente
      precisa continuar sendo resfriado DEPOIS que tudo desliga, porque o
      calor que já está no dissipador não some junto com o comando. O
-     BD-AUX vem direto do prensa-cabo e não passa pelo KA2 — então elas
+     BD-AUX vem direto do prensa-cabo e não passa pelo KM1 — então elas
      sobrevivem até à emergência.
 
      📌 Se um dia quiser controlar a rotação delas, o caminho é ventoinha
      de 4 fios (PWM): ali o preto é 0 V de verdade, o tacômetro tem
      referência fixa e o controle vai por um fio só de comando. */
-  { ...kabo('X5', { comp: 'KA34', via: 'NC4' }, naTampa('RAD', '+'), 0.5,
+  { ...kabo('X5', { comp: 'KA123', via: 'NC2' }, naTampa('RAD', '+'), 0.5,
       'aux12', 'alim', 'As 2 ventoinhas do radiador, em paralelo, direto no 12 V.'),
-    nome: '⭐ ventoinhas do radiador · +12 V COMANDADO pelo KA4', prensa: 'PG13-2',
+    nome: '⭐ ventoinhas do radiador · +12 V COMANDADO pelo KA2', prensa: 'PG13-2',
     rota: ['CH-2x1', 'CV-esq', 'CH-base'],
     porque: '⭐ Elas NÃO atravessam a parede: ficam na tampa, do lado de fora, soprando '
           + 'nos dissipadores. É o calor que a Peltier tirou de dentro. 🔧 O fio agora '
-          + 'nasce no contato do KA4, e não mais direto no BD-AUX: é assim que o firmware '
+          + 'nasce no contato do KA2, e não mais direto no BD-AUX: é assim que o firmware '
           + 'consegue desligá-las quando o dissipador esfria.' },
   { ...kabo('X6', naTampa('RAD', '−'), { comp: 'BD-0V', via: 'Z15' }, 0.5,
       'zero', 'comum', 'Retorno das ventoinhas do radiador, no 0 V de verdade.'),
@@ -81,19 +81,28 @@ export const FIOS_ETAPA6 = [
     aviso: '🔥 ESTE FIO É A REFERÊNCIA DOS DOIS TACÔMETROS. Ligado num negativo '
          + 'chaveado, os sinais de RPM viram lixo e podem danificar o Mega. Ele vai '
          + 'na barra de 0 V, e em ponto próprio — não encadeado.' },
-  { ...kabo('X9', { comp: 'MV-1', via: 'O3+' }, naCamara('VF', '+'), 0.5,
+  { ...kabo('X9', { comp: 'KA123', via: 'NO3' }, naCamara('VF', '+'), 0.5,
       'aux12', 'alim', '⭐ As 5 internas: 2 frias, 2 dos dutos e a do PTC.'),
     nome: 'ventoinhas internas +', prensa: 'PG13-2', rota: ['CH-2x1', 'CV-esq', 'CH-base'],
     porque: '⭐ CINCO VENTOINHAS EM DOIS FIOS. Ligam em paralelo dentro da câmara, '
           + 'porque formam um circuito de ar só — ligar uma sem as outras não faria '
           + 'sentido. Só 2 condutores atravessam a parede.',
-    aviso: '🔧 A DO PTC ENTROU NESTE PAR. Ela tinha canal e par próprios (MV-1 O2, fios '
-         + 'X7/X8) para poder continuar girando depois do aquecedor. Não precisa: o PTC '
-         + 'é auto-limitado. Sumiram 2 condutores do PG13-2, 1 canal do MV-1 e o pino '
-         + 'D28 do Mega. Emende o + dela junto com os outros quatro, dentro da câmara.' },
-  { ...kabo('X10', { comp: 'MV-1', via: 'O3−' }, naCamara('VF', '−'), 0.5,
-      'aux12', 'alim', 'Retorno das 5 internas.'),
-    nome: 'ventoinhas internas −', prensa: 'PG13-2', rota: ['CH-2x1', 'CV-esq', 'CH-base'] },
+    aviso: '🔧 A DO PTC ENTROU NESTE PAR. Ela tinha canal e par próprios (fios X7/X8) '
+         + 'para poder continuar girando depois do aquecedor. Não precisa: o PTC é '
+         + 'auto-limitado. Sumiram 2 condutores do PG13-2 e o pino D28 do Mega. Emende '
+         + 'o + dela junto com os outros quatro, dentro da câmara.' },
+  { ...kabo('X10', naCamara('VF', '−'), { comp: 'BD-0V', via: 'Z13' }, 0.5,
+      'zero', 'comum', 'Retorno das 5 internas — agora no 0 V de verdade.'),
+    nome: 'ventoinhas internas · 0 V', prensa: 'PG13-2', rota: ['CH-base'],
+    porque: '⭐ ELE MUDOU DE DESTINO JUNTO COM O MV-1. Enquanto quem chaveava era um '
+          + 'MOSFET canal N, este fio voltava para o DRENO do módulo — o negativo das '
+          + 'ventoinhas era comutado e só ficava em 0 V com o canal ligado. Com o KA3 no '
+          + 'lado POSITIVO, ele vai direto à barra: o preto das internas é 0 V sempre, '
+          + 'ligadas ou paradas. É a mesma correção que o X6 já tinha recebido no '
+          + 'radiador — só que lá o tacômetro tornava o defeito visível, e aqui ele '
+          + 'ficava esperando alguém trocar uma ventoinha por uma de 3 fios.',
+    aviso: '⭐ Ponto PRÓPRIO no BD-0V (Z13), não encadeado. É o mesmo Z13 que antes '
+         + 'recebia o GND de carga do MV-1.' },
 
   /* ── AS DUAS POSIÇÕES DE ENSAIO ───────────────────────────────────── */
   { ...kabo('X11', { comp: 'F-P', via: 'F-P1' }, naCamara('DUT1', '+24 V'), 0.5,

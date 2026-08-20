@@ -102,7 +102,7 @@ for (const t of TRILHOS) {
   for (const c of cs) {
     const pinos = c.grupos.flatMap(g => g.pinos);
     /* ⭐ `semFio` existe para o que é USADO sem receber fio: jumper de
-       configuração, como o H/L do MV-1. Ele conta como usado na montagem
+       configuração, como o H/L dos módulos de relé. Ele conta como usado na montagem
        e não pode ser cobrado como ligação. */
     const u = pinos.filter(p => p.usa && !p.semFio);
     usados += u.length;
@@ -137,6 +137,11 @@ const APOSENTADOS = [
     /* o shunt do amperímetro do poste P1 é OUTRO componente, e continua no projeto */
     salvo: /amper[íi]metro|medidor|P1|poste|V\/A|mede tens|resistores de medi|suporte instrumentado|por canal/i },
   { termo: /PWM de 1 Hz|PWM lento|1 Hz.*Peltier/i, peca: 'PWM de 1 Hz' },
+  /* ⚠ A SIGLA KA1 FOI REAPROVEITADA na renumeracao (o veto do firmware).
+     Quem saiu do projeto foi o SEGUNDO RELE DE SELO, e e por essa
+     descricao que ele passa a ser vigiado. */
+  { termo: /segundo rel[eé] de selo|segundo selo/i, peca: 'rele do segundo selo' },
+  { termo: /rearme/i,         peca: 'botoeira de REARME (a azul)' },
 ];
 /* o texto pode citar a peça quando está dizendo que ela saiu */
 /* o texto pode citar a peça quando está explicando que ela saiu — e é

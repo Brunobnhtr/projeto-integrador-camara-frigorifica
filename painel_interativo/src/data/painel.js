@@ -21,7 +21,7 @@ export const TENSOES = {
   '127VCA': { cor: '#7a0b0b', label: '127 V CA', perigo: true,
               nota: 'Só existe dentro da casa de comando, fechada' },
   '24V_POT': { cor: '#c92a2a', label: '24 V potência',
-               nota: 'Comutado pelo KA2 — cai na emergência' },
+               nota: 'Comutado pelo KM1 — cai na emergência' },
   '24V_SRV': { cor: '#e8590c', label: '24 V serviços',
                nota: 'Permanente — não cai na emergência' },
   '12V':    { cor: '#f5a524', label: '12 V auxiliar' },
@@ -46,9 +46,9 @@ export const TENSOES = {
 
 export const CABOS = [
   // potência 24 V
-  { n: 34, de: 'ENTRADA:PG9', para: 'KA2:11', tensao: '24V_POT', bitola: '1,5 mm²', cor: 'vermelho',
+  { n: 34, de: 'ENTRADA:PG9', para: 'KM1:11', tensao: '24V_POT', bitola: '1,5 mm²', cor: 'vermelho',
     nota: 'Vem da derivação do poste P1' },
-  { n: 35, de: 'KA2:14', para: 'BD-POT:IN', tensao: '24V_POT', bitola: '1,5 mm²', cor: 'vermelho',
+  { n: 35, de: 'KM1:14', para: 'BD-POT:IN', tensao: '24V_POT', bitola: '1,5 mm²', cor: 'vermelho',
     nota: '⚡ Depois deste ponto, a emergência corta' },
   { n: 45, de: 'BD-POT:O1', para: 'BTS1:B+', tensao: '24V_POT', bitola: '1,5 mm²', cor: 'vermelho' },
   { n: 46, de: 'BD-POT:O2', para: 'BTS2:B+', tensao: '24V_POT', bitola: '1,5 mm²', cor: 'vermelho' },
@@ -77,15 +77,17 @@ export const CABOS = [
     nota: '⭐ saída livre: era o COM do ULN2803, que saiu com os sinaleiros de 5 V' },
 
   // cadeia de comando
-  { n: 57.1, de: 'S0:12', para: 'S3:13', tensao: '24V_SRV', bitola: '0,5 mm²', cor: 'vermelho',
-    nota: 'Emergência em série com o rearme' },
-  { n: 57.2, de: 'S3:14', para: 'KA1:A1', tensao: '24V_SRV', bitola: '0,5 mm²', cor: 'vermelho' },
-  { n: 57.3, de: 'KA1:14', para: 'KA1:A1', tensao: '24V_SRV', bitola: '0,5 mm²', cor: 'vermelho',
+  { n: 57.1, de: 'S0:12', para: 'S2:11', tensao: '24V_SRV', bitola: '0,5 mm²', cor: 'vermelho',
+    nota: '⭐ Os dois blocos NF em série: o cogumelo alimenta o do STOP' },
+  { n: 57.2, de: 'S2:12', para: 'S1:13', tensao: '24V_SRV', bitola: '0,5 mm²', cor: 'vermelho',
+    nota: 'O nó do selo, depois das duas paradas' },
+  { n: 57.3, de: 'S1:13', para: 'KM1:21', tensao: '24V_SRV', bitola: '0,5 mm²', cor: 'vermelho' },
+  { n: 57.4, de: 'S1:14', para: 'KM1:A1', tensao: '24V_SRV', bitola: '0,5 mm²', cor: 'vermelho',
+    nota: 'O LIGAR verde, em paralelo com o selo' },
+  { n: 57.5, de: 'KM1:24', para: 'KM1:A1', tensao: '24V_SRV', bitola: '0,5 mm²', cor: 'vermelho',
     nota: '⭐ O SELO — o relé segura a si mesmo' },
-  { n: 57.4, de: 'KA1:A2', para: 'BD-0V:O8', tensao: '0V', bitola: '0,5 mm²', cor: 'preto' },
-  { n: 57.5, de: 'KA1:24', para: 'S2:11', tensao: '24V_SRV', bitola: '0,5 mm²', cor: 'vermelho' },
-  { n: 57.6, de: 'S2:12', para: 'KA2:A1', tensao: '24V_SRV', bitola: '0,5 mm²', cor: 'vermelho',
-    nota: 'STOP em série com a bobina do KA2' },
+  { n: 57.6, de: 'KM1:A2', para: 'KA123:COM1', tensao: '0V', bitola: '0,5 mm²', cor: 'preto',
+    nota: 'O retorno da bobina passa pelo contato do KA1 — o veto, em série' },
 
   // sinais Arduino ↔ BTS
   { n: 111, de: 'MEGA:D5', para: 'BTS1:RPWM', tensao: 'SINAL', bitola: '0,25 mm²', cor: 'azul' },

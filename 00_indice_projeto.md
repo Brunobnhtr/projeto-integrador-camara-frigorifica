@@ -12,7 +12,7 @@
 |---|---|
 | Fonte ATX entregando 12 V e 5 V | **Fonte chaveada 24 Vcc + 3 conversores step-down** distribuídos na maquete |
 | Sem disjuntor, só chave rotativa | **Disjuntor 2P 6 A curva C (acumula proteção e chave geral) + 3 fusíveis de ramal com seletividade** |
-| Liga/desliga só por software | **Emergência corta a energia em hardware** (relé de interface KA1), START/STOP por software — pelo botão do painel **ou** pela IHM |
+| Liga/desliga só por software | **Emergência corta a energia em hardware** (relé de interface KM1, com selo), START/STOP por software — pelo botão do painel **ou** pela IHM |
 | Câmara térmica com Arduino | **Planta industrial em miniatura** onde a câmara é a carga do processo |
 | 8 etapas soltas | **5 camadas de construção**, cada uma com checklist de aceitação |
 | Documentos por assunto | **Documentos na ordem em que se constrói** |
@@ -39,7 +39,7 @@
                     │                       │                       │
               desce por dentro do poste e segue por baixo da base
                     │                       │                       │
-                  [KA2]                     │                       │        ◄── 3 ENTRADAS
+                  [KM1]                     │                       │        ◄── 3 ENTRADAS
                     ▼                       ▼                       ▼             SEPARADAS
                  BD-POT                  BD-5V                   BD-AUX      ◄── BLOCOS DE
               BTS #1 → 2× Peltier    Arduino / tela           coolers / fans     DISTRIBUIÇÃO
@@ -84,7 +84,7 @@
 | Doc | Arquivo | Conteúdo |
 |---|---|---|
 | 30 | [Força e Distribuição](camada_3_eletrica/30_forca_e_distribuicao.md) | Diagrama unifilar, 57 cabos identificados, distribuição no painel, roteiro de energização por trechos |
-| 31 | [Comando e Proteções](camada_3_eletrica/31_comando_e_protecoes.md) | **Relé de interface KA1**, o que é hardware e o que é software, botoeiras, seletividade das proteções, aterramento, ensaios de segurança |
+| 31 | [Comando e Proteções](camada_3_eletrica/31_comando_e_protecoes.md) | **A cadeia de comando e o selo do KM1**, o que é hardware e o que é software, botoeiras, seletividade das proteções, aterramento, ensaios de segurança |
 | 32 | [Sinais e Sensores](camada_3_eletrica/32_sinais_e_sensores.md) | Pinout completo do Mega, BTS7960, sensores, comunicação, **correção do pino de RPM**, ensaios de sinal |
 | **33** 🔌 | [**Placa de Interface e Componentes Discretos**](camada_3_eletrica/33_placa_interface_componentes.md) | **Por que módulos prontos ainda exigem resistor e capacitor externos**, os 5 papéis desses componentes, ligação **perna por perna** de cada um, construção da placa PI-1 em caixa DIN, ensaios de verificação |
 
@@ -115,8 +115,8 @@
 | Detalhe do poste | [03_poste_detalhe.svg](desenhos/03_poste_detalhe.svg) | Cruzeta, isoladores, transformador, cotas |
 | Layout do painel | [04_painel_layout.svg](desenhos/04_painel_layout.svg) | Backplate e porta, cotados |
 | Diagrama unifilar | [05_diagrama_unifilar.svg](desenhos/05_diagrama_unifilar.svg) | Toda a cadeia de energia e proteções |
-| Diagrama de comando ⭐ | [06_diagrama_comando.svg](desenhos/06_diagrama_comando.svg) | **Os dois selos (KA1 e KA2), o KA3 em série na bobina do KA2 e o que o Arduino pode e não pode fazer** |
-| **Ligação dos relés KA1–KA4** ⭐ | [11_reles_ligacao.svg](desenhos/11_reles_ligacao.svg) | **Os quatro relés borne por borne, e os componentes discretos pendurados neles** (D1, R10, R11, D2). No painel interativo, clique num relé → *Ver o borne e os componentes nele*. Gerado do `painel_completo.js` |
+| Diagrama de comando ⭐ | [06_diagrama_comando.svg](desenhos/06_diagrama_comando.svg) | **A malha do selo: as duas paradas em série, o LIGAR em paralelo com o selo do KM1, o KA1 em série na bobina e o que o Arduino pode e não pode fazer** |
+| **Ligação dos relés KM1–KA3** ⭐ | [11_reles_ligacao.svg](desenhos/11_reles_ligacao.svg) | **Os quatro relés borne por borne, e os componentes discretos pendurados neles** (D1, R10, R11, R12, D2, D3). No painel interativo, clique num relé → *Ver o borne e os componentes nele*. Gerado do `painel_completo.js` |
 | Corte da câmara | [07_camara_corte.svg](desenhos/07_camara_corte.svg) | Camadas de isolamento e circulação de ar |
 | **Circuito da PI-1 (norma IEC)** ⭐ | [10_placa_pi1_circuito.png](desenhos/10_placa_pi1_circuito.png) | **Esquema elétrico com símbolos normalizados. Editável no navegador pelo arquivo `.cddx`** |
 
@@ -171,16 +171,27 @@ podia significar duas peças diferentes. Ficou assim:
 
 | Prefixo | O que é | Exemplos |
 |---|---|---|
-| `R`, `C`, `D` | **Componente discreto** — resistor, capacitor, diodo | `R1` 22 kΩ da PI-1 · `C3` 100 nF · `D1` na bobina do KA2 |
+| `R`, `C`, `D` | **Componente discreto** — resistor, capacitor, diodo | `R1` 22 kΩ da PI-1 · `C3` 100 nF · `D1` na bobina do KM1 |
 | ~~`RS`~~ | ~~Shunt de medição~~ | 🗑️ os 47 Ω saíram com a medição analógica — o prefixo fica reservado |
 | `RM` | **Ramal** de energia, na saída de cada fusível | `RM1` (potência) · `RM2` (5 V) · `RM3` (12 V) |
 | `Z` | **Ponto de retorno** no BD-0V, um parafuso por dispositivo | `Z1` … `Z21` |
-| `KA` | Relé | `KA1`, `KA2`, `KA3`, `KA4` |
+| `KM` | **Relé de POTÊNCIA** — quem chaveia a carga | `KM1` (6,0 A dos BTS + o selo) |
+| `KA` | **Relé AUXILIAR** — comando e sinalização | `KA1` (veto) · `KA2` (fans do radiador) · `KA3` (fans internas) |
 | `H` | Sinaleiro | `H1` … `H4` |
 | `S` | Botoeira | `S0` (emergência) · `S1` · `S2` · `S3` |
 | `BD-` | Bloco de distribuição | `BD-24V` · `BD-POT` · `BD-5V` · `BD-AUX` · `BD-0V` |
 | `J` | Borne de módulo ou de placa | hoje só nos módulos comprados |
 | ~~`PI-`~~ | ~~Placa de interface~~ | 🗑️ não há mais placa: os componentes moram em borne ou dentro de módulo |
+
+> ⭐ **POR QUE `KM` E `KA` SÃO PREFIXOS DIFERENTES.** Os quatro são relés, mas fazem coisas de
+> naturezas diferentes, e o nome diz qual: o **KM1** é o único que **chaveia potência** (6,0 A em
+> 24 Vcc), tem **bobina de 24 V comandada pelas botoeiras** e **dois contatos** — um para a carga e
+> um para o selo. Os **KA** são auxiliares de 5 V, acionados por um pino do Arduino, com **um**
+> contato cada. É a mesma divisão de um painel industrial, onde `KM` é o contator e `KA` o relé
+> auxiliar. Ver [Doc 31 §31.17](camada_3_eletrica/31_comando_e_protecoes.md).
+>
+> 🔧 **A numeração mudou** (o painel começava em `KA2`, porque o `KA1` original saiu da cascata):
+> `KA2 → KM1` · `KA3 → KA1` · `KA4 → KA2` · `KA5 → KA3`.
 
 > 🔎 **Onde conferir:** o cadastro `painel_interativo/src/data/discretos.js` usa a forma
 > `BS1-C1` / `SV1-MODULO` como identificador interno, para que dois componentes nunca disputem o
@@ -204,7 +215,7 @@ podia significar duas peças diferentes. Ficou assim:
 | Tensões derivadas | **24,0 V (potência, direto)** · 12,0 V (auxiliar) · 5,10 V (comando) · 3,3 V (ESP32) |
 | Fusíveis dos ramais | **F1 = 10 A · F2 = 2 A · F3 = 2 A** (sem F4/F5, sem crowbar) |
 | Níveis de proteção | **5** (do disjuntor ao intertravamento por software) |
-| Acionamento | **4 relés de 8 pinos, um modelo só** — KA1 (selo/emergência) + KA2 (potência) + KA3 (veto do firmware, NA) + KA4 (ventoinhas do radiador, **NF**) — emergência em hardware |
+| Acionamento | **4 relés** — KM1 (o selo e a potência, relé de 8 pinos) + KA1 (veto do firmware, NA) + KA2 (ventoinhas do radiador, **NF**) + KA3 (as 5 ventoinhas internas, NA), os três últimos módulos de 5 V numa caixa DIN 6M — emergência em hardware. 🗑️ **Nenhum módulo MOSFET no painel:** quem modula são os BTS7960 |
 | Volume útil da câmara | 5,0 litros |
 | Carga térmica calculada | **≈ 9,5 W** |
 | Refrigeração | **2× TEC1-12706 em SÉRIE** · 24 V · 6,0 A · 144 W |

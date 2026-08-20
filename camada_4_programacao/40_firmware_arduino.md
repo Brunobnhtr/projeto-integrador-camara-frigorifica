@@ -99,7 +99,7 @@ E existe uma regra que atravessa tudo:
 | 6 | **Ciclo de degelo** | Sem ele, o gelo na placa fria degrada a refrigeração ao longo da operação |
 | 7 | **Máquina de estados explícita** | A versão anterior usava flags soltas (`processoAtivo`, `estadoEmergencia`), difíceis de auditar |
 | 8 | **Leitura do IS sincronizada com o PWM** | Ler a corrente enquanto o PWM está desligado sempre retorna zero |
-| 9 | **Acionamento em dois estágios** | STOP e EMERGÊNCIA cortam em **hardware**; START e STOP normais funcionam **pelo botão físico ou pela IHM**. O rearme após emergência é o botão azul S3, que o firmware nem lê |
+| 9 | **Acionamento em cadeia única** | STOP e EMERGÊNCIA cortam em **hardware** e derrubam o mesmo selo; o STOP normal também funciona **pela IHM**. Religar a potência é sempre o botão verde S1, que o firmware nem lê |
 | 10 | **Watchdog habilitado** | Sem ele, um travamento deixaria a Peltier ligada. Com ele, o Mega reseta em 2 s e os pull-downs desligam os drivers |
 | 11 | **Pull-down de 10 kΩ em cada `R_EN`** | Garante que **pino flutuante = driver desligado**. É o que torna o watchdog realmente eficaz |
 
@@ -107,11 +107,12 @@ E existe uma regra que atravessa tudo:
 
 | # | Correção | O que estava errado |
 |---|---|---|
-| **12** | ⭐ **`HAB_POTENCIA` (D27) → KA3 → bobina do KA2** | O firmware **não tinha como cortar a potência**, só como desabilitar drivers. Um BTS com MOSFET em curto ficava fora do alcance de qualquer trip. E o STOP não retinha ao ser solto — o KA2 apenas copiava o botão ([Doc 31 §31.13](../camada_3_eletrica/31_comando_e_protecoes.md)) |
+| **12** | ⭐ **`HAB_POTENCIA` (D27) → KA1 → bobina do KM1** | O firmware **não tinha como cortar a potência**, só como desabilitar drivers. Um BTS com MOSFET em curto ficava fora do alcance de qualquer trip. E o STOP não retinha ao ser solto — o KM1 apenas copiava o botão ([Doc 31 §31.13](../camada_3_eletrica/31_comando_e_protecoes.md)) |
 | **13** | ⭐ **`pedidoDeStop()` testado ANTES de `potenciaDisponivel()`** | Na ordem antiga, apertar o STOP físico caía em **`FALHA`** com log `POTENCIA_PERDIDA`, e exigia segurar o botão 2 s para reconhecer. A queda de potência causada pelo próprio comando estava sendo classificada como defeito |
 | **14** | ⭐ **`gerenciarVentoinhas()` — os pinos das ventoinhas passaram a ser escritos** | Estavam **apenas `#define`ados**. Sem `pinMode`, sem um `digitalWrite` sequer. **As cinco ventoinhas internas nunca giravam** |
-| **16** | 🔧 **Simplificação: 3 pinos e 1 canal do MV-1 a menos** | O `D22` (leitura do START), o `D26` (seletora LOCAL/REMOTO) e o `D28` (canal separado da ventoinha do PTC) foram eliminados. O `INICIAR` passou para a IHM; a seletora era a segunda camada de uma regra que a primeira já garante; e as internas ganharam **uma condição só**, então cabem num canal só |
-| **17** | ⭐ **O KA2 ganhou selo próprio, e o botão verde voltou como comando de 24 V** | O STOP passou a cortar **e reter** em hardware — circuito clássico de partida-parada. O botão verde entrou na cadeia de 24 V (não é lido por pino nenhum) e o `KA3` passou a **autorizar** em vez de armar. Como o selo não se refaz sozinho, **o trip do firmware virou retentivo de graça** |
+| **16** | 🔧 **Simplificação: 3 pinos a menos** | O `D22` (leitura do START), o `D26` (seletora LOCAL/REMOTO) e o `D28` (comando separado da ventoinha do PTC) foram eliminados. O `INICIAR` passou para a IHM; a seletora era a segunda camada de uma regra que a primeira já garante; e as internas ganharam **uma condição só**, então cabem num comando só |
+| **17** | 🔧 **O `D29` trocou de destino: MV-1 → KA3** | O módulo MOSFET saiu do painel. **Nenhuma linha de código mudou** — jumper em `H` e contato `NO` mantêm `HIGH` = ligada. Muda o comentário do `#define` e nada mais ([Doc 31 §31.16](../camada_3_eletrica/31_comando_e_protecoes.md)) |
+| **17** | ⭐ **O KM1 ganhou selo próprio, e o botão verde voltou como comando de 24 V** | O STOP passou a cortar **e reter** em hardware — circuito clássico de partida-parada. O botão verde entrou na cadeia de 24 V (não é lido por pino nenhum) e o `KA1` passou a **autorizar** em vez de armar. Como o selo não se refaz sozinho, **o trip do firmware virou retentivo de graça** |
 | **18** | ⭐ **Três paradas com categorias diferentes** | Botão preto = Cat. 1, retém, exige o verde. IHM/MQTT = Cat. 2, potência segue armada, a tela religa. Trip = Cat. 1, retém, exige reconhecimento **e** o verde |
 | **15** | 🔧 **O comentário do `dispararTrip()`** | Dizia *"agora o firmware abre um relé, e o corte é físico"*. Não abria: a função só mexia em pinos de sinal. A correção 12 é o que torna a frase verdadeira |
 
@@ -176,40 +177,42 @@ E existe uma regra que atravessa tudo:
 // ⭐ UM canal so para TODAS as internas: 2 frias da Peltier, 2 do duto
 //   e a do PTC. Todas tem a mesma condicao -- ligam com o ensaio
 //   rodando, em qualquer modo, e param junto com ele.
-#define VENT_INTERNAS 29   // MV-1 canal 3 -> as 5 ventoinhas internas
-// D28 (MV-1 canal 2) ficou LIVRE: a ventoinha do PTC entrou no canal 3.
+#define VENT_INTERNAS 29   // -> IN3 do KA3 -> as 5 ventoinhas internas
+// D28 ficou LIVRE: a ventoinha do PTC entrou no mesmo comando das outras.
+// * O KA3 e um modulo de rele, nao um canal de MOSFET. Contato NO e jumper
+//   em H: HIGH liga, igual ao que havia antes. Doc 31 §31.16.
 
 // ⭐ RADIADOR (lado quente da Peltier) -- 2 ventoinhas de 3 fios.
 //   NAO chaveia o negativo delas: o tacometro e referenciado nesse
 //   negativo, e corta-lo estragava a leitura de RPM e injetava
-//   corrente no D3. Quem chaveia e o CONTATO do KA4,
+//   corrente no D3. Quem chaveia e o CONTATO do KA2,
 //   e um contato seco nao tem lado alto nem lado baixo -- basta poe-lo
 //   no fio POSITIVO. O preto fica em 0 V de verdade, sempre.
 //
-//   ⭐ E O CONTATO E O NF, AO CONTRARIO DO KA3. O estado seguro deste
+//   ⭐ E O CONTATO E O NF, AO CONTRARIO DO KA1. O estado seguro deste
 //     lado e VENTILANDO: rele solto (Arduino morto, fio rompido, 5 V
 //     caido) tem de deixar as ventoinhas GIRANDO, porque o dissipador
 //     quente e o que mata a pastilha. Como o rele atraca para DESLIGAR,
 //     a logica deste pino e INVERTIDA em relacao a de todos os outros.
 //     Ver Doc 31 §31.14.
-#define VENT_RADIADOR 30   // gatilho do KA4 (modulo de rele, IN4)
+#define VENT_RADIADOR 30   // gatilho do KA2 (modulo de rele, IN2)
 //   ⚠ HIGH  = bobina atracada = contato NF ABERTO  = ventoinhas PARADAS
 //     LOW   = bobina solta     = contato NF FECHADO = ventoinhas GIRANDO
 //   Existe UMA funcao para escrever neste pino, e e por ela que a
 //   inversao passa. Nenhum outro ponto do firmware o toca direto.
 inline void radiador(bool ligar) { digitalWrite(VENT_RADIADOR, ligar ? LOW : HIGH); }
 
-// ⭐ AUTORIZACAO DA POTENCIA -- o "veto" do firmware sobre o KA2.
-//   Comanda o KA3 (modulo de rele, caixa DIN no trilho 2), em SERIE
-//   com a bobina do KA2. HIGH = "estou saudavel, a potencia PODE ser
+// ⭐ AUTORIZACAO DA POTENCIA -- o "veto" do firmware sobre o KM1.
+//   Comanda o KA1 (modulo de rele, caixa DIN no trilho 2), em SERIE
+//   com a bobina do KM1. HIGH = "estou saudavel, a potencia PODE ser
 //   armada". ⚠ JUMPER DO MODULO EM "H" -- assim HIGH fecha o contato.
 //   ⚠ CONTATO NO: modulo sem energia = potencia cortada.
 //   Quem ARMA e o operador, no botao verde -- sao duas chaves e as
-//   duas precisam concordar. LOW derruba o SELO do KA2, e como o selo
+//   duas precisam concordar. LOW derruba o SELO do KM1, e como o selo
 //   nao se refaz sozinho, o corte e RETENTIVO: so o verde religa.
 //   Ver Doc 31 §31.13.
-//   Pull-down de 10k no gate: Arduino resetado ou ausente = potencia
-//   cortada. O D27 vagou quando o radiador saiu do MV-1.
+//   Pull-down de 10k no IN do modulo: Arduino resetado ou ausente = potencia
+//   cortada. O D27 vagou quando o radiador saiu do modulo MOSFET.
 #define HAB_POTENCIA  27
 // D26 ficou LIVRE (era o rele K0)
 
@@ -239,9 +242,9 @@ inline void desabilitarDrivers() {
     digitalWrite(BTS2_REN, LOW);   digitalWrite(BTS2_RPWM, LOW);
 }
 
-// ⭐ Corte FISICO e RETENTIVO. Abre o KA3 -> a bobina do KA2 perde o
+// ⭐ Corte FISICO e RETENTIVO. Abre o KA1 -> a bobina do KM1 perde o
 //   retorno -> o contato de SELO abre junto -> 0 V no BD-POT.
-//   Um pulso de 50 ms basta: mesmo que o KA3 feche de novo, o selo ja se
+//   Um pulso de 50 ms basta: mesmo que o KA1 feche de novo, o selo ja se
 //   perdeu e a potencia NAO retorna. So o botao verde religa.
 //   Funciona ate com um MOSFET do BTS7960 colado em curto, porque quem
 //   abre e um contato de rele a montante dele.
@@ -249,7 +252,7 @@ inline void cortarPotencia()    { digitalWrite(HAB_POTENCIA, LOW);
                                   tCorte = millis(); conferirCorte = true; }
 
 // AUTORIZA -- nao arma. Depois disto o operador ainda precisa apertar
-// o botao verde para o KA2 selar.
+// o botao verde para o KM1 selar.
 inline void autorizarPotencia() { digitalWrite(HAB_POTENCIA, HIGH); }
 
 // ---------- PARÂMETROS DE PROCESSO ----------
@@ -299,7 +302,7 @@ const double        DEGELO_DUTY         = 20.0;            // PTC em 20 %
 >
 > **Elas ficaram permanentemente ligadas, direto no BD-AUX.** O custo é o que este documento apontava: uns 5 W a mais e um pouco de fuga térmica enquanto o PTC trabalha. A conta: a pastilha desligada conduz ~0,5 W/K, e ventilar o dissipador muda a diferença de temperatura em uns 5 K — **uns 2,5 W de fuga a mais, contra um PTC de dezenas de watts.** Atrasa o aquecimento em alguma coisa; não impede.
 >
-> Em troca: os dois tacômetros passam a ter uma referência que nunca se mexe, o lado quente continua ventilado **até depois da emergência** (o BD-AUX não passa pelo KA2), e o firmware tem um modo de falha a menos.
+> Em troca: os dois tacômetros passam a ter uma referência que nunca se mexe, o lado quente continua ventilado **até depois da emergência** (o BD-AUX não passa pelo KM1), e o firmware tem um modo de falha a menos.
 >
 > 🎁 **Se um dia quiser o comando de volta:** ventoinha de **4 fios (PWM)**. Nela o preto é 0 V de verdade, o tacômetro tem referência fixa, e o controle entra por um quarto fio — aí sim de um pino PWM do Mega, sem tocar no circuito de potência.
 >
@@ -311,7 +314,7 @@ const double        DEGELO_DUTY         = 20.0;            // PTC em 20 %
 >
 > **O DS18B20 do dissipador continua útil**, só que para outra coisa: acender o aviso *"DISSIPADOR QUENTE — NÃO DESLIGUE A CHAVE GERAL"* na tela.
 >
-> ✅ **A pós-ventilação sobrevive à emergência**, e isso foi de graça: o MV-1 é alimentado pelo **BD-AUX** e o Arduino pelo **BD-5V** — os dois são barramentos permanentes, que não caem com o KA2. Ou seja, alguém pode socar o cogumelo com a câmara a 60 °C e as ventoinhas continuam tirando o calor.
+> ✅ **A pós-ventilação sobrevive à emergência**, e isso foi de graça: os 12 V das ventoinhas vêm do **BD-AUX** e o Arduino do **BD-5V** — os dois são barramentos permanentes, que não caem com o KM1. Ou seja, alguém pode socar o cogumelo com a câmara a 60 °C e as ventoinhas continuam tirando o calor.
 
 
 ---
@@ -525,7 +528,7 @@ void desligarTudo() {
     // ⭐ Todas as internas param junto com o ensaio.
     //   O PTC nao precisa de pos-ventilacao: ele e AUTO-LIMITADO -- sem
     //   fluxo de ar a resistencia sobe e ele corta a propria potencia.
-    //   Quem continua ventilando e so o RADIADOR, pelo KA4, enquanto o
+    //   Quem continua ventilando e so o RADIADOR, pelo KA2, enquanto o
     //   DS18B20 disser que o dissipador esta quente.
     digitalWrite(VENT_INTERNAS, LOW);
 }
@@ -649,7 +652,7 @@ void medirRPM() {
 ```cpp
 void dispararTrip(const char* motivo) {
     desabilitarDrivers();              // 1º — corta o comando dos dois drivers
-    cortarPotencia();                  // 2º — ⚡ e ABRE O KA2: corte FÍSICO
+    cortarPotencia();                  // 2º — ⚡ e ABRE O KM1: corte FÍSICO
                                        //      ⭐ e agenda a CONFERÊNCIA pelo D25
     desligarTudo();
     digitalWrite(LED_RUN, LOW);
@@ -671,7 +674,7 @@ só como pré-condição do START; passa a fechar a malha também no corte.
 unsigned long tCorte = 0;
 bool          conferirCorte = false;
 
-// ⚠ CHAMADA EM TODO LOOP. O KA3 desatraca em ~10 ms e o KA2 em ~20 ms;
+// ⚠ CHAMADA EM TODO LOOP. O KA1 desatraca em ~10 ms e o KM1 em ~20 ms;
 //   150 ms é folga generosa para os dois, sem travar nada esperando.
 void conferirCortePotencia() {
     if (!conferirCorte || millis() - tCorte < 150) return;
@@ -686,10 +689,10 @@ void conferirCortePotencia() {
 }
 ```
 
-> 🎯 **O que isso detecta que nada mais detectava.** O contato do KA3 soldado, o
-> contato do KA2 soldado, um borne solto na malha da bobina — os três fazem o veto
+> 🎯 **O que isso detecta que nada mais detectava.** O contato do KA1 soldado, o
+> contato do KM1 soldado, um borne solto na malha da bobina — os três fazem o veto
 > do firmware desaparecer **em silêncio**. O pior deles é o par: um BTS7960 com
-> MOSFET em curto (que é o que disparou o trip) mais um KA3 colado. Sem esta
+> MOSFET em curto (que é o que disparou o trip) mais um KA1 colado. Sem esta
 > conferência, a Peltier fica a 100 %, a tela mostra `FALHA` e o firmware acredita
 > que cortou.
 >
@@ -699,7 +702,7 @@ void conferirCortePotencia() {
 > um fio que já estava lá. É essa a diferença que a ISO 13849 cobra quando fala em
 > *diagnostic coverage*.
 >
-> 🧪 **Ensaie no simulador antes da bancada:** marque `Contato do KA3 soldado` com
+> 🧪 **Ensaie no simulador antes da bancada:** marque `Contato do KA1 soldado` com
 > o ensaio rodando e force um trip. Sem esta função o painel mente; com ela, o
 > alerta `CORTE_FALHOU` aparece em 150 ms.
 
@@ -707,13 +710,13 @@ void conferirCortePotencia() {
 
 ### 🔧 Correção — este comentário prometia um relé que não existia
 >
-> A versão anterior dizia: *"Agora o firmware **abre um relé**, e o corte é físico."* **Era falso.** A função chamava `desabilitarDrivers()` e `desligarTudo()`, e as duas só fazem `digitalWrite` em pinos de sinal. **O firmware não tinha relé nenhum sob comando** — o KA1 e o KA2 respondiam apenas às botoeiras.
+> A versão anterior dizia: *"Agora o firmware **abre um relé**, e o corte é físico."* **Era falso.** A função chamava `desabilitarDrivers()` e `desligarTudo()`, e as duas só fazem `digitalWrite` em pinos de sinal. **O firmware não tinha relé nenhum sob comando** — o KM1 respondia apenas às botoeiras.
 >
 > Na prática, um trip por fan parada baixava o `R_EN` e nada mais. **Se o BTS7960 tivesse um MOSFET em curto** — que é o modo de falha típico de MOSFET de potência — a Peltier continuaria a 100 % com o LED de falha aceso, e só o STOP físico ou o cogumelo a parariam.
 >
-> O `cortarPotencia()` acima torna a frase verdadeira: ele abre o **KA3**, a bobina do **KA2** perde o retorno e o **contato de potência** do KA2 abre — junto com o selo, que é o que torna o corte retentivo. O corte é galvânico e acontece **a montante do BTS** — então independe de o driver estar são. Ver [Doc 31 §31.13](../camada_3_eletrica/31_comando_e_protecoes.md).
+> O `cortarPotencia()` acima torna a frase verdadeira: ele abre o **KA1**, a bobina do **KM1** perde o retorno e o **contato de potência** do KM1 abre — junto com o selo, que é o que torna o corte retentivo. O corte é galvânico e acontece **a montante do BTS** — então independe de o driver estar são. Ver [Doc 31 §31.13](../camada_3_eletrica/31_comando_e_protecoes.md).
 >
-> 📌 **A ordem importa:** desabilitar os drivers **antes** de abrir o KA2 faz o contato interromper uma corrente já próxima de zero. Abrir sob 6 A queimaria o contato em poucas dezenas de operações.
+> 📌 **A ordem importa:** desabilitar os drivers **antes** de abrir o KM1 faz o contato interromper uma corrente já próxima de zero. Abrir sob 6 A queimaria o contato em poucas dezenas de operações.
 
 ---
 
@@ -817,8 +820,8 @@ bool potenciaDisponivel() { return digitalRead(POTENCIA_OK) == HIGH; }
 // START: só pela IHM (§41.3). STOP: botão da porta, IHM ou MQTT.
 bool pedidoDeStart() { return pedidoStart; }   // ⭐ INICIAR: só pela IHM.
 // O botão VERDE não é lido por pino nenhum: ele arma a potência em
-// hardware (refaz o selo do KA2) e o firmware descobre pelo D25 —
-// exatamente como já ignora o REARME azul.
+// hardware (refaz o selo do KM1) e o firmware descobre pelo D25 —
+// e não por um contato auxiliar de relé.
 bool pedidoDeStop()  { return digitalRead(BTN_STOP)  == LOW || pedidoStop;  }
 
 void maquinaDeEstados() {
@@ -826,7 +829,7 @@ void maquinaDeEstados() {
     // EMERGÊNCIA tem prioridade absoluta, em qualquer estado
     if (emergenciaAtiva() && estado != EMERGENCIA) {
         desabilitarDrivers();
-        cortarPotencia();      // redundante (o KA1 já caiu) — e é de propósito
+        cortarPotencia();      // redundante (o selo já caiu) — e é de propósito
         desligarTudo();
         digitalWrite(LED_RUN, LOW);
         digitalWrite(LED_FAULT, HIGH);
@@ -851,7 +854,7 @@ void maquinaDeEstados() {
         //    potência em hardware, e o firmware descobe pelo D25.
         if (pedidoDeStart()) {
             if (!potenciaDisponivel()) {
-                // O selo do KA2 está aberto — só um dedo no verde o refaz
+                // O selo do KM1 está aberto — só um dedo no verde o refaz
                 strncpy(alerta, "APERTE_O_VERDE", sizeof(alerta) - 1);
                 pedidoStart = false;
                 break;
@@ -910,14 +913,14 @@ void maquinaDeEstados() {
 > if (pedidoDeStop())        { ... estado = AGUARDA_START; }                // ← depois
 > ```
 >
-> **Apertar o STOP físico dispara as duas condições.** O botão tem dois blocos mecanicamente ligados: o NF de 24 V corta a bobina do KA2 (e o BD-POT cai, derrubando o `D25`), e o NA de 5 V avisa o `D23`. Tipicamente o NF abre uns 2 ms antes de o NA fechar, mas o relé leva ~10 ms para desatracar — e o `loop()` carrega PID, sensores, SD e três seriais, então seu período é bem maior que isso. **Quando a máquina de estados finalmente roda, as duas já são verdadeiras.** E aí quem está escrito primeiro vence.
+> **Apertar o STOP físico dispara as duas condições.** O botão tem dois blocos mecanicamente ligados: o NF de 24 V corta a bobina do KM1 (e o BD-POT cai, derrubando o `D25`), e o NA de 5 V avisa o `D23`. Tipicamente o NF abre uns 2 ms antes de o NA fechar, mas o relé leva ~10 ms para desatracar — e o `loop()` carrega PID, sensores, SD e três seriais, então seu período é bem maior que isso. **Quando a máquina de estados finalmente roda, as duas já são verdadeiras.** E aí quem está escrito primeiro vence.
 >
 > | | Comportamento antigo | Corrigido |
 > |---|---|---|
 > | Apertar o STOP | cai em **`FALHA`**, LED vermelho, log `POTENCIA_PERDIDA` | `AGUARDA_START`, sem alarme |
 > | Para voltar | **segurar o STOP por 2 s** (reconhecimento de falha) | um START |
 >
-> 🎯 **Era o segundo motivo, puramente de software, para o STOP "precisar ser segurado".** O primeiro era o estágio 2 não ter selo — resolvido devolvendo o selo ao KA2. Os dois se somavam e produziam o mesmo sintoma, o que torna esse tipo de defeito difícil de diagnosticar na bancada.
+> 🎯 **Era o segundo motivo, puramente de software, para o STOP "precisar ser segurado".** O primeiro era o estágio 2 não ter selo — resolvido devolvendo o selo ao KM1. Os dois se somavam e produziam o mesmo sintoma, o que torna esse tipo de defeito difícil de diagnosticar na bancada.
 >
 > **A regra geral:** um efeito colateral previsto do comando que o operador acabou de dar **não é falha**. O teste do comando vem sempre antes do teste do sintoma.
 
@@ -1008,7 +1011,7 @@ if (millis() - ultimoJson > TIMEOUT_MEGA) {
 
 > ### 🎯 Eles CONTAM. Eles não ATUAM — e essa distinção é o projeto inteiro
 >
-> Seria tentador dar ao ESP32 o poder de cortar a potência quando o Mega morre. **Seria pior.** Quando o Mega morre, quem corta já é o **pull-down no gate do KA3** — hardware, sem software nenhum no caminho, sem depender de o ESP estar vivo ou de a rede estar de pé.
+> Seria tentador dar ao ESP32 o poder de cortar a potência quando o Mega morre. **Seria pior.** Quando o Mega morre, quem corta já é o **pull-down no `IN` do KA1** — hardware, sem software nenhum no caminho, sem depender de o ESP estar vivo ou de a rede estar de pé.
 >
 > Dar poder de atuação ao ESP colocaria **três atores de software** no mesmo circuito de segurança em vez de um. Mais caminhos, mais modos de falha, e a pergunta *"quem desligou?"* deixaria de ter resposta única.
 >
@@ -1035,11 +1038,11 @@ void pararProcesso() {
 }
 ```
 
-> 📌 **Os 50 ms entre desabilitar o driver e abrir o KA2 são a única sutileza aqui.** O contato do relé precisa interromper uma corrente já em zero: abrir sob 6 A em corrente contínua gera arco, e corrente contínua não tem passagem por zero para ajudar a extinguir. É o que come contato de relé.
+> 📌 **Os 50 ms entre desabilitar o driver e abrir o KM1 são a única sutileza aqui.** O contato do relé precisa interromper uma corrente já em zero: abrir sob 6 A em corrente contínua gera arco, e corrente contínua não tem passagem por zero para ajudar a extinguir. É o que come contato de relé.
 >
-> 🔧 **Aqui havia uma `pararCategoria1()` com rampa de duty de 250 ms**, que descia a saída antes de abrir o KA2. **Ela perdeu o cliente:** esta função não abre relé nenhum — parar pela IHM é Categoria 2 e a potência segue armada. E quando o KA2 *é* aberto, quem o abre é o **botão preto**, em hardware, onde nenhuma rampa de software chegaria a tempo. **Saiu a função, saiu o laço com `wdt_reset()` dentro, saiu a variável de rampa.**
+> 🔧 **Aqui havia uma `pararCategoria1()` com rampa de duty de 250 ms**, que descia a saída antes de abrir o KM1. **Ela perdeu o cliente:** esta função não abre relé nenhum — parar pela IHM é Categoria 2 e a potência segue armada. E quando o KM1 *é* aberto, quem o abre é o **botão preto**, em hardware, onde nenhuma rampa de software chegaria a tempo. **Saiu a função, saiu o laço com `wdt_reset()` dentro, saiu a variável de rampa.**
 >
-> ⚠️ **Um detalhe que a rampa cobria e que agora é do hardware:** o contato do KA2 pode abrir sob os 6 A da Peltier quando alguém soca o botão preto. É por isso que o **KA2 é declarado para ≥ 10 A em corrente contínua** ([Doc 31 §31.0](../camada_3_eletrica/31_comando_e_protecoes.md)) — corrente contínua não tem passagem por zero para extinguir o arco, e um contato subdimensionado solda depois de algumas dezenas de paradas.
+> ⚠️ **Um detalhe que a rampa cobria e que agora é do hardware:** o contato do KM1 pode abrir sob os 6 A da Peltier quando alguém soca o botão preto. É por isso que o **KM1 é declarado para ≥ 10 A em corrente contínua** ([Doc 31 §31.0](../camada_3_eletrica/31_comando_e_protecoes.md)) — corrente contínua não tem passagem por zero para extinguir o arco, e um contato subdimensionado solda depois de algumas dezenas de paradas.
 
 ### 🌀 As ventoinhas — e a regra única que governa o radiador
 
@@ -1077,7 +1080,7 @@ void gerenciarVentoinhas(float tDissipador, float tAmbiente) {
     //   o tempo de partida da ventoinha.
     if (radiadorLigado && !antes) inicioRadiador = millis();
 
-    radiador(radiadorLigado);   // ⚠ a inversao do KA4 mora la dentro
+    radiador(radiadorLigado);   // ⚠ a inversao do KA2 mora la dentro
 
     // ── ⭐ INTERNAS (2 frias + 2 do duto + a do PTC) — uma condição só ──
     //   Ensaio rodando, em qualquer modo. Param junto com ele.
@@ -1118,9 +1121,9 @@ void gerenciarVentoinhas(float tDissipador, float tAmbiente) {
 >
 > Os pinos das ventoinhas estavam **apenas `#define`ados**. Não havia `pinMode()`, não havia um único `digitalWrite()` em lugar nenhum do firmware. E a `precisaPosVentilar()` estava escrita numa nota lateral, **sem ninguém chamá-la**.
 >
-> Na prática: os canais 2 e 3 do MV-1 nunca eram acionados, a ventoinha do PTC e as quatro de circulação **nunca giravam**, e o ensaio rodava com o ar parado dentro da câmara. É o tipo de coisa que só aparece na bancada, quando a temperatura não homogeneíza e ninguém entende por quê.
+> Na prática: os dois comandos de ventoinha interna nunca eram acionados, a ventoinha do PTC e as quatro de circulação **nunca giravam**, e o ensaio rodava com o ar parado dentro da câmara. É o tipo de coisa que só aparece na bancada, quando a temperatura não homogeneíza e ninguém entende por quê.
 >
-> 📌 **A ventoinha do PTC não tem mais pós-ventilação, e não precisa.** Ela entrou no mesmo canal das outras internas e para junto com o ensaio — **o PTC é auto-limitado**: sem fluxo de ar a resistência dele sobe e ele corta a própria potência. Somem um pino, um canal do MV-1, um temporizador e um modo de falha. O **DS18B20 continua útil**, comandando a pós-ventilação do **radiador**, que é onde ela realmente importa.
+> 📌 **A ventoinha do PTC não tem mais pós-ventilação, e não precisa.** Ela entrou no mesmo canal das outras internas e para junto com o ensaio — **o PTC é auto-limitado**: sem fluxo de ar a resistência dele sobe e ele corta a própria potência. Somem um pino, um canal de acionamento, um temporizador e um modo de falha. O **DS18B20 continua útil**, comandando a pós-ventilação do **radiador**, que é onde ela realmente importa.
 
 ### ⚠️ Quem para quando, e quem sobrevive à emergência
 
@@ -1130,56 +1133,58 @@ void gerenciarVentoinhas(float tDissipador, float tAmbiente) {
 | 1× ventoinha do PTC | D28 | não na hora — **2 min de pós-ventilação** | idem | o tempo |
 | 4× circulação (2 frias + 2 do duto) | D29 | ✅ sim, na hora | ✅ sim | `desligarTudo()` |
 
-**Nenhuma das três passa pelo KA2.** Todas vêm do BD-AUX, alimentado pelo ramal auxiliar T3 ([Doc 30](../camada_3_eletrica/30_forca_e_distribuicao.md)), e o Arduino vem do BD-5V — os dois são barramentos permanentes. Então:
+**Nenhuma das três passa pelo KM1.** Todas vêm do BD-AUX, alimentado pelo ramal auxiliar T3 ([Doc 30](../camada_3_eletrica/30_forca_e_distribuicao.md)), e o Arduino vem do BD-5V — os dois são barramentos permanentes. Então:
 
 > 🎯 **Alguém pode socar o cogumelo com o dissipador a 60 °C e as ventoinhas do radiador continuam girando** — e continuam até o DS18B20 dizer que o dissipador voltou para perto da ambiente. Uma Peltier desligada com o lado quente sem ventilação deixa o calor voltar **através dela**, no sentido inverso, e é isso que mais encurta a vida dela.
 
-> ### 🔧 Revisão — o radiador recuperou o comando, e o canal 1 do MV-1 voltou a existir
+> ### 🔧 Revisão — o radiador recuperou o comando, e o MV-1 acabou saindo do painel
 >
 > Este documento dizia que as ventoinhas do radiador **não tinham pino e nunca desligavam**. Funcionava, e era seguro, mas cobrava dois preços: **~5 W girando o dia inteiro** com o painel energizado, e **~2,5 W de fuga térmica durante o aquecimento** — o dissipador ventilado puxando calor da câmara através da pastilha desligada, contra o próprio PTC.
 >
 > **A causa nunca foi térmica, foi topológica:** o MV-1 chaveia o **negativo**, e o tacômetro da ventoinha é referenciado nesse mesmo negativo. Cortar o canal levantava o preto para perto de 12 V, injetava corrente no diodo de proteção do `D3` e, antes disso, já fazia a leitura mentir — canal desligado lia "ventoinha parada", que é justamente o alarme que existe para salvar a pastilha.
 >
-> ✅ **A correção não é trocar a ventoinha: é trocar o lado que se chaveia.** O **contato NC do KA4** — um módulo de relé de 1 canal — corta o **positivo** dos 12 V. O preto das ventoinhas fica em **0 V de verdade, permanentemente**:
+> ✅ **A correção não é trocar a ventoinha: é trocar o lado que se chaveia.** O **contato NC do KA2** — um módulo de relé de 1 canal — corta o **positivo** dos 12 V. O preto das ventoinhas fica em **0 V de verdade, permanentemente**:
 >
-> | | Chaveando o NEGATIVO (o que quebrou) | **Contato do KA4 no POSITIVO** |
+> | | Chaveando o NEGATIVO (o que quebrou) | **Contato do KA2 no POSITIVO** |
 > |---|---|---|
 > | O preto da ventoinha, desligada | sobe para ~12 V 🔥 | **fica em 0 V** ✅ |
 > | Referência do tacômetro | se mexe | **fixa, sempre** |
 > | Sinal no `D3` com ela off | injeta corrente pelo diodo de proteção | coletor aberto → o pull-up leva o pino a HIGH. Inofensivo |
 > | Ventoinha necessária | — | **as de 3 fios que já estão na lista** |
 >
-> 🎯 **Um contato seco não tem lado alto nem lado baixo — e é essa frase que apaga o problema inteiro.** O MV-1 é um MOSFET canal N: ele só sabe puxar para 0 V, e por isso era obrigado a chavear o negativo. Um relé apenas abre e fecha, e **você escolhe em que fio pô-lo**. O canal 1 do MV-1 continua livre.
+> 🎯 **Um contato seco não tem lado alto nem lado baixo — e é essa frase que apaga o problema inteiro.** O MV-1 é um MOSFET canal N: ele só sabe puxar para 0 V, e por isso era obrigado a chavear o negativo. Um relé apenas abre e fecha, e **você escolhe em que fio pô-lo**.
 >
-> ⚡ **E o custo do comando de volta são três componentes:** o módulo do KA4, um resistor de 10 kΩ e um diodo de roda-livre — cerca de **R$ 13**. Montagem em [Doc 31 §31.14](../camada_3_eletrica/31_comando_e_protecoes.md).
+> 📌 **E o argumento acabou valendo para as cinco internas também.** Elas ficaram sendo o único serviço do MV-1 — um módulo de 4 canais, R$ 43,51, usado como interruptor num pino sem PWM. Passaram para o **KA3**, terceiro módulo de relé na mesma caixa DIN, e o MV-1 saiu do projeto. **O código não mudou**: `HIGH` continua ligando ([Doc 31 §31.16](../camada_3_eletrica/31_comando_e_protecoes.md)).
+>
+> ⚡ **E o custo do comando de volta são três componentes:** o módulo do KA2, um resistor de 10 kΩ e um diodo de roda-livre — cerca de **R$ 13**. Montagem em [Doc 31 §31.14](../camada_3_eletrica/31_comando_e_protecoes.md).
 
-> ### ⭐ O contato NF, e por que o KA4 é o oposto do KA3
+> ### ⭐ O contato NF, e por que o KA2 é o oposto do KA1
 >
-> A primeira versão deste comando usava o **NA**, copiando a regra do KA3. Estava errada, e o erro era de sinal: **os dois relés têm estados seguros opostos.**
+> A primeira versão deste comando usava o **NA**, copiando a regra do KA1. Estava errada, e o erro era de sinal: **os dois relés têm estados seguros opostos.**
 >
 > | | Desenergizado significa | Isso é seguro? |
 > |---|---|---|
-> | **KA3** | contato NA abre → potência cortada | ✅ |
-> | **KA4 no NA** *(como estava)* | contato abre → **ventoinha para com o dissipador quente** | ❌ |
-> | **KA4 no NF** *(como ficou)* | contato fecha → **ventoinha gira** | ✅ |
+> | **KA1** | contato NA abre → potência cortada | ✅ |
+> | **KA2 no NA** *(como estava)* | contato abre → **ventoinha para com o dissipador quente** | ❌ |
+> | **KA2 no NF** *(como ficou)* | contato fecha → **ventoinha gira** | ✅ |
 >
 > Trocar `NA` por `NF` e inverter uma linha do firmware muda todos os modos de falha de lado:
 >
 > | Falha | Antes (NA) | **Agora (NF)** |
 > |---|---|---|
 > | **Firmware trava** | 2 s sem ventilação até o watchdog resetar | ⭐ **o pino vai a Hi-Z no reset → ventila durante o reset inteiro** |
-> | **Arduino morre de vez** | sem ventilação | ⭐ **ventila, e continua ventilando.** O KA3 já cortou a potência: para de gerar calor e segue tirando o que sobrou |
+> | **Arduino morre de vez** | sem ventilação | ⭐ **ventila, e continua ventilando.** O KA1 já cortou a potência: para de gerar calor e segue tirando o que sobrou |
 > | **Fio do `D30` rompido** | sem ventilação, sem alarme | ⭐ **ventila** (o R11 solta a bobina) |
 > | **BD-5V cai** | sem ventilação | ⭐ **ventila** — o BD-AUX é outro ramal e sobrevive |
 > | **DS18B20 solta o fio** | ventila (o `!sensorOK` força "quente") | igual — ✅ |
 > | **Contato falha ABERTO** | 🔥 sem ventilação e sem alarme — **o pior caso do projeto** | agora ele é o único caso ruim que sobrou, e o **alarme de RPM na pós-ventilação** passou a cobri-lo |
 > | **Contato falha FECHADO** | ventoinha nunca desliga | idem — **e era o comportamento anterior do projeto, que já se considerava seguro** |
 >
-> 🎯 **A propriedade que fecha o argumento é a mesma do §31.13, aplicada ao contrário.** Lá, nenhuma falha do KA3 deixa o painel pior do que era antes de ele existir. Aqui, com o NF, o **pior caso vira o comportamento antigo** — ventoinha sempre ligada, que custava 5 W e nunca custou uma pastilha. Uma correção que troca o pior caso pelo estado que você já aceitava é uma correção de graça.
+> 🎯 **A propriedade que fecha o argumento é a mesma do §31.13, aplicada ao contrário.** Lá, nenhuma falha do KA1 deixa o painel pior do que era antes de ele existir. Aqui, com o NF, o **pior caso vira o comportamento antigo** — ventoinha sempre ligada, que custava 5 W e nunca custou uma pastilha. Uma correção que troca o pior caso pelo estado que você já aceitava é uma correção de graça.
 >
-> ⚠️ **O preço, e ele é pequeno:** a bobina do KA4 fica atracada sempre que as ventoinhas estão **desligadas** — ou seja, a maior parte do tempo. São ~37 mA contínuos no BD-24V. É o custo de ter o fail-safe apontando para o lado certo.
+> ⚠️ **O preço, e ele é pequeno:** a bobina do KA2 fica atracada sempre que as ventoinhas estão **desligadas** — ou seja, a maior parte do tempo. São ~37 mA contínuos no BD-24V. É o custo de ter o fail-safe apontando para o lado certo.
 >
-> 🧪 **Dá para provar no simulador:** o cenário 34 mata o Arduino com o ensaio rodando e confere que o BD-POT vai a zero **e** que o radiador continua girando. O cenário 33 abre o contato do KA4 e mostra o trip por RPM acusando — uma falha que, até esta revisão, o simulador nem sabia representar.
+> 🧪 **Dá para provar no simulador:** o cenário 34 mata o Arduino com o ensaio rodando e confere que o BD-POT vai a zero **e** que o radiador continua girando. O cenário 33 abre o contato do KA2 e mostra o trip por RPM acusando — uma falha que, até esta revisão, o simulador nem sabia representar.
 
 > ### ⛔ O único caso em que o resfriamento realmente para: a chave geral
 >
@@ -1270,12 +1275,12 @@ void setup() {
     pinMode(POTENCIA_OK, INPUT);       // divisor resistivo — sem pull-up!
 
     // ⭐ Habilitação da potência: SAÍDA e LOW **antes de tudo**.
-    //   O pull-down de 10 kΩ no gate já garantia isso durante o boot;
+    //   O pull-down de 10 kOhm no IN ja garantia isso durante o boot;
     //   aqui a garantia passa a ser ativa. O painel nasce sem 24 V nos BTS.
     pinMode(HAB_POTENCIA, OUTPUT);
     digitalWrite(HAB_POTENCIA, LOW);
 
-    // ⭐ Ventoinhas comandadas (jumpers do MV-1 em H: HIGH = ligada)
+    // ⭐ Ventoinhas comandadas (jumpers dos modulos em H: HIGH = ligada)
     pinMode(VENT_INTERNAS, OUTPUT); digitalWrite(VENT_INTERNAS, LOW);
     // ⚠ O radiador NASCE LIGADO. Enquanto o primeiro lerSensores() nao
     //   rodar nao ha leitura do dissipador, e "nao sei" tem que valer
@@ -1371,8 +1376,8 @@ void loop() {
 - [ ] **START funciona pelo botão físico E pela IHM**
 - [ ] **STOP funciona pelo botão físico E pela IHM**
 - [ ] Após a emergência ser destravada, **a energia não volta** (é hardware — medir 0 V no BD-POT)
-- [ ] Após o REARME, a energia volta mas **o processo continua parado**
-- [ ] Divisor do `POTENCIA_OK` medido: ~3,8 V com o KA1 fechado, ~0 V com a emergência acionada
+- [ ] Após o LIGAR verde, a energia volta mas **o processo continua parado**
+- [ ] Divisor do `POTENCIA_OK` medido: ~3,8 V com o KM1 selado, ~0 V com a emergência acionada
 - [ ] PWM verificado com osciloscópio: **20 kHz ± 5 %** nos dois pinos, com duty variável. Sem osciloscópio: **não pode haver chiado audível**, e o LED do driver não pode piscar
 - [ ] **Intertravamento validado:** com o osciloscópio nos dois `RPWM`, nunca há sobreposição
 - [ ] Intervalo de 30 s na troca de modo verificado com cronômetro

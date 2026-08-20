@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import VistaMaquete from './components/VistaMaquete';
 import VistaPainelInterno from './components/VistaPainelInterno';
 import VistaSimulador from './components/VistaSimulador';
@@ -27,6 +27,20 @@ const ABAS = [
 
 export default function App() {
   const [aba, setAba] = useState('maquete');
+
+  /* ⭐ O BOTÃO DO MEIO NÃO LIGA MAIS O AUTO-SCROLL DO WINDOWS.
+     Apertar a rodinha sobre qualquer área que rola abre aquele alvo de
+     setas e a página passa a correr sozinha atrás do ponteiro — com o
+     desenho do painel em 3x, dentro de um container que já rola nos dois
+     eixos, o resultado é perder a posição e não saber mais onde se
+     estava. Barrar aqui vale para TODAS as abas.
+     ⚠ Só o auto-scroll morre: `auxclick` continua disparando, então
+     abrir link em nova aba com a rodinha segue funcionando. */
+  useEffect(() => {
+    const semAutoScroll = e => { if (e.button === 1) e.preventDefault(); };
+    document.addEventListener('mousedown', semAutoScroll);
+    return () => document.removeEventListener('mousedown', semAutoScroll);
+  }, []);
 
   return (
     <div style={{ width: '100vw', height: '100vh', display: 'flex',

@@ -27,7 +27,7 @@ const bornesDe = p => p.bornes ?? [];
 
 /* ⭐ A SELEÇÃO DO FIO É A MESMA DO PAINEL. Enquanto cada vista guardava
    a sua, clicar no X9 dentro da câmara não acendia o mesmo X9 saindo do
-   MV-1 — e era justamente esse pedaço, o meio do caminho, que ninguém
+   contato do KA3 — e era justo esse pedaço, o meio do caminho, que ninguém
    conseguia enxergar. Agora um clique acende o fio inteiro: do borne do
    componente, pela canaleta, pelo prensa-cabo, até a peça lá dentro. */
 export default function CamaraNoPainel({

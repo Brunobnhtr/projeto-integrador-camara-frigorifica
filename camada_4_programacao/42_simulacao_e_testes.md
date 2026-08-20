@@ -43,24 +43,24 @@ Ele roda **três camadas juntas**, e a separação entre elas é o que torna a r
 
 | Arquivo | O que modela | O que ele NÃO sabe |
 |---|---|---|
-| [`src/sim/eletrica.js`](../painel_interativo/src/sim/eletrica.js) | os dois selos, os barramentos, o contato do KA3 | **nada de firmware** — de propósito |
+| [`src/sim/eletrica.js`](../painel_interativo/src/sim/eletrica.js) | os dois selos, os barramentos, o contato do KA1 | **nada de firmware** — de propósito |
 | [`src/sim/firmware.js`](../painel_interativo/src/sim/firmware.js) | espelho em JS da máquina de estados do [Doc 40 §40.10](40_firmware_arduino.md) | nada de eletricidade — só lê pinos |
 | [`src/sim/index.js`](../painel_interativo/src/sim/index.js) | o laço de tempo, o modelo térmico de 2 massas e a injeção de falhas | — |
 
-> 🎯 **A camada elétrica não pode enxergar o firmware, e é isso que dá valor ao resultado.** A pergunta que o projeto inteiro responde — *"a emergência funciona com o software morto?"* — só significa alguma coisa se der para respondê-la **sem olhar para o software**. Então o firmware entra ali como uma variável externa (o estado do KA3), exatamente como um dedo entra como o estado de um botão.
+> 🎯 **A camada elétrica não pode enxergar o firmware, e é isso que dá valor ao resultado.** A pergunta que o projeto inteiro responde — *"a emergência funciona com o software morto?"* — só significa alguma coisa se der para respondê-la **sem olhar para o software**. Então o firmware entra ali como uma variável externa (o estado do KA1), exatamente como um dedo entra como o estado de um botão.
 
 ### O que ele prova, cenário por cenário
 
 | # | Cenário | O que fica provado |
 |---|---|---|
-| 1–4 | Boot, rearme, verde | Os dois selos nascem abertos; o REARME **não** arma a potência |
+| 1–4 | Boot e o verde | O selo nasce aberto; **um toque no verde** arma a potência, e com o cogumelo socado ele não faz nada |
 | **5** | ⭐ STOP preto | Aperta **uma vez e solta** → 0 V no BD-POT, **e permanece** |
 | **6** | ⭐ Só o verde religa | A IHM tenta e recebe `APERTE_O_VERDE` |
 | 7–8 | STOP pela IHM e por MQTT | Categoria 2 — a potência segue armada e a tela religa |
-| 9–11 | Emergência | Destravar o cogumelo **não religa nada**; nem o verde sem o azul antes |
-| 12 | Arduino morre | O KA3 abre, a potência cai **e não volta sozinha** |
+| 9–11 | Emergência | Destravar o cogumelo **não religa nada** — e o verde, depois de destravado, religa num toque só |
+| 12 | Arduino morre | O KA1 abre, a potência cai **e não volta sozinha** |
 | 13 | Fan travada | Trip com corte **físico e retentivo** |
-| **14** | 🔥 **BTS7960 em curto** | A Peltier conduz ignorando o `R_EN` — **e o KA3 a mata assim mesmo** |
+| **14** | 🔥 **BTS7960 em curto** | A Peltier conduz ignorando o `R_EN` — **e o KA1 a mata assim mesmo** |
 | 15–18 | Ventoinhas | As 4 linhas da regra única, o fail-safe do sensor solto, a sobrevivência à emergência |
 | 19 | Intertravamento | 400 passos com inversão de modo, **nunca os dois `R_EN` juntos** |
 | 20–21 | Chave geral e processo | Tudo morre junto; e a câmara chega a **6,9 °C** com setpoint de 5 |
@@ -97,7 +97,7 @@ E um controle de velocidade de **1× / 10× / 60×** — um ensaio de 25 minutos
 
 > 🎓 **A demonstração de 30 segundos para a banca:** aperte o cogumelo e mostre a cadeia inteira ficando cinza. Destrave — **nada volta**. Aperte o verde — **continua nada**. Aperte o azul, depois o verde — a potência volta. É o ensaio nº 4 do §31.11 acontecendo na tela, e ninguém precisa acreditar em você.
 >
-> 📌 **Marque a caixa "🔥 BTS7960 em curto"** com o ensaio rodando e depois "ventoinha travada": o trip dispara, o BD-POT vai a 0 V e a câmara **para de esfriar** — que é o argumento inteiro do KA3 em uma imagem.
+> 📌 **Marque a caixa "🔥 BTS7960 em curto"** com o ensaio rodando e depois "ventoinha travada": o trip dispara, o BD-POT vai a 0 V e a câmara **para de esfriar** — que é o argumento inteiro do KA1 em uma imagem.
 
 > ⭐ **A tela não decide nada.** Ela recebe um instantâneo de `src/sim/` e desenha — o render é uma função pura. É a mesma lógica que o `npm run simula` valida contra a tabela de estados, então **o que você vê na aba é exatamente o que os 107 testes provam**.
 
@@ -164,7 +164,7 @@ Nenhuma ferramenta simula tudo. Cada uma resolve uma parte:
 | Estimar a **duração real do ensaio** | Simulador do aplicativo | grátis |
 | **Rodar o código C++ de verdade** (o mesmo que vai para o Mega) | **Wokwi** — extensão do VS Code (já instalada) ou [wokwi.com](https://wokwi.com) | grátis |
 | Testar botões, máquina de estados e interrupção de RPM | Wokwi | grátis |
-| Simular o **circuito de comando** (KA1, KA2, selo, emergência) | **Falstad** — [falstad.com/circuit](https://www.falstad.com/circuit/) | grátis |
+| Simular o **circuito de comando** (KM1, selo, emergência) | **Falstad** — [falstad.com/circuit](https://www.falstad.com/circuit/) | grátis |
 | Simular relés, transistores e o lado **eletrônico analógico** | **SimulIDE** (desktop) | grátis |
 | Simulação completa com **BTS7960, motores e cargas reais** | **Proteus** (Labcenter) | pago |
 
@@ -261,7 +261,7 @@ instalar nada, com o firmware do [Doc 40](40_firmware_arduino.md).
 |---|---|---|
 | DS18B20 (centro da câmara) | DS18B20 | **Clique nele e arraste a temperatura** para simular a câmara esquentando ou esfriando |
 | Botão START / STOP / EMERGÊNCIA | Pushbuttons | Clique |
-| KA1 + KA2 (**24 V** presentes) | Chave deslizante no D25 | Desligue para simular a emergência cortando em hardware |
+| KM1 (**24 V** presentes) | Chave deslizante no D25 | Desligue para simular a emergência cortando em hardware |
 | BTS7960 #1 e #2 | LEDs ciano e laranja | ⚠️ **Com o PWM em 20 kHz o LED não pisca — ele varia de brilho.** Para ver o duty no Wokwi, olhe o valor impresso no Serial |
 | LEDs RUN / FRIO / QUENTE / FALHA | LEDs | Iguais aos do painel |
 | Fan do dissipador | Pino D30 ligado por fio ao D3 | O sketch gera os pulsos do tacômetro — **testa a interrupção de verdade** |
@@ -294,28 +294,29 @@ instalar nada, com o firmware do [Doc 40](40_firmware_arduino.md).
 
 ## 42.4 Falstad — o circuito de comando
 
-O [Falstad Circuit Simulator](https://www.falstad.com/circuit/) é ideal para provar o **circuito de dois estágios** ([Doc 31 §31.2](../camada_3_eletrica/31_comando_e_protecoes.md)) antes de comprar os relés.
+O [Falstad Circuit Simulator](https://www.falstad.com/circuit/) é ideal para provar a **malha do selo** ([Doc 31 §31.0](../camada_3_eletrica/31_comando_e_protecoes.md)) antes de comprar o relé.
 
 ### Como montar (leva 10 minutos)
 
 1. Abra o simulador e apague o circuito de exemplo (`Circuits → Blank Circuit`).
 2. Fonte de 24 V: `Draw → Inputs and Sources → Voltage Source (two-terminal)`.
-3. Botões: `Draw → Switches → SPST Switch` (um para cada: emergência, rearme, stop).
-4. Relés: `Draw → Passive Components → Relay`. Configure a corrente de acionamento.
-5. Monte o **estágio 1**: fonte → emergência (fechada) → nó → (rearme **em paralelo com** o contato do relé KA1) → bobina do KA1 → terra.
-6. Monte o **estágio 2**: contato do KA1 → stop (fechado) → bobina do KA2 → terra.
-7. Uma lâmpada no contato do KA2 representa a carga.
+3. Botões: `Draw → Switches → SPST Switch` (um para cada: emergência, stop, ligar).
+4. Relé: `Draw → Passive Components → Relay`. Configure a corrente de acionamento.
+5. Monte a **malha**: fonte → emergência (fechada) → stop (fechado) → nó → (botão LIGAR **em paralelo com** o contato de selo do KM1) → bobina do KM1 → terra.
+6. Uma lâmpada no outro contato do KM1 representa a carga.
+
+⚠️ **Os dois botões de parada são SPST fechados** (emergência e stop) e o LIGAR é SPST **aberto**. Trocar isso é o erro que faz o circuito "funcionar ao contrário" na tela.
 
 ### Os 4 comportamentos a verificar
 
 | Ação no simulador | Esperado |
 |---|---|
-| Ligar a fonte, sem tocar em nada | Lâmpada **apagada** — o selo do KA1 nasce aberto |
-| Clicar em REARME | KA1 sela, KA2 liga, **lâmpada acende** |
-| Clicar em STOP (mantendo pressionado) | Lâmpada apaga. **Ao soltar, acende de novo** |
-| Clicar em EMERGÊNCIA e soltar | Lâmpada apaga e **NÃO volta** ao soltar. Só volta com o REARME |
+| Ligar a fonte, sem tocar em nada | Lâmpada **apagada** — o selo nasce aberto |
+| Clicar em LIGAR e soltar | O KM1 sela, **a lâmpada acende e FICA acesa** |
+| Clicar em STOP e soltar | Lâmpada apaga e **NÃO volta** ao soltar. Só o LIGAR religa |
+| Clicar em EMERGÊNCIA e soltar | Idêntico ao STOP — é a mesma malha, aberta em outro ponto |
 
-> 🎯 **O último teste é o que valida todo o desenho.** Se, ao soltar a emergência, a lâmpada acender sozinha, o selo está ligado errado — provavelmente o contato de selo ficou antes do botão de emergência em vez de depois.
+> 🎯 **O segundo teste é o que valida todo o desenho.** Se a lâmpada apagar quando você solta o botão LIGAR, o contato de selo não está em paralelo com ele. E se, ao soltar a emergência, a lâmpada acender sozinha, o selo ficou **antes** do botão em vez de depois.
 
 ---
 

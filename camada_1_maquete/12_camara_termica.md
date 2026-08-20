@@ -298,7 +298,7 @@ PORTA DUPLA (5 + ar 10 + 5 mm):
 | 2 ventoinhas frias | sob a Peltier, soprando ↓ | Sem elas o frio fica colado na pastilha e a câmara estratifica |
 | **🌡️ AM2315C** | **centro geométrico, suspenso** | 🔥 **O ponto mais importante da montagem** — ver abaixo |
 | **PTC 24 V** | base, centro, sobre o plenum | O ar quente **sobe sozinho** — o oposto da Peltier |
-| Ventoinha do PTC | sobre o PTC, soprando ↑ | Canal próprio no MV-1: intertravada com o aquecedor |
+| Ventoinha do PTC | sobre o PTC, soprando ↑ | No mesmo comando das outras internas (KA3): gira enquanto o ensaio roda |
 | **DUT 1 e DUT 2** | base, um de cada lado | Com folga das paredes, para o ar circular em volta |
 | 2 vent. de duto | dentro dos dutos laterais | Fecham o circuito de ar, e ficam **fora** do volume útil |
 
@@ -327,13 +327,13 @@ PORTA DUPLA (5 + ar 10 + 5 mm):
 >
 > A das paredes já era esperada — foi a troca do XPS pelo vão de ar (§12.2).
 >
-> **A das ventoinhas não era.** A tabela somava *"2 fans internas"* porque elas eram comutadas por modo. Hoje são **cinco** (2 frias + 2 dos dutos + a do PTC) e ligam **todas juntas**, num canal só do MV-1. **Todo watt elétrico que uma ventoinha interna consome vira calor dentro da câmara** — ela não tem para onde mandar. São 6 W, e agora são a **maior fonte isolada de carga térmica**, maior que as paredes.
+> **A das ventoinhas não era.** A tabela somava *"2 fans internas"* porque elas eram comutadas por modo. Hoje são **cinco** (2 frias + 2 dos dutos + a do PTC) e ligam **todas juntas**, num contato só — o do **KA3**. **Todo watt elétrico que uma ventoinha interna consome vira calor dentro da câmara** — ela não tem para onde mandar. São 6 W, e agora são a **maior fonte isolada de carga térmica**, maior que as paredes.
 >
 > 📌 **É o mesmo erro que o simulador achou no Doc 02**, aparecendo pela segunda vez em outro documento: ninguém releu as contas depois de a simplificação juntar as cinco ventoinhas num canal só.
 >
 > ✅ **E continua cabendo:** 18,7 W contra os ~60 W que as duas Peltier bombeiam a ΔT = 20 K. **Margem de 3,2×** — era 4× com o vão de ar.
 >
-> 💡 **Se um dia faltar capacidade, é aqui que se corta:** separar as ventoinhas dos dutos num segundo canal do MV-1 (o canal 2 está livre) devolveria ~2,4 W de carga e ~0,25 A no ramal de 12 V.
+> 💡 **Se um dia faltar capacidade, é aqui que se corta:** separar as ventoinhas dos dutos num **quarto módulo de relé** (KA6 — R$ 3,40, e a caixa de 6M tem lugar) devolveria ~2,4 W de carga e ~0,25 A no ramal de 12 V.
 
 > 📌 **Os simuladores praticamente não aquecem, e isso é uma decisão consciente.** Eles existem para consumir uma corrente conhecida — o que se está provando é a **detecção de falha**, não o desempenho térmico. Ver [Doc 13 §13.3b](13_posicoes_de_ensaio.md).
 >
@@ -580,7 +580,7 @@ Troque quando a sílica indicadora mudar de cor (azul → rosa). Pode ser regene
 > - **Uma ventoinha DC não gira ao contrário.** Invertendo a polaridade ela não parte — a
 >   eletrônica interna de comutação não trabalha em reverso. E mesmo que partisse, a pá é
 >   assimétrica e moveria quase nada de ar para trás.
-> - **As 2 ventoinhas do duto dividem um canal só** (MV-1 · O3). Não existe comando que
+> - **As 2 ventoinhas do duto dividem um contato só** (KA3 · NO3). Não existe comando que
 >   faça uma soprar para cima e depois para baixo.
 >
 > **O circuito de ar é ÚNICO e fixo.** O que o controle escolhe é qual fonte energizar.
@@ -645,13 +645,17 @@ Esta é a ligação que mais gera dúvida, porque o par forma **uma carga só** 
 
 ### 🌀 E as ventoinhas do lado frio, que são duas
 
-Elas **não** se ligam na pastilha — vêm do painel, pelo canal 3 do MV-1, e são de **12 V**:
+Elas **não** se ligam na pastilha — vêm do painel, pelo contato do **KA3**, e são de **12 V**:
 
 ```
-   MV-1 · O3+ ──┬── ventoinha fria 1 (+)     ┬── ventoinha do duto 1 (+)
-                └── ventoinha fria 2 (+)     └── ventoinha do duto 2 (+)
-   MV-1 · O3− ──── os quatro negativos juntos
+   KA3 · NO3   ──┬── ventoinha fria 1 (+)     ┬── ventoinha do duto 1 (+)
+   (fio X9)      └── ventoinha fria 2 (+)     └── ventoinha do duto 2 (+)
+
+   BD-0V · Z13 ──── os quatro negativos juntos   ⭐ 0 V DE VERDADE
+   (fio X10)          + o diodo D3 (1N4007), catodo no +12 V
 ```
+
+> ⭐ **O negativo delas é 0 V de verdade, e isso é recente.** Enquanto quem ligava as internas era o módulo MOSFET (MV-1), este fio voltava ao **dreno** do transistor — negativo comutado. O **KA3** chaveia o **positivo**, então o preto fica na barra, sempre. É a mesma correção que as ventoinhas do radiador já tinham recebido ([Doc 31 §31.16](../camada_3_eletrica/31_comando_e_protecoes.md)).
 
 > 🔥 **NUNCA ligue a ventoinha na saída da Peltier.** A saída do BTS é PWM de 24 V; a ventoinha é de 12 V contínuos. Além de queimar, ela pararia sempre que o controle reduzisse o duty — exatamente quando o ar mais precisa circular.
 

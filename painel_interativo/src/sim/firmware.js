@@ -94,9 +94,9 @@ export function firmwareInicial() {
     alerta: '',
     // saídas — todas nascem em nível baixo, e os pull-downs garantem
     // que "Arduino ausente" produza exatamente este mesmo quadro
-    habPotencia: false,         // D27 → KA3
-    ventRadiador: true,         // D30 → KA4 · ⭐ nasce LIGADA, ver setup()
-    ventInternas: false,        // D29 → MV-1 canal 3
+    habPotencia: false,         // D27 → KA1
+    ventRadiador: true,         // D30 → KA2 · ⭐ nasce LIGADA, ver setup()
+    ventInternas: false,        // D29 → gatilho do KA3
     renPeltier: false,          // D4
     renPtc: false,              // D7
     duty: 0,
@@ -123,7 +123,7 @@ export function firmwareInicial() {
   };
 }
 
-/** ⚡ Corte FÍSICO e RETENTIVO: derruba o KA3 → o selo do KA2 se perde. */
+/** ⚡ Corte FÍSICO e RETENTIVO: derruba o KA1 → o selo do KM1 se perde. */
 function cortarPotencia(f) { f.habPotencia = false; }
 
 /** AUTORIZA — não arma. Depois disto ainda falta o dedo no botão verde. */
@@ -144,7 +144,7 @@ function desligarTudo(f) {
 function dispararTrip(f, motivo) {
   desabilitarDrivers(f);
   f.integral = 0;
-  cortarPotencia(f);          // ⚡ e derruba o selo do KA2: retentivo
+  cortarPotencia(f);          // ⚡ e derruba o selo do KM1: retentivo
   desligarTudo(f);
   f.alerta = motivo;
   f.estado = ESTADO.FALHA;
@@ -185,13 +185,13 @@ function gerenciarVentoinhas(f, ent) {
 export function passoFirmware(f, ent, dt = 50) {
   // ── Arduino morto: os pinos viram entrada e os pull-downs mandam ──
   //   ⭐ E OS DOIS RELÉS VÃO PARA LADOS OPOSTOS, que é o ponto inteiro do
-  //     projeto do KA4. O R10 solta a bobina do KA3 e o contato NA abre
-  //     → potência cortada. O R11 solta a bobina do KA4 e o contato NF
+  //     projeto do KA2. O R10 solta a bobina do KA1 e o contato NA abre
+  //     → potência cortada. O R11 solta a bobina do KA2 e o contato NF
   //     FECHA → ventoinha do radiador GIRANDO. Primeiro para de gerar
   //     calor, depois continua tirando o que sobrou.
   if (!f.vivo) {
-    f.habPotencia = false;    // KA3 (NA) abre → a potência cai e NÃO volta
-    f.ventRadiador = true;    // ⭐ KA4 (NF) fecha → o radiador ventila
+    f.habPotencia = false;    // KA1 (NA) abre → a potência cai e NÃO volta
+    f.ventRadiador = true;    // ⭐ KA2 (NF) fecha → o radiador ventila
     f.radiadorLigado = true;
     f.ventInternas = false;
     f.renPeltier = false; f.renPtc = false; f.duty = 0;
@@ -204,7 +204,7 @@ export function passoFirmware(f, ent, dt = 50) {
   // EMERGÊNCIA tem prioridade absoluta, em qualquer estado
   if (ent.emergencia && f.estado !== ESTADO.EMERGENCIA) {
     desabilitarDrivers(f);
-    cortarPotencia(f);        // redundante (o KA1 já caiu) — e é de propósito
+    cortarPotencia(f);        // redundante (o selo do KM1 já caiu) — e é de propósito
     desligarTudo(f);
     f.alerta = 'EMERGENCIA';
     f.estado = ESTADO.EMERGENCIA;

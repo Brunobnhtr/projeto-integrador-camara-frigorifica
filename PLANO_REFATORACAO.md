@@ -16,9 +16,9 @@ O fio que sai do **Arduino D27** e chega no relé que arma a potência:
 
 | O que acontece com esse fio | Resposta |
 |---|---|
-| Passa por algum componente **em série**? | **Não.** O `D27` vai direto ao borne `IN` do módulo do KA3. Um fio, dois parafusos. |
+| Passa por algum componente **em série**? | **Não.** O `D27` vai direto ao borne `IN` do módulo do KA1. Um fio, dois parafusos. |
 | Tem componente **em paralelo**? | **Sim, um:** o **R10 · 10 kΩ**, com uma perna no borne `IN` e a outra no borne `DC−` (0 V) do **próprio módulo**. Ele não fica no meio do cabo — fica pendurado nos parafusos do módulo. |
-| E no relé lá na frente? | A bobina do **KA2** (bornes `A1` e `A2`) leva o **D1 · 1N4007** em **antiparalelo**: uma perna em `A1`, outra em `A2`, **faixa prateada (catodo) do lado do `A1`**. Invertido, ele curto-circuita a bobina e derruba o fusível F2. |
+| E no relé lá na frente? | A bobina do **KM1** (bornes `A1` e `A2`) leva o **D1 · 1N4007** em **antiparalelo**: uma perna em `A1`, outra em `A2`, **faixa prateada (catodo) do lado do `A1`**. Invertido, ele curto-circuita a bobina e derruba o fusível F2. |
 | Quantos parafusos são apertados no total | 6: `D27`→`IN`, R10 em `IN` e `DC−`, D1 em `A1` e `A2`, e o retorno `NO`→0 V. |
 
 **É esse nível de resposta — com desenho do parafuso — que precisa existir para os 23 registros
@@ -32,7 +32,7 @@ O fio que sai do **Arduino D27** e chega no relé que arma a potência:
 |---|---|---|---|
 | 1 | **Placa PI-1** (caixa DIN, ao lado do Arduino) | C1, C2 (100 nF) · R1 (22 kΩ) · R2 (4,7 kΩ) · C3 (100 nF) · R3 (4,7 kΩ) · CI1 (ULN2803A) | ✅ furo a furo, no app |
 | 2 | **Placa PI-2** (mesma caixa) | R1, R2 (shunt 47 Ω 1 %) · mux CD74HC4067 · INA219 | ✅ furo a furo, no app |
-| 3 | **Nos bornes dos relés** (nada de placa) | D1 (1N4007 na bobina do KA2) · R10 e R11 (10 kΩ nos `IN` do KA3 e do KA4) · as pontes de selo `24→A1` | ✅ parafuso a parafuso, no app |
+| 3 | **Nos bornes dos relés** (nada de placa) | D1 (1N4007 na bobina do KM1) · R10, R11 e R12 (10 kΩ nos `IN` do KA1, KA2 e KA3) · as pontes de selo `24→A1` | ✅ parafuso a parafuso, no app |
 | 4 | **Soldados por baixo do módulo BTS7960** | R8 e R9 (10 kΩ entre `R_EN` e `GND`, um em cada driver) | ❌ **só texto** |
 | 5 | **Fora do painel, na maquete e na câmara** | R4–R7 (220 Ω na base de cada poste) · D2 (1N4007 nas ventoinhas do radiador) · os 2 simuladores de DUT (LED + resistor + jumper de falha) | ❌ **só texto** |
 
@@ -65,14 +65,14 @@ divergências reais, achadas hoje:
 | # | Contradição | Onde | Risco na bancada |
 |---|---|---|---|
 | 1 | LEDs dos postes: **220 Ω** vs **2,2 kΩ** | `33...md:278` e `03...md:307` dizem 220 Ω · `11_subestacao_e_postes.md:525` e `:573` dizem 2,2 kΩ | Compra o valor errado, ou o LED fica 10× mais fraco |
-| 2 | Diodo D1: **"sai do painel, é sobressalente"** vs **"monte nos bornes A1/A2"** | `33...md:1069` diz que sai · `31...md:281`, `fiacao_etapa2.js:163`, `reles_fisico.js:73` e o SVG dos relés mandam montar | Monta ou não monta? Se não montar, o contato do KA3 solda com o tempo |
+| 2 | Diodo D1: **"sai do painel, é sobressalente"** vs **"monte nos bornes A1/A2"** | `33...md:1069` diz que sai · `31...md:281`, `fiacao_etapa2.js:163`, `reles_fisico.js:73` e o SVG dos relés mandam montar | Monta ou não monta? Se não montar, o contato do KA1 solda com o tempo |
 | 3 | DUT: **"sem carga térmica, 0,37 W"** vs **"~6 W dentro da câmara"** vs **"220 Ω / 5 W, ~3 W cada"** | `13...md:88`, `13...md:118` e `03...md:901` | O cálculo de carga térmica muda, e a lista de compras também |
 | 4 | Peltier em **PWM 1 Hz** | firmware (doc 40) vs o relatório técnico que está solto na raiz do repo | Perde rendimento e reduz a vida da pastilha |
 
 ### 2.3 O que existe é documentação de projeto, não instrução de montagem
 
 O doc 50 tem **ordem de integração e ensaios** — que é outra coisa. Nada no repositório diz
-*"passo 14: pegue o fio vermelho de 0,5 mm², descasque 8 mm, aperte no A1 do KA2 e no 14 do KA1;
+*"passo 14: pegue o fio vermelho de 0,5 mm², descasque 8 mm, aperte no A1 do KM1 e no 24 do KM1;
 confira: multímetro em continuidade entre os dois deve apitar"*. Para quem nunca mexeu com
 eletrônica, essa é a única forma que funciona.
 
@@ -93,16 +93,16 @@ Todo componente que não é fio nem borne passa a existir num arquivo só, com e
 {
   ref: 'D1',
   peca: 'Diodo 1N4007',
-  onde: { tipo: 'borne', host: 'KA2' },   // ou 'placa' | 'modulo' | 'maquete' | 'camara'
+  onde: { tipo: 'borne', host: 'KM1' },   // ou 'placa' | 'modulo' | 'maquete' | 'camara'
   ligacao: 'antiparalelo',                // serie | paralelo | antiparalelo | pendurado
   pernas: [
-    { perna: 'catodo (faixa prateada)', vai: { comp: 'KA2', via: 'A1' } },
-    { perna: 'anodo',                   vai: { comp: 'KA2', via: 'A2' } },
+    { perna: 'catodo (faixa prateada)', vai: { comp: 'KM1', via: 'A1' } },
+    { perna: 'anodo',                   vai: { comp: 'KM1', via: 'A2' } },
   ],
   polaridade: true,
   comoIdentificar: 'A faixa prateada impressa no corpo marca o CATODO.',
-  porque: 'Grampeia o pico da bobina para o contato do KA3 não abrir arco.',
-  seInverter: 'Curto-circuito na bobina: o F2 (2 A) desarma assim que o KA1 selar.',
+  porque: 'Grampeia o pico da bobina para o contato do KA1 não abrir arco.',
+  seInverter: 'Curto-circuito na bobina: o F2 (2 A) desarma assim que o KM1 selar.',
   ensaio: 'Multímetro em teste de diodo entre A1 e A2 → conduz num sentido só.',
   passo: 'C-07',                          // em que passo do guia ele entra
 }
@@ -137,10 +137,10 @@ provar que está certo e o que acontece se inverter.
 Gerada dos dados (não escrita à mão), em fases, cada passo com o mesmo cabeçalho:
 
 ```
-PASSO C-07 · Diodo D1 na bobina do KA2                          ⏱ 3 min
+PASSO C-07 · Diodo D1 na bobina do KM1                          ⏱ 3 min
 ─────────────────────────────────────────────────────────────────────
 PEGUE       1× diodo 1N4007 · chave de fenda 3 mm · alicate de corte
-ANTES       O KA2 já está encaixado na base, painel DESENERGIZADO
+ANTES       O KM1 já está encaixado na base, painel DESENERGIZADO
 FAÇA        1. Dobre as pernas do diodo em U, com 25 mm entre elas
             2. Faixa prateada (catodo) → parafuso A1
             3. Outra perna → parafuso A2      [desenho aqui]
@@ -223,7 +223,7 @@ Um `valida_discretos.mjs` novo, rodando no `npm run valida` (que já bloqueia o 
 |---|---|
 | Onde o guia vive | **Aba no app + botão de imprimir.** O desenho fica junto do passo, e o papel sai da mesma fonte |
 | LED dos postes | **220 Ω** (LED de 5 V). O 2,2 kΩ era da versão de 24 V |
-| Diodo D1 | **Montado**, com o teste de diodo antes para ver se o KA2 já traz o interno. O D2 é sempre obrigatório |
+| Diodo D1 | **Montado**, com o teste de diodo antes para ver se o KM1 já traz o interno. O D2 é sempre obrigatório |
 | DUT | **Sem carga térmica** — LED + resistor de ½ W, 0,37 W e 0,21 W. Os 220 Ω / 5 W saem da lista |
 | Documentos | **Corte de verdade**: cada explicação fica uma vez, no documento dono do assunto, e os números vêm dos dados |
 
@@ -252,7 +252,7 @@ Um `valida_discretos.mjs` novo, rodando no `npm run valida` (que já bloqueia o 
 | `03_lista_materiais.md:901` | Resistor 220 Ω / 5 W como carga térmica do simulador | Linha removida; a peça foi para a tabela do que saiu |
 | `03_lista_materiais.md:902` | 4× 1,2 kΩ ¼ W para os dois DUTs | **2× 1,2 kΩ ½ W** (posição 1) e **2× 2,2 kΩ ½ W** (posição 2) |
 | `03_lista_materiais.md:755` e `:924` | 1N4007 como sobressalente que não vai no painel | **2 usos + 2 reservas**, com o teste de diodo antes de montar o D1 |
-| `33_placa_interface_componentes.md:1069` e `:1129` | "Sai do painel" | Corrigido: quem tem roda-livre embutido são os módulos de 5 V do KA3/KA4, não os relés de base |
+| `33_placa_interface_componentes.md:1069` e `:1129` | "Sai do painel" | Corrigido: quem tem roda-livre embutido são os módulos de 5 V do KA1/KA2, não os relés de base |
 
 ### Achado novo, aguardando decisão
 

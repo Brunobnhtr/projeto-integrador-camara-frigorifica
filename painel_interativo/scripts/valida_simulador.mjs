@@ -46,50 +46,48 @@ function ligarPainel(opts) {
   return sim;
 }
 
-/** REARME azul + START verde: a máquina fica armada e parada. */
+/** ⭐ UM BOTÃO SÓ: o LIGAR verde arma a potência, venha de onde vier a
+ *  parada anterior. A máquina fica armada e parada. */
 function armar(sim) {
-  apertar(sim, 's3Rearme');
   apertar(sim, 's1Verde');
   avancar(sim, 200);
   return sim;
 }
 
 // ════════════════════════════════════════════════════════════════════
-cenario('1 · Painel energizado — os dois selos nascem abertos');
+cenario('1 · Painel energizado — o selo nasce aberto');
 {
   const f = foto(ligarPainel());
-  conferir('KA1 selado', f.ka1, false);
-  conferir('KA2 selado', f.ka2, false);
+  conferir('KM1 selado', f.km1, false);
   conferir('24 V no BD-POT', f.bdPot, 0);
   conferir('5 V permanente vivo', f.bd5v, 5.1);
   conferir('estado', f.estado, ESTADO.AGUARDA_START);
-  conferir('KA3 autorizado pelo autoteste', f.ka3, true);
+  conferir('KA1 autorizado pelo autoteste', f.ka1, true);
 }
 
-cenario('2 · O verde sozinho não faz nada — o KA1 tem de estar selado antes');
+cenario('2 · ⭐ O verde sozinho ARMA — não existe mais botão antes dele');
 {
   const sim = ligarPainel();
-  apertar(sim, 's1Verde');
+  apertar(sim, 's1Verde'); avancar(sim, 200);
   const f = foto(sim);
-  conferir('KA2 selado', f.ka2, false);
+  conferir('KM1 selado num toque só', f.km1, true);
+  conferir('24 V no BD-POT', f.bdPot, 24);
+}
+
+cenario('3 · Com o cogumelo SOCADO, o verde não arma nada');
+{
+  const sim = ligarPainel();
+  socarCogumelo(sim);
+  apertar(sim, 's1Verde'); avancar(sim, 200);
+  const f = foto(sim);
+  conferir('KM1 selado', f.km1, false);
   conferir('24 V no BD-POT', f.bdPot, 0);
 }
 
-cenario('3 · REARME sozinho NÃO arma a potência (passo 4 do §31.2)');
-{
-  const sim = ligarPainel();
-  apertar(sim, 's3Rearme');
-  const f = foto(sim);
-  conferir('KA1 selado', f.ka1, true);
-  conferir('KA2 selado', f.ka2, false);
-  conferir('24 V no BD-POT', f.bdPot, 0);
-}
-
-cenario('4 · REARME + VERDE = potência armada, processo ainda parado');
+cenario('4 · Armado = potência presente, processo ainda parado');
 {
   const f = foto(armar(ligarPainel()));
-  conferir('KA1 selado', f.ka1, true);
-  conferir('KA2 selado', f.ka2, true);
+  conferir('KM1 selado', f.km1, true);
   conferir('24 V no BD-POT', f.bdPot, 24);
   conferir('estado', f.estado, ESTADO.AGUARDA_START);
   conferir('R_EN da Peltier', f.renPeltier, false);
@@ -106,8 +104,7 @@ cenario('5 · ⭐ O STOP preto RETÉM — aperta uma vez, solta, e não volta');
   apertar(sim, 's2Stop');          // aperta E SOLTA
   avancar(sim, 1000);              // deixa um segundo passar
   const f = foto(sim);
-  conferir('KA1 continua selado', f.ka1, true);
-  conferir('KA2 perdeu o selo', f.ka2, false);
+  conferir('KM1 perdeu o selo', f.km1, false);
   conferir('24 V no BD-POT', f.bdPot, 0);
   conferir('⭐ NÃO caiu em FALHA', f.estado, ESTADO.AGUARDA_START);
   conferir('sem alerta espúrio', f.alerta, '');
@@ -129,7 +126,6 @@ cenario('6 · ⭐ Depois do STOP preto, só o VERDE religa — a IHM não conseg
   f = foto(sim);
   conferir('com o verde, a potência volta', f.bdPot, 24);
   conferir('e o ensaio reinicia', f.estado, ESTADO.RODANDO);
-  conferir('sem tocar no REARME azul', f.ka1, true);
 }
 
 cenario('7 · STOP pela IHM é Categoria 2 — a potência SEGUE armada');
@@ -138,7 +134,7 @@ cenario('7 · STOP pela IHM é Categoria 2 — a potência SEGUE armada');
   iniciarPelaIHM(sim); avancar(sim, 500);
   pararPelaIHM(sim); avancar(sim, 500);
   let f = foto(sim);
-  conferir('KA2 continua selado', f.ka2, true);
+  conferir('KM1 continua selado', f.km1, true);
   conferir('24 V ainda presentes', f.bdPot, 24);
   conferir('mas o processo parou', f.estado, ESTADO.AGUARDA_START);
   conferir('drivers desabilitados', f.renPeltier || f.renPtc, false);
@@ -166,8 +162,7 @@ cenario('9 · EMERGÊNCIA derruba tudo, em hardware');
   iniciarPelaIHM(sim); avancar(sim, 500);
   socarCogumelo(sim); avancar(sim, 200);
   const f = foto(sim);
-  conferir('KA1 perdeu o selo', f.ka1, false);
-  conferir('KA2 caiu junto', f.ka2, false);
+  conferir('KM1 perdeu o selo', f.km1, false);
   conferir('24 V cortados', f.bdPot, 0);
   conferir('estado', f.estado, ESTADO.EMERGENCIA);
 }
@@ -179,38 +174,37 @@ cenario('10 · ⭐ Destravar o cogumelo NÃO religa nada (o ensaio nº 4)');
   socarCogumelo(sim); avancar(sim, 200);
   destravarCogumelo(sim); avancar(sim, 1000);
   const f = foto(sim);
-  conferir('KA1 continua caído', f.ka1, false);
+  conferir('⭐ o selo continua perdido', f.km1, false);
   conferir('24 V continuam cortados', f.bdPot, 0);
-
-  apertar(sim, 's1Verde'); avancar(sim, 200);
-  conferir('⭐ nem o verde religa sem o azul', foto(sim).bdPot, 0);
+  conferir('e o processo NÃO voltou sozinho', f.estado !== ESTADO.RODANDO, true);
 }
 
-cenario('11 · Depois da emergência: azul sela o KA1, verde arma a potência');
+cenario('11 · Depois da emergência: destravar e apertar o LIGAR, e só');
 {
   const sim = armar(ligarPainel());
-  socarCogumelo(sim); destravarCogumelo(sim); avancar(sim, 200);
+  socarCogumelo(sim); avancar(sim, 200);
 
-  apertar(sim, 's3Rearme'); avancar(sim, 200);
+  apertar(sim, 's1Verde'); avancar(sim, 200);
   let f = foto(sim);
-  conferir('KA1 selado de novo', f.ka1, true);
-  conferir('mas ainda sem potência', f.bdPot, 0);
+  conferir('⭐ com o cogumelo ainda socado o verde não faz nada', f.bdPot, 0);
+
+  destravarCogumelo(sim); avancar(sim, 200);
+  conferir('destravar sozinho também não', foto(sim).bdPot, 0);
 
   apertar(sim, 's1Verde'); avancar(sim, 200);
   f = foto(sim);
-  conferir('agora sim, 24 V', f.bdPot, 24);
+  conferir('agora sim, 24 V — num toque só', f.bdPot, 24);
   conferir('e o processo continua PARADO', f.estado, ESTADO.AGUARDA_START);
 }
 
 // ════════════════════════════════════════════════════════════════════
-cenario('12 · Arduino morre → o KA3 abre → a potência cai e NÃO volta');
+cenario('12 · Arduino morre → o KA1 abre → a potência cai e NÃO volta');
 {
   const sim = armar(ligarPainel());
   iniciarPelaIHM(sim); avancar(sim, 500);
   sim.falhas.arduinoMorto = true; avancar(sim, 500);
   let f = foto(sim);
-  conferir('KA1 intacto (não depende do software)', f.ka1, true);
-  conferir('KA2 caiu — o pull-down abriu o KA3', f.ka2, false);
+  conferir('KM1 caiu — o pull-down abriu o KA1', f.km1, false);
   conferir('24 V cortados', f.bdPot, 0);
 
   sim.falhas.arduinoMorto = false; avancar(sim, 500);
@@ -231,7 +225,7 @@ cenario('13 · ⭐ Fan travada → trip → corte FÍSICO e retentivo');
   conferir('estado', f.estado, ESTADO.FALHA);
   conferir('motivo', f.alerta, 'FAN1_PARADA');
   conferir('⭐ 24 V CORTADOS, não só o R_EN', f.bdPot, 0);
-  conferir('KA2 perdeu o selo', f.ka2, false);
+  conferir('KM1 perdeu o selo', f.km1, false);
 
   sim.falhas.fanTravada = false;
   apertar(sim, 's2Stop'); avancar(sim, 500);   // reconhece o alarme
@@ -241,7 +235,7 @@ cenario('13 · ⭐ Fan travada → trip → corte FÍSICO e retentivo');
   conferir('e exige o verde', foto(sim).bdPot, 24);
 }
 
-cenario('14 · 🔥 BTS7960 com MOSFET em curto — o cenário que criou o KA3');
+cenario('14 · 🔥 BTS7960 com MOSFET em curto — o cenário que criou o KA1');
 {
   const sim = armar(ligarPainel({ tCamara: 25, setpoint: 5 }));
   sim.falhas.btsPeltierEmCurto = true;
@@ -331,7 +325,7 @@ cenario('20 · Chave geral corta tudo, inclusive a eletrônica');
   conferir('BD-POT', f.bdPot, 0);
   conferir('BD-AUX', f.bdAux, 0);
   conferir('BD-5V', f.bd5v, 0);
-  conferir('os dois selos caíram', f.ka1 || f.ka2, false);
+  conferir('o selo caiu', f.km1, false);
 }
 
 cenario('21 · O processo funciona, e ele mira a MÍNIMA da faixa');
@@ -376,7 +370,7 @@ cenario('24 · 🔥 A PROVA: mais duty da MENOS frio');
 {
   const medir = (duty) => {
     const s = criarSimulador({ tCamara: 5, tCamaraFixa: 5, dutyForcado: duty, tDissipador: 25 });
-    avancar(s, 200); apertar(s, 's3Rearme'); apertar(s, 's1Verde'); avancar(s, 200);
+    avancar(s, 200); apertar(s, 's1Verde'); avancar(s, 200);
     iniciarPelaIHM(s); avancar(s, 40 * 60 * 1000, 200);
     return { qc: s.qcPeltier, td: s.tDissipador };
   };
@@ -389,10 +383,10 @@ cenario('24 · 🔥 A PROVA: mais duty da MENOS frio');
   console.log('  [2m→ e por isso que o limitador olha o DISSIPADOR, e nao a corrente.[0m');
 }
 
-cenario('25 · Contato do KA3 SOLDADO — o veto do firmware some');
+cenario('25 · Contato do KA1 SOLDADO — o veto do firmware some');
 {
   const sim = armar(ligarPainel({ tCamara: 25, setpoint: 5 }));
-  sim.falhas.ka3Colado = true;
+  sim.falhas.ka1Colado = true;
   iniciarPelaIHM(sim); avancar(sim, 1000);
   sim.falhas.fanTravada = true; avancar(sim, 8000);
   conferir('o trip ainda dispara', foto(sim).estado, ESTADO.FALHA);
@@ -401,21 +395,21 @@ cenario('25 · Contato do KA3 SOLDADO — o veto do firmware some');
   apertar(sim, 's2Stop'); avancar(sim, 500);
   conferir('o botao preto continua cortando', foto(sim).bdPot, 0);
   socarCogumelo(sim); avancar(sim, 200);
-  conferir('e a emergencia tambem', foto(sim).ka1, false);
+  conferir('e a emergencia tambem', foto(sim).bdPot, 0);
 }
 
-cenario('26 · 🔥 Contato do KA2 SOLDADO — o unico defeito que o painel NAO cobre');
+cenario('26 · 🔥 Contato do KM1 SOLDADO — o unico defeito que o painel NAO cobre');
 {
   const sim = armar(ligarPainel());
-  sim.falhas.ka2Colado = true;
+  sim.falhas.km1Colado = true;
   iniciarPelaIHM(sim); avancar(sim, 500);
 
   apertar(sim, 's2Stop'); avancar(sim, 500);
-  conferir('a bobina do KA2 desenergizou', foto(sim).ka2, false);
+  conferir('a bobina do KM1 desenergizou', foto(sim).km1, false);
   conferir('⚠ mas o contato soldado segue conduzindo', foto(sim).bdPot, 24);
 
   socarCogumelo(sim); avancar(sim, 500);
-  conferir('o KA1 caiu', foto(sim).ka1, false);
+  conferir('a bobina esta desenergizada', foto(sim).km1, false);
   conferir('⚠ e a EMERGENCIA tambem nao corta', foto(sim).bdPot, 24);
 
   sim.falhas.geralDesligada = true; avancar(sim, 200);
@@ -492,7 +486,7 @@ cenario('30 · ⭐ VIGILANCIA MUTUA — os ESP32 acusam a morte do Mega');
   conferir('e a potencia JA estava cortada, por hardware', f.bdPot, 0);
   conferir('o BD-5V segue vivo — e por isso eles podem avisar', f.bd5v, 5.1);
   console.log('  [2m→ os ESP CONTAM, nao ATUAM. Quem cortou foi o pull-down no');
-  console.log('    gate do KA3. A vigilancia nao da poder novo a ninguem.[0m');
+  console.log('    gate do KA1. A vigilancia nao da poder novo a ninguem.[0m');
 
   sim.falhas.arduinoMorto = false; avancar(sim, 1000);
   conferir('Mega voltou: o alarme limpa sozinho', foto(sim).megaSumido, false);
@@ -549,10 +543,10 @@ cenario('32 · Receita SO FRIO e SO QUENTE nao alternam');
   conferir('e o PTC e quem trabalha', quente.renPtc || quente.naFaixa, true);
 }
 
-cenario('33 · 🔥 Contato do KA4 ABERTO — o pior caso, agora simulável');
+cenario('33 · 🔥 Contato do KA2 ABERTO — o pior caso, agora simulável');
 {
   const sim = armar(ligarPainel({ tCamara: 25 }));
-  sim.falhas.ka4Aberto = true;
+  sim.falhas.ka2Aberto = true;
   iniciarPelaIHM(sim); avancar(sim, 2000);
   conferir('o firmware MANDOU ventilar', foto(sim).ventRadiador, true);
   conferir('⭐ mas nada gira — o contato não fecha', foto(sim).radiadorGirando, false);
@@ -562,15 +556,15 @@ cenario('33 · 🔥 Contato do KA4 ABERTO — o pior caso, agora simulável');
   conferir('com a potencia cortada de verdade', f.bdPot, 0);
 }
 
-cenario('34 · ⭐ Arduino morto: o KA3 abre a potencia E o KA4 FECHA a ventoinha');
+cenario('34 · ⭐ Arduino morto: o KA1 abre a potencia E o KA2 FECHA a ventoinha');
 {
   const sim = armar(ligarPainel({ tCamara: 25 }));
   iniciarPelaIHM(sim); avancar(sim, 60000, 200);
   sim.falhas.arduinoMorto = true; avancar(sim, 1000);
   const f = foto(sim);
   conferir('a potencia caiu', f.bdPot, 0);
-  conferir('⭐ e o radiador CONTINUA GIRANDO — e o NF do KA4', f.radiadorGirando, true);
-  conferir('o BD-AUX nao passa pelo KA2, por isso ele pode', f.bdAux, 12);
+  conferir('⭐ e o radiador CONTINUA GIRANDO — e o NF do KA2', f.radiadorGirando, true);
+  conferir('o BD-AUX nao passa pelo KM1, por isso ele pode', f.bdAux, 12);
 }
 
 

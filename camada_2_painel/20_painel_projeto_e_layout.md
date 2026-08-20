@@ -64,13 +64,12 @@ A porta tem só o que a pessoa precisa **tocar ou ver**:
 | Peça | Função |
 |---|---|
 | **Botão cogumelo vermelho** | Emergência. Grande e vermelho por norma — para ser achado sem pensar |
-| **STOP (preto)** | Para o processo **e retém**: derruba o selo do KA2, em hardware |
-| ⭐ **START / LIGAR (verde)** | **Arma a potência** refazendo o selo do KA2. Não inicia o ensaio — isso é o `INICIAR` da tela |
-| **REARME (azul)** | Destrava depois de uma emergência: refaz o selo do KA1 |
+| **STOP (preto)** | Para o processo **e retém**: derruba o selo do KM1, em hardware |
+| ⭐ **LIGAR (verde)** | **Arma a potência** refazendo o selo do KM1 — depois de um STOP, de uma emergência ou de um trip. Não inicia o ensaio: isso é o `INICIAR` da tela |
 | **4 sinaleiros** | Verde = rodando · Azul = esfriando · Amarelo = aquecendo · Vermelho = falha |
 | **Tela ES3C28P** | Mostra temperatura, setpoint e estado — e ⭐ **é onde fica o INICIAR** |
 
-> 🔧 **A porta tem QUATRO botoeiras.** Saiu apenas a **seletora LOCAL/REMOTO** — era a segunda camada de uma regra que a primeira já garante (o START nunca é aceito por MQTT). Um furo a menos, 2 fios a menos pela dobradiça e o pino D26 devolvido.
+> 🔧 **A porta tem TRÊS botoeiras.** Saíram duas: a **seletora LOCAL/REMOTO** — era a segunda camada de uma regra que a primeira já garante (o START nunca é aceito por MQTT), e devolveu o pino D26 — e o **botão azul de REARME**, que existia para refazer o selo de um segundo relé e virou um passo a mais depois que o verde passou a fazer os dois. Dois furos a menos e quatro fios a menos pela dobradiça.
 >
 > 🔥 **Etiquete o verde como `LIGAR` e o da tela como `INICIAR ENSAIO`.** Chamar os dois de start garante que alguém aperte o verde e fique esperando a temperatura mudar — ele arma a potência, não começa o ciclo.
 
@@ -130,13 +129,13 @@ A porta tem só o que a pessoa precisa **tocar ou ver**:
  │  │ ══════════ CANALETA HORIZONTAL 30×30 ═══════════   │  │  │  40
  │  ├────────────────────────────────────────────────────┤  │  │
  │ C│ ▓▓▓▓▓▓▓▓▓▓ TRILHO DIN 1 — DISTRIBUIÇÃO ▓▓▓▓▓▓▓▓▓▓  │C │  │
- │ A│ [BD-POT][BD-AUX][BD-5V][BD-24V] [BD-0V]     (livre)  │A │  90
+ │ A│ [BD-POT][BD-AUX][BD-5V][BD-24V] [BD-0V][KM1](livre)  │A │  90
  │ N│   blocos de distribuição: 1 entrada → várias saídas │N │  │
  │ A├────────────────────────────────────────────────────┤A │  │
  │ L│ ══════════ CANALETA HORIZONTAL 30×30 ═══════════   │L │  │  40
  │ E├────────────────────────────────────────────────────┤E │  │
  │ T│ ▓▓▓▓▓▓▓▓▓▓ TRILHO DIN 2 — POTÊNCIA ▓▓▓▓▓▓▓▓▓▓▓▓▓   │T │  │
- │ A│  [BTS7960 #1]  [BTS7960 #2]  [KA1][KA2]  (livre)   │A │  │  90
+ │ A│  [BTS7960 #1] [BTS7960 #2] [F-P] [ESP32] [KA123]   │A │  │  90
  │  │        ▲ cooler 40 mm soprando aqui                 │  │  │
  │ V├────────────────────────────────────────────────────┤V │  │
  │ E│ ══════════ CANALETA HORIZONTAL 30×30 ═══════════   │E │  │  40
@@ -181,21 +180,24 @@ Nem todo componente recebe fio só por cima e por baixo. **Seis deles têm borne
 | Componente | Lados | O que entra por ali |
 |---|---|---|
 | **BTS7960 #1 e #2** | esquerda **e** direita | potência (B+, B−, M+, M−) de um lado, lógica do outro |
-| **MV-1** | esquerda e direita | jumpers H/L de um lado, VIN de 12 V do outro |
 | **DNLCB30** | esquerda e direita | os dois blocos de 15 bornes do ESP32 |
 | Arduino Mega | esquerda | D31–D43 |
 | Tela ES3C28P | lateral | conectores |
 
 > ⭐ **O fio de um borne lateral contorna o componente por fora antes de entrar no parafuso.** Ele não pode subir rente à borda — sumiria atrás da peça, e na bancada ficaria prensado entre dois componentes.
 
-**Folga adotada: 8 mm entre vizinhos no trilho 2**, que é onde estão os BTS, o MV-1 e o DNLCB30. Com 358 mm de componentes e 6 folgas, o trilho fecha em 406 dos 420 mm úteis.
+**Folga adotada: 8 mm entre vizinhos no trilho 2**, que é onde estão os BTS, o ESP32 e a caixa dos relés. Com **327 mm** de componentes e 32 mm de folgas, o trilho fecha em **393 dos 458 mm úteis**.
+
+> 🔧 **Ele estava em 444 de 458 mm — 14 mm de sobra — e desafogou.** Saiu o **MV-1** (66 mm, módulo MOSFET) e a caixa dos relés cresceu de 4M para 6M (70 → 105 mm) para receber o **KA3**. Saldo: **+51 mm de folga** no trilho mais cheio de potência do painel ([Doc 31 §31.16](../camada_3_eletrica/31_comando_e_protecoes.md)).
 
 ```
-   34    84  92   142 150  180 188  218 226      292 300  336 344       440
-   ├─BTS1─┤ 8 ├─BTS2─┤ 8 ├KA1┤ 8 ├KA2┤ 8 ├──MV-1──┤ 8 ├F-P┤ 8 ├─DNLCB30─┤
-      ↕        ↕                        ↕                      ↕
-   laterais  laterais                laterais              laterais
+   34    84  92   142 150   176 184        280 288          393
+   ├─BTS1─┤ 8 ├─BTS2─┤ 8 ├F-P┤ 8 ├─ESP32─┤ 8 ├──KA123──┤   ← 65 mm livres
+      ↕        ↕               ↕
+   laterais  laterais       laterais
 ```
+
+📐 **Os números saem do modelo, não do desenho:** a tabela oficial de cada trilho é a [§20.3](#203-ocupação-de-cada-trilho), que é gerada do `painel_completo.js`. Este croqui existe só para mostrar o que a regra dos 8 mm quer dizer.
 
 📐 O script `npm run valida:painel` reprova se um componente com borne lateral ficar a menos de 8 mm do vizinho daquele lado.
 
@@ -248,7 +250,7 @@ Os fios da porta cruzam para a placa **num ponto só de cada classe**, e esse tr
 
 📌 **46 mm entre as duas.** Elas partem de canaletas diferentes da placa e chegam em canaletas diferentes da porta — a segregação se mantém do começo ao fim, inclusive no único trecho que flexiona.
 
-> ⭐ **E foi a calha que decidiu um detalhe do relé.** Como a `CL-pot` sai da `CH-base`, todos os fios externos da cadeia precisam estar na **fileira de baixo** do KA1. Por isso o **selo usa o contato 2** (`21`→`24`, fileira de cima, só pontes curtas) e a **saída usa o contato 1** (`11`→`14`, fileira de baixo, onde saem os fios). Os dois contatos são NA e eletricamente idênticos — o que decidiu foi a fileira.
+> ⭐ **E foi a calha que decidiu um detalhe do relé.** Como a `CL-pot` sai da `CH-base`, todos os fios externos da cadeia precisam estar na **fileira de baixo** do KM1. Por isso o **selo usa o contato 2** (`21`→`24`, fileira de cima, só pontes curtas) e a **saída usa o contato 1** (`11`→`14`, fileira de baixo, onde saem os fios). Os dois contatos são NA e eletricamente idênticos — o que decidiu foi a fileira.
 
 | Regra | Por quê |
 |---|---|
@@ -386,8 +388,8 @@ O projeto declarava um **PG9** ali, com "capacidade: 14 fios" escrito à mão. R
 > [`painel_completo.js`](../painel_interativo/src/data/painel_completo.js), que é o
 > mesmo modelo que o `npm run valida` confere. **Não edite à mão** — edite o modelo
 > e rode o gerador. Ela existe assim porque a versão escrita à mão tinha derivado:
-> falava em `K0`/`K1`, punha o KA1 e o KA2 no trilho errado e não conhecia o KA3
-> nem o KA4.
+> falava em `K0`/`K1`, punha os relés no trilho errado e não conhecia o KA1
+> nem o KA2.
 
 ### TRILHO 1 — Distribuição e proteção (Y = 385)
 
@@ -398,9 +400,8 @@ O projeto declarava um **PG9** ali, com "capacidade: 14 fios" escrito à mão. R
 | 3 | **BD-24V** — 24 V PERMANENTE (comando) | 106 | 45 mm | 151 |
 | 4 | **BD-5V** — 5,10 V da eletrônica (permanente) | 153 | 87 mm | 240 |
 | 5 | **BD-0V** — retorno único de tudo (star ground) | 242 | 84 mm | 326 |
-| 6 | **KA1** — SEGURANÇA: cai na emergência, rearme azul | 372 | 34 mm | 406 |
-| 7 | **KA2** — PROCESSO: cai no STOP, religa no verde | 410 | 34 mm | 444 |
-| | **Ocupação total** | | **414 mm** | livre até 458 — sobram **14 mm** |
+| 6 | **KM1** — o único relé da cadeia: cai em tudo, religa no verde | 372 | 34 mm | 406 |
+| | **Ocupação total** | | **376 mm** | livre até 458 — sobram **52 mm** |
 
 ### TRILHO 2 — Potência e comando (Y = 255)
 
@@ -408,11 +409,10 @@ O projeto declarava um **PG9** ali, com "capacidade: 14 fios" escrito à mão. R
 |---:|---|---:|---:|---:|
 | 1 | **BTS1** — driver de potência da PELTIER (frio) | 34 | 50 mm | 84 |
 | 2 | **BTS2** — driver de potência do PTC (quente) | 92 | 50 mm | 142 |
-| 3 | **MV-1** — liga as 5 ventoinhas INTERNAS da câmara | 150 | 66 mm | 216 |
-| 4 | **F-P** — fusível e chave da posição de ensaio | 224 | 26 mm | 250 |
-| 5 | **ESP32** — Wi-Fi, MQTT e dashboard remoto | 268 | 96 mm | 364 |
-| 6 | **KA34** — KA3 (POTÊNCIA) + KA4 (FAN EXTERNA DA PELTIER) — módulos de relé | 374 | 70 mm | 444 |
-| | **Ocupação total** | | **410 mm** | livre até 458 — sobram **14 mm** |
+| 3 | **F-P** — fusível e chave da posição de ensaio | 150 | 26 mm | 176 |
+| 4 | **ESP32** — Wi-Fi, MQTT e dashboard remoto | 184 | 96 mm | 280 |
+| 5 | **KA123** — KA1 (POTÊNCIA) + KA2 (FAN DO RADIADOR) + KA3 (FANS INTERNAS) — módulos de relé | 288 | 105 mm | 393 |
+| | **Ocupação total** | | **359 mm** | livre até 458 — sobram **65 mm** |
 
 ### TRILHO 3 — Controle (Y = 125)
 
@@ -471,9 +471,12 @@ O projeto declarava um **PG9** ali, com "capacidade: 14 fios" escrito à mão. R
 | LED HEAT (amarelo) | Ø 22 | 240 | 275 |
 | LED FAULT (vermelho) | Ø 22 | 315 | 275 |
 | **Emergência (cogumelo)** | Ø 22 | 70 | 195 |
-| START (verde) | Ø 22 | 170 | 195 |
-| STOP (vermelho) | Ø 22 | 250 | 195 |
-| **REARME (azul)** | Ø 22 | 330 | 195 |
+| STOP (preto) | Ø 22 | 170 | 195 |
+| **LIGAR (verde)** | Ø 22 | 250 | 195 |
+
+> 🗑️ **O furo em X = 330 não existe mais.** Era o do REARME azul. Se você já imprimiu o gabarito, risque-o antes de furar — tapar furo em porta pintada não fica bom.
+>
+> ⚠️ **A tabela também trocava a cor do STOP por vermelho.** Ele é **preto**: vermelho, em painel, é cor de emergência, e só o cogumelo pode usá-la.
 
 > ⚠️ **Verifique a profundidade atrás da porta.** O botão cogumelo com **2 blocos de contato empilhados** ocupa ~70 mm atrás da chapa. Confirme que ele não colide com o trilho DIN 2 (que está a Y = 210–300 no backplate — exatamente atrás da emergência em Y = 195). **Se colidir, desloque a emergência para X = 60** (fora da área ocupada do trilho) ou aumente a profundidade do painel.
 
@@ -485,9 +488,8 @@ Painel industrial sem identificação é painel reprovado. Aplique etiquetas gra
 |---|---|
 | Seccionadora | `Q1 — GERAL 24 V` · `0 = DESL / 1 = LIG` |
 | Emergência | `S0 — EMERGÊNCIA` |
-| START | `S1 — LIGA` |
+| LIGAR | `S1 — LIGA` |
 | STOP | `S2 — DESLIGA` |
-| REARME | `S3 — REARME` |
 | LEDs | `H1 RUN` · `H2 FRIO` · `H3 QUENTE` · `H4 FALHA` |
 | Porta (canto superior) | `⚠ RISCO ELÉTRICO — PAINEL DE COMANDO CF-01` |
 | Porta (canto inferior) | `Alimentação: 24 Vcc · Consumo: 105 W` |
@@ -498,7 +500,7 @@ Painel industrial sem identificação é painel reprovado. Aplique etiquetas gra
 
 | Furo / recorte | Medida | Qtd | Face | Função |
 |---|---|---:|---|---|
-| Botões, LEDs e seccionadora | Ø 22 mm | **9** | Porta | Ver §20.4 — inclui o REARME azul |
+| Botões, LEDs e seccionadora | Ø 22 mm | **8** | Porta | Ver §20.4 — 3 botoeiras + 4 sinaleiros + a seccionadora |
 | Recorte da tela **ES3C28P** | **47 × 61 mm** | 1 | Porta | IHM |
 
 > ⚠️ **O recorte MUDOU de tamanho e de orientação.** A Nextion 3.2" era **paisagem**, 98 × 57 mm. A ES3C28P é **retrato**: o módulo mede 50 × 86 × 10,6 mm e a janela visível do toque é 45,2 × 59,45 mm. O recorte fica **47 × 61 mm em pé**.
@@ -588,17 +590,18 @@ Elevação de temperatura: ΔT = 7 / (2,8 × 0,76) ≈ 3,3 K
  3. Marcar e furar o BACKPLATE: trilhos (12×Ø5) e canaletas (16×Ø4)
  4. Marcar e furar a BASE: 3× PG9 + 2× PG7 (5 entradas separadas) + 4× fixação na maquete
  5. Furar a LATERAL DIREITA: Ø 6,5 mm em X=100 / Y=430 (parte alta) para o conector SMA de painel
- 6. Imprimir o gabarito 1:1 e furar a PORTA (8× Ø22 + recorte 98×57)
+ 6. Imprimir o gabarito 1:1 e furar a PORTA (8× Ø22 + recorte 47×61)
  7. Lixar e pintar tudo (cinza RAL 7035 ou a cor escolhida)
  8. Fixar os 3 trilhos DIN (M5×10) nas alturas Y = 125 / 255 / 385
  9. Fixar as canaletas horizontais e as 2 verticais
 10. Encaixar os componentes nos trilhos (SEM CABOS AINDA):
-      Trilho 1: BD-POT, BD-AUX, BD-5V, BD-24V, BD-0V
-      Trilho 2: BTS #1, BTS #2 (JÁ COM os 10 kΩ soldados), KA1, KA2
-      Trilho 3: Arduino+Shield, PI-1, DNLCB30+ESP32, SD+RTC
+      Trilho 1: BD-POT, BD-AUX, BD-24V, BD-5V, BD-0V, KM1
+      Trilho 2: BTS #1, BTS #2 (JÁ COM os 10 kΩ soldados), F-P,
+                DNLCB30+ESP32, caixa DIN 6M do KA1+KA2+KA3
+      Trilho 3: Arduino+Shield, AD-1, BS-1, SC-1, SV-1, BD-0V-B, SD+RTC
 11. Instalar as travas-fim de trilho nas duas pontas de cada trilho
-12. Montar na porta: tela ES3C28P, seccionadora, emergência, START, STOP,
-      4 sinaleiros 22 mm de 24 V
+12. Montar na porta: tela ES3C28P, seccionadora, emergência, LIGAR, STOP,
+      4 sinaleiros 22 mm de 5 V
 13. Instalar os 3 prensa-cabos na base e o **conector SMA de painel na lateral direita**
     (porca + arruela de pressão por dentro; não force — é latão e espana fácil)
 14. Fixar o cooler de 40 mm na canaleta sob o trilho 2

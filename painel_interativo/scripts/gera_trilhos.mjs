@@ -1,8 +1,8 @@
 /**
  * Gera a §20.3 do Doc 20 a partir do painel_completo.js.
  *
- * ⭐ Existe porque a §20.3 tinha derivado: falava em K0/K1, punha o KA1 e o
- *    KA2 no trilho 2 e não conhecia o KA3/KA4. Tabela escrita à mão sobre um
+ * ⭐ Existe porque a §20.3 tinha derivado: falava em K0/K1, punha os relés no
+ *    KM1 no trilho 2 e não conhecia o KA1/KA2. Tabela escrita à mão sobre um
  *    modelo que os validadores conferem sempre acaba mentindo. Esta não pode.
  *
  *    Uso:  node scripts/gera_trilhos.mjs        (confere e avisa se mudou)
@@ -24,8 +24,8 @@ const linhas = ['## 20.3 Ocupação de cada trilho', '',
   '> [`painel_completo.js`](../painel_interativo/src/data/painel_completo.js), que é o',
   '> mesmo modelo que o `npm run valida` confere. **Não edite à mão** — edite o modelo',
   '> e rode o gerador. Ela existe assim porque a versão escrita à mão tinha derivado:',
-  '> falava em `K0`/`K1`, punha o KA1 e o KA2 no trilho errado e não conhecia o KA3',
-  '> nem o KA4.', ''];
+  '> falava em `K0`/`K1`, punha os relés no trilho errado e não conhecia o KA1',
+  '> nem o KA2.', ''];
 
 for (const tr of [1, 2, 3]) {
   const comps = COMPONENTES.filter((c) => c.trilho === tr).sort((a, b) => a.x - b.x);
@@ -38,8 +38,8 @@ for (const tr of [1, 2, 3]) {
 
   let i = 0, fim = 0;
   for (const c of comps) {
-    // o `nome` do modelo ja comeca com o id ("KA3 - VETO DO..."): tira a
-    // repeticao para a tabela nao ficar "**KA3** - KA3 - ..."
+    // o `nome` do modelo ja comeca com o id ("KA1 - VETO DO..."): tira a
+    // repeticao para a tabela nao ficar "**KA1** - KA1 - ..."
     const nome = c.nome.replace(new RegExp('^' + c.id + '\\s*[—-]\\s*'), '')
       .replace(/\|/g, '\|');
     linhas.push(`| ${++i} | **${c.id}** — ${nome} | ${c.x} | ${c.largura} mm | ${c.x + c.largura} |`);
