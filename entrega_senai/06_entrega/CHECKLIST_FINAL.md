@@ -26,6 +26,8 @@
 - [ ] Texto **justificado**, estilo regular
 - [ ] Espaçamento entre linhas **1,5**
 - [ ] ⚠️ **Nenhuma** tabela, gráfico, figura, negrito ou itálico no corpo do texto
+- [x] ⚠️ **Sem primeira pessoa** — linguagem impessoal, sem gírias (conferido: 0 ocorrências)
+- [x] **As 3 competências do curso** identificadas — ver [`RESPOSTAS_AOS_EXERCICIOS.md`](RESPOSTAS_AOS_EXERCICIOS.md)
 - [ ] Título do **projeto** (não o da demanda)
 - [ ] Nome completo de todos os integrantes e do instrutor
 - [ ] **Nota de rodapé** na 1ª página com curso, unidade, estado e e-mails

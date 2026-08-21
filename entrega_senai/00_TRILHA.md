@@ -55,6 +55,7 @@
 | [`04_pitch/ROTEIRO_VIDEO_PROTOTIPO.md`](04_pitch/ROTEIRO_VIDEO_PROTOTIPO.md) | O segundo vídeo (1 min 30) — o que mostrar e em que ordem | ✅ pronto · **gravar é você** |
 | [`05_banner/BANNER_CONTEUDO.md`](05_banner/BANNER_CONTEUDO.md) | Os 4 blocos do banner, já no tamanho certo para colar no modelo | ✅ pronto · **arte é você** |
 | [`06_entrega/CHECKLIST_FINAL.md`](06_entrega/CHECKLIST_FINAL.md) | Conferência item a item antes de entregar | ✅ pronto |
+| [`06_entrega/RESPOSTAS_AOS_EXERCICIOS.md`](06_entrega/RESPOSTAS_AOS_EXERCICIOS.md) | ⭐ **Todas as perguntas dos cadernos**, respondidas — inclusive as 3 competências do curso e o Registro de Descobertas | ✅ pronto |
 
 ---
 

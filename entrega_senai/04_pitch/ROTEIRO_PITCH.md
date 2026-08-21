@@ -1,4 +1,4 @@
-# Roteiro do Vídeo Pitch — 2 min 40 s
+# Roteiro do Vídeo Pitch — 2 min 50 s
 
 > 📎 Regras (Guia §2.6 + caderno de Pitch): **entre 2 e 3 minutos** · YouTube **não listado** ·
 > **com legendas** · pelo menos **1 integrante aparecendo** · celular **na horizontal** ·
@@ -96,16 +96,19 @@
 
 ---
 
-### 🎬 CENA 6 · Chamada à ação · 2:25 – 2:40
+### 🎬 CENA 6 · Chamada à ação · 2:25 – 2:50
 
 **Imagem:** a equipe inteira, com o protótipo.
 
 > "Um ensaio que ninguém acompanha é um ensaio em que não dá para confiar. O nosso faz o
 > contrário: ele mostra o que aconteceu, quando aconteceu e com qual dispositivo.
 >
+> Venham ver o painel funcionando no laboratório da nossa unidade — e tragam uma placa para
+> ensaiar. Em três minutos a gente mostra o sistema acusando qual posição falhou.
+>
 > Somos [nomes], do Curso Técnico em Eletrotécnica da Firjan SENAI. Obrigado."
 
-⏱️ *~15 s*
+⏱️ *~25 s · o caderno pede uma chamada CONCRETA: um convite, não um agradecimento.*
 
 ---
 
@@ -118,8 +121,8 @@
 | 3 · Solução | 45 s |
 | 4 · Segurança | 25 s |
 | 5 · Investimento | 25 s |
-| 6 · Chamada | 15 s |
-| **TOTAL** | **2 min 40 s** ✅ dentro de 2–3 min |
+| 6 · Chamada | 25 s |
+| **TOTAL** | **2 min 50 s** ✅ dentro de 2–3 min |
 
 ---
 

@@ -2,7 +2,8 @@
 
 > ⚠️ **Como usar:** o texto abaixo vai para o modelo `Resumo Expandido_modelo.docx` do SENAI.
 > **Times New Roman 12 · justificado · espaçamento 1,5 · sem negrito, itálico, tabela, gráfico
-> ou figura no corpo.** Os títulos das seções (INTRODUÇÃO, METODOLOGIA, RESULTADOS, CONCLUSÃO)
+> ou figura no corpo.** ⚠️ E **sem primeira pessoa** — o caderno da Biblioteca exige
+> linguagem impessoal: escreva "foi desenvolvida", nunca "desenvolvemos". Os títulos das seções (INTRODUÇÃO, METODOLOGIA, RESULTADOS, CONCLUSÃO)
 > já vêm formatados no modelo.
 >
 > 📊 **Contagem: 680 palavras** (limite 600–700, sem contar título, autores, palavras-chave,
@@ -46,7 +47,7 @@ cinquenta dispositivos energizados ao mesmo tempo, a falha de um passava desperc
 fim do ciclo, quando já não era possível determinar quando nem por que ele parou. O resultado
 era o descarte do ensaio inteiro.
 
-Desenvolvemos uma modernização que preserva o controle existente e acrescenta supervisão
+Foi desenvolvida uma modernização que preserva o controle existente e acrescenta supervisão
 remota, rastreabilidade e detecção imediata de falha. A relevância está em três benefícios
 mensuráveis: o ensaio deixa de exigir presença física, pois a telemetria chega ao operador em
 tempo real; cada evento passa a ter data e hora registradas, permitindo reconstituir o
