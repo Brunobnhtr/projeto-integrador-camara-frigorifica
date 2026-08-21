@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef } from 'react';
 import ConjuntoRele from './ConjuntoRele';
+import BorneDeFiltro from './BorneDeFiltro';
 import PlacaReal from './PlacaReal';
 import { PINAGENS } from '../data/pinagens';
 import { PRENSAS_PAINEL, FIOS, ETAPAS, CORES } from '../data/fiacao';
@@ -26,6 +27,11 @@ const PLACAS = {
      do painel, porque a vista do painel só sabe desenhar FIO. */
   KM1:  { tipo: 'rele', comp: 'KM1',  rotulo: 'a base, o selo e o diodo D1 da bobina' },
   KA123: { tipo: 'rele', comp: 'KA123', rotulo: 'os 3 canais, os pull-downs R10/R11/R12 e os diodos D2 e D3' },
+  /* ⭐ 'borne' = três bornes de passagem e dois capacitores parafusados
+     neles. Não é placa nem módulo comprado, e era o único item da lista
+     que ninguém conseguia imaginar olhando "BS-1 · 3/3 terminais". */
+  'BS-1': { tipo: 'borne', comp: 'BS-1',
+            rotulo: 'os 3 bornes, os 2 capacitores e quem entra em cada parafuso' },
 };
 import {
   CAIXA, PLACA, TRILHOS, COMPONENTES, CANALETAS, CANALETAS_PORTA, LATERAIS,
@@ -757,7 +763,7 @@ export default function VistaPainelInterno() {
                 <div style={{ background: '#fffbe6', border: '1px solid #f5a524',
                               borderRadius: 5, padding: 9, marginBottom: 10,
                               fontSize: 11.5, lineHeight: 1.55 }}>
-                  <b>{f.nome}</b> · {f.corNome}
+                  <b>{f.nome ?? f.diz}</b> · {f.corNome}
                   <div style={{ marginTop: 4 }}>{f.diz}</div>
                   <div style={{ marginTop: 5, paddingTop: 5,
                                 borderTop: '1px solid #f5a52444' }}>{f.porque}</div>
@@ -836,7 +842,7 @@ export default function VistaPainelInterno() {
             <>
               <div style={{ background: f.cor, color: '#fff', padding: '13px 16px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <b style={{ fontSize: 16 }}>Fio {f.n} · {f.nome}</b>
+                  <b style={{ fontSize: 16 }}>Fio {f.n} · {f.nome ?? f.diz}</b>
                   <button onClick={() => setFio(null)} style={{
                     background: '#ffffff33', color: '#fff', border: 'none',
                     borderRadius: 5, width: 25, height: 25, cursor: 'pointer' }}>×</button>
@@ -933,13 +939,15 @@ export default function VistaPainelInterno() {
                 <button onClick={() => setPlaca(PLACAS[sel.id])} style={{
                   display: 'block', width: '100%', marginBottom: 13, cursor: 'pointer',
                   background: PLACAS[sel.id].tipo === 'ilhada' ? '#5f3dc4'
-                    : PLACAS[sel.id].tipo === 'rele' ? '#c2410c' : '#1d3557',
+                    : PLACAS[sel.id].tipo === 'rele' ? '#c2410c'
+                    : PLACAS[sel.id].tipo === 'borne' ? '#1971c2' : '#1d3557',
                   color: '#fff', border: 'none', borderRadius: 7, padding: '11px 12px',
                   textAlign: 'left',
                 }}>
                   <div style={{ fontSize: 13, fontWeight: 700 }}>
                     {PLACAS[sel.id].tipo === 'ilhada' ? '🔧 Ver a placa e como soldar'
                       : PLACAS[sel.id].tipo === 'rele' ? '🔌 Ver o borne e os componentes nele'
+                      : PLACAS[sel.id].tipo === 'borne' ? '🔎 Ver como é o borne e o que entra em cada parafuso'
                       : '🔍 Ver o módulo e a pinagem real'}
                   </div>
                   <div style={{ fontSize: 11, opacity: 0.82, marginTop: 2 }}>
@@ -1019,6 +1027,8 @@ export default function VistaPainelInterno() {
                          onFechar={() => setPlaca(null)} />
           ) : placa.tipo === 'rele' ? (
             <ConjuntoRele compId={placa.comp} onFechar={() => setPlaca(null)} />
+          ) : placa.tipo === 'borne' ? (
+            <BorneDeFiltro onFechar={() => setPlaca(null)} />
           ) : (
             <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
               <div style={{ background: '#1d3557', color: '#fff', padding: '12px 16px',

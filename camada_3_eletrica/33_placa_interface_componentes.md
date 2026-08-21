@@ -401,6 +401,19 @@ entram três condutores de uma vez.
 | `R3` 4,7 kΩ | **AD-1** — adaptador do DS18B20 | o pull-up vem dentro; a sonda vira três bornes |
 | `C1`, `C2` 100 nF | **BS-1** — três bornes de passagem | as pernas entram no parafuso, junto com o fio |
 
+> 📐 **O BS-1 tem desenho próprio no aplicativo.** Ele era o item mais difícil de imaginar da
+> lista — "BS-1 · 3/3 terminais" não diz nada a quem nunca viu um borne de passagem. No painel
+> interativo, clique no **BS-1** → *Ver como é o borne e o que entra em cada parafuso*: ele mostra
+> a barra de latão que faz dos dois lados **um nó só**, os **três condutores** de cada nó (o fio que
+> chega, o que sai e a perna do capacitor), por que o capacitor fica do lado do **Arduino** e o que
+> medir depois de apertar. A tabela de condutores é **gerada da fiação**, então não pode divergir.
+
+> ⭐ **Trinta segundos de bancada que valem a explicação:** são **3 condutores** em cada nó e **2
+> parafusos** no borne. Não force os três no mesmo: o fio que **chega** vai num parafuso; o que
+> **sai** e a **perna do capacitor** vão no outro. O aperto final é com todos dentro — apertar em
+> dois tempos deixa um deles frouxo, e fio frouxo em nó de medição vira leitura que oscila sem
+> motivo aparente.
+
 ⚠️ **Os dois números que mudaram, e que o guia manda medir antes de ligar:**
 
 - **A saída do SV-1 dá ~4,8 V com 24 V na entrada** (o divisor soldado dava 4,22 V). Para o `D25`,

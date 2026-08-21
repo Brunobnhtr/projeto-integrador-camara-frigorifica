@@ -130,7 +130,7 @@ export const FIOS_ETAPA3 = [
     aviso: '🔥 A SAÍDA É O CONTATO NC2, NÃO O NO2. Ao contrário do KA1, aqui o estado '
          + 'seguro é FECHADO: módulo sem energia, ventoinha girando (§31.14).' },
   { ...zero('D20', { comp: 'BS-1', via: '0V' }, { comp: 'BD-0V', via: 'Z6' },
-      'O 0 V da PI-1, que lá dentro vira o barramento de fio nu.'),
+      'O 0 V dos dois filtros de corrente — a perna de baixo do C1 e do C2.'),
     rota: ['CH-3x2', 'CV-dir', 'CH-base'] },
   { ...zero('D21', { comp: 'ESP32', via: '−' }, { comp: 'BD-0V', via: 'Z7' },
       'Retorno do DNLCB30.'), rota: ['CH-2x1', 'CV-esq', 'CH-base'] },
