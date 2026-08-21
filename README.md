@@ -23,6 +23,7 @@ desenhado onde cada resistor, diodo e LED do projeto se liga.
 | [`camada_5_integracao/`](camada_5_integracao/) | Montagem final e comissionamento |
 | [`desenhos/`](desenhos/) | Desenhos técnicos em SVG (unifilar, painel, poste, câmara…) |
 | [`painel_interativo/`](painel_interativo/) | ⭐ **O aplicativo**: os dados do projeto, os desenhos gerados deles, o **guia de montagem** e os validadores |
+| [`entrega_senai/`](entrega_senai/) | 🎓 **As entregas do Projeto Integrador**: resumo expandido, canvas, roteiros dos vídeos, banner e a pesquisa formal — comece pela [TRILHA](entrega_senai/00_TRILHA.md) |
 | [`referencias/`](referencias/) | Relatórios externos, guardados como fonte |
 
 ---

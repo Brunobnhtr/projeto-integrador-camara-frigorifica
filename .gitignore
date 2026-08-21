@@ -22,3 +22,10 @@ desktop.ini
 
 # ─── Sessão local do Claude Code (não faz sentido versionar) ─────────────
 .claude/settings.local.json
+
+# ── Material institucional do SENAI (kit do aluno) ───────────────────
+# São ~200 MB de PDF e PPTX baixados do Drive da unidade: material de
+# terceiros, que não é produzido aqui e não deve inchar o repositório.
+# O que interessa deles — as REGRAS de cada entrega — está lido e citado
+# em entrega_senai/, com a fonte indicada em cada arquivo.
+2026 - KIT PROJETO INTEGRADOR - ALUNO*/

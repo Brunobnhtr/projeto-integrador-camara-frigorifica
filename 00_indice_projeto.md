@@ -163,6 +163,23 @@ npm run valida     # os 10 validadores — o mesmo que trava a publicação
 ---
 
 
+## 🎓 A entrega acadêmica — o que o SENAI cobra
+
+> A pasta [`entrega_senai/`](entrega_senai/) guarda **as entregas do Projeto Integrador**, que
+> são outra coisa do que a documentação técnica: resumo expandido, canvas, pitch, banner e a
+> pesquisa formal. Comece pela [**TRILHA**](entrega_senai/00_TRILHA.md) — ela diz o que está
+> pronto, o que falta e o que só você pode fazer.
+
+| Entrega | Regra que não se quebra | Onde |
+|---|---|---|
+| **Resumo Expandido** | 600–700 palavras · Times 12 · sem figura no corpo | [`02_resumo_expandido/`](entrega_senai/02_resumo_expandido/) — ✅ **680 palavras**, e o `.docx` já sai do modelo oficial |
+| **Canvas** | um dos dois, preenchido | [`03_canvas/`](entrega_senai/03_canvas/) — ✅ os dois prontos |
+| **Vídeo Pitch** | 2–3 min · YouTube não listado · legendado | [`04_pitch/`](entrega_senai/04_pitch/) — roteiro cena a cena |
+| **Vídeo do protótipo** | até 1 min 30 · narração + legendas | [`04_pitch/`](entrega_senai/04_pitch/) — ⚠️ é um **segundo** vídeo |
+| **Banner** | 90 × 120 cm · lona com tubete | [`05_banner/`](entrega_senai/05_banner/) — textos prontos |
+| **Pesquisa** | anterioridade (INPI) + similares + ABNT | [`01_pesquisa/`](entrega_senai/01_pesquisa/) |
+
+
 ## 🔤 Como as coisas se chamam
 
 ⭐ **Um nome, um dono.** Até 18/08/2026 o projeto chamava três coisas diferentes de `R1`: um
