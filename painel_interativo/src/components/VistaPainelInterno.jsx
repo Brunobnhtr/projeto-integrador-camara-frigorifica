@@ -1,6 +1,8 @@
 import { useState, useMemo, useRef } from 'react';
 import ConjuntoRele from './ConjuntoRele';
 import BorneDeFiltro from './BorneDeFiltro';
+import FichaDiscreto from './FichaDiscreto';
+import { porHost } from '../data/discretos';
 import PlacaReal from './PlacaReal';
 import { PINAGENS } from '../data/pinagens';
 import { PRENSAS_PAINEL, FIOS, ETAPAS, CORES } from '../data/fiacao';
@@ -55,6 +57,7 @@ export default function VistaPainelInterno() {
   const [zoom, setZoom] = useState(3.0);
   const [soUsados, setSoUsados] = useState(false);
   const [placa, setPlaca] = useState(null);   // desenho da placa em tela cheia
+  const [discreto, setDiscreto] = useState(null); // ficha de um componente solto
   const [verFiacao, setVerFiacao] = useState(true);
   const [tampaFechada, setTampa] = useState(false);
   const [pecaCam, setPecaCam] = useState(null);
@@ -987,6 +990,36 @@ export default function VistaPainelInterno() {
                   🔧 <b>Soldado dentro da placa</b> — não tem borne:<br />{sel.interno}
                 </div>
               )}
+              {/* ⭐ O QUE SE PENDURA NESTE COMPONENTE.
+                  A pergunta "e os componentes soltos, aparecem em todo
+                  dispositivo?" nasceu daqui: o botão de desenho só existe
+                  para alguns, mas resistor e diodo se penduram em vários.
+                  Esta lista sai do cadastro — peça nova aparece sozinha,
+                  em QUALQUER componente. */}
+              {porHost(sel.id).length > 0 && (
+                <div style={{ marginBottom: 13 }}>
+                  <div style={{ fontSize: 11, color: '#868e96', letterSpacing: 0.4,
+                                marginBottom: 5 }}>
+                    O QUE SE PENDURA NESTE COMPONENTE ({porHost(sel.id).length})
+                  </div>
+                  {porHost(sel.id).map(d => (
+                    <button key={d.id} onClick={() => setDiscreto(d)} style={{
+                      display: 'block', width: '100%', textAlign: 'left', cursor: 'pointer',
+                      background: '#fff9db', border: '1px solid #ffe066', borderRadius: 6,
+                      padding: '8px 10px', marginBottom: 4, font: 'inherit',
+                    }}>
+                      <div style={{ display: 'flex', gap: 8, alignItems: 'baseline' }}>
+                        <b style={{ fontFamily: 'monospace', fontSize: 13,
+                                    color: '#8a6116' }}>{d.ref}</b>
+                        <span style={{ fontSize: 11.5, color: '#5c4a00' }}>{d.peca}</span>
+                      </div>
+                      <div style={{ fontSize: 10.5, color: '#8a6116', marginTop: 2 }}>
+                        {d.pernas.map(pp => pp.vai.via).join(' ↔ ')} · clique para a ficha
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
               {PLACAS[sel.id] && (
                 <button onClick={() => setPlaca(PLACAS[sel.id])} style={{
                   display: 'block', width: '100%', marginBottom: 13, cursor: 'pointer',
@@ -1072,6 +1105,20 @@ export default function VistaPainelInterno() {
       </aside>
 
       {/* ── a placa, em tela cheia ── */}
+      {discreto && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 160, background: '#000a',
+                      display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+                      padding: 24, overflow: 'auto' }}
+             onClick={() => setDiscreto(null)}>
+          <div style={{ maxWidth: 760, width: '100%' }} onClick={e => e.stopPropagation()}>
+            <FichaDiscreto d={discreto} onFechar={() => setDiscreto(null)} />
+            <button onClick={() => setDiscreto(null)} style={{
+              marginTop: 10, background: '#fff', border: 'none', borderRadius: 6,
+              padding: '8px 16px', cursor: 'pointer', fontSize: 13 }}>fechar</button>
+          </div>
+        </div>
+      )}
+
       {placa && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 150, background: '#eef1f5' }}>
           {placa.tipo === 'ilhada' ? (
