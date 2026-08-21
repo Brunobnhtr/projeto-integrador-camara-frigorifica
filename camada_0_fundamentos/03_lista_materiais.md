@@ -133,11 +133,17 @@ barramentos** (BD-24V, BD-POT, BD-5V, BD-AUX e os dois blocos de 0 V) e de **4 f
 (F1 10 A, F2 2 A, F3 2 A e o F-P de 100 mA). Se os dois módulos cobrirem isso, saem itens da
 lista; se não, eles complementam.
 
-**4 · O adaptador DIN do Mega (R$ 113,71) é o item mais caro depois do PTC — e é opcional.**
-O `DNMEGA1` põe o Arduino no trilho e transforma os pinos em bornes de parafuso. Ele combina com
-a decisão de **não soldar nada no painel**, e resolve a fixação do Mega. Mas o projeto funciona
-sem ele, com o Mega parafusado no fundo e cabo com conector nos pinos. **É conforto de montagem,
-não requisito** — decida pelo orçamento.
+**4 · ⭐ O adaptador DIN do Mega (R$ 113,71) VIROU REQUISITO — era listado como opcional.**
+O `DNMEGA1` põe o Arduino no trilho e transforma cada pino num borne de parafuso. Ele sempre foi
+o que a decisão de **não soldar nada no painel** pressupõe — e o modelo do painel já o assumia
+(82 bornes, 134 × 96 mm), enquanto esta lista o chamava de conforto. **A contradição acabou:**
+
+- os capacitores `C1` e `C2` moram nos bornes `A0`–`GND2` e `A1`–`GND2` do próprio adaptador
+  ([Doc 33 §33.10](../camada_3_eletrica/33_placa_interface_componentes.md));
+- sem ele, os pinos do Mega são headers fêmea: não há parafuso onde prender a perna do capacitor,
+  e voltaria a ser preciso um bloco de bornes só para isso — com o componente pendurado no ar.
+
+💰 **O que ele devolve:** os 3 bornes do BS-1, os fios `S5`, `S6` e `D20`, e 24 mm do trilho 3.
 
 **5 · Os 6 filamentos COB LED de 3 V não estão no projeto.**
 São R$ 70 em filamentos de letra, DC 3 V. Se forem para letreiro ou iluminação cenográfica da
@@ -169,7 +175,7 @@ Nada disso aparece no carrinho, e tudo é necessário para montar:
 | Falta | Qtd | Onde entra |
 |---|---:|---|
 | ⭐ **Sinaleiro 22 mm de 5 V** | 4 | RUN, COOL, HEAT, FALHA — acesos direto pelo pino do Arduino |
-| **Bornes de passagem DIN 2,5 mm²** | 6 | O **BS-1** (filtros) e reservas. ⚠️ 2,5 mm²: em dois deles entram 3 condutores |
+| **Bornes de passagem DIN 2,5 mm²** | 4 | 🔧 **Só reservas** — o BS-1 saiu: os capacitores foram para os bornes do próprio Mega ([Doc 33 §33.10](../camada_3_eletrica/33_placa_interface_componentes.md)) |
 | **Blocos de distribuição DIN** | ver ponto 3 | BD-24V, BD-POT, BD-5V, BD-AUX, BD-0V e BD-0V-B |
 | **Botoeira cogumelo com trava** | 1 | **S0** — a emergência |
 | **Botoeiras 22 mm** (verde e preta) | 2 | S1 LIGAR · S2 STOP |
@@ -998,8 +1004,8 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 |---|---:|---|---:|
 | ⭐ **Módulo sensor de tensão 0–25 V** | 1 (pacote de 5) | **SV-1** — substituiu o divisor `R1 + R2 + C3`. Divisor 30 kΩ / 7,5 kΩ com borne de parafuso. ⚠️ **Divide por 5** (24 V → 4,8 V), e o soldado dividia por 5,68 (4,22 V): **meça a saída antes de ligar no D25** | 16,07 |
 | ⭐ **DS18B20 à prova d'água + adaptador com pull-up** | 2 | **AD-1** — substituiu o `R3`. ⚠️ **O pull-up de 4,7 kΩ está no ADAPTADOR, não na sonda.** Se comprar só a sonda, compre também 1 resistor de 4,7 kΩ. **Meça ao receber:** ~4,7 kΩ entre `DAT` e `VCC` | 6,90 |
-| ⭐ **Borne de passagem DIN 2,5 mm²** | 6 | **BS-1** — 3 em uso (`A0`, `A1`, `0V`) + 3 reserva. ⚠️ **2,5 mm², não 1,5:** em dois deles entram **três** condutores (fio do BTS, fio do Arduino e perna do capacitor) | — |
-| **Capacitor cerâmico 100 nF** | 4 | `C1` e `C2` + reservas — parafusados no BS-1, sem solda | — |
+| ~~Borne de passagem DIN 2,5 mm² (BS-1)~~ | ~~6~~ | 🗑️ **NÃO SÃO MAIS NECESSÁRIOS** para os filtros. O `C1` e o `C2` foram para os bornes `A0`, `A1` e `GND2` do adaptador do Mega — ali o `A0` é **vizinho** do `GND2` (~3,9 mm) e a perna do cerâmico entra sem esticar. No BS-1 as duas pernas caíam em bornes a **30 mm** um do outro, penduradas no ar. ⭐ **Compre 4 assim mesmo, como reserva** — borne de passagem 2,5 mm² resolve emenda de qualquer fio. Ver [Doc 33 §33.10](../camada_3_eletrica/33_placa_interface_componentes.md) |
+| **Capacitor cerâmico 100 nF** | 4 | `C1` e `C2` + reservas — parafusados nos bornes do **Mega** (`A0`–`GND2` e `A1`–`GND2`), sem solda | — |
 | ⭐ **Módulo relé 1 canal 5 V, optoacoplado** | 4 | **`KA1`** (veto, contato `NO`), **`KA2`** (ventoinhas do radiador, contato `NC`) e ⭐ **`KA3`** (as 5 ventoinhas internas, contato `NO`) — **3 em uso + 1 reserva**. ⚠️ Exija *optoacoplador*, **jumper H/L** e a variante de **5 V** (a foto costuma ser da de 24 V). 💰 Relé de 8 pinos aqui seria R$ 75 de folga que ninguém usa — só o **KM1** precisa dos 10 A | 6,79 |
 | ⭐ **Caixa modular DIN 6 módulos (105 mm)** | 1 | Abriga os **três** módulos de relé empilhados, no trilho 2. ⚠️ **NÃO a de 4M:** 3 × 25,5 mm = 76,5 mm e a de 4M tem 70 mm. Mesmo assim o trilho 2 ficou mais folgado — o MV-1, que saiu, media 66 mm | — |
 | ⭐ **Resistor 10 kΩ · ¼ W** | 5 | `R10`, `R11` e ⭐ `R12` (pull-down dos `IN` dos três módulos) + `R8` e `R9` (soldados nos BTS7960). ⚠️ **É o que torna o fail-safe medível:** Arduino ausente ou fio rompido → `IN` em 0 V → potência cortada e ventoinha girando | — |
@@ -1015,7 +1021,7 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 >
 > | Lugar | Peças |
 > |---|---|
-> | Bornes do **BS-1** | `C1`, `C2` (100 nF) |
+> | Bornes do **adaptador do Mega** | `C1`, `C2` (100 nF), entre `A0`/`A1` e o `GND2` vizinho |
 > | Bornes dos relés | `D1` no KM1 · `R10`, `R11` e `R12` nos três módulos |
 > | Dentro dos **BTS7960** | `R8`, `R9` (10 kΩ, soldados no módulo) |
 > | Na **maquete** | `R4`–`R7` (220 Ω) + 4 LEDs brancos, nas bases dos postes |

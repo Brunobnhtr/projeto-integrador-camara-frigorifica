@@ -421,11 +421,10 @@ O projeto declarava um **PG9** ali, com "capacidade: 14 fios" escrito à mão. R
 | 1 | **MEGA** — o cérebro: PID, proteções e intertravamento | 32 | 134 mm | 166 |
 | 2 | **SV-1** — módulo sensor de tensão (vigia do 24 V) | 176 | 30 mm | 206 |
 | 3 | **AD-1** — adaptador do DS18B20 (com pull-up) | 210 | 32 mm | 242 |
-| 4 | **BS-1** — bornes dos filtros de corrente | 246 | 24 mm | 270 |
-| 5 | **SC-1** — sensor de corrente da posição de ensaio | 274 | 40 mm | 314 |
-| 6 | **BD-0V-B** — retornos da eletrônica (trilho 3) | 318 | 63 mm | 381 |
-| 7 | **RTC** — RTC DS3231 — data e hora reais para o log | 385 | 35 mm | 420 |
-| | **Ocupação total** | | **388 mm** | livre até 458 — sobram **38 mm** |
+| 4 | **SC-1** — sensor de corrente da posição de ensaio | 246 | 40 mm | 286 |
+| 5 | **BD-0V-B** — retornos da eletrônica (trilho 3) | 294 | 63 mm | 357 |
+| 6 | **RTC** — RTC DS3231 — data e hora reais para o log | 365 | 35 mm | 400 |
+| | **Ocupação total** | | **368 mm** | livre até 458 — sobram **58 mm** |
 
 ## 20.4 Layout da porta (vista externa)
 
@@ -598,7 +597,7 @@ Elevação de temperatura: ΔT = 7 / (2,8 × 0,76) ≈ 3,3 K
       Trilho 1: BD-POT, BD-AUX, BD-24V, BD-5V, BD-0V, KM1
       Trilho 2: BTS #1, BTS #2 (JÁ COM os 10 kΩ soldados), F-P,
                 DNLCB30+ESP32, caixa DIN 6M do KA1+KA2+KA3
-      Trilho 3: Arduino+Shield, AD-1, BS-1, SC-1, SV-1, BD-0V-B, SD+RTC
+      Trilho 3: Arduino+Shield, AD-1, SC-1, SV-1, BD-0V-B, SD+RTC
 11. Instalar as travas-fim de trilho nas duas pontas de cada trilho
 12. Montar na porta: tela ES3C28P, seccionadora, emergência, LIGAR, STOP,
       4 sinaleiros 22 mm de 5 V

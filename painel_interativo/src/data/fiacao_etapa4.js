@@ -64,16 +64,15 @@ export const FIOS_ETAPA4 = [
          + 'paradas — aceitável porque, sem Arduino, o KA1 também abriu e a Peltier não '
          + 'está gerando calor.' },
 
-  /* ── o que a PI-1 devolve ao Arduino ──────────────────────────────── */
-  { ...ana('S5', { comp: 'BS-1', via: 'A0' }, meg('A0'),
-      'A corrente do BTS #1, já filtrada pelo C1.'),
-    nome: 'IS do BTS #1 → A0', rota: ['CH-topo', 'CV-dir', 'CH-3x2'],
-    porque: '⭐ O sinal mais sensível do painel: 0 a 5 V analógicos que o ADC lê em '
-          + 'passos de 4,88 mV. É por causa dele que a canaleta de sinal existe.' },
-  { ...ana('S6', { comp: 'BS-1', via: 'A1' }, meg('A1'),
-      'A corrente do BTS #2.'), nome: 'IS do BTS #2 → A1', rota: ['CH-topo', 'CV-dir', 'CH-3x2'] },
+  /* 🗑️ OS DOIS SALTOS INTERMEDIÁRIOS SUMIRAM (eram o S5 e o S6).
+     O IS de cada BTS ia primeiro a um borne no trilho (o BS-1), onde
+     ficava o capacitor, e só de lá seguia para o Mega. Com o adaptador
+     DIN, o próprio Arduino tem borne de parafuso em cada pino — e o
+     `A0` é VIZINHO do `GND2`. Então o capacitor mora no borne do próprio
+     A0, o IS vai direto do BTS ao Mega, e sumiram 3 fios (S5, S6 e o D20
+     do 0 V), 3 bornes e um componente da lista. Doc 33 §33.6. */
   { ...sig('S7', { comp: 'AD-1', via: 'S' }, meg('D2'),
-      'O barramento 1-Wire do DS18B20 do radiador, já com o pull-up da PI-1.'),
+      'O barramento 1-Wire do DS18B20 do radiador, já com o pull-up do AD-1.'),
     nome: '1-Wire → D2', rota: ['CH-3x2', 'CV-dir', 'CH-topo'],
     aviso: '⚠️ Pulsos de microssegundos. Se este fio pegar ruído o sensor some do '
          + 'barramento e o firmware acusa CARGA_ABERTA sem haver defeito nenhum.' },
@@ -82,15 +81,20 @@ export const FIOS_ETAPA4 = [
     nome: 'vigia do 24 V → D25', rota: ['CH-3x2', 'CV-dir', 'CH-topo'] },
 
   /* ── o IS bruto dos BTS até a PI-1 ────────────────────────────────── */
-  { ...ana('S9', { comp: 'BTS1', via: 'R_IS' }, { comp: 'BS-1', via: 'A0' },
-      'Saída de corrente espelhada do BTS #1, indo filtrar na PI-1.'),
-    nome: 'IS bruto do BTS #1', rota: ['CH-3x2', 'CV-dir', 'CH-topo'],
+  { ...ana('S9', { comp: 'BTS1', via: 'R_IS' }, { comp: 'MEGA', via: 'A0' },
+      'Saída de corrente espelhada do BTS #1 — vai direto ao A0 do Mega, onde o C1 a filtra.'),
+    /* ⭐ A ROTA ENCURTOU JUNTO. O IS ia até a canaleta de TOPO porque
+       terminava num bloco de bornes; agora ele morre no `A0`, que fica na
+       borda de BAIXO do adaptador — a mesma canaleta CH-3x2 por onde ele
+       já saía do BTS. Um trecho a menos dentro do painel, no fio mais
+       sensível que existe aqui. */
+    nome: 'IS bruto do BTS #1', rota: ['CH-3x2'],
     aviso: '🔥 ESTE FIO NASCE AO LADO DO QUE POLUI. Ele sai do próprio BTS, a '
          + 'centímetros dos 6 A chaveados. Prenda-o na canaleta de sinal já na saída '
          + 'e nunca o deixe correr paralelo ao B+ ou ao M+.' },
-  { ...ana('S10', { comp: 'BTS2', via: 'R_IS' }, { comp: 'BS-1', via: 'A1' },
+  { ...ana('S10', { comp: 'BTS2', via: 'R_IS' }, { comp: 'MEGA', via: 'A1' },
       'Idem para o BTS #2.'), nome: 'IS bruto do BTS #2',
-    rota: ['CH-3x2', 'CV-dir', 'CH-topo'] },
+    rota: ['CH-3x2'] },
 
   /* ── comando dos BTS ──────────────────────────────────────────────── */
   { ...sig('S11', meg('D5'), { comp: 'BTS1', via: 'R_PWM' },

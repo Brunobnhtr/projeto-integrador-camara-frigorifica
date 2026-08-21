@@ -385,16 +385,19 @@ ARDUINO MEGA 2560
 ### O filtro do pino IS
 
 ```
-   BTS7960 R_IS ──────────────┬──────────► Arduino A0
+   BTS7960 R_IS ──────────────┬──────────►  borne A0  do adaptador do Mega
                               │
-                            ──┴──  100 nF cerâmico
+                            ──┴──  C1 · 100 nF cerâmico
                               │
-                            ──┴──  0 V
+                              └──────────►  borne GND2 — o VIZINHO, ~3,9 mm ao lado
 
    ⚠️ O capacitor vai JUNTO AO ARDUINO, não junto ao BTS.
+   ⭐ E o retorno dele é o GND2 do próprio Arduino — não um fio até a barra.
 ```
 
-**Por quê:** o objetivo é filtrar o ruído captado **ao longo do cabo**, não só o gerado no driver. Colocando o capacitor na ponta do Arduino, ele forma um filtro passa-baixas com a resistência do próprio cabo e entrega uma tensão limpa ao conversor A/D.
+**Por quê (onde o ruído entra):** o objetivo é filtrar o ruído captado **ao longo do cabo**, não só o gerado no driver. Colocando o capacitor na ponta do Arduino, ele forma um filtro passa-baixas com a resistência do próprio cabo e entrega uma tensão limpa ao conversor A/D.
+
+**Por quê (onde ele se refere):** um filtro de entrada analógica tem de referenciar **o mesmo terra que o conversor usa para medir**. O `C1` chegou a ficar num bloco de bornes no trilho, com o retorno indo por ~30 cm de fio até o BD-0V — e fio, em alta frequência, é indutor: parte do ruído desviado voltava pela malha que sobrava. Nos bornes do adaptador, entre o capacitor e o A/D não há fio nenhum ([Doc 33 §33.10](33_placa_interface_componentes.md)).
 
 ---
 

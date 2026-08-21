@@ -31,11 +31,15 @@
    são declarados aqui mesmo, porque não há outro lugar que os conheça. */
 export const HOSTS = [
   {
-    id: 'BS-1', tipo: 'borne', nome: 'Bornes dos filtros de corrente',
-    onde: 'trilho 3 do painel, ao lado do Arduino', compPainel: 'BS-1',
-    diz: '⭐ AQUI HAVIA UMA PLACA. A PI-1 tinha 6 peças soldadas; o divisor e o pull-up '
-       + 'viraram módulos comprados, e sobraram dois capacitores — que entram parafusados '
-       + 'no borne, junto com o fio, do mesmo jeito que o D1 entra na bobina do KM1.',
+    id: 'MEGA', tipo: 'borne', nome: 'Bornes do adaptador DIN do Mega',
+    onde: 'trilho 3 — a borda de BAIXO do adaptador, entre os pinos analógicos',
+    compPainel: 'MEGA',
+    diz: '⭐ AQUI HAVIA UMA PLACA, E DEPOIS TRÊS BORNES. A PI-1 tinha 6 peças soldadas; '
+       + 'o divisor e o pull-up viraram módulos comprados, e sobraram dois capacitores. '
+       + 'Eles chegaram a morar num bloco próprio de bornes (o BS-1) — mas ali as duas '
+       + 'pernas de cada capacitor ficavam a 30 mm uma da outra, penduradas no ar entre '
+       + 'bornes diferentes. No adaptador do Mega o `A0` é VIZINHO do `GND2`: passo de '
+       + '~3,9 mm, que é o passo da perna de um cerâmico. O capacitor deixou de ficar no ar.',
   },
   {
     id: 'KM1', tipo: 'borne', nome: 'Base PTF08A do KM1',
@@ -154,28 +158,29 @@ export const ARRANJOS = {
    para que o validador possa conferir se o parafuso existe de verdade. */
 export const DISCRETOS = [
 
-  /* ────────── OS FILTROS DE CORRENTE, NOS BORNES DO BS-1 ────────── */
+  /* ───── OS FILTROS DE CORRENTE, NOS BORNES DO PRÓPRIO MEGA ───── */
   {
     id: 'PI1-C1', ref: 'C1', peca: 'Capacitor cerâmico 100 nF (marcado 104)',
-    tipo: 'capacitor', valor: '100 nF', qtd: 1, host: 'BS-1', arranjo: 'derivacao', polaridade: false,
+    tipo: 'capacitor', valor: '100 nF', qtd: 1, host: 'MEGA', arranjo: 'derivacao', polaridade: false,
     pernas: [
-      { nome: 'perna 1', vai: { comp: 'BS-1', via: 'A0' } },
-      { nome: 'perna 2', vai: { comp: 'BS-1', via: '0V' } },
+      { nome: 'perna 1', vai: { comp: 'MEGA', via: 'A0' } },
+      { nome: 'perna 2', vai: { comp: 'MEGA', via: 'GND2' } },
     ],
     papel: 'Filtra o ruído que o cabo do BTS #1 pegou no caminho até o Arduino',
     porque: 'O sinal IS sai limpo do driver e percorre 30 cm dentro de um painel que '
           + 'chaveia corrente. Sem o filtro, a leitura de A0 oscila e o firmware dispara '
           + 'alarme de falha com o sistema funcionando bem.',
     seFaltar: 'A leitura de A0 pula dezenas de contagens e o diagnóstico de corrente vira ruído.',
-    ensaio: 'Sistema energizado e em repouso: A0 estável dentro de ±2 contagens de A/D.',
+    ensaio: 'Sistema energizado e em repouso: A0 estável dentro de ±2 contagens de A/D. '
+          + '⚠ Antes de energizar: o capacitor entre A0 e GND2 (bornes VIZINHOS) sem esticar perna.',
     passo: 'B-03', fonte: 'Doc 33 §33.2',
   },
   {
     id: 'PI1-C2', ref: 'C2', peca: 'Capacitor cerâmico 100 nF (marcado 104)',
-    tipo: 'capacitor', valor: '100 nF', qtd: 1, host: 'BS-1', arranjo: 'derivacao', polaridade: false,
+    tipo: 'capacitor', valor: '100 nF', qtd: 1, host: 'MEGA', arranjo: 'derivacao', polaridade: false,
     pernas: [
-      { nome: 'perna 1', vai: { comp: 'BS-1', via: 'A1' } },
-      { nome: 'perna 2', vai: { comp: 'BS-1', via: '0V' } },
+      { nome: 'perna 1', vai: { comp: 'MEGA', via: 'A1' } },
+      { nome: 'perna 2', vai: { comp: 'MEGA', via: 'GND2' } },
     ],
     papel: 'O mesmo do C1, para o BTS #2',
     porque: 'Mesma razão do C1 — o cabo é outro, o problema é igual.',

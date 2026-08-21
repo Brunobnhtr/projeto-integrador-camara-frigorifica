@@ -217,24 +217,29 @@ export const PASSOS = [
            + 'trocar a sonda.',
   },
   {
-    id: 'B-03', fase: 'B', titulo: 'Parafusar os dois capacitores nos bornes', tempo: '15 min',
-    pegue: ['2 capacitores 100 nF (marcados 104)', '3 bornes de passagem 2,5 mm² para trilho',
-            'alicate de bico', 'chave de fenda pequena'],
-    antes: 'Bornes já encaixados no trilho 3 e identificados: A0, A1 e 0V.',
+    id: 'B-03', fase: 'B', titulo: 'Parafusar os dois capacitores nos bornes do Mega', tempo: '10 min',
+    pegue: ['2 capacitores 100 nF (marcados 104)', 'alicate de bico', 'chave de fenda pequena'],
+    antes: 'Arduino Mega já encaixado no adaptador DIN, com os bornes identificados.',
     discretos: ['PI1-C1', 'PI1-C2'],
     faca: [
-      'Dobre as pernas de cada capacitor em U, com a distância entre os dois bornes.',
-      'No borne A0 entram TRÊS condutores: o fio que vem do IS do BTS #1, o fio que vai para o '
-      + 'A0 do Arduino, e uma perna do C1.',
-      'A outra perna do C1 vai no borne 0V.',
-      'Repita para o C2 entre o borne A1 e o 0V.',
-      '⚠️ Aperte com os três condutores dentro de uma vez. Apertar em dois tempos deixa um frouxo.',
+      '⭐ Procure a borda de BAIXO do adaptador: a ordem é ... A2 A1 A0 GND2 IOREF ...',
+      'C1: uma perna no borne A0, a outra no GND2 — são VIZINHOS (~3,9 mm). '
+      + 'A perna de um cerâmico já vem com esse passo: não precisa esticar nem dobrar em U.',
+      'C2: uma perna no borne A1, a outra no MESMO GND2 — dois bornes de distância (~7,8 mm). '
+      + 'Abra as pernas com o bico, sem forçar a raiz do capacitor.',
+      'No A0 e no A1 entram DOIS condutores cada: o fio que vem do IS do BTS e a perna do capacitor.',
+      '⚠️ Aperte com os dois dentro de uma vez. Apertar em dois tempos deixa um frouxo.',
     ],
-    confira: 'Puxe cada fio e cada perna: nada sai. Ohmímetro entre A0 e 0V com o painel '
+    confira: 'Puxe cada fio e cada perna: nada sai. Ohmímetro entre A0 e GND2 com o painel '
            + 'desligado: resistência alta, nunca zero — zero é capacitor em curto ou perna '
            + 'encostando onde não devia.',
     seErrar: 'Perna frouxa no borne é o defeito que aparece só depois do transporte, e some '
            + 'quando você mexe para procurar. Puxe cada uma antes de fechar o painel.',
+    porque: '⭐ O CAPACITOR FICA NO PRÓPRIO ARDUINO, e não num bloco de bornes separado. '
+          + 'Dois motivos: as duas pernas alcançam bornes vizinhos, em vez de atravessar 30 mm '
+          + 'de ar entre bornes diferentes; e o filtro passa a referenciar o MESMO terra que o '
+          + 'conversor A/D usa para medir — que é o que um filtro de entrada analógica precisa '
+          + 'fazer. Doc 33 §33.6.',
   },
 
   /* ═══ FASE C · PAINEL E FIAÇÃO ═══════════════════════════════════

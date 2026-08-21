@@ -247,7 +247,7 @@ export const COMPONENTES = [
         via('A9'), via('A8', 1, 'RPM da ventoinha do radiador #2'), via('A7'), via('A6'),
         via('A5'), via('A4'), via('A3'),
         via('A2'),
-        via('A1', 1, 'PI-1 J2-2 — corrente do BTS #2'), via('A0', 1, 'PI-1 J2-1 — corrente do BTS #1'), via('GND2', 1, 'retorno dos 4 sinaleiros da porta — mesma referência do pino que os acende'), via('IOREF'),
+        via('A1', 1, '⭐ IS do BTS #2, direto — + a perna do C2 (100 nF) até o GND2'), via('A0', 1, '⭐ IS do BTS #1, direto — + a perna do C1 (100 nF) até o GND2, borne VIZINHO'), via('GND2', 1, '⭐ as pernas de baixo do C1 e do C2 + o retorno dos 4 sinaleiros da porta — é a referência do próprio A/D'), via('IOREF'),
         via('AREF'), via('RESET'), via('+3V3'),
         via('GND3', 1, '⭐ BD-0V · Z5 — o retorno da alimentação, no bloco POWER'),
         via('+5V', 1, 'BD-5V saída 1'), via('VIN'),
@@ -304,26 +304,6 @@ export const COMPONENTES = [
         { nome: '−', usa: true, para: 'BD-0V-B · Z24' },
       ]},
     ],
-  },
-  {
-    id: 'BS-1', nome: 'BS-1 — bornes dos filtros de corrente', trilho: 3,
-    resumoFuncao: '🔎 O QUE ELE E: tres bornes de trilho onde os dois capacitores de 100 nF ficam PARAFUSADOS, sem solda nenhuma. Cada IS dos BTS entra num borne, sai dali para o Arduino, e o capacitor desce desse mesmo ponto ate o borne de 0 V.',
-    x: 246, largura: 24, altura: 30, cor: '#1971c2',
-    nota: '⭐ Bornes de passagem 2,5 mm² no trilho. A perna do capacitor entra no parafuso junto '
-        + 'com o fio — é a mesma montagem do D1 na bobina do KM1, e pelo mesmo motivo: componente '
-        + 'no borne é medível, trocável e visível.',
-    grupos: [
-      { ref: 'NOS', lado: 'cima', legenda: 'Os dois nós de medição (2)', pinos: [
-        { nome: 'A0', usa: true, para: 'IS do BTS #1 + fio para o Mega A0 + perna do C1' },
-        { nome: 'A1', usa: true, para: 'IS do BTS #2 + fio para o Mega A1 + perna do C2' },
-      ]},
-      { ref: 'ZERO', lado: 'baixo', legenda: 'Retorno (1)', pinos: [
-        { nome: '0V', usa: true, para: 'as outras pernas do C1 e do C2 + fio ao BD-0V · Z6' },
-      ]},
-    ],
-    avisos: ['⚠️ TRÊS CONDUTORES NUM PARAFUSO SÓ (fio que chega, fio que sai e perna do '
-           + 'capacitor). Use borne de 2,5 mm² e dê o aperto final com os três dentro — apertar '
-           + 'em dois tempos deixa um deles frouxo.'],
   },
   {
     id: 'ESP32', nome: 'ESP32 — Wi-Fi, MQTT e dashboard remoto', trilho: 2,
@@ -392,7 +372,7 @@ export const COMPONENTES = [
   {
     id: 'SC-1', nome: 'SC-1 — sensor de corrente da posição de ensaio', trilho: 3,
     resumoFuncao: '🔎 O QUE ELE FAZ: responde UMA pergunta — passa corrente pelo equipamento da posicao de ensaio? Se passa, ele esta vivo. Se nao passa, ou queimou, ou o fusivel abriu, ou alguem desligou a chave. ⭐ Ele nao MEDE: ele DECIDE, e entrega a decisao num fio, direto num pino digital do Mega. O fio da posicao passa POR DENTRO do furo do sensor — o circuito de ensaio nao e aberto para medir.',
-    x: 274, largura: 40, altura: 44, cor: '#ae3ec9',
+    x: 246, largura: 40, altura: 44, cor: '#ae3ec9',
     nota: '⭐ O fio do +24 V da posição dá 10 VOLTAS pelo furo antes de seguir para a '
         + 'câmara. O sensor enxerga 10 × a corrente (176 mA em vez de 17,6 mA) e o '
         + 'comparador sai do ruído — é o mesmo princípio de espiras de um TC.',
@@ -695,7 +675,7 @@ export const COMPONENTES = [
       { ref: 'R', lado: 'baixo', legenda: 'Retornos do lado da potência (16)', pinos: [
         via('Z1', 1, 'BTS #1 · B−'), via('Z2', 1, 'BTS #2 · B−'),
         via('Z3', 1, 'BTS #1 · GND lógica'), via('Z4', 1, 'BTS #2 · GND lógica'),
-        via('Z5', 1, 'Arduino · GND'), via('Z6', 1, 'PI-1 J1-9'),
+        via('Z5', 1, 'Arduino · GND'), via('Z6', 0),
         via('Z7', 1, 'DNLCB30 · −'), via('Z8', 1, 'RTC DS3231 · GND'),
         via('Z9', 1, 'tela ES3C28P · GND'), via('Z10', 1, 'conversor de nível · GND'),
         via('Z11', 0),
@@ -711,7 +691,7 @@ export const COMPONENTES = [
   },  {
     id: 'BD-0V-B', nome: 'BD-0V-B — retornos da eletrônica (trilho 3)', trilho: 3,
     resumoFuncao: '🔎 O QUE ELE E: a segunda metade do MESMO 0 V, ligada a primeira por uma ponte de 4 mm². Ele existe porque a barra unica passou de 28 pontos e nao cabia mais no trilho 1 — e porque o retorno da eletronica fica melhor curto, perto de quem retorna: o Arduino, os modulos de interface e o sensor de corrente.',
-    x: 318, largura: 63, altura: 58, cor: '#212529',
+    x: 294, largura: 63, altura: 58, cor: '#212529',
     nota: '⭐ NÃO É UM SEGUNDO TERRA. É o mesmo nó, em dois blocos: a ponte de 4 mm² tem '
         + 'resistência desprezível perto das correntes que passam aqui (miliampères). O que '
         + 'não se pode fazer é pendurar um retorno no outro — cada um tem o seu parafuso.',
@@ -741,7 +721,7 @@ export const COMPONENTES = [
   {
     id: 'RTC', nome: 'RTC DS3231 — data e hora reais para o log', trilho: 3,
     resumoFuncao: '🔎 O QUE ELE FAZ: guarda data e hora reais, com pilha propria, para que cada linha do log tenha carimbo de tempo verdadeiro mesmo depois de faltar energia. Sem ele o log comecaria em 1970 a cada boot, e a rastreabilidade do ensaio morreria.',
-    x: 385, largura: 35, altura: 40, cor: '#0ca678',
+    x: 365, largura: 35, altura: 40, cor: '#0ca678',
     nota: '⭐ Subiu para o trilho 3, ao lado do Arduino: o I²C fica curto e o módulo '
         + 'sai da canaleta de potência. Abriu espaço no trilho 1 para os dois relés, '
         + 'que precisam de canaleta de POTÊNCIA nas duas bordas — e no trilho 1 as '

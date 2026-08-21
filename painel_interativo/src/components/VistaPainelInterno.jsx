@@ -30,8 +30,11 @@ const PLACAS = {
   /* ⭐ 'borne' = três bornes de passagem e dois capacitores parafusados
      neles. Não é placa nem módulo comprado, e era o único item da lista
      que ninguém conseguia imaginar olhando "BS-1 · 3/3 terminais". */
-  'BS-1': { tipo: 'borne', comp: 'BS-1',
-            rotulo: 'os 3 bornes, os 2 capacitores e quem entra em cada parafuso' },
+  /* ⭐ os dois capacitores de filtro moram nos bornes do PRÓPRIO Mega:
+     o `A0` é vizinho do `GND2` no adaptador DIN. O bloco de bornes que
+     existia só para eles (o BS-1) deixou de fazer falta. */
+  MEGA: { tipo: 'borne', comp: 'MEGA',
+          rotulo: 'os bornes A0 / A1 / GND2 e os capacitores C1 e C2' },
 };
 import {
   CAIXA, PLACA, TRILHOS, COMPONENTES, CANALETAS, CANALETAS_PORTA, LATERAIS,

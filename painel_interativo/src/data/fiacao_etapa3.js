@@ -129,9 +129,12 @@ export const FIOS_ETAPA3 = [
           + 'destas ventoinhas na primeira versão.',
     aviso: '🔥 A SAÍDA É O CONTATO NC2, NÃO O NO2. Ao contrário do KA1, aqui o estado '
          + 'seguro é FECHADO: módulo sem energia, ventoinha girando (§31.14).' },
-  { ...zero('D20', { comp: 'BS-1', via: '0V' }, { comp: 'BD-0V', via: 'Z6' },
-      'O 0 V dos dois filtros de corrente — a perna de baixo do C1 e do C2.'),
-    rota: ['CH-3x2', 'CV-dir', 'CH-base'] },
+  /* 🗑️ O D20 SAIU COM O BS-1. Ele levava ao BD-0V o 0 V dos dois
+     filtros de corrente. Hoje as pernas de baixo do C1 e do C2 vão ao
+     borne `GND2` do próprio Arduino — e isso é melhor, não só mais
+     curto: o capacitor tem de referenciar o MESMO terra que o conversor
+     A/D usa para medir. Um fio longo até a barra punha uma indutância
+     entre os dois. ⭐ O ponto Z6 do BD-0V ficou livre. */
   { ...zero('D21', { comp: 'ESP32', via: '−' }, { comp: 'BD-0V', via: 'Z7' },
       'Retorno do DNLCB30.'), rota: ['CH-2x1', 'CV-esq', 'CH-base'] },
   { ...zero('D22', { comp: 'RTC', via: 'GND' }, { comp: 'BD-0V', via: 'Z8' },

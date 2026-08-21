@@ -399,20 +399,12 @@ entram três condutores de uma vez.
 |---|---|---|
 | `R1` 22 kΩ + `R2` 4,7 kΩ + `C3` | **SV-1** — módulo sensor de tensão 0–25 V | borne de parafuso na entrada; **divide por 5**, e não por 5,68 |
 | `R3` 4,7 kΩ | **AD-1** — adaptador do DS18B20 | o pull-up vem dentro; a sonda vira três bornes |
-| `C1`, `C2` 100 nF | **BS-1** — três bornes de passagem | as pernas entram no parafuso, junto com o fio |
+| `C1`, `C2` 100 nF | ⭐ **os bornes `A0`, `A1` e `GND2` do próprio Mega** | a perna entra no parafuso; `A0` e `GND2` são **vizinhos** ([§33.10](#3310--o-bs-1-também-deixou-de-existir--o-filtro-foi-morar-no-arduino)) |
 
-> 📐 **O BS-1 tem desenho próprio no aplicativo.** Ele era o item mais difícil de imaginar da
-> lista — "BS-1 · 3/3 terminais" não diz nada a quem nunca viu um borne de passagem. No painel
-> interativo, clique no **BS-1** → *Ver como é o borne e o que entra em cada parafuso*: ele mostra
-> a barra de latão que faz dos dois lados **um nó só**, os **três condutores** de cada nó (o fio que
-> chega, o que sai e a perna do capacitor), por que o capacitor fica do lado do **Arduino** e o que
-> medir depois de apertar. A tabela de condutores é **gerada da fiação**, então não pode divergir.
-
-> ⭐ **Trinta segundos de bancada que valem a explicação:** são **3 condutores** em cada nó e **2
-> parafusos** no borne. Não force os três no mesmo: o fio que **chega** vai num parafuso; o que
-> **sai** e a **perna do capacitor** vão no outro. O aperto final é com todos dentro — apertar em
-> dois tempos deixa um deles frouxo, e fio frouxo em nó de medição vira leitura que oscila sem
-> motivo aparente.
+> 🗑️ **O BS-1 também saiu.** Os capacitores chegaram a morar num bloco de bornes só deles, mas
+> ali as duas pernas caíam em bornes diferentes, a 30 mm um do outro — pendurado no ar. Hoje
+> eles estão nos bornes do adaptador do Mega. A história inteira, com os números, está em
+> [§33.10](#3310--o-bs-1-também-deixou-de-existir--o-filtro-foi-morar-no-arduino).
 
 ⚠️ **Os dois números que mudaram, e que o guia manda medir antes de ligar:**
 
@@ -580,6 +572,70 @@ com o cogumelo. Quem segura o pino em nível alto é o firmware, que continua ro
 - [ ] **4× 220 Ω montados na base dos postes de iluminação da maquete**, com termorretrátil
 - [ ] **Nenhum componente solto ou soldado no meio de cabo em todo o projeto**
 - [ ] **`D1` montado nos bornes `A1`/`A2` do KM1** — ou o teste de diodo provando que o relé já tem o interno — e **`D2` montado junto às ventoinhas do radiador**, catodo no `+12 V`. Os outros 2 diodos ficam de reserva
+
+
+---
+
+## 33.10 ⭐ O BS-1 também deixou de existir — o filtro foi morar no Arduino
+
+> 🎯 **A pergunta que derrubou o BS-1 foi de montagem, não de eletricidade:** *"se é um borne de entrada e saída no trilho DIN, o capacitor fica pendurado embaixo, e a outra ponta não chega no outro borne."*
+>
+> Está certíssimo. E o número prova.
+
+### O que estava errado
+
+O `C1` liga o nó `A0` ao `0 V`. No BS-1 esses eram **bornes diferentes**, e o modelo do painel os punha em **bordas opostas** de um bloco de 30 mm:
+
+| | Distância que a perna teria de vencer |
+|---|---|
+| `A0` → `0V` no BS-1 | **~30 mm**, contornando o corpo do borne |
+| Perna de um cerâmico 100 nF | passo de **2,54 ou 5,08 mm** |
+
+O capacitor ficaria **esticado no ar entre dois bornes**, apoiado só pelo aperto de duas pernas rígidas de 0,5 mm. Vibração, transporte, um esbarrão — e ele solta ou encosta onde não deve. **Componente pendurado no ar é defeito esperando data.**
+
+### O que ficou no lugar
+
+Nada. O filtro foi para os **bornes do próprio Arduino**, e a razão é a ordem dos pinos do Mega:
+
+```
+   ADAPTADOR DIN — borda de BAIXO
+
+   ... A2   A1   A0   GND2   IOREF   AREF ...
+             │    │    │
+             │    └─C1─┘     ⭐ VIZINHOS · ~3,9 mm
+             └────C2─────┘      dois bornes  · ~7,8 mm
+```
+
+⭐ **`A0` e `GND2` são bornes vizinhos.** O passo do adaptador (~3,9 mm) é praticamente o passo de perna de um capacitor cerâmico: ele entra **sem dobrar e sem esticar**. O `C2` alcança o mesmo `GND2` de dois bornes de distância.
+
+### E isso é eletricamente MELHOR, não só mais firme
+
+| | Com o BS-1 | **Nos bornes do Mega** |
+|---|---|---|
+| Onde o capacitor referencia o 0 V | num borne no trilho, ligado ao BD-0V por ~30 cm de fio | ⭐ no **`GND2` do próprio Arduino** |
+| O que o A/D usa como referência | o `GND` do Arduino | **o mesmo `GND2`** |
+| Entre os dois | fio, com a indutância dele | **nada** |
+
+**Um filtro de entrada analógica tem de referenciar o mesmo terra que o conversor usa para medir.** Com o capacitor lá no trilho, entre ele e o A/D havia um fio — e fio, em alta frequência, é indutor. O ruído que o capacitor desviava voltava em parte pela malha que sobrava.
+
+### O que sumiu da lista e do painel
+
+| Sai | Quanto |
+|---|---|
+| O **BS-1** | 3 bornes de passagem (dos 6 comprados, sobram reservas) |
+| Fios **S5** e **S6** | os saltos BS-1 → Mega |
+| Fio **D20** | o 0 V do BS-1 até o BD-0V · `Z6`, que ficou livre |
+| Espaço no trilho 3 | **24 mm** |
+
+E os fios `S9`/`S10` (o `IS` bruto de cada BTS) **encurtaram**: iam até a canaleta de topo para alcançar o bloco de bornes; agora morrem no `A0`, que fica na borda de baixo do adaptador — a mesma canaleta `CH-3x2` por onde eles já saíam do BTS. **Um trecho a menos no fio mais sensível do painel.**
+
+### ⚠️ E isto tornou o adaptador DIN do Mega OBRIGATÓRIO
+
+Era listado como opcional — *"conforto de montagem, não requisito"* — embora o modelo do painel já o assumisse (82 bornes de parafuso, 134 × 96 mm). **A contradição acabou:** sem o adaptador, os pinos do Mega são headers fêmea, não há parafuso onde prender a perna do capacitor, e o BS-1 (ou uma placa) voltaria a ser necessário.
+
+> 🎓 **Na defesa, esta é a decisão inteira em três frases:** *o capacitor de filtro tem de ficar junto do conversor A/D e referenciado no terra dele. No adaptador do Mega, o `A0` é vizinho do `GND2` — então o componente entra nos dois bornes sem esticar perna, e o retorno não atravessa fio nenhum. O bloco de bornes que existia só para segurá-lo deixou de ter função.*
+
+> 📐 **O desenho está no aplicativo:** clique no **MEGA** → *Ver como é o borne e o que entra em cada parafuso*. Ele mostra a régua de bornes, o corte de um borne por dentro (a barra de latão), quem entra em cada parafuso e o que medir — com a tabela de condutores **gerada da fiação**.
 
 ---
 
