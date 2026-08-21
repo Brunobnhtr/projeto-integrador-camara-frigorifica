@@ -31,7 +31,7 @@ const bornesDe = p => p.bornes ?? [];
    conseguia enxergar. Agora um clique acende o fio inteiro: do borne do
    componente, pela canaleta, pelo prensa-cabo, até a peça lá dentro. */
 export default function CamaraNoPainel({
-  x0, y0, largura, altura, sel, onSel, fio, onFio, apagado,
+  x0, y0, largura, altura, sel, onSel, fio, onFio, apagado, temFioEscolhido,
 }) {
   const fioSel = fio;
   const setFioSel = onFio;
@@ -117,7 +117,10 @@ export default function CamaraNoPainel({
     return (
       <g onClick={e => { e.stopPropagation(); setFioSel(on ? null : f.n); }}
          style={{ cursor: 'pointer' }}
-         opacity={apagado ? 0.12 : fioSel && !on ? 0.2 : 1}>
+         pointerEvents={fioSel && !on ? 'none' : 'auto'}
+         /* ⭐ igual ao painel: com um fio escolhido, os outros SOMEM.
+            Meio transparente ainda é emaranhado. */
+         opacity={fioSel && !on ? 0 : apagado ? 0.12 : 1}>
         <path d={d} fill="none" stroke="transparent" strokeWidth={7} />
         <path d={d} fill="none" stroke={f.cor} strokeWidth={on ? 2.4 : 1.1}
               strokeLinejoin="round" strokeLinecap="round" />
@@ -137,9 +140,19 @@ export default function CamaraNoPainel({
   };
 
   const info = fioSel && acha(fioSel);
+  /* ⭐ A CÂMARA ACENDE QUANDO O FIO ESCOLHIDO É DELA.
+     O fio que atravessa a parede só se entende vendo as DUAS pontas: o
+     borne no painel e a peça lá dentro. Então, com um fio da câmara
+     escolhido, ela fica acesa mesmo que o filtro de etapa a apagasse.
+     E quando o fio escolhido é do painel, ela recua para o fundo em vez
+     de competir com o trajeto que a pessoa quer ler. */
+  const minhaCamara = !!info && !!(naCamara(info) ?? naTampa(info));
+  const luz = minhaCamara ? 1
+            : temFioEscolhido ? 0.3
+            : apagado ? 0.45 : 1;
 
   return (
-    <g onClick={() => setFioSel(null)}>
+    <g onClick={() => setFioSel(null)} opacity={luz}>
       {/* casca externa e isolamento */}
       <rect x={x0} y={y0} width={largura} height={altura} rx={5}
             fill="#f1f3f5" stroke="#868e96" strokeWidth={2} />

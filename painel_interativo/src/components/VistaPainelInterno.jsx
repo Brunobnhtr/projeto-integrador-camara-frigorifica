@@ -107,22 +107,65 @@ export default function VistaPainelInterno() {
     const t = tracados.find(x => x.n === n);
     const el = rolagem.current, svg = desenho.current;
     if (!t?.pts?.length || !el || !svg) return;
+
     const xs = t.pts.map(p => p[0]), ys = t.pts.map(p => p[1]);
-    const cx = (Math.min(...xs) + Math.max(...xs)) / 2;
-    const cy = (Math.min(...ys) + Math.max(...ys)) / 2;
-    const r = svg.getBoundingClientRect(), c = el.getBoundingClientRect();
-    /* o viewBox comeca em (-14, -52), por isso o deslocamento */
-    el.scrollBy({
-      left: (r.left + (cx + 14) * zoom) - (c.left + c.width / 2),
-      top:  (r.top  + (cy + 52) * zoom) - (c.top  + c.height / 2),
-      behavior: 'smooth',
-    });
+    let xa = Math.min(...xs), xb = Math.max(...xs);
+    let ya = Math.min(...ys), yb = Math.max(...ys);
+
+    /* ⭐ FIO QUE ATRAVESSA A PAREDE: o enquadramento inclui a CÂMARA.
+       Um cabo da etapa 6 só se entende vendo as duas pontas — o borne no
+       painel e a peça lá dentro. Enquadrar só o trecho do painel deixava
+       a metade que interessa fora da tela, e a câmara acesa sem ninguém
+       para ver. Aqui a vista abre até caber o conjunto. */
+    const atravessa = t.saiDoPainel || t.entraNoPainel;
+    if (atravessa) {
+      xb = Math.max(xb, CAM_X + CAM_W);
+      ya = Math.min(ya, CAM_Y);
+      yb = Math.max(yb, CAM_Y + CAM_H);
+    }
+
+    const larg = xb - xa + 90, alt = yb - ya + 90;
+    const cabe = Math.min(el.clientWidth / larg, el.clientHeight / alt);
+    /* só AFASTA para caber; nunca aproxima sozinho por cima da escolha
+       de quem está olhando */
+    const novoZoom = Math.max(1.2, Math.min(zoom, cabe));
+    if (novoZoom !== zoom) setZoom(novoZoom);
+
+    const cx = (xa + xb) / 2, cy = (ya + yb) / 2;
+    const irPara = () => {
+      const r = svg.getBoundingClientRect(), c = el.getBoundingClientRect();
+      /* a escala real sai do proprio desenho: o viewBox comeca em
+         (-14, -52) e tem (larguraTotal + 34) de largura */
+      const escala = r.width / (larguraTotal + 34);
+      el.scrollBy({
+        left: (r.left + (cx + 14) * escala) - (c.left + c.width / 2),
+        top:  (r.top + (cy + 52) * escala) - (c.top + c.height / 2),
+        behavior: 'smooth',
+      });
+    };
+    requestAnimationFrame(() => requestAnimationFrame(irPara));
   };
+
   /* um lugar so' para escolher fio: o desenho, a lista e a camara usam este */
   const escolheFio = n => {
     setFio(n);
     setSel(null);
     if (n != null) requestAnimationFrame(() => centralizaFio(n));
+  };
+
+  /* ⭐ CLICAR NUM TERMINAL É CLICAR NO FIO QUE SAI DELE.
+     Antes o clique num borne abria a ficha do COMPONENTE, e quem queria
+     saber "para onde vai este terminal?" tinha de achar o fio no meio do
+     desenho. Agora o terminal acende o proprio trajeto.
+     ⚠ Terminal com mais de um fio (ponte, barramento) CICLA entre eles a
+     cada clique; terminal sem fio nenhum volta a abrir o componente. */
+  const aoClicarTerminal = (c, g, p, k) => {
+    const doPino = FIOS.filter(f =>
+      (f.de.comp === c.id && f.de.via === p.nome) ||
+      (f.para.comp === c.id && f.para.via === p.nome));
+    if (!doPino.length) { setFio(null); setSel(c); setPino(k); return; }
+    const atual = doPino.findIndex(f => f.n === fio);
+    escolheFio(doPino[(atual + 1) % doPino.length].n);
   };
 
   /* scroll do mouse dá zoom, mantendo sob o cursor o que estava sob ele */
@@ -375,7 +418,7 @@ export default function VistaPainelInterno() {
           <CamaraNoPainel x0={CAM_X} y0={CAM_Y} largura={CAM_W} altura={CAM_H}
                           sel={pecaCam} onSel={setPecaCam}
                           fio={fio} onFio={escolheFio}
-                          apagado={!!etapa && etapa !== 6} />
+                          apagado={!!etapa && etapa !== 6} temFioEscolhido={!!fio} />
           {/* ── ⭐ OS CORREDORES SOB A BANCADA ────────────────────────
                  Estavam em quatro linhas de 18 px com as legendas se
                  cobrindo. Agora cada prensa-cabo tem um TRONCO só, largo
@@ -494,8 +537,14 @@ export default function VistaPainelInterno() {
             const pts = t.pts.map(p => p.join(',')).join(' ');
             const m = t.pts[Math.floor(t.pts.length / 2)];
             return (
+              /* ⭐ COM UM FIO ESCOLHIDO, OS OUTROS SOMEM — nao ficam
+                 esmaecidos. Com 108 fios sobrepostos, "meio transparente"
+                 ainda e' um emaranhado: o unico jeito de LER um trajeto e'
+                 a tela ficar so' com ele. E fio invisivel nao pode roubar
+                 clique, dai o pointerEvents. */
               <g key={t.n} onClick={() => escolheFio(fio === t.n ? null : t.n)}
-                 style={{ cursor: 'pointer' }} opacity={on ? 1 : 0.28}>
+                 style={{ cursor: 'pointer' }} opacity={on ? 1 : 0}
+                 pointerEvents={on ? 'auto' : 'none'}>
                 <polyline points={pts} fill="none" stroke="transparent" strokeWidth={6} />
                 <polyline points={pts} fill="none" stroke="#fff"
                           strokeWidth={fio === t.n ? 3.4 : 2.2}
@@ -599,7 +648,7 @@ export default function VistaPainelInterno() {
                      é o único jeito de "J1-11" ou "24V-SRV" caberem dentro */
                   const rot = vert ? 0 : (dentro > 0 ? 90 : -90);
                   return (
-                    <g key={k} onClick={e => { e.stopPropagation(); setSel(c); setPino(k); }}
+                    <g key={k} onClick={e => { e.stopPropagation(); aoClicarTerminal(c, g, p, k); }}
                        style={{ cursor: 'pointer' }}>
                       <rect x={t.cx - rw / 2} y={t.cy - rh / 2}
                             width={rw} height={rh} rx={0.4}
