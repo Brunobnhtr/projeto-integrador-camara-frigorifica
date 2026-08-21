@@ -93,6 +93,99 @@ function Borne({ x, y, rotulo, cor, total, detalhe, larg = 150 }) {
   );
 }
 
+/* ── O BORNE EM CORTE — o raio-X ─────────────────────────────────────
+   Num circuito impresso, o caminho da corrente é a trilha de cobre e
+   você a vê de fora. Num borne, o caminho existe igual, mas mora DENTRO
+   da peça: é a barra de latão entre as duas gaiolas. Este corte mostra
+   exatamente isso — o percurso do cobre de um fio até o outro.        */
+function BorneEmCorte() {
+  const gaiola = (x, rot) => (
+    <g key={x}>
+      <rect x={x} y={134} width={86} height={74} rx={4} fill="none"
+            stroke="#868e96" strokeWidth={2.4} />
+      <rect x={x + 8} y={142} width={70} height={24} rx={2} fill="#adb5bd" opacity={0.45} />
+      <rect x={x + 30} y={68} width={26} height={66} fill="#ced4da" stroke="#868e96" strokeWidth={1.4} />
+      {[76, 88, 100, 112, 124].map(y => (
+        <path key={y} d={`M${x + 30} ${y} L${x + 56} ${y - 5}`} stroke="#868e96" strokeWidth={1} />
+      ))}
+      <rect x={x + 22} y={56} width={42} height={14} rx={2} fill="#adb5bd" stroke="#868e96" strokeWidth={1.4} />
+      <path d={`M${x + 30} 63 L${x + 56} 63`} stroke="#495057" strokeWidth={2.2} />
+      <text x={x + 43} y={48} textAnchor="middle" fontSize={9} fill={C.fraco}>{rot}</text>
+      <path d={`M${x + 43} 112 L${x + 43} 132 M${x + 38} 124 L${x + 43} 133 L${x + 48} 124`}
+            stroke="#c92a2a" strokeWidth={1.6} fill="none" />
+    </g>
+  );
+
+  return (
+    <svg viewBox="0 0 780 450" style={{ width: '100%', maxWidth: 780, display: 'block' }}>
+      {/* corpo plastico, em corte */}
+      <path d="M200 40 L560 40 L560 258 L540 258 L540 300 L220 300 L220 258 L200 258 Z"
+            fill="#eef1f5" stroke="#495057" strokeWidth={2.2} />
+      <text x={380} y={30} textAnchor="middle" fontSize={10.5} fontWeight="700" fill="#495057">
+        CORTE — o mesmo borne, aberto ao meio
+      </text>
+
+      {gaiola(226, 'parafuso 1')}
+      {gaiola(448, 'parafuso 2')}
+
+      {/* ⭐ a barra de latao: alta o bastante para o rotulo e o caminho
+          nao disputarem o mesmo espaco */}
+      <rect x={226} y={210} width={308} height={34} rx={5} fill="#f6d365"
+            stroke="#c99700" strokeWidth={2} />
+      <text x={380} y={227} textAnchor="middle" fontSize={11} fontWeight="700" fill="#8a6116">
+        BARRA DE LATÃO
+      </text>
+
+      {/* o caminho do cobre corre pela parte de BAIXO da barra */}
+      <path d="M110 171 L269 171 L269 238 L491 238 L491 171 L650 171"
+            fill="none" stroke="#c92a2a" strokeWidth={2.6} strokeDasharray="7 5" />
+      {[[180, 171], [380, 238], [580, 171]].map(([x, y], i) => (
+        <polygon key={i} points={`${x - 6},${y - 5} ${x + 6},${y} ${x - 6},${y + 5}`} fill="#c92a2a" />
+      ))}
+      <text x={380} y={266} textAnchor="middle" fontSize={9.5} fill="#c92a2a">
+        ↑ o caminho do cobre: entra por um fio, atravessa a barra, sai pelo outro
+      </text>
+
+      {/* os dois fios */}
+      <rect x={40} y={164} width={186} height={15} rx={3} fill="#e8590c" />
+      <text x={44} y={156} fontSize={10} fontWeight="700" fill="#e8590c">fio S9 · chega do BTS #1</text>
+      <rect x={534} y={164} width={186} height={15} rx={3} fill="#1971c2" />
+      <text x={716} y={156} textAnchor="end" fontSize={10} fontWeight="700" fill="#1971c2">
+        fio S5 · sai para o MEGA
+      </text>
+
+      {/* a perna do capacitor, na MESMA gaiola do fio que sai */}
+      <path d="M612 179 L612 348" stroke="#5f3dc4" strokeWidth={3} />
+      <path d="M596 348 L628 348 M596 356 L628 356" stroke="#5f3dc4" strokeWidth={3.4} />
+      <path d="M612 356 L612 378" stroke="#5f3dc4" strokeWidth={3} />
+      <text x={640} y={352} fontSize={10} fontWeight="700" fill="#5f3dc4">C1 · 100 nF</text>
+      <text x={640} y={365} fontSize={8.8} fill={C.fraco}>entra na mesma gaiola</text>
+      <text x={640} y={376} fontSize={8.8} fill={C.fraco}>do fio que sai</text>
+      <text x={612} y={394} textAnchor="middle" fontSize={9} fill={C.fraco}>↓ ao borne 0V</text>
+
+      {/* trilho DIN em corte */}
+      <path d="M170 300 L590 300 L590 316 L576 316 L576 330 L184 330 L184 316 L170 316 Z"
+            fill="#dee2e6" stroke="#adb5bd" strokeWidth={1.8} />
+      <path d="M340 300 L340 288 L380 288 L380 300" fill="none" stroke="#868e96" strokeWidth={2.2} />
+      <text x={340} y={350} textAnchor="middle" fontSize={9.5} fill={C.fraco}>
+        trilho DIN 35 mm — a mola de trás é o que trava o borne nele
+      </text>
+
+      {/* chamadas, do lado de fora do desenho */}
+      <path d="M258 146 L196 118" stroke="#868e96" strokeWidth={1} />
+      <text x={20} y={80} fontSize={9.5} fontWeight="700" fill={C.tinta}>gaiola de aperto</text>
+      <text x={20} y={92} fontSize={8.8} fill={C.fraco}>o parafuso empurra a gaiola,</text>
+      <text x={20} y={103} fontSize={8.8} fill={C.fraco}>e ela prensa o fio contra a</text>
+      <text x={20} y={114} fontSize={8.8} fill={C.fraco}>barra — sem solda nenhuma</text>
+
+      <path d="M520 227 L648 258" stroke="#868e96" strokeWidth={1} />
+      <text x={654} y={252} fontSize={9.5} fontWeight="700" fill="#8a6116">é o “trilho” desta peça</text>
+      <text x={654} y={264} fontSize={8.8} fill={C.fraco}>o metal que liga os</text>
+      <text x={654} y={275} fontSize={8.8} fill={C.fraco}>dois lados: um nó só</text>
+    </svg>
+  );
+}
+
 export default function BorneDeFiltro({ onFechar }) {
   const comp = COMPONENTES.find(c => c.id === 'BS-1');
   const nos = ['A0', 'A1'].map(via => ({
@@ -141,7 +234,12 @@ export default function BorneDeFiltro({ onFechar }) {
           </svg>
         </Secao>
 
-        <Secao titulo="2 · A SUA PERGUNTA: “no A0 entram 2 fios e o capacitor?”"
+        <Secao titulo="2 · POR DENTRO — onde fica o “trilho” deste componente"
+               sub="Numa placa de circuito impresso o caminho da corrente é a trilha de cobre, e você a vê por fora. Aqui o caminho existe igual, mas mora DENTRO da peça: é uma barra de latão entre as duas gaiolas de aperto. O corte abaixo mostra o percurso inteiro, de um fio ao outro.">
+          <BorneEmCorte />
+        </Secao>
+
+        <Secao titulo="3 · A SUA PERGUNTA: “no A0 entram 2 fios e o capacitor?”"
                sub="Entram, sim: três condutores no mesmo nó. Mas repare que são DOIS parafusos — então não é preciso espremer os três juntos.">
           <svg viewBox="0 0 700 330" style={{ width: '100%', maxWidth: 700, display: 'block' }}>
             {/* o borne A0, grande */}
@@ -205,7 +303,7 @@ export default function BorneDeFiltro({ onFechar }) {
           </svg>
         </Secao>
 
-        <Secao titulo="3 · POR QUE O CAPACITOR ESTÁ AQUI, E NÃO NO BTS"
+        <Secao titulo="4 · POR QUE O CAPACITOR ESTÁ AQUI, E NÃO NO BTS"
                sub="O sinal IS sai limpo do driver e atravessa ~30 cm dentro de um painel que chaveia 6 A a 20 kHz. É no CABO que ele suja — então o filtro tem de ficar na ponta do Arduino, não na ponta do driver.">
           <pre style={{ background: '#f8f9fa', border: `1px solid ${C.linha}`, borderRadius: 6,
                         padding: '12px 14px', fontSize: 12, lineHeight: 1.6, margin: 0,
@@ -221,7 +319,7 @@ export default function BorneDeFiltro({ onFechar }) {
           }</pre>
         </Secao>
 
-        <Secao titulo="4 · CADA CONDUTOR, NÓ POR NÓ"
+        <Secao titulo="5 · CADA CONDUTOR, NÓ POR NÓ"
                sub="Gerado da fiação do projeto — se um fio mudar de destino, esta tabela muda junto.">
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
             <thead>
@@ -271,7 +369,7 @@ export default function BorneDeFiltro({ onFechar }) {
           </table>
         </Secao>
 
-        <Secao titulo="5 · COMO CONFERIR QUE FICOU CERTO">
+        <Secao titulo="6 · COMO CONFERIR QUE FICOU CERTO">
           <ul style={{ fontSize: 12.5, lineHeight: 1.75, color: '#495057', paddingLeft: 20, margin: 0 }}>
             <li><b>Continuidade dentro do borne:</b> ponta em cada lado do mesmo borne → <b>~0 Ω</b>.
                 É a barra de latão. Se não beepar, o borne está partido ou você mediu bornes diferentes.</li>
