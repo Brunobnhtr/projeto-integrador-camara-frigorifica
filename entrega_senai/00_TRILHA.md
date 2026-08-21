@@ -30,7 +30,7 @@
 | 1 | Surgimento do desafio | ✅ feito — demanda da *Ensaios & Controle Tech* | [Doc 01](../camada_0_fundamentos/01_visao_geral.md) |
 | 2 | Pesquisas iniciais | 🟡 **material existe, faltava formato** | [`01_pesquisa/`](01_pesquisa/) |
 | 3 | Surgimento da ideia | ✅ feito | [Doc 01](../camada_0_fundamentos/01_visao_geral.md) |
-| 4 | **Pesquisas aprofundadas** | 🟡 **anterioridade no INPI é SUA** | [`01_pesquisa/02_anterioridade_e_similares.md`](01_pesquisa/02_anterioridade_e_similares.md) |
+| 4 | **Pesquisas aprofundadas** | ✅ **busca por classificação EXECUTADA** — falta só o print do INPI | [`01_pesquisa/02_anterioridade_e_similares.md`](01_pesquisa/02_anterioridade_e_similares.md) |
 | 5 | Cadastro na plataforma SAGA | ⬜ **só você pode** — gpinovacao.senai.br | [`06_entrega/CHECKLIST_FINAL.md`](06_entrega/CHECKLIST_FINAL.md) |
 | 6 | Ciclo de desenvolvimento | ✅ em curso — 6 camadas, 105 fios validados | todo o repositório |
 | 7 | Detalhamento do Canvas | ✅ **preenchido** | [`03_canvas/`](03_canvas/) |
@@ -46,7 +46,7 @@
 | Arquivo | O que é | Quem termina |
 |---|---|---|
 | [`01_pesquisa/01_plano_de_pesquisa.md`](01_pesquisa/01_plano_de_pesquisa.md) | Os **três eixos** que o SENAI exige: pesquisa geral, anterioridade e similares — com os termos de busca prontos | eu escrevi · **você executa as buscas** |
-| [`01_pesquisa/02_anterioridade_e_similares.md`](01_pesquisa/02_anterioridade_e_similares.md) | O que **já existe** no mercado e na literatura, e **onde nosso projeto se diferencia** | eu levantei · **você confirma no INPI** |
+| [`01_pesquisa/02_anterioridade_e_similares.md`](01_pesquisa/02_anterioridade_e_similares.md) | O que **já existe** — com a **busca de anterioridade executada por classificação IPC**, os números de cada consulta e os 5 documentos mais próximos | ✅ feito · **você repete no INPI para ter o print oficial** |
 | [`01_pesquisa/03_referencias_abnt.md`](01_pesquisa/03_referencias_abnt.md) | Todas as fontes do projeto **em ABNT NBR 6023** | ✅ pronto |
 | [`02_resumo_expandido/RESUMO_EXPANDIDO.md`](02_resumo_expandido/RESUMO_EXPANDIDO.md) | O texto completo, **dentro das 600–700 palavras** | ✅ pronto · revisar dados da equipe |
 | [`03_canvas/BM_CANVAS.md`](03_canvas/BM_CANVAS.md) | Os 9 blocos preenchidos | ✅ pronto |
@@ -64,8 +64,9 @@
    Pesquisa exige demanda de **empresa real**, com validade **posterior ao fim do curso**, e
    diz que **não vale instituição de ensino**. ⚠️ Confirme com o instrutor se a
    *Ensaios & Controle Tech* está cadastrada lá; se não estiver, é o primeiro item a resolver.
-2. **Pesquisa de anterioridade no INPI** — precisa de login e é obrigatória. Os termos de
-   busca já estão prontos em [`01_pesquisa/02_anterioridade_e_similares.md`](01_pesquisa/02_anterioridade_e_similares.md).
+2. **Repetir a busca no INPI** para ter o print da base oficial. ⭐ O trabalho pesado já foi
+   feito: a busca por **classificação IPC** está executada e registrada, com números e os
+   documentos mais próximos. No INPI é só repetir o filtro `G01R31/28` — dez minutos.
 3. **Gravar os dois vídeos** e publicar no YouTube como **não listado**.
 4. **Preencher os nomes** — integrantes, curso, unidade, instrutor e e-mails.
 5. **Fechar o banner** no modelo `.pptx` do SENAI e mandar imprimir em lona.

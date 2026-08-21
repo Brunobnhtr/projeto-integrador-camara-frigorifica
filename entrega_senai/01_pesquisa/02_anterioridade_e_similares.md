@@ -51,48 +51,103 @@ em controlar temperatura — isso é commodity. Está em três pontos:
 
 ---
 
-## Parte 4 · ⬜ A busca de anterioridade — o que VOCÊ precisa executar
+## Parte 4 · ⭐ A busca de anterioridade — EXECUTADA em 21/08/2026
 
-⚠️ **Obrigatória e só você pode fazer** (exige acesso ao INPI).
+> 🔎 **O problema que você levantou:** *"no INPI aparece um monte de projeto e não dá para
+> olhar por todos"*. Ele é real, e a causa é o **método de busca**: procurar por palavra solta
+> devolve milhares de documentos de áreas que nada têm a ver com o nosso.
+>
+> ✅ **A solução é buscar por CLASSIFICAÇÃO** — é assim que examinador de patente trabalha.
+> Toda patente do mundo é classificada por assunto (IPC/CPC). Filtrando por classe, os
+> milhares viram dezenas.
 
-### Onde buscar
+---
 
-1. **INPI** — https://busca.inpi.gov.br/pePI/ · Patentes → Pesquisa básica
-2. **Google Patents** — https://patents.google.com (em inglês)
-3. **SAGA SENAI** — https://gpinovacao.senai.br (soluções de outros grupos)
+### As classes que interessam ao nosso projeto
 
-### Termos prontos para colar
+| Código | O que cobre | Por que é a nossa |
+|---|---|---|
+| **G01R 31/28** | Ensaio de circuitos eletrônicos | ⭐ **a mais precisa** — é o que a máquina faz: testar placa |
+| **F25B 21/02** | Refrigeração por **efeito Peltier** | a nossa câmara é termoelétrica |
+| **G01N 25/00** | Investigação de materiais por meios térmicos | ensaio térmico em geral |
+| **G05D 23/19** | Controle automático de temperatura | a malha PID |
 
-**Em português (INPI):**
+---
 
-```
-câmara climática AND monitoramento
-ensaio térmico AND placa eletrônica
-controle de temperatura AND Peltier
-detecção de falha AND ensaio
-câmara térmica AND rastreabilidade
-```
+### O que a busca devolveu — números reais
 
-**Em inglês (Google Patents):**
+Feita em **21/08/2026**, na base do **Google Patents**, que **indexa os documentos brasileiros
+(BR) do INPI** e permite filtrar por país e por classificação.
 
-```
-thermal test chamber remote monitoring
-thermoelectric climate chamber PID control
-device under test failure detection thermal cycling
-environmental chamber data logging IoT
-```
+| Base | Filtro usado | Resultados | O que apareceu |
+|---|---|---:|---|
+| BR | `G01R31/28` | **217** | teste de circuito integrado, memória, cadeia de varredura — IBM, Intel, Qualcomm |
+| BR | `G01R31/28` + temperatura | **35** | rastreamento de tensão e temperatura em chip; nada sobre câmara de ensaio |
+| BR | `F25B21/02` (Peltier) | **96** | secagem de granulado, módulo óptico, ar-condicionado, estabilização térmica |
+| BR | `"câmara climática"` | **273** | agroquímicos, incubação de aves, adesivos, vidros — ⚠️ a expressão é usada em outras áreas |
+| BR | `"câmara térmica"` + ensaio | **12** | polipropileno, retardante de chama, vidraça |
+| Mundo | `"burn-in"` + câmara + DUT + monitoring | dezenas | ⭐ **os mais próximos, abaixo** |
+| Mundo | `"burn-in board"` + `"failure detection"` + `"per device"` | **0** | ⭐ **nenhum documento** |
 
-### Como registrar o resultado
+---
 
-Preencha esta tabela — ela vira evidência para a banca:
+### ⭐ Os documentos mais próximos que existem
 
-| Base | Data da busca | Termo usado | Nº de resultados | Documento mais próximo | Por que o nosso difere |
+| Documento | Ano | Titular | O que faz | Onde difere do nosso |
+|---|---|---|---|---|
+| **KR102495025B1** | 2023 | 주식회사디아이 (DI Co.) | Monitora a **uniformidade de temperatura** dentro de uma câmara de burn-in | Vigia o **ambiente**, não os dispositivos. Não diz qual placa parou |
+| **CN115327267B** | 2025 | Hangzhou Sanhai Electronic | Método e sistema de **ciclagem térmica de alta e baixa temperatura** | Foca no ciclo térmico; a supervisão é do processo, não da carga individual |
+| **US11913989B2** | 2024 | Microchip Technology | **Placa de burn-in** com soquete e aquecimento integrado | Aquece o dispositivo na própria placa; não é câmara nem detecta falha por posição |
+| **US10935486B2** | 2021 | — | **Câmara de ensaio ambiental** (construção da câmara) | É o equipamento; não trata de rastreabilidade nem de falha individual |
+| **US5006796A** | 1991 | — | Instrumento de **controle de temperatura de componentes sob ensaio** | Antecessor clássico: controla a temperatura do componente. Não monitora consumo nem avisa remotamente |
+
+---
+
+### 🎯 A conclusão da busca, em uma frase
+
+**A câmara existe. O controle PID existe. O burn-in monitorado existe. O que não aparece é a
+combinação que a nossa demanda pede:** vigiar **cada dispositivo individualmente pela corrente
+que ele consome**, dizer **qual** parou e **em que minuto**, e fazer isso como **modernização
+de uma cabine que já existe**.
+
+A busca por `"burn-in board" + "failure detection" + "per device"` retornou **zero** documentos.
+
+> ⚠️ **Isto não é declaração de novidade absoluta** — busca em base pública não substitui exame
+> do INPI, e a redação de patente usa termos que a nossa busca pode não ter alcançado. É o que
+> se espera de uma pesquisa de anterioridade de projeto técnico: **mostrar que procuramos com
+> método, e que sabemos o que já existe.**
+
+---
+
+### 📋 Como REFAZER esta busca no INPI (o passo a passo que resolve o "monte de projeto")
+
+O INPI tem busca por classificação, e é isso que corta o ruído.
+
+1. Acesse **https://busca.inpi.gov.br/pePI/** → *Patentes* → **Pesquisa Avançada**
+   *(a consulta é pública; o login só é preciso para peticionar)*
+2. No campo **Classificação IPC**, digite uma das classes da tabela acima — comece por
+   **`G01R31/28`**
+3. Cruze com uma palavra no campo **Resumo** — por exemplo `temperatura` ou `câmara`
+4. Anote na tabela abaixo: data, filtro, quantidade e o documento mais próximo
+
+| Data | Base | Filtro (classe + termo) | Resultados | Documento mais próximo | Diferença para o nosso |
 |---|---|---|---|---|---|
-| INPI | ___/___/2026 | | | | |
-| INPI | ___/___/2026 | | | | |
-| Google Patents | ___/___/2026 | | | | |
-| SAGA SENAI | ___/___/2026 | | | | |
+| 21/08/2026 | Google Patents (BR) | `G01R31/28` + temperatura | 35 | — | nada sobre câmara de ensaio |
+| 21/08/2026 | Google Patents (BR) | `F25B21/02` | 96 | — | Peltier em outras aplicações |
+| 21/08/2026 | Google Patents (mundo) | `"burn-in board"` + falha por dispositivo | **0** | — | — |
+| ___/___/2026 | **INPI** | | | | |
+| ___/___/2026 | **INPI** | | | | |
+| ___/___/2026 | **SAGA SENAI** | | | | |
 
-> 💡 **Não tem problema encontrar coisas parecidas** — é até esperado. O que a banca quer ver
-> é que você **procurou** e sabe explicar a diferença. Um projeto que diz "não achei nada"
-> normalmente só procurou mal.
+> 💡 **Por que ainda vale você fazer a do INPI:** a busca aqui foi feita numa base que
+> *indexa* o INPI, mas a banca pode pedir o print da consulta **na base oficial**. São dez
+> minutos, e o filtro por classificação já está pronto.
+
+---
+
+### 🔧 Ferramenta para repetir a busca
+
+O script que executou estas consultas ficou em
+[`buscar_patentes.mjs`](buscar_patentes.mjs). Ele consulta o Google Patents por classificação
+e imprime os resultados. Para rodar de novo com outros termos, edite a lista `BUSCAS` no topo
+do arquivo.

@@ -84,8 +84,10 @@
 
 ## 9 · Pesquisa *(o que a banca cobra e quase ninguém leva)*
 
-- [ ] **Pesquisa de anterioridade no INPI** — com data, termo e resultado registrados
-- [ ] **Pesquisa de similares** — mercado e SAGA SENAI
+- [x] **Busca de anterioridade por classificação IPC** — executada em 21/08/2026, com números e documentos mais próximos registrados
+- [ ] **Repetir no INPI** para ter o print da base oficial (filtro `G01R31/28` — dez minutos)
+- [x] **Pesquisa de similares** — mercado e patentes
+- [ ] **Consultar o SAGA** — soluções já cadastradas por outros grupos
 - [ ] **Referências guardadas** de tudo que foi consultado
 - [ ] Registro de **visita técnica ou entrevista** com a empresa da demanda
 
