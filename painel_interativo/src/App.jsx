@@ -5,6 +5,7 @@ import VistaSimulador from './components/VistaSimulador';
 import VistaMontagem from './components/VistaMontagem';
 import VistaComponentes from './components/VistaComponentes';
 import VistaGuia from './components/VistaGuia';
+import BarreiraDeErro from './components/BarreiraDeErro';
 
 /* A casca do aplicativo. Cada aba é uma forma diferente de olhar o mesmo
    projeto — da vista mais geral (a maquete inteira) para a mais detalhada
@@ -71,7 +72,11 @@ export default function App() {
         </nav>
       </header>
 
+      {/* ⭐ UMA BARREIRA POR ABA, e com `key`: trocar de aba monta uma
+          barreira nova, entao um erro numa vista nao deixa as outras
+          presas na tela de erro. */}
       <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
+        <BarreiraDeErro key={aba}>
         {aba === 'maquete' && <VistaMaquete onIrPara={setAba} />}
         {aba === 'painel'  && <VistaPainelInterno />}
         {aba === 'componentes' && (
@@ -94,6 +99,7 @@ export default function App() {
             <VistaSimulador />
           </div>
         )}
+        </BarreiraDeErro>
       </div>
     </div>
   );

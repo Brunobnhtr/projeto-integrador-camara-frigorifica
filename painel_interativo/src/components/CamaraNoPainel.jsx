@@ -270,6 +270,13 @@ export default function CamaraNoPainel({
       {/* de onde vem e para onde vai o fio clicado */}
       {info && (() => {
         const d = naCamara(info) ?? naTampa(info);
+        /* 🔥 O FIO ESCOLHIDO PODE NÃO TOCAR A CÂMARA. A seleção é
+           compartilhada com o painel: clicar num fio de dentro do painel
+           (um D7, um C1, um P14) chegava aqui com `d` indefinido, e o
+           `d.camara` derrubava a ÁRVORE INTEIRA do React — a tela ficava
+           branca, sem mensagem nenhuma. Este balão só tem o que dizer
+           sobre fio que atravessa a parede. */
+        if (!d) return null;
         const alvo = `${d.camara ?? d.tampa} · ${d.borne}`;
         const lado = info.de.comp ? info.de : info.para;
         const volta = eRetorno(info);
