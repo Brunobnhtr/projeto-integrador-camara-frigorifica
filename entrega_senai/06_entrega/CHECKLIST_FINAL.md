@@ -123,4 +123,6 @@
 |---|---|
 | *"Por que este componente e não outro?"* | [Doc 31 §31.16](../../camada_3_eletrica/31_comando_e_protecoes.md) (relé × MOSFET) e §31.17 (KM × KA) |
 | *"Em que vocês se basearam?"* | [`../01_pesquisa/03_referencias_abnt.md`](../01_pesquisa/03_referencias_abnt.md) |
+| *"Por que dois drivers e não um só, já que ele tem duas metades?"* | [Doc 32](../../camada_3_eletrica/32_sinais_e_sensores.md) — cabe num só, mas viraria ponto único de falha para aquecer e resfriar |
+| *"Quem gera o PWM, o driver?"* | não: o **timer do Mega** gera; o driver só repete na tensão da carga |
 | *"Isso já não existe no mercado?"* | [`../01_pesquisa/02_anterioridade_e_similares.md`](../01_pesquisa/02_anterioridade_e_similares.md) — parte 3 |

@@ -453,6 +453,78 @@ ARDUINO MEGA 2560
 
 > **Alternativa igualmente válida:** ligar a carga entre `M+` e `B−`, deixando o `M−` sem uso. Aí só a metade R participa, o `L_EN` pode ficar aterrado e a corrente atravessa um único MOSFET. Funciona e dissipa um pouco menos — mas foge da ligação padrão do módulo, cujos bornes são rotulados como par `M+`/`M−`.
 
+> ### ❓ "Quem faz o PWM é o BTS? Só ele consegue?"
+>
+> **Não. Quem faz o PWM é o Arduino.** O trem de pulsos nasce num *timer* do ATmega2560 e sai
+> pelo pino `D5` ou `D6`. O BTS7960 **obedece**: ele copia aquele sinal de 5 V para os 24 V da
+> carga, com corrente que o pino do Arduino jamais entregaria.
+>
+> Modular por PWM **qualquer chave semicondutora faz** — um MOSFET solto, um IGBT, um driver
+> qualquer. Não é privilégio do BTS. O que o BTS acrescenta é o **pacote**: o driver de gate que
+> o pino sozinho não tem, as proteções e o `IS`.
+>
+> 🎓 **Na defesa, esta distinção conta ponto:** *"o PWM é gerado no timer do microcontrolador; o
+> driver é só o músculo que repete aquele sinal na tensão e na corrente da carga."*
+>
+> ---
+>
+> ### ❓ "O módulo tem duas metades. Por que não UM só, com a Peltier no `RPWM` e o PTC no `LPWM`?"
+>
+> 🎯 **A ideia é boa e funciona eletricamente.** Vale explicar por que, mesmo assim, ficaram dois.
+>
+> Primeiro, o que ela exigiria — porque `RPWM` e `LPWM` **não são saídas de potência**, são
+> entradas de comando. A potência sai só por `M+` e `M−`. Então a montagem seria:
+>
+> ```
+>    B+ (24 V) ──┬─[metade R]─ M+ ──── PELTIER ──┐
+>                │                               │
+>                └─[metade L]─ M− ──── PTC ──────┤
+>                                                │
+>    B− (0 V) ───────────────────────────────────┘
+> ```
+>
+> Cada metade viraria uma **chave de lado alto** para a sua carga, com o retorno indo direto ao
+> `B−`. É a mesma "alternativa igualmente válida" que já está registrada acima — aplicada duas
+> vezes, uma por metade. E funcionaria de verdade:
+>
+> | O que a proposta precisa | Existe? |
+> |---|---|
+> | Comando independente por metade | ✅ `R_PWM`/`R_EN` e `L_PWM`/`L_EN` são separados |
+> | Medição de corrente separada | ✅ o módulo tem **`R_IS` e `L_IS`** — hoje o `L_IS` está sem uso |
+> | Caminho de retorno ao desligar | ✅ o diodo de corpo do MOSFET inferior do mesmo braço |
+> | Corrente somada nos bornes `B+`/`B−` | ✅ **nunca soma** — Peltier e PTC são intertravados e jamais ligam juntos |
+> | Economia | R$ 10,48 (um módulo a menos) |
+>
+> #### Então por que dois?
+>
+> **Porque o módulo passaria a ser um ponto único de falha para as duas cargas térmicas.**
+>
+> Um borne solto no `B+`, um fio de 5 V caído, um chip queimado — e o ensaio perde **aquecimento
+> e resfriamento ao mesmo tempo**. Com dois módulos, cada falha derruba **uma** carga, e o
+> firmware ainda consegue distinguir qual: o diagnóstico continua funcionando porque a outra
+> metade do sistema está viva para contar a história.
+>
+> ⚠️ **Isso pesa mais neste projeto do que pesaria em outro.** O propósito da máquina é
+> justamente **não perder ensaio**: um sistema que existe para detectar falha não pode ter um
+> componente cuja falha apaga as duas saídas de uma vez.
+>
+> | | Um módulo (proposto) | **Dois módulos (adotado)** |
+> |---|---|---|
+> | Custo | R$ 10,48 | R$ 20,96 |
+> | Falha do módulo | perde **aquecer e resfriar** | perde **uma** função; a outra continua |
+> | Ligação | carga entre `M+` e `B−` — **foge do padrão** do módulo, que é rotulado como par `M+`/`M−` | ligação padrão, igual à do manual |
+> | Manutenção | quem for trocar precisa entender a topologia não convencional | troca direta, sem estudo |
+> | `IS` | `R_IS` e `L_IS`, um por carga | um `IS` por módulo, por carga |
+>
+> 📌 **Dez reais é o preço de não ter as duas cargas dependendo da mesma peça.** É a mesma
+> lógica que separou os três módulos de relé em vez de um de 4 canais ([§31.17](31_comando_e_protecoes.md)):
+> quando a peça é barata, redundância física sai mais em conta que economia.
+>
+> 🎓 **A resposta curta para a banca:** *"cabe num módulo só, sim — cada metade viraria uma
+> chave de lado alto, e o módulo até tem uma saída de corrente por metade. Mas aí uma peça
+> queimada tira o aquecimento e o resfriamento juntos. Como o sistema existe para não perder
+> ensaio, preferi pagar dez reais e separar."*
+
 ### O filtro do pino IS
 
 ```
