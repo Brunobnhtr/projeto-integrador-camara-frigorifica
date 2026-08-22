@@ -20,8 +20,10 @@ export const PINAGENS = {
      Uma ponte H completa. Não são dois canais — ver Doc 32. */
   BTS1: {
     nome: 'BTS7960 (IBT-2)', larguraMm: 50, alturaMm: 50, pcb: '#1c4f8f',
-    nota: 'É UMA ponte H, não dois canais. Por isso o projeto usa dois módulos: '
-        + 'um para as Peltier, outro para o PTC.',
+    nota: 'É UMA ponte H, não dois canais: M+ e M− são as duas pontas da MESMA saída. '
+        + 'Aqui ela trabalha como chave UNIDIRECIONAL — o L_PWM fica em 0 V e a pastilha '
+        + 'nunca inverte (quem aquece é o PTC). São dois módulos para que uma peça '
+        + 'queimada não tire aquecimento e resfriamento juntos — ver Doc 32.',
     grupos: [
       {
         ref: 'P1', tipo: 'borne', lado: 'esquerda', x: 4, y: 9, passo: 7.5,
@@ -38,7 +40,7 @@ export const PINAGENS = {
         cor: '#212529', legenda: 'Barra de 8 pinos (2 × 4) — sinal de 5 V',
         pinos: [
           { n: 1, nome: 'R_PWM', papel: 'PWM do sentido direto — vem do Arduino', usa: true },
-          { n: 2, nome: 'L_PWM', papel: 'PWM do sentido reverso', usa: true },
+          { n: 2, nome: 'L_PWM', papel: 'preso em 0 V (fio S31) — a carga nunca inverte', usa: true },
           { n: 3, nome: 'R_EN',  papel: 'habilita o lado direito', usa: true, alerta: true },
           { n: 4, nome: 'L_EN',  papel: 'habilita o lado esquerdo', usa: true, alerta: true },
           { n: 5, nome: 'R_IS',  papel: 'realimentação de corrente → PI-1 → A0', usa: true },

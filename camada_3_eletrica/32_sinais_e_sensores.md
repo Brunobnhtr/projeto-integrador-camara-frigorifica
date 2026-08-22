@@ -525,6 +525,73 @@ ARDUINO MEGA 2560
 > queimada tira o aquecimento e o resfriamento juntos. Como o sistema existe para não perder
 > ensaio, preferi pagar dez reais e separar."*
 
+> ### ❓ "Como o projeto detecta que o BTS7960 falhou?"
+>
+> 🎯 **Por quatro caminhos independentes, e cada um pega um modo de falha diferente.**
+> Vale conhecer os quatro, porque a banca pode perguntar *qual deles* pega *qual* falha.
+>
+> #### 1 · O `IS` — a corrente contra o comando (pega **carga aberta** e **curto na carga**)
+>
+> O pino `IS` devolve, em tensão, a corrente que está passando. O firmware compara com o duty
+> que ele próprio mandou ([Doc 40 · `verificarCarga()`](../camada_4_programacao/40_firmware_arduino.md)):
+>
+> | O que o firmware vê | O que isso significa | Ação |
+> |---|---|---|
+> | Duty > 50 % e corrente ≈ 0 A | driver morto, fusível `F1` aberto, borne solto, série das Peltier interrompida | trip `CARGA_ABERTA` |
+> | Corrente > 8 A | curto no atuador ou no cabo | trip `SOBRECORRENTE` |
+> | Corrente 30 % abaixo do esperado | Peltier degradada, mau contato | alerta, sem trip |
+>
+> #### 2 · O `D25` — a conferência de que a potência **caiu mesmo** (pega **contato colado**)
+>
+> Quando o firmware manda cortar, ele **não acredita em si mesmo**: 150 ms depois lê o divisor
+> `D25` no `BD-POT` e pergunta se os 24 V realmente sumiram. Se ainda estão lá, sobe
+> `CORTE_FALHOU` e acende o `LED_FAULT`. É isso que pega o contato do `KA1` soldado, o contato
+> do `KM1` soldado e o borne solto na malha da bobina — três falhas que, sem esta conferência,
+> apagariam o veto **em silêncio**.
+>
+> #### 3 · O `KA1` em série com a bobina do `KM1` — o corte que **não depende do BTS**
+>
+> Este é o que responde à falha mais feia: **MOSFET do BTS colado em curto.** Baixar o `R_EN`
+> não adianta nada num MOSFET em curto — a Peltier continua a 100 %. Por isso o corte real não
+> passa pelo driver: o `KA1` abre, a bobina do `KM1` perde o retorno, e o **contato de potência
+> do `KM1`** tira os 24 V do barramento inteiro. O BTS pode estar destruído; a carga desliga
+> assim mesmo.
+>
+> #### 4 · O watchdog de RPM — o que **dispara** o corte antes do estrago
+>
+> A ventoinha do lado quente parada queima a pastilha em menos de um minuto. O tacômetro é lido
+> continuamente e a queda de RPM dispara o trip — que então executa os itens 3 e 2, nessa ordem.
+>
+> 📌 **A ordem importa:** o firmware **primeiro** baixa os `R_EN` (a corrente cai a quase zero),
+> **depois** abre o `KM1`. Abrir o contato sob 6 A queimaria o contato em poucas manobras.
+>
+> ---
+>
+> #### ⚠️ O buraco que sobra — e vale dizer na defesa antes que perguntem
+>
+> **Um MOSFET colado em curto só é descoberto depois que alguma outra coisa dispara o corte.**
+> O motivo está numa linha do `lerCorrente()`: se o pino de PWM está em nível baixo, a função
+> devolve `−1` — *"não medido agora"* — e o `verificarCarga()` sai sem conferir nada.
+>
+> Ou seja: o firmware confere corrente **quando mandou ligar**, nunca **quando mandou desligar**.
+> Um MOSFET em curto com o comando em zero deixa a Peltier a 100 % e **nenhum dos quatro
+> caminhos acima acusa** — até a temperatura fugir para baixo, ou o RPM cair, ou o operador
+> perceber.
+>
+> 🔧 **Fecha com quatro linhas**, e o `IS` já está ligado no `A0`/`A1` para isso:
+>
+> ```cpp
+> // Corrente com o comando DESLIGADO = MOSFET colado em curto.
+> // Le o IS ignorando o estado do PWM — este e o unico teste que
+> // enxerga a falha ANTES de ela virar temperatura errada.
+> if (duty < 5.0 && lerCorrenteSempre(BTS1_IS) > 0.5) dispararTrip("DRIVER_COLADO");
+> ```
+>
+> 🎓 **A frase para a banca:** *"a corrente do `IS` diz se a carga responde ao comando; o `D25`
+> diz se o corte aconteceu de verdade; e o `KA1` corta por fora do driver, porque um MOSFET em
+> curto não obedece mais a nenhum sinal. O que o sistema tem é **detecção** de falha, não
+> tolerância — tolerar exigiria um segundo canal de corte, que esta máquina não precisa ter."*
+
 ### O filtro do pino IS
 
 ```

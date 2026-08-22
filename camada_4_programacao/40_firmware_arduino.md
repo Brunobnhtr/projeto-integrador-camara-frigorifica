@@ -764,6 +764,46 @@ void verificarCarga(float i, double duty) {
 }
 ```
 
+### ⭐ Detecção de driver colado — o teste do comando DESLIGADO
+
+> 🔥 **O `verificarCarga()` acima confere a corrente quando o firmware mandou LIGAR. Nunca
+> quando mandou DESLIGAR.** E o modo de falha típico de MOSFET de potência é justamente o
+> **curto** — o driver fica ligado sozinho, ignorando o `R_PWM` e o `R_EN`.
+>
+> Repare no `lerCorrente()`: se o pino de PWM está em nível baixo ele devolve `−1`, e o
+> `verificarCarga()` sai na primeira linha. **A janela em que a falha mais perigosa aparece é
+> exatamente a janela que o firmware não olhava.** Sem isto, um BTS colado só é descoberto
+> depois — pela temperatura fugindo, pelo watchdog de RPM, ou pelo operador.
+
+```cpp
+// Le o IS IGNORANDO o estado do PWM. Le sempre, mesmo com o comando em zero.
+float lerCorrenteSempre(int pinoIS) {
+    long soma = 0;
+    for (int i = 0; i < 8; i++) soma += analogRead(pinoIS);
+    return (soma / 8.0) * FATOR_CORRENTE;
+}
+
+// Corrente com o comando DESLIGADO so tem uma explicacao: o MOSFET do
+// driver esta em curto. E o unico teste que enxerga a falha ANTES de ela
+// virar temperatura errada.
+//   O limiar de 0,5 A fica MUITO acima do offset de repouso do espelho de
+//   corrente (tipico < 50 mA equivalente), entao nao ha alarme falso.
+void verificarDriverColado(float iPelt, float iPtc, double duty) {
+    if (duty >= 5.0) return;                  // so vale com o comando em zero
+    if (lerCorrenteSempre(BTS1_IS) > 0.5) dispararTrip("DRIVER1_COLADO");
+    if (lerCorrenteSempre(BTS2_IS) > 0.5) dispararTrip("DRIVER2_COLADO");
+}
+```
+
+> 🎯 **E o trip resolve de verdade**, porque o `dispararTrip()` chama o `cortarPotencia()`, que
+> abre o **`KA1`** — a bobina do `KM1` perde o retorno e o contato de potência tira os 24 V do
+> barramento. **Cortar por fora do driver é a única coisa que funciona contra um MOSFET em
+> curto**, e é para isso que o `KA1` existe.
+>
+> 🎓 **Vale ponto na banca:** *"eu conferia a corrente só quando mandava ligar. Mas MOSFET de
+> potência falha em curto, e nessa falha o comando está em zero — então eu estava cego
+> justamente na hora que importava."*
+
 > 🔧 **Calibração do `FATOR_CORRENTE`:** ligue a Peltier em 100 % de duty, meça a corrente real com um alicate amperímetro (ou um multímetro em série) e compare com a leitura do ADC. Ajuste o fator até bater. Anote o valor calibrado no relatório.
 
 ---
@@ -1326,6 +1366,7 @@ void loop() {
         float iPtc  = lerCorrente(BTS2_IS, BTS2_RPWM);
         if (modo == RESFRIAMENTO) verificarCarga(iPelt, fabs(saidaPID));
         if (modo == AQUECIMENTO)  verificarCarga(iPtc,  fabs(saidaPID));
+        verificarDriverColado(iPelt, iPtc, fabs(saidaPID));   // ⭐ comando em zero: sobrou corrente?
     } else {
         desligarTudo();
     }

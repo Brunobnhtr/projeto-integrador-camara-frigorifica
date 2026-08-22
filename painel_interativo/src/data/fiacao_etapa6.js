@@ -32,9 +32,13 @@ export const FIOS_ETAPA6 = [
   { ...kabo('X2', { comp: 'BTS1', via: 'M−' }, naCamara('PELT', '−'), 1.5,
       'pot24', 'potencia', 'Retorno do par de Peltier, pela outra metade da ponte.'),
     nome: 'Peltier −', prensa: 'PG13-2', rota: ['CH-2x1', 'CV-esq', 'CH-base'],
-    aviso: '🔥 O RETORNO DA PELTIER NÃO VAI AO BD-0V. Ele volta ao M− do BTS, porque a '
-         + 'ponte H precisa dos dois lados para poder inverter. Ligar o M− no 0 V '
-         + 'curto-circuita metade da ponte.' },
+    aviso: '🔥 O RETORNO DA PELTIER NÃO VAI AO BD-0V. Ele volta ao M− do BTS — mas NÃO é '
+         + '"para poder inverter": a pastilha só resfria, e o L_PWM está preso em 0 V pelo '
+         + 'fio S311. O motivo é outro: com o L_EN em nível alto, a metade L devolve a '
+         + 'corrente pelo MOSFET de baixo LIGADO, e não pelo diodo de corpo — cerca de '
+         + '0,6 W de perda em vez de 5,4 W a 6 A. E ainda protege contra o jumper S311 '
+         + 'cair: se o M− estivesse no 0 V, um L_PWM solto pegando ruído chavearia a metade '
+         + 'ALTA e poria o B+ em curto direto contra o 0 V.' },
   { ...kabo('X3', { comp: 'BTS2', via: 'M+' }, naCamara('PTC', '+'), 1.5,
       'pot24', 'potencia', 'Positivo do PTC.'),
     nome: 'PTC +', prensa: 'PG13-2', rota: ['CH-2x1', 'CV-esq', 'CH-base'] },

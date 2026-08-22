@@ -1,5 +1,22 @@
 # Análise técnica do acionamento de cargas — Câmara Frigorífica (Projeto Integrador do Bruno)
 
+> ## ⚠️ DOCUMENTO HISTÓRICO — um ponto foi SUPERADO pelo projeto
+>
+> Esta análise é de **agosto/2026** e foi escrita quando o **aquecimento ainda seria feito pela
+> própria pastilha**, invertendo a polaridade. **Isso mudou:** quem aquece hoje é o **PTC de
+> 24 V / 80 W**, num segundo BTS7960. A Peltier **só resfria** — o `L_PWM` dos dois módulos
+> está preso em **0 V** por um jumper (fios `S311` e `S312`), e a ponte H trabalha como
+> **chave unidirecional**.
+>
+> **Portanto, leia com ressalva todo trecho que diga que o BTS7960 foi escolhido por
+> "permitir inverter a polaridade".** Tecnicamente ele permite; **este projeto não usa.**
+> A justificativa válida para a banca está em
+> [Doc 32 §"Por que o BTS7960, se a pastilha nunca inverte"](../camada_3_eletrica/32_sinais_e_sensores.md):
+> a saída `IS` de corrente, o driver de gate para o PWM de 20 kHz e as proteções internas.
+>
+> O resto do documento — ripple, COP, fadiga térmica do TEC, inrush do PTC, dimensionamento —
+> **continua válido e é a base de várias decisões do projeto.**
+
 ## TL;DR
 - **O projeto já acerta no essencial de hardware** (aciona Peltier e PTC por driver em ponte-H BTS7960/IBT-2, sem contato mecânico, num sistema 24 Vcc SELV), mas **erra no ponto mais crítico do firmware: o "PWM 1 Hz" no Peltier** — isso é praticamente liga/desliga a cada segundo, arruína o COP (perda Joule ∝ I²) e provoca fadiga termomecânica que mata o TEC precocemente.
 - **A correção de maior impacto e menor custo** é trocar o controle de 1 Hz por **corrente quase-contínua** (PWM alto ≥1–20 kHz + filtro LC para ripple <10 %, ou fonte de corrente/buck), com **histerese, dead-time entre aquecer/resfriar, soft-start e watchdog do ventilador do lado quente** — tudo em software não-bloqueante com `millis()`.
@@ -13,7 +30,7 @@
 
 3. **Acionamento das cargas de potência: dois drivers "BTS" (BTS7960/IBT-2, ponte-H).** "BTS #1" aciona **2× TEC1-12706 em série** (24 V, 144 W); "BTS #2" aciona o **PTC cerâmico 24 V, 80 W**. Controle por **Arduino Mega 2560 (PID, PWM 1 Hz)** + **ESP32 (MQTT)**. Consumo calculado ≈166 W / 6,9 A @ 24 V.
 
-4. **Diagnóstico:** a escolha do BTS7960 é boa (sem contato mecânico, suporta a corrente com folga, permite inverter polaridade para aquecer/resfriar). **O problema grave está no "PWM 1 Hz"**: a 1 Hz o Peltier vê 100 % de ripple de corrente (liga/desliga total), o que (a) reduz drasticamente o COP e o ΔT alcançável e (b) submete as juntas de solda internas do TEC a ciclagem térmica que causa falha por fadiga.
+4. **Diagnóstico:** a escolha do BTS7960 é boa (sem contato mecânico, suporta a corrente com folga, permite inverter polaridade para aquecer/resfriar — ⚠️ **este último ponto não vale mais: ver o aviso no topo, quem aquece é o PTC**). **O problema grave está no "PWM 1 Hz"**: a 1 Hz o Peltier vê 100 % de ripple de corrente (liga/desliga total), o que (a) reduz drasticamente o COP e o ΔT alcançável e (b) submete as juntas de solda internas do TEC a ciclagem térmica que causa falha por fadiga.
 
 5. **Pontos a confirmar no código** (não legíveis remotamente): pinos exatos, biblioteca PID (provável `PID_v1` de Brett Beauregard), presença de histerese, dead-time entre inverter polaridade, soft-start, watchdog de fan, uso de `delay()` vs `millis()`, e sensores (DS18B20? NTC?).
 
@@ -29,7 +46,7 @@
 
 **Fadiga por ciclagem térmica.** O TEC é feito de pastilhas semicondutoras soldadas entre cerâmicas com solda de baixo ponto (**BiSn, 138 °C**, conforme datasheet Hebei). A diferença de coeficiente de expansão térmica (CTE) gera tensão mecânica; ligar/desligar rápido inicia e propaga trincas na solda das juntas (a corrente a 1 Hz faz exatamente isso). Fabricantes (Ferrotec, Same Sky/CUI, Z-MAX) apontam a ciclagem térmica como o principal modo de falha e recomendam **operação contínua ou em ciclos longos, com histerese**, e montagem por compressão (não colagem rígida). O datasheet da Hebei cita *"Life expectancy: 200,000 hours"* e *"Failure rate based on long time testings: 0.2%"* — números válidos só para operação em regime estável, **não** para liga/desliga a cada segundo.
 
-**Inverter polaridade (resfriar↔aquecer).** O BTS7960 já é uma ponte-H, então a reversão é possível — mas **nunca inverter abruptamente**: é preciso **dead-time** (desligar, esperar a corrente zerar/estabilizar temperatura, só então inverter) para evitar shoot-through no driver e choque térmico no módulo. Alternativas de ponte-H de potência: **BTS7960/IBT-2** (já usado), **DRV8871**, **VNH5019**.
+**Inverter polaridade (resfriar↔aquecer).** ⚠️ *[Não adotado — ver o aviso no topo. Fica registrado como reserva de projeto, caso o PTC saia.]* O BTS7960 já é uma ponte-H, então a reversão é possível — mas **nunca inverter abruptamente**: é preciso **dead-time** (desligar, esperar a corrente zerar/estabilizar temperatura, só então inverter) para evitar shoot-through no driver e choque térmico no módulo. Alternativas de ponte-H de potência: **BTS7960/IBT-2** (já usado), **DRV8871**, **VNH5019**.
 
 **MOSFET, se fosse acionamento simples (12 V, ~6–15 A).** Para um único TEC a 12 V, um MOSFET canal-N **logic-level** resolve. O **IRLZ44N** (Infineon: VDS 55 V, ID 47 A a 25 °C, VGS(th) 1–2 V, Ptot 83 W) é encontrável no Brasil. Atenção à RDS(on): o valor "22 mΩ" do datasheet é especificado **a VGS = 10 V**; **a 4,5 V (nível lógico) a RDS(on) máxima sobe para ~35 mΩ**. Dissipação P = I²·RDS(on): a 6 A com 35 mΩ → ≈1,3 W (dissipador pequeno basta); a 15 A → ≈8 W (dissipador obrigatório). **O IRF540N NÃO é logic-level** e não satura com 5 V no gate — não usar. Em PWM alta, um **gate driver dedicado** (ex.: TC4420/IR2104) reduz perdas de chaveamento; o BTS7960 já tem driver interno.
 
