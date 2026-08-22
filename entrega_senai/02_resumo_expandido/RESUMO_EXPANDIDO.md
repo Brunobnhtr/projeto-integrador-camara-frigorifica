@@ -67,8 +67,8 @@ O desenvolvimento partiu de uma maquete funcional em escala reduzida, que permit
 solução sem interromper a produção. A planta reproduz a cadeia de energia, da entrada em
 corrente alternada aos barramentos em corrente contínua, e alimenta uma câmara termoelétrica
 com duas pastilhas Peltier em série e um aquecedor cerâmico. O acionamento das
-cargas térmicas emprega drivers em ponte completa comandados por modulação por largura de
-pulso em vinte quilohertz, escolha fundamentada na literatura, que demonstra perda de
+cargas térmicas emprega drivers de potência com saída de diagnóstico de corrente, comandados
+por modulação por largura de pulso em vinte quilohertz, escolha fundamentada na literatura, que demonstra perda de
 eficiência quando pastilhas termoelétricas operam sob corrente pulsada. A cadeia de comando
 foi construída em eletrotécnica clássica, com relé de selo e botoeiras, de modo que a
 emergência funcione mesmo com o firmware travado. A documentação foi estruturada em camadas e

@@ -16,7 +16,7 @@
 | Tecnologia / método | Onde já existe | O que fizemos com ela |
 |---|---|---|
 | **Controle PID de módulo Peltier com Arduino** | Kim *et al.* (2022); repositórios abertos | adotado — não reinventado |
-| **Acionamento por ponte H (BTS7960)** | prática consolidada em automação | adotado para inverter o sentido da pastilha |
+| **Driver de potência BTS7960** | prática consolidada em automação | adotado pela saída `IS` de corrente, pelo driver de gate integrado e pelas proteções — ⚠️ **não** para inverter a pastilha, que neste projeto nunca inverte ([Doc 32](../../camada_3_eletrica/32_sinais_e_sensores.md)) |
 | **Corrente contínua × PWM em TEC** | Texas Instruments SLUA979A (2020) | virou critério: PWM alto + filtro, não PWM lento |
 | **Telemetria MQTT com ESP32** | padrão de IoT industrial | adotado para a supervisão remota |
 | **Ensaio de burn-in com monitoramento de câmara** | KR102495025B1 (2023) | ⭐ é o mais próximo — mas vigia o ambiente, não os dispositivos |

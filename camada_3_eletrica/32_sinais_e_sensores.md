@@ -380,6 +380,77 @@ ARDUINO MEGA 2560
 >
 > 🔍 **Confirme no comissionamento:** com a carga a 100 % de duty por 5 minutos, os dois chips do módulo devem estar em temperatura **parecida**. Se um estiver bem mais quente que o outro, o `L_EN` daquele módulo ainda está aterrado.
 
+> ### ⭐ Por que o BTS7960, se a pastilha nunca inverte — e por que não um MOSFET
+>
+> 🎯 **A pergunta é justa e a objeção está certa:** a Peltier deste projeto **só resfria**. Quem
+> aquece é o PTC. A pastilha nunca troca de sentido, e o desenho acima prova isso — o `LPWM`
+> está amarrado em 0 V, dentro do próprio módulo. **A ponte H opera como chave unidirecional.**
+>
+> Então a justificativa "usamos ponte H para inverter a polaridade e aquecer com a Peltier"
+> **não vale para este projeto** e não deve ser dita na defesa. Ela vem da análise inicial, de
+> quando o aquecimento ainda seria feito pela própria pastilha. O PTC assumiu esse papel e a
+> inversão perdeu a função.
+>
+> **O BTS7960 continua sendo a escolha certa — mas por outros quatro motivos.**
+>
+> #### 1 · O pino `IS` é o que alimenta a nossa medição de corrente
+>
+> Esta é a razão que sozinha decide. O BTS7960 tem uma **saída espelho de corrente**: ele
+> devolve, em tensão, quanto está passando pela carga. É dela que saem os fios `S9` e `S10` para
+> os pinos `A0` e `A1` do Mega.
+>
+> Sem essa saída, para medir a corrente da Peltier seria preciso acrescentar **um sensor por
+> carga** — mais peça, mais fio, mais um ponto de falha. O driver já entrega isso de fábrica.
+>
+> #### 2 · Ele aceita o PWM do Arduino direto, sem circuito de gate
+>
+> A 20 kHz, o gate de um MOSFET de potência precisa ser carregado e descarregado 20 mil vezes
+> por segundo. Um pino de Arduino não dá conta disso sozinho: precisaria de um **driver de
+> gate** (TC4420, IR2104 ou equivalente) e do circuito em volta. O BTS7960 já traz o driver
+> dentro do encapsulamento — o pino do Arduino só manda o sinal.
+>
+> #### 3 · Ele se protege sozinho
+>
+> Sobrecorrente, sobretemperatura e subtensão são tratadas **dentro do chip**. Um MOSFET
+> discreto não tem nada disso: quem protege é o projetista, com mais componentes.
+>
+> #### 4 · A conta fecha a favor dele
+>
+> | Caminho | O que precisaria | Preço |
+> |---|---|---:|
+> | **BTS7960 (adotado)** | módulo pronto, com bornes, dissipador e `IS` | **R$ 20,96 o par** |
+> | MOSFET discreto | 2× IRLZ44N (~R$ 12) + 2 gate drivers (~R$ 20) + 2 sensores de corrente (~R$ 35) + dissipador, placa e solda | **~R$ 67 + solda** |
+>
+> ⚠️ E a solda é proibida dentro deste painel por decisão de projeto ([Doc 33](33_placa_interface_componentes.md)):
+> todo componente mora em borne.
+>
+> #### O que NÃO serviria, e por quê
+>
+> | Alternativa | Por que não |
+> |---|---|
+> | **Relé** | a carga é comandada por **PWM a 20 kHz**. Um contato duraria segundos — é a mesma regra do [§31.16](31_comando_e_protecoes.md): contato para liga/desliga, semicondutor para modular |
+> | **SSR de corrente contínua** | serve para liga/desliga, não para modular com resolução; e custa mais que o BTS para 6 A |
+> | **Driver dedicado de TEC** (LT8722, MAX1968) | é o ideal técnico — fonte de corrente de verdade, sem ripple. Mas é componente SMD, caro e sem módulo pronto no mercado nacional |
+> | **Meio-ponte genérica** (módulo IRF3205) | resolveria o chaveamento, mas **não tem a saída `IS`** — perderíamos a detecção de corrente |
+>
+> #### 📌 O que se paga por usar uma ponte H como chave unidirecional
+>
+> Metade do módulo fica ociosa. É um desperdício **declarado**, e ele custa R$ 10 — menos que
+> qualquer alternativa que entregue `IS` e driver de gate juntos.
+>
+> 🎁 **E sobra uma reserva de projeto:** o hardware já suporta inverter a pastilha. Se um dia o
+> PTC sair do projeto, basta ligar o `LPWM` a um pino de PWM do Mega e programar o dead-time —
+> nenhuma peça precisa ser trocada.
+>
+> ⚠️ **Se fizer isso, três cuidados obrigatórios:** dead-time entre os sentidos (para não haver
+> curto de braço), rampa de partida, e respeitar que inverter uma pastilha submete as juntas de
+> solda interna à fadiga térmica — que é o principal modo de falha de um TEC.
+>
+> 🎓 **A frase para a banca:** *"o BTS7960 não está ali para inverter a pastilha — ela nunca
+> inverte neste projeto. Ele está ali porque entrega, num módulo de dez reais, três coisas que
+> eu teria de montar separadas: o driver de gate para o PWM de 20 kHz, as proteções e a saída de
+> corrente que alimenta o meu diagnóstico."*
+
 > **Alternativa igualmente válida:** ligar a carga entre `M+` e `B−`, deixando o `M−` sem uso. Aí só a metade R participa, o `L_EN` pode ficar aterrado e a corrente atravessa um único MOSFET. Funciona e dissipa um pouco menos — mas foge da ligação padrão do módulo, cujos bornes são rotulados como par `M+`/`M−`.
 
 ### O filtro do pino IS

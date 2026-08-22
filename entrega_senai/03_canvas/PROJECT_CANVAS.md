@@ -49,7 +49,7 @@ energia ao painel de comando e à câmara.
 ### Requisitos
 
 - Controle PID de aquecimento (PTC 24 V / 80 W) e resfriamento (2× Peltier TEC1-12706 em série)
-- Acionamento por ponte completa com PWM de 20 kHz
+- Acionamento por driver de potência com PWM de 20 kHz e saída de diagnóstico de corrente (`IS`)
 - Supervisão remota por Wi-Fi/MQTT e IHM local
 - Registro em cartão de memória com relógio de tempo real
 - Detecção de dispositivo inoperante por sensor de corrente, por posição de ensaio

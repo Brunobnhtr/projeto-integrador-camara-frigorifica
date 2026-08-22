@@ -41,9 +41,9 @@
 
 ## 2 · METODOLOGIA *(um parágrafo)*
 
-> Construímos uma planta industrial em escala reduzida, da entrada de energia até a câmara
+> Foi construída uma planta industrial em escala reduzida, da entrada de energia até a câmara
 > térmica, o que permitiu ensaiar a solução sem parar a produção. A câmara usa duas pastilhas
-> Peltier em série e um aquecedor cerâmico, acionados por drivers em ponte completa com PWM de
+> Peltier em série e um aquecedor cerâmico, acionados por drivers de potência com PWM de
 > 20 kHz. O controle é feito por Arduino Mega em malha fechada, com ESP32 publicando a
 > telemetria por MQTT, IHM local e registro em cartão com relógio de tempo real. A cadeia de
 > comando foi construída em eletrotécnica clássica, com relé de selo e botoeiras, de modo que a
