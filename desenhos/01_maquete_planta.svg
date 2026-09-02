@@ -30,59 +30,7 @@
   <text x="754" y="494" font-size="11" fill="#868e96">travessa</text>
   <text x="1104" y="494" font-size="11" fill="#868e96">travessa</text>
 
-  <!-- ================= ZONA EXTERNA — RUA ================= -->
-  <!-- calçada superior (postes de distribuição) -->
-  <rect x="10" y="215" width="620" height="40" fill="#c8ccd0" stroke="#9aa2aa" stroke-width="1"/>
-  <!-- pista -->
-  <rect x="10" y="255" width="620" height="150" fill="#3a4046"/>
-  <!-- calçada inferior (iluminação pública) -->
-  <rect x="10" y="405" width="620" height="40" fill="#c8ccd0" stroke="#9aa2aa" stroke-width="1"/>
-  <!-- meio-fio -->
-  <line x1="10" y1="255" x2="630" y2="255" stroke="#f8f9fa" stroke-width="3"/>
-  <line x1="10" y1="405" x2="630" y2="405" stroke="#f8f9fa" stroke-width="3"/>
-  <!-- faixa central tracejada -->
-  <line x1="20" y1="330" x2="620" y2="330" stroke="#f1f3f5" stroke-width="3" stroke-dasharray="14 14"/>
-  <!-- faixa de pedestres -->
-  <g fill="#f1f3f5">
-    <rect x="250" y="258" width="8" height="144"/><rect x="266" y="258" width="8" height="144"/>
-    <rect x="282" y="258" width="8" height="144"/><rect x="298" y="258" width="8" height="144"/>
-  </g>
-  <text x="320" y="392" font-size="13" fill="#adb5bd">faixa de pedestres</text>
-  <text x="320" y="278" font-size="16" font-weight="700" fill="#8a929a">R  U  A     —     V I A     P Ú B L I C A</text>
-
-  <!-- veículos -->
-  <g>
-    <rect x="150" y="288" width="88" height="34" rx="8" fill="#2e86c1" stroke="#17466e" stroke-width="2"/>
-    <rect x="170" y="294" width="42" height="22" rx="4" fill="#a9cce3"/>
-    <text x="194" y="284" font-size="11" fill="#7fb3d5" text-anchor="middle">carro 1:50</text>
-  </g>
-  <g>
-    <rect x="400" y="344" width="150" height="40" rx="5" fill="#f8f9fa" stroke="#868e96" stroke-width="2"/>
-    <rect x="400" y="344" width="42" height="40" rx="5" fill="#e8730c" stroke="#8a4300" stroke-width="2"/>
-    <text x="475" y="402" font-size="11" fill="#adb5bd" text-anchor="middle">caminhão de entrega → portão</text>
-  </g>
-  <g>
-    <rect x="560" y="288" width="88" height="34" rx="8" fill="#c0392b" stroke="#7a0b0b" stroke-width="2"/>
-    <rect x="586" y="294" width="42" height="22" rx="4" fill="#f5b7b1"/>
-  </g>
-
-  <!-- postes de iluminação pública -->
-  <g>
-    <circle cx="150" cy="425" r="5" fill="#5f7288" stroke="#212529" stroke-width="1.5"/>
-    <path d="M150 425 q22 -6 26 -18" fill="none" stroke="#5f7288" stroke-width="2.5"/>
-    <circle cx="178" cy="404" r="4.5" fill="#fff3b0" stroke="#b8860b" stroke-width="1.5"/>
-    <circle cx="330" cy="425" r="5" fill="#5f7288" stroke="#212529" stroke-width="1.5"/>
-    <path d="M330 425 q22 -6 26 -18" fill="none" stroke="#5f7288" stroke-width="2.5"/>
-    <circle cx="358" cy="404" r="4.5" fill="#fff3b0" stroke="#b8860b" stroke-width="1.5"/>
-    <circle cx="510" cy="425" r="5" fill="#5f7288" stroke="#212529" stroke-width="1.5"/>
-    <path d="M510 425 q22 -6 26 -18" fill="none" stroke="#5f7288" stroke-width="2.5"/>
-    <circle cx="538" cy="404" r="4.5" fill="#fff3b0" stroke="#b8860b" stroke-width="1.5"/>
-  </g>
-  <text x="150" y="462" font-size="12" fill="#5f7288" text-anchor="middle">iluminação pública Ø5 · h=180</text>
-  <!-- pedestres -->
-  <circle cx="240" cy="428" r="4" fill="#495057"/>
-  <circle cx="252" cy="432" r="4" fill="#495057"/>
-  <circle cx="600" cy="238" r="4" fill="#495057"/>
+  <!-- ================= ZONA EXTERNA — RUA (Removida) ================= -->
 
   <!-- ================= SUBESTAÇÃO ================= -->
   <rect x="10" y="10" width="290" height="205" fill="url(#brita)" stroke="#8d7b5f" stroke-width="2"/>
@@ -198,29 +146,7 @@
   <path d="M1090 110 L1130 110" fill="none" stroke="#6f42c1" stroke-width="5" stroke-dasharray="9 5" marker-end="url(#st)"/>
   <text x="1110" y="98" font-size="11" font-weight="700" fill="#6f42c1" text-anchor="middle">eletrocalha</text>
 
-  <!-- ================= CHÃO DE FÁBRICA ================= -->
-  <rect x="670" y="235" width="810" height="265" fill="#dee2e6" stroke="#adb5bd" stroke-width="2" stroke-dasharray="8 5"/>
-  <text x="1075" y="300" font-size="22" font-weight="700" fill="#6c757d" text-anchor="middle">CHÃO DE FÁBRICA</text>
-  <text x="1075" y="324" font-size="14" fill="#868e96" text-anchor="middle">toda a profundidade Y à frente do painel e da câmara</text>
-  <!-- corredor -->
-  <line x1="690" y1="360" x2="1460" y2="360" stroke="#f1c40f" stroke-width="3"/>
-  <line x1="690" y1="420" x2="1460" y2="420" stroke="#f1c40f" stroke-width="3"/>
-  <text x="1075" y="394" font-size="12" fill="#8a6d00" text-anchor="middle">corredor de circulação (portão → câmara)</text>
-  <!-- props -->
-  <g>
-    <rect x="760" y="440" width="34" height="22" fill="#c9a86a" stroke="#7f5f2a"/>
-    <rect x="806" y="452" width="34" height="22" fill="#c9a86a" stroke="#7f5f2a"/>
-    <text x="800" y="486" font-size="11" fill="#7f5f2a" text-anchor="middle">pallets</text>
-    <rect x="900" y="444" width="48" height="20" fill="#e8730c" stroke="#8a4300"/>
-    <text x="924" y="486" font-size="11" fill="#8a4300" text-anchor="middle">empilhadeira</text>
-    <circle cx="1180" cy="452" r="8" fill="#2e86c1" stroke="#17466e"/>
-    <circle cx="1200" cy="462" r="8" fill="#c0392b" stroke="#7a0b0b"/>
-    <text x="1190" y="486" font-size="11" fill="#495057" text-anchor="middle">tambores</text>
-    <rect x="1330" y="440" width="60" height="26" fill="#95a5a6" stroke="#5d6d7e"/>
-    <text x="1360" y="486" font-size="11" fill="#495057" text-anchor="middle">bancada</text>
-    <circle cx="1050" cy="450" r="5" fill="#495057"/>
-    <circle cx="1260" cy="440" r="5" fill="#495057"/>
-  </g>
+  <!-- ================= CHÃO DE FÁBRICA (Removido) ================= -->
 
   <!-- ================= COTAS ================= -->
   <g stroke="#c92a2a" stroke-width="1.5" fill="#c92a2a" font-size="14">
@@ -267,9 +193,6 @@
 
     <rect x="700" y="654" width="16" height="14" fill="#d6eaf8" stroke="#2e86c1"/>
     <text x="724" y="666" fill="#333">4 · CÂMARA FRIGORÍFICA — a carga do processo, no fundo</text>
-
-    <rect x="700" y="676" width="16" height="14" fill="#3a4046"/>
-    <text x="724" y="688" fill="#333">RUA — via pública com carros, pessoas e iluminação. Termina no portão</text>
 
     <rect x="700" y="698" width="16" height="14" fill="#adb5bd" stroke="#495057"/>
     <text x="724" y="710" fill="#333">MURO em X = 640 — divide "fora da empresa" de "dentro da empresa"</text>

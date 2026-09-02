@@ -36,10 +36,7 @@
   <text x="120" y="228" font-size="13" font-weight="700" fill="#6c7a7d">R3  CINZA  0,50 mm²</text>
   <text x="480" y="164" font-size="12" fill="#7f4f21">→ próximo poste</text>
 
-  <!-- nota: a iluminacao publica fica nos postes da RUA -->
-  <text x="404" y="128" font-size="11" font-weight="700" fill="#8a6d00">⚠ ESTE poste NÃO tem luminária.</text>
-  <text x="404" y="144" font-size="11" fill="#8a6d00">A iluminação pública fica nos postes da rua:</text>
-  <text x="404" y="160" font-size="11" fill="#8a6d00">Ø 5 mm, h = 180 mm, com braço curvo.</text>
+  <!-- nota: a rua e a iluminacao publica foram removidas do escopo da maquete -->
 
   <!-- ============ RETORNO 0 V (220 mm) ============ -->
   <rect x="270" y="256" width="60" height="8" fill="#dee2e6" stroke="#343a40" stroke-width="2"/>

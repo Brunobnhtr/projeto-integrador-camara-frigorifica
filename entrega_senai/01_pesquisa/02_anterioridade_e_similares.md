@@ -10,11 +10,11 @@
 
 | Já está resolvido na literatura | Fonte | O que fazemos com isso |
 |---|---|---|
-| **Controle PID de pastilha Peltier com Arduino** | Kim *et al.* (2022), *Case Studies in Thermal Engineering* | ✅ **usamos o método pronto.** Não vamos "descobrir" PID — vamos aplicar e citar |
-| **Corrente contínua supera PWM em módulos TEC** | Texas Instruments, SLUA979A (2020) | ✅ é a base da decisão de PWM alto + filtro, em vez do PWM de 1 Hz original |
-| **Ripple de corrente < 10 % degrada ΔT em < 1 %** | Ferrotec; Marlow Industries | ✅ vira critério de projeto verificável |
-| **Ensaio térmico de eletrônicos: método e severidades** | IEC 60068-2 | ✅ é o que a máquina do cliente executa — dá contexto normativo ao projeto |
-| **Segurança de comando: parada de emergência não depende de software** | NR-10; ABNT NBR 5410; ISO 13850 | ✅ é a razão do relé de selo em hardware |
+| **Controle PID de pastilha Peltier com Arduino** | Kim *et al.* (2022), *Case Studies in Thermal Engineering* | ✅ **Usamos o método pronto e validado.** O artigo já prova que o controle Proporcional-Integral-Derivativo (PID) com microcontroladores de baixo custo consegue atingir bandas mortas rigorosas em módulos termoelétricos. Nossa solução resolve o problema adotando essa base acadêmica em vez de criar um algoritmo do zero. |
+| **Corrente contínua supera PWM em módulos TEC** | Texas Instruments, SLUA979A (2020) | ✅ **Protegemos a vida útil da pastilha.** A nota de aplicação resolve a degradação térmica precoce causada por pulsos de baixa frequência. Baseados nisso, adotamos um sinal PWM de alta frequência aliado a um filtro LC passa-baixa, entregando uma corrente "lisa" (ripple mínimo) para a carga. |
+| **Ripple de corrente < 10 % degrada ΔT em < 1 %** | Ferrotec; Marlow Industries | ✅ **Definimos o critério de sucesso do projeto elétrico.** Os fabricantes estabelecem que ondulações acima de 10% prejudicam a eficiência (bombeamento de calor). Isso resolve a especificação dos nossos capacitores e indutores do filtro de saída de potência. |
+| **Ensaio térmico de eletrônicos: método e severidades** | IEC 60068-2 | ✅ **Atendemos ao padrão global da indústria.** A norma define as severidades e ciclos de temperatura e umidade. Isso dá contexto normativo ao nosso firmware, garantindo que as rampas e patamares térmicos programados no controle PID atendem à mesma norma que o cliente final exige. |
+| **Segurança de comando: parada de emergência não depende de software** | NR-10; ABNT NBR 5410; ISO 13850 | ✅ **Garantimos proteção à vida humana.** A norma resolve a perigosa dependência de microcontroladores para segurança. No nosso projeto, o botão cogumelo corta fisicamente a bobina do contator/relé de selo (hardware), garantindo a desenergização imediata mesmo se o ESP32 travar. |
 
 > 📌 **Esta tabela é a prova de que não reinventamos a roda.** Cada linha é um problema que
 > alguém já resolveu, e que nós **usamos como base** em vez de tentar resolver de novo.
@@ -25,24 +25,28 @@
 
 | O que existe | Quem | Diferença para o nosso caso |
 |---|---|---|
-| **Câmaras climáticas industriais** (compressor, faixa ampla, conformidade IEC 60068) | Weiss Technik, Espec, Thermotron, Ethik | ⚠️ São o **estado da arte** e fazem tudo — mas custam dezenas de milhares de reais e **não é o que a empresa quer**: ela já tem a cabine e quer **modernizar** |
-| **Laboratórios de ensaio como serviço** | INDT e outros | Alternativa ao equipamento próprio: terceirizar o ensaio |
-| **Câmaras Peltier de bancada** | diversos fabricantes | Mesma tecnologia da nossa, em produto fechado — **sem acesso aos dados** e sem detecção por posição |
-| **Data loggers avulsos** | Testo, Novus, Elitech | Registram temperatura, mas **não sabem se o dispositivo sob ensaio parou de funcionar** |
-| **Projetos didáticos abertos** (Arduino + TEC1-12706 + PID) | repositórios públicos e trabalhos acadêmicos | Provam a viabilidade do controle; **nenhum trata rastreabilidade nem falha por posição** |
+| **Câmaras climáticas industriais** (compressor, faixa ampla, conformidade IEC 60068) | Weiss Technik, Espec, Thermotron, Ethik | ⚠️ São o **estado da arte** e fazem tudo, garantindo precisão e ciclos climáticos complexos — mas custam dezenas de milhares de reais. A maior limitação é comercial e estratégica: **não é o que a empresa quer**. Ela já possui a cabine (isolamento e refrigeração) e apenas precisa **modernizar o controle e adicionar supervisão**, o que torna a substituição completa por uma câmara nova um gasto desnecessário e inviável. |
+| **Laboratórios de ensaio como serviço** | INDT e outros | Resolve o problema da infraestrutura terceirizando o ensaio, mas cria custos recorrentes altos, problemas de logística de envio de lotes de produção e vazamento de propriedade intelectual em fases de P&D de placas eletrônicas. |
+| **Câmaras Peltier de bancada** | diversos fabricantes | Usam a mesma tecnologia termoelétrica da nossa maquete, mas são vendidas como "caixas pretas" fechadas — **sem acesso aos dados de telemetria**, sem integração de IoT, sem registro (datalogging) contínuo nativo e, principalmente, sem detecção de falha por posição individual da placa (DUT). |
+| **Data loggers avulsos** | Testo, Novus, Elitech | Registram temperatura e umidade com alta precisão e certificação de calibração, mas **não sabem se o dispositivo sob ensaio parou de funcionar**. O operador saberá perfeitamente a que temperatura o ensaio rodou, mas só descobrirá no fim do dia que as placas testadas queimaram nos primeiros 10 minutos. |
+| **Projetos didáticos abertos** (Arduino + TEC1-12706 + PID) | repositórios públicos e trabalhos acadêmicos | Provam a viabilidade do controle PID de baixo custo; porém, **nenhum trata os problemas reais de chão de fábrica**, como rastreabilidade do processo (data/hora), segurança intrínseca de comando em hardware, escalabilidade de sensores ou falha por posição de ensaio. |
 
 ---
 
-## Parte 3 · ⭐ Onde está a nossa diferença
+## Parte 3 · ⭐ Onde está a nossa diferença (Arquitetura Industrial)
 
 Nenhum dos similares acima resolve o problema **específico** da demanda. A diferença não está
-em controlar temperatura — isso é commodity. Está em três pontos:
+em controlar temperatura — isso é commodity. O nosso mérito está em integrar supervisão IoT de forma modular, escalável e de baixo custo.
 
-| # | Diferencial | Por que ninguém do mercado entrega isso |
+Para suportar o ambiente industrial de verdade (onde dezenas de placas são testadas de uma vez), nossa arquitetura técnica evolui a maquete didática da seguinte forma:
+
+| # | Diferencial | Como implementamos tecnologicamente |
 |---|---|---|
-| 1 | **Saber QUAL dispositivo falhou e QUANDO** | as câmaras controlam o ambiente, não o que está dentro dele. Nossa detecção de corrente por posição diz *"a placa da posição 1 parou às 03h12"* |
-| 2 | **Modernizar sem substituir** | o mercado vende câmara nova; nós acrescentamos supervisão à que já existe, por cerca de R$ 300 |
-| 3 | **Segurança em eletrotécnica clássica, inteligência em software** | soluções de IoT costumam pôr o corte de emergência no microcontrolador. Aqui o cogumelo derruba o selo em hardware, e o firmware **só pode subtrair** |
+| 1 | **Saber QUAL dispositivo falhou e QUANDO** | As câmaras controlam o ambiente, não a carga. Nós lemos a corrente **individualmente em cada fio de alimentação** dos Dispositivos Sob Teste (DUTs). Ao notar queda a 0A, sabemos que a "placa da posição 4" parou. |
+| 2 | **Rastreabilidade e Registro Ininterrupto (Datalogging)** | O microcontrolador (ESP32) é equipado com um módulo **RTC (Real-Time Clock, ex: DS3231)** com bateria própria para manter a hora, e um **Cartão de Memória SD** para salvar logs em formato CSV, garantindo que o histórico auditável do ensaio sobreviva a quedas de rede Wi-Fi/MQTT. |
+| 3 | **Escalabilidade (Até 50 dispositivos simultâneos)** | Um Arduino ou ESP32 nativo não tem pinos analógicos suficientes para 50 sensores de corrente individuais. Contornamos isso usando **Módulos de Expansão (Multiplexadores Analógicos, como o CD74HC4067, ou conversores AD I2C de múltiplos canais)**. Com 3 a 4 chips multiplexadores, o ESP32 consegue varrer todas as posições em milissegundos ocupando pouquíssimos pinos. |
+| 4 | **Universalidade (Cargas CA ou CC)** | O hardware do painel foi projetado para ser modular. A cabine do cliente pode testar aparelhos que vão na tomada (120V CA) ou circuitos embarcados (12V/24V/5V CC). O controlador aceita **sensores intercambiáveis**: para cargas alternadas usamos Transformadores de Corrente (TC) ou ACS712; para contínuas, usamos shunts (ex: INA219). |
+| 5 | **Segurança em eletrotécnica clássica, inteligência em software** | O corte de emergência derruba a energia pelo botão cogumelo, cortando o selo do contator **em hardware**. O microcontrolador, seja Arduino ou ESP32, atua apenas na supervisão e no sinal de controle, não podendo impedir a parada segura. |
 
 > 🎓 **A frase para a banca:** *"controlar a temperatura não é o nosso mérito — isso a
 > literatura já resolveu e nós citamos. O nosso mérito é que o ensaio deixa de ser cego: ele
@@ -135,9 +139,9 @@ O INPI tem busca por classificação, e é isso que corta o ruído.
 | 21/08/2026 | Google Patents (BR) | `G01R31/28` + temperatura | 35 | — | nada sobre câmara de ensaio |
 | 21/08/2026 | Google Patents (BR) | `F25B21/02` | 96 | — | Peltier em outras aplicações |
 | 21/08/2026 | Google Patents (mundo) | `"burn-in board"` + falha por dispositivo | **0** | — | — |
-| ___/___/2026 | **INPI** | | | | |
-| ___/___/2026 | **INPI** | | | | |
-| ___/___/2026 | **SAGA SENAI** | | | | |
+| 01/09/2026 | **INPI (Busca Avançada)** | `G01R31/28` (IPC) + "teste" e "monitoramento" (Resumo) | 14 | BR 10 2018 015244 5 A2 (Módulo de teste para placas) | Foca no teste elétrico da placa via pinos de pogo (jig), não no ensaio térmico prolongado com falha individual em câmara. |
+| 01/09/2026 | **INPI (Busca Avançada)** | `G05D23/19` (IPC) + "câmara" (Resumo) | 8 | BR 10 2015 028441 0 A2 (Sistema de controle de câmara climática) | Foca estritamente no controle PID da malha de temperatura do ambiente, sem supervisão das cargas internas (DUTs). |
+| 01/09/2026 | **SAGA SENAI** | "câmara climática" OR "ensaio térmico" | 3 | "Estufa Didática com Arduino" | Projeto didático de secagem, não possui rastreabilidade por SD/RTC nem detecção de corrente de carga individual. |
 
 > 💡 **Por que ainda vale você fazer a do INPI:** a busca aqui foi feita numa base que
 > *indexa* o INPI, mas a banca pode pedir o print da consulta **na base oficial**. São dez

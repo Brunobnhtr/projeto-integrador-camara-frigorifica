@@ -39,6 +39,7 @@
 - **Acompanhamento remoto em tempo real** — não é preciso ficar ao lado da máquina
 - **Registro com data e hora** de cada evento: o ensaio passa a ter histórico auditável
 - **Moderniza sem substituir**: aproveita a cabine que a empresa já tem
+- **Versatilidade de Carga**: suporta dispositivos CA e CC graças à arquitetura modular de sensores
 - **Segurança em hardware**: o cogumelo derruba a potência mesmo com o software travado
 
 ## 5 · Relacionamento com o cliente

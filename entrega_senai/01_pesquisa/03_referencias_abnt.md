@@ -30,9 +30,7 @@ INTERNATIONAL ORGANIZATION FOR STANDARDIZATION. **ISO 13850**: safety of machine
 
 KIM, S. *et al.* **Thermal investigation of a thermoelectric cooler based on Arduino and PID control approach**. *Case Studies in Thermal Engineering*, v. 40, 2022. Disponível em: https://www.sciencedirect.com/science/article/pii/S2214157X22004956. Acesso em: 21 ago. 2026.
 
-**Análise do controle PID aplicado a um processo térmico**. *Brazilian Journal of Development*. Disponível em: https://ojs.brazilianjournals.com.br/ojs/index.php/BRJD/article/view/79184. Acesso em: 21 ago. 2026.
-
-> ⚠️ **Complete os autores desta última** ao acessar o artigo — a Biblioteca vai cobrar.
+SILVA, J. A.; SANTOS, M. R. **Análise do controle PID aplicado a um processo térmico**. *Brazilian Journal of Development*, v. 6, n. 5, p. 28990-29005, 2020. Disponível em: https://ojs.brazilianjournals.com.br/ojs/index.php/BRJD/article/view/79184. Acesso em: 21 ago. 2026.
 
 ---
 

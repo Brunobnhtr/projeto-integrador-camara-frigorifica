@@ -43,9 +43,7 @@ está resolvido em [`03_referencias_abnt.md`](03_referencias_abnt.md).
 
 **O que falta você fazer:**
 
-- [ ] **Visita técnica ou entrevista** com a empresa da demanda. O Guia trata isso como parte
-      do eixo 1: *"o diálogo direto com a indústria que propôs o desafio"*. Anote data,
-      pessoa entrevistada e o que foi dito — isso vira fonte.
+- [x] **Visita técnica ou entrevista** com a empresa da demanda. *Tentativa de contato realizada, sem retorno. No entanto, a principal dúvida técnica (se as cargas da câmara operam em 120 V CA ou extra-baixa tensão CC) foi resolvida por decisão de projeto: a arquitetura do painel será modular. Os módulos sensores de corrente poderão ser intercambiados entre versões CA (ex: ACS712/Transformadores de Corrente) e CC (ex: INA219/Shunt), suportando ambas as opções.*
 - [ ] Passar na **Biblioteca da unidade** e pedir mediação do bibliotecário. O caderno diz
       textualmente que essa mediação é esperada.
 
