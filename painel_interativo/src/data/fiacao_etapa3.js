@@ -73,8 +73,11 @@ export const FIOS_ETAPA3 = [
   { ...cinco('D11', { comp: 'BD-5V', via: 'O6' }, { comp: 'AD-1', via: '+' },
       'O 5 V que alimenta o pull-up do 1-Wire dentro da PI-1.'),
     rota: ['CH-base', 'CV-esq', 'CH-3x2'] },
-  { ...cinco('D12', { comp: 'BD-5V', via: 'O8' }, { comp: 'SC-1', via: 'VCC' },
-      'Alimenta o sensor de corrente da posição de ensaio.'),
+  { ...cinco('D12', { comp: 'BD-5V', via: 'O8' }, { comp: 'ACS712-1', via: 'VCC' },
+      'Alimenta o sensor de corrente ACS712 #1.'),
+    rota: ['CH-base', 'CV-esq', 'CH-3x2'] },
+  { ...cinco('D12b', { comp: 'BD-5V', via: 'O11' }, { comp: 'ACS712-2', via: 'VCC' },
+      'Alimenta o sensor de corrente ACS712 #2.'),
     rota: ['CH-base', 'CV-esq', 'CH-3x2'] },
   /* 🗑️ O D13 SAIU. Ele levava 5 V do BD-5V · O9 até o VCC do módulo MOSFET (MV-1),
      que deixou de existir: as 5 ventoinhas internas passaram para o KA3, um terceiro
@@ -146,11 +149,12 @@ export const FIOS_ETAPA3 = [
      ponte interna do KA1 e do KA2 (fio Z21, no BD-0V-B), e o negativo das ventoinhas
      vai direto da câmara para a barra, pelo X10. ⭐ Dois fios e uma armadilha a menos.
      O ponto Z13 do BD-0V agora recebe o X10; o Z14 ficou livre. */
-  { ...zero('D24', { comp: 'SC-1', via: 'GND' }, { comp: 'BD-0V-B', via: 'Z17' },
-      'O 0 V do sensor de corrente.'),
-    rota: ['CH-3x2'],
-    porque: '⭐ Este fio carrega a corrente que está sendo medida. Ele só é 0 V deste '
-          + '0 V do sensor — o mesmo retorno comum do painel.' },
+  { ...zero('D24', { comp: 'ACS712-1', via: 'GND' }, { comp: 'BD-0V-B', via: 'Z17' },
+      'O 0 V do sensor ACS712 #1.'),
+    rota: ['CH-3x2'] },
+  { ...zero('D24b', { comp: 'ACS712-2', via: 'GND' }, { comp: 'BD-0V-B', via: 'Z20' },
+      'O 0 V do sensor ACS712 #2.'),
+    rota: ['CH-3x2'] },
   /* ── o que a PI-1 fazia por dentro, e agora é fio ────────────────────
      ⭐ Trocar a placa soldada por módulos com borne tem um preço, e ele é
         este: três ligações que eram trilha de cobre viraram três fios. É
@@ -182,4 +186,76 @@ export const FIOS_ETAPA3 = [
     nome: '⭐ ponte entre os blocos de 0 V',
     aviso: '⚠️ 4 mm², e é a MAIOR bitola do painel depois da entrada. Não é pela corrente: '
          + 'é para a queda ser desprezível e os dois blocos ficarem no mesmo potencial.' },
+
+  /* ── REDE MODBUS RS-485 — os fios novos do retrofit ──────────────────
+     ⭐ Tudo o que conecta o sistema de monitoramento de posições de ensaio:
+     BD-24V alimenta os porta-fusíveis e o módulo ADC. Os fusíveis alimentam
+     os ACS712 (IP+). O sinal analógico (OUT) vai para o ADC Modbus. E o
+     barramento RS-485 (A+/B-) leva os dados até o MAX485 do ESP32. */
+
+  /* BD-24V → F-P1 e F-P2 */
+  { ...pot('D28b', { comp: 'BD-24V', via: 'O4' }, { comp: 'F-P', via: 'F-P1 IN' }, 0.5,
+      '24 V permanente para o porta-fusível da posição 1.'),
+    classe: 'alim', func: 'srv24', rota: ['CH-base', 'CV-esq', 'CH-3x2'],
+    nome: '24 V → F-P1' },
+  { ...pot('D28c', { comp: 'BD-24V', via: 'O5' }, { comp: 'F-P', via: 'F-P2 IN' }, 0.5,
+      '24 V permanente para o porta-fusível da posição 2.'),
+    classe: 'alim', func: 'srv24', rota: ['CH-base', 'CV-esq', 'CH-3x2'],
+    nome: '24 V → F-P2' },
+
+  /* F-P → ACS712 IP+ (a entrada de corrente do sensor) */
+  { ...pot('D28d', { comp: 'F-P', via: 'F-P1 OUT' }, { comp: 'ACS712-1', via: 'IP+' }, 0.5,
+      'O fio do fusível ao sensor: entra pelo IP+ e a corrente segue em série.'),
+    classe: 'alim', func: 'srv24', rota: ['CH-2x1', 'CV-dir', 'CH-3x2'],
+    nome: 'F-P1 → ACS712 #1 IP+' },
+  { ...pot('D28e', { comp: 'F-P', via: 'F-P2 OUT' }, { comp: 'ACS712-2', via: 'IP+' }, 0.5,
+      'Idem para a posição 2.'),
+    classe: 'alim', func: 'srv24', rota: ['CH-2x1', 'CV-dir', 'CH-3x2'],
+    nome: 'F-P2 → ACS712 #2 IP+' },
+
+  /* ACS712 OUT → ADC Modbus IN (sinal analógico 0–5 V) */
+  { n: 'D28f', etapa: 3, classe: 'sinal', func: 'medida', mm2: 0.25,
+    de: { comp: 'ACS712-1', via: 'OUT' }, para: { comp: 'ADC_Modbus', via: 'IN0' },
+    rota: ['CH-3x2', 'CV-dir', 'CH-topo'],
+    diz: 'Sinal analógico do ACS712 #1 para a entrada IN0 do módulo Modbus.',
+    nome: 'ACS712 #1 OUT → ADC IN0' },
+  { n: 'D28g', etapa: 3, classe: 'sinal', func: 'medida', mm2: 0.25,
+    de: { comp: 'ACS712-2', via: 'OUT' }, para: { comp: 'ADC_Modbus', via: 'IN1' },
+    rota: ['CH-3x2', 'CV-dir', 'CH-topo'],
+    diz: 'Sinal analógico do ACS712 #2 para a entrada IN1 do módulo Modbus.',
+    nome: 'ACS712 #2 OUT → ADC IN1' },
+
+  /* ADC Modbus — alimentação de sinal (conector azul, topo) */
+  { ...cinco('D28h', { comp: 'BD-5V', via: 'O9' }, { comp: 'ADC_Modbus', via: 'VCC_SIG' },
+      'Referência de 5 V para as entradas analógicas do módulo ADC.'),
+    rota: ['CH-base', 'CV-esq', 'CH-topo'],
+    nome: '5 V ref → ADC Modbus (topo)' },
+  { ...zero('D28i', { comp: 'ADC_Modbus', via: 'GND_SIG' }, { comp: 'BD-0V-B', via: 'Z19' },
+      'GND de sinal do módulo ADC Modbus (conector azul).'),
+    rota: ['CH-topo', 'CV-dir', 'CH-3x2'],
+    nome: 'ADC Modbus GND sinal' },
+
+  /* ADC Modbus — alimentação do módulo (conector verde, base) */
+  { ...pot('D28j', { comp: 'BD-24V', via: 'O6' }, { comp: 'ADC_Modbus', via: 'VCC_PWR' }, 0.25,
+      '24 V para alimentar o módulo ADC Modbus (aceita 9–30 V).'),
+    classe: 'alim', func: 'srv24', rota: ['CH-base', 'CV-esq', 'CH-3x2'],
+    nome: '24 V → ADC Modbus (base)' },
+  { ...zero('D28j2', { comp: 'ADC_Modbus', via: 'GND_PWR' }, { comp: 'BD-0V', via: 'Z14' },
+      'GND de potência do módulo ADC Modbus (conector verde). Vai para a barra bruta.'),
+    rota: ['CH-3x2', 'CV-esq', 'CH-base'],
+    nome: 'ADC Modbus GND potência' },
+
+  /* ADC RS-485 → MAX485 do ESP32 */
+  { n: 'D28k', etapa: 3, classe: 'sinal', func: 'digital', mm2: 0.25,
+    de: { comp: 'ADC_Modbus', via: 'A+' }, para: { comp: 'ESP32', via: 'D16' },
+    rota: ['CH-3x2', 'CV-dir', 'CH-2x1'],
+    diz: 'Barramento RS-485 linha A+ (par trançado, com 120 Ω de terminação).',
+    nome: 'RS-485 A+ → MAX485 → ESP32',
+    aviso: '⚠️ Na prática o fio vai até um módulo MAX485 ao lado do ESP32, '
+         + 'que converte para TTL 3,3 V nos pinos D16/D17.' },
+  { n: 'D28l', etapa: 3, classe: 'sinal', func: 'digital', mm2: 0.25,
+    de: { comp: 'ADC_Modbus', via: 'B-' }, para: { comp: 'ESP32', via: 'D17' },
+    rota: ['CH-3x2', 'CV-dir', 'CH-2x1'],
+    diz: 'Barramento RS-485 linha B- (par trançado, com 120 Ω de terminação).',
+    nome: 'RS-485 B- → MAX485 → ESP32' },
 ];

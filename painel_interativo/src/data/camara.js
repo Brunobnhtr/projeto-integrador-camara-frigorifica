@@ -291,9 +291,12 @@ export const PECAS3D = [
   { id: 'PTC', bornes: [{ b:'+', lado:'base', t:0.30 }, { b:'−', lado:'base', t:0.70 }], nome: 'PTC 24 V', cor: '#e03131', pc: 'PC-1',
     caixa: [64, 30, 26, 136, 70, 44],
     diz: 'Na base, sobre o plenum de 30 mm.' },
-  { id: 'DUT1', bornes: [{ b:'+24 V', lado:'base', t:0.35 }, { b:'retorno', lado:'topo', t:0.75 }], nome: 'Posição 1', cor: '#c92a2a', pc: 'PC-2',
+  { id: 'DUT1', bornes: [{ b:'+24 V', lado:'base', t:0.35 }, { b:'retorno', lado:'topo', t:0.75 }], nome: 'Posição 1 (W5W)', cor: '#c92a2a', pc: 'PC-2',
     caixa: [22, 25, 24, 62, 75, 58],
-    diz: 'LED vermelho + 1,2 kΩ — 17,6 mA.' },
+    diz: 'Lâmpada W5W (Pingo) 24V 5W — 208 mA.' },
+  { id: 'DUT2', bornes: [{ b:'+24 V', lado:'base', t:0.35 }, { b:'retorno', lado:'topo', t:0.75 }], nome: 'Posição 2 (W5W)', cor: '#c92a2a', pc: 'PC-2',
+    caixa: [138, 25, 24, 178, 75, 58],
+    diz: 'Lâmpada W5W (Pingo) 24V 5W — 208 mA.' },
   { id: 'VD1', bornes: [{ b:'+', lado:'topo', t:0.35 }, { b:'−', lado:'topo', t:0.70 }], nome: 'vent. entrada duto esq.', cor: '#74c0fc', pc: 'PC-1', fora: true,
     caixa: [-32, 35, 108, -6, 65, 138],
     diz: 'Dentro do duto lateral, FORA do volume útil. Sopra para CIMA.' },
@@ -337,11 +340,13 @@ export const ROTAS_CAMARA = {
   X9:  { alvo:'VF.+', pc:'PC-1', gx:42.3, lane:10.9, sobe: 9.2, crz:202 },  // circulação +
   X10: { alvo:'VF.−', pc:'PC-1', gx:41.4, lane:12.2, sobe:11.8, crz:198 },  // circulação −
   X11: { alvo:'DUT1.+24 V', pc:'PC-1', gx:38.7, lane:16.1 },              // posição 1 +
+  X11b: { alvo:'DUT2.+24 V', pc:'PC-1', gx:37.8, lane:17.4 },             // posição 2 +
   X4:  { alvo:'PTC.−', pc:'PC-1', gx:46.8, lane:18.7 },              // PTC −
   X3:  { alvo:'PTC.+', pc:'PC-1', gx:47.7, lane:20.0 },              // PTC +
 
   /* ── PC-2 · sinal, entra no alto à direita ───────────────────────── */
   X13: { alvo:'DUT1.retorno', pc:'PC-2', gx:156.1, lane:225.7, sobe:195.6, crz: 94 }, // retorno 1
+  X13b: { alvo:'DUT2.retorno', pc:'PC-2', gx:157.0, lane:227.0, sobe:197.0, crz: 94 }, // retorno 2
   X15: { alvo:'SENS.VCC', pc:'PC-2', gx:155.2, lane:224.4, sobe:194.2 },          // AM2315C VCC
   X16: { alvo:'SENS.GND', pc:'PC-2', gx:154.3, lane:223.1, sobe:192.8 },          // AM2315C GND
   X17: { alvo:'SENS.SDA', pc:'PC-2', gx:153.4, lane:221.8, sobe:191.4 },          // AM2315C SDA

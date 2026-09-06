@@ -109,8 +109,13 @@ export const HOSTS = [
     id: 'DUT1', tipo: 'camara', nome: 'Placa simuladora — posição de ensaio 1',
     onde: 'dentro da câmara, posição 1',
     terminais: ['+24V', 'RET'],
-    diz: 'Consome uma corrente conhecida (17,6 mA) para o sistema perceber '
-       + 'quando ela some.',
+    diz: 'Consome corrente para o sistema perceber quando ela some (lâmpada).',
+  },
+  {
+    id: 'DUT2', tipo: 'camara', nome: 'Placa simuladora — posição de ensaio 2',
+    onde: 'dentro da câmara, posição 2',
+    terminais: ['+24V', 'RET'],
+    diz: 'Consome corrente para o sistema perceber quando ela some (lâmpada).',
   },
 ];
 
@@ -465,50 +470,30 @@ export const DISCRETOS = [
          + 'KM1, ventoinhas do radiador e ventoinhas internas.',
   },
   {
-    id: 'DUT1-R', ref: 'R-DUT1', peca: 'Resistor 1,2 kΩ · ½ W',
-    tipo: 'resistor', valor: '1,2 kΩ', qtd: 1, host: 'DUT1', arranjo: 'serie', polaridade: false,
+    id: 'DUT1-L', ref: 'L-DUT1', peca: 'Lâmpada Automotiva W5W (Pingo) 24V 5W',
+    tipo: 'carga', valor: '5 W / 208 mA', qtd: 1, host: 'DUT1', arranjo: 'serie', polaridade: false,
     pernas: [
-      { nome: 'perna 1', vai: { comp: 'DUT1', via: '+24V' } },
-      { nome: 'perna 2', vai: { comp: 'DUT1', via: 'RET' } },
+      { nome: 'polo 1', vai: { comp: 'DUT1', via: '+24V' } },
+      { nome: 'polo 2', vai: { comp: 'DUT1', via: 'RET' } },
     ],
-    papel: 'Fixa a corrente da posição de ensaio 1 em 17,6 mA',
-    porque: 'É esse valor constante que o sistema aprende como "normal" — e cuja ausência denuncia '
-          + 'a falha do dispositivo.',
-    seFaltar: 'Sem ele o LED queima e a posição não tem corrente de referência.',
-    ensaio: 'Amperímetro em série na volta da posição 1 → 17,6 mA ± 1 mA.',
-    passo: 'A-06', fonte: 'Doc 13 §13.3b',
-    aviso: '⚠️ ½ W. O resistor de 220 Ω / 5 W da versão antiga saiu do projeto junto com a ideia '
-         + 'de simular carga térmica.',
+    papel: 'Carga resistiva real para gerar corrente suficiente (208 mA) para ser lida pelos sensores ACS712 e aquecer levemente a câmara',
+    porque: 'Uma carga muito baixa (LED) cairia no ruído do sensor de 5A (que mede 185 mV/A). Com 208 mA, temos 38 mV de sinal no conversor A/D, o que é detectável com folga.',
+    seFaltar: 'O sistema lê corrente zero e dispara alarme de "dispositivo morto" na apresentação.',
+    ensaio: 'Retirar a lâmpada do soquete durante a demonstração → alarme de posição 1 morta.',
+    passo: 'A-06', fonte: 'Estudo de Cargas Simuladoras'
   },
   {
-    id: 'DUT1-LED', ref: 'LED-DUT1', peca: 'LED 5 mm vermelho',
-    tipo: 'led', valor: 'vermelho', qtd: 1, host: 'DUT1', arranjo: 'serie', polaridade: true,
-    comoIdentificar: 'Perna longa = ânodo (+), do lado do resistor.',
-    seInverter: 'A posição não acende e o sistema lê corrente zero — exatamente o mesmo sintoma '
-              + 'de "dispositivo morto". É o erro mais confuso possível aqui.',
+    id: 'DUT2-L', ref: 'L-DUT2', peca: 'Lâmpada Automotiva W5W (Pingo) 24V 5W',
+    tipo: 'carga', valor: '5 W / 208 mA', qtd: 1, host: 'DUT2', arranjo: 'serie', polaridade: false,
     pernas: [
-      { nome: 'perna longa (ânodo)', vai: { comp: 'DUT1', via: '+24V' } },
-      { nome: 'perna curta (catodo)', vai: { comp: 'DUT1', via: 'RET' } },
+      { nome: 'polo 1', vai: { comp: 'DUT2', via: '+24V' } },
+      { nome: 'polo 2', vai: { comp: 'DUT2', via: 'RET' } },
     ],
-    papel: 'Sinal visual de que a posição 1 está energizada, visível pela porta da câmara',
-    porque: 'Deixa a demonstração de detecção de falha acontecer aos olhos da banca.',
-    seFaltar: '—',
-    ensaio: 'Aceso com a posição energizada; apaga ao abrir o jumper de ensaio.',
-    passo: 'A-06b', fonte: 'Doc 13 §13.3',
-  },
-  {
-    id: 'DUT1-J', ref: 'J-DUT1', peca: 'Micro-chave ou jumper de 2 vias',
-    tipo: 'chave', valor: '—', qtd: 1, host: 'DUT1', arranjo: 'serie', polaridade: false,
-    pernas: [
-      { nome: 'via 1', vai: { comp: 'DUT1', via: '+24V' } },
-      { nome: 'via 2', vai: { comp: 'DUT1', via: 'RET' } },
-    ],
-    papel: 'Abre o circuito da posição 1 para simular um dispositivo morto',
-    porque: '⭐ É a melhor demonstração do projeto: tira-se o jumper e, em menos de 2 segundos, o '
-          + 'alarme aparece na IHM e no dashboard.',
-    seFaltar: 'A falha só poderia ser demonstrada desligando fio — feio e arriscado na apresentação.',
-    ensaio: 'Abrir o jumper com o ensaio rodando → alarme da posição 1 em menos de 2 s.',
-    passo: 'A-06b', fonte: 'Doc 13 §13.3',
+    papel: 'Idem DUT1, mas ligada ao circuito monitorado pelo ACS712 #2',
+    porque: 'Permite apresentar a câmara ensaiando múltiplos dispositivos e detectando falha individualmente.',
+    seFaltar: 'Idem DUT1.',
+    ensaio: 'Retirar a lâmpada → alarme de posição 2 morta.',
+    passo: 'A-06', fonte: 'Estudo de Cargas Simuladoras'
   },
 ];
 

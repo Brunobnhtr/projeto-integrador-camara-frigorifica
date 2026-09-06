@@ -228,8 +228,9 @@ export function tracarFio(f, comps, idx, portaX0 = CAIXA.largura + 40) {
   if (!a.p || !b.p) return { ...f, pts: [], a, b };
   if (a.comp && a.comp === b.comp) return tracarPonte(f, a, b);
 
-  /* a saída de um borne lateral também sai contornando */
-  const saiLat = a.lateral ? [a.p[0] + (a.lado === 'esquerda' ? -7 : 7), a.p[1]] : null;
+  /* a saída de um borne lateral também sai contornando. Usamos um spread para eles não se sobreporem */
+  const spreadA = a.lateral ? 7 + (idx % 6) * 2.5 : 0;
+  const saiLat = a.lateral ? [a.p[0] + (a.lado === 'esquerda' ? -spreadA : spreadA), a.p[1]] : null;
   const pts = [a.p.slice()];
   if (saiLat) pts.push(saiLat);
   let cur = (saiLat ?? a.p).slice();
@@ -254,9 +255,15 @@ export function tracarFio(f, comps, idx, portaX0 = CAIXA.largura + 40) {
      contornando o componente por fora — senão o fio sobe rente à borda
      e some atrás dele. */
   if (b.lateral) {
-    const foraX = b.p[0] + (b.lado === 'esquerda' ? -7 : 7);
+    const spread = 7 + (idx % 6) * 2.5;
+    const foraX = b.p[0] + (b.lado === 'esquerda' ? -spread : spread);
     pts.push([foraX, cur[1]]);
     pts.push([foraX, b.p[1]]);
+  } else if (b.pr) {
+    /* se o destino é um prensa-cabo na base, desce pela canaleta vertical até o fundo
+       antes de cruzar na horizontal */
+    pts.push([cur[0], b.p[1] - 12]);
+    pts.push([b.p[0], b.p[1] - 12]);
   } else {
     pts.push([b.p[0], cur[1]]);
   }

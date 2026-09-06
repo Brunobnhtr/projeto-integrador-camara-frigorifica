@@ -109,16 +109,22 @@ export const FIOS_ETAPA6 = [
          + 'recebia o GND de carga do MV-1.' },
 
   /* ── AS DUAS POSIÇÕES DE ENSAIO ───────────────────────────────────── */
-  { ...kabo('X11', { comp: 'F-P', via: 'F-P1' }, naCamara('DUT1', '+24 V'), 0.5,
-      'srv24', 'alim', 'Positivo da posição 1, já depois do fusível e da chave.'),
-    nome: 'posição 1 +', prensa: 'PG13-2', rota: ['CH-2x1', 'CV-esq', 'CH-base'] },
+  { ...kabo('X11', { comp: 'ACS712-1', via: 'IP-' }, naCamara('DUT1', '+24 V'), 0.5,
+      'srv24', 'alim', 'Positivo da posição 1, já depois do sensor ACS712 #1.'),
+    nome: 'posição 1 +', prensa: 'PG13-2', rota: ['CH-3x2', 'CV-dir', 'CH-base'],
+    porque: '⭐ O fio sai do terminal IP- do ACS712 (saída de corrente do sensor) e vai '
+          + 'direto para a lâmpada Pingo W5W na câmara. O caminho completo é: '
+          + 'BD-24V → F-P1 → ACS712 IP+ → IP- → este fio → Lâmpada → 0V.' },
+  { ...kabo('X11b', { comp: 'ACS712-2', via: 'IP-' }, naCamara('DUT2', '+24 V'), 0.5,
+      'srv24', 'alim', 'Positivo da posição 2, saindo do ACS712 #2.'),
+    nome: 'posição 2 +', prensa: 'PG13-2', rota: ['CH-3x2', 'CV-dir', 'CH-base'] },
   { ...kabo('X13', naCamara('DUT1', 'retorno'), { comp: 'BD-0V-B', via: 'Z22' }, 0.5,
-      'zero', 'comum', 'A volta da posição 1 — agora vai direto ao 0 V.'),
-    nome: 'posição 1 · retorno', prensa: 'PG9-3', rota: ['CH-3x2'],
-    porque: '⭐ ANTES ELE ERA A MEDIÇÃO: passava pelo shunt da PI-2, onde os 17,6 mA '
-          + 'viravam 0,83 V para o multiplexador ler. Com a detecção digital ninguém '
-          + 'precisa medir essa corrente — quem responde "tem corrente?" é o sensor, no '
-          + 'painel. O retorno virou um 0 V comum, com parafuso próprio na barra.' },
+      'zero', 'comum', 'A volta da posição 1 — vai direto ao 0 V.'),
+    nome: 'posição 1 · retorno', prensa: 'PG9-3', rota: ['CV-dir', 'CH-3x2'],
+    porque: '⭐ O negativo da lâmpada volta pela barra de 0 V, em ponto próprio.' },
+  { ...kabo('X13b', naCamara('DUT2', 'retorno'), { comp: 'BD-0V-B', via: 'Z23' }, 0.5,
+      'zero', 'comum', 'A volta da posição 2.'),
+    nome: 'posição 2 · retorno', prensa: 'PG9-3', rota: ['CV-dir', 'CH-3x2'] },
 
   /* ── O SENSOR DA CÂMARA ───────────────────────────────────────────── */
   { ...kabo('X15', { comp: 'BD-5V', via: 'O10' }, naCamara('SENS', 'VCC'), 0.25,

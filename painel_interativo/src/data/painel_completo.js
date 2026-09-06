@@ -11,24 +11,29 @@
  * Dimensões em MILÍMETROS.
  */
 
-export const CAIXA = { largura: 500, altura: 500, profundidade: 200 };
-/* ⚠️ A caixa CRESCEU de 400 para 500 mm de largura. Com os módulos, as placas e os
-   porta-fusíveis, o trilho mais cheio passou a precisar de 356 mm — e num
-   painel de 400 mm, descontadas as canaletas verticais e as margens, só
-   sobram 312 mm de trilho útil. Não cabia. */
-export const PLACA = { x: 12, y: 14, largura: 476, altura: 472 };
-/* ── CANALETAS ────────────────────────────────────────────────────────
- * Os caminhos por onde os fios andam. A divisão POTÊNCIA × SINAL não é
- * organização: é o que impede o chaveamento dos BTS de sujar a leitura
- * dos sensores.
+export const CAIXA = { largura: 700, altura: 500, profundidade: 200 };
+/* ⚠️ A caixa CRESCEU de 500 para 600 mm de largura. Com os ACS712 individuais,
+   o módulo ADC Modbus RS-485 e os dois porta-fusíveis, os trilhos 2 e 3
+   passaram de 420 mm de ocupação — e num painel de 500 mm, descontadas as
+   canaletas verticais e as margens, sobrariam apenas ~40 mm livres: não há
+   margem para manutenção nem para a separação industrial entre potência e
+   sinal (canaleta entre eles). Com 700 mm sobram ~220 mm, suficiente para
+   inspeção e para nunca ter fio de potência cruzando sobre módulo de sinal. */
+export const PLACA = { x: 12, y: 14, largura: 676, altura: 472 };
+/* ── CANALETAS ─────────────────────────────────────────────────────────
+ * Todas do tipo "aberta com tampa" (slotted). A largura visual no
+ * diagrama é baseada nos modelos reais comuns (20 ou 30 mm).
  */
 export const CANALETAS = [
-  { id: 'CH-topo', tipo: 'sinal',    x: 14, y: 22,  w: 472, h: 30, nome: 'superior' },
-  { id: 'CH-3x2',  tipo: 'sinal',    x: 14, y: 180, w: 472, h: 28, nome: 'entre os trilhos 3 e 2' },
-  { id: 'CH-2x1',  tipo: 'potencia', x: 14, y: 302, w: 472, h: 30, nome: 'entre os trilhos 2 e 1' },
-  { id: 'CH-base', tipo: 'potencia', x: 14, y: 440, w: 472, h: 32, nome: 'inferior — entradas' },
-  { id: 'CV-esq',  tipo: 'potencia', x: 14, y: 22,  w: 26,  h: 450, nome: 'vertical esquerda', vertical: true },
-  { id: 'CV-dir',  tipo: 'sinal',    x: 460, y: 22, w: 26,  h: 450, nome: 'vertical direita', vertical: true },
+  /* Horizontais */
+  { id: 'CH-topo', tipo: 'sinal',    x: 14, y: 22,  w: 672, h: 30, nome: 'superior' },
+  { id: 'CH-3x2',  tipo: 'sinal',    x: 14, y: 180, w: 672, h: 28, nome: 'entre os trilhos 3 e 2' },
+  { id: 'CH-2x1',  tipo: 'potencia', x: 14, y: 302, w: 672, h: 30, nome: 'entre os trilhos 2 e 1' },
+  { id: 'CH-base', tipo: 'potencia', x: 14, y: 440, w: 672, h: 32, nome: 'inferior — entradas' },
+
+  /* Verticais */
+  { id: 'CV-esq',  tipo: 'potencia', x: 14,  y: 22, w: 26, h: 450, nome: 'vertical esquerda', vertical: true },
+  { id: 'CV-dir',  tipo: 'sinal',    x: 660, y: 22, w: 26, h: 450, nome: 'vertical direita',  vertical: true },
 ];
 
 export const REGRA_SEGREGACAO = {
@@ -174,10 +179,10 @@ export const CALHAS = [
 ];
 
 export const TRILHO_X0 = 42;    // logo depois da CV-esq (14..40)
-export const TRILHO_X1 = 458;   // logo antes da CV-dir (460..486)
+export const TRILHO_X1 = 558;   // logo antes da CV-dir (560..586)
 
 export const TRILHOS = [
-  { n: 3, y: 125, nome: 'TRILHO 3 — Controle' },
+  { n: 3, y: 125, nome: 'TRILHO 3 — Controle e Medição' },
   { n: 2, y: 255, nome: 'TRILHO 2 — Potência' },
   { n: 1, y: 385, nome: 'TRILHO 1 — Distribuição' },
 ];
@@ -209,9 +214,9 @@ export const COMPONENTES = [
 
   /* ════════════ TRILHO 3 — CONTROLE ════════════ */
   {
-    id: 'MEGA', nome: 'MEGA — o cérebro: PID, proteções e intertravamento', trilho: 3,
+    id: 'MEGA', nome: 'ARDUINO MEGA', trilho: 3,
     resumoFuncao: '❓ O QUE ELE MANDA E O QUE ELE RECEBE. MANDA (saidas): D27 -> KA1, autoriza a potencia · D30 -> KA2, fan externa · D29 -> KA3, as 5 fans internas · D4 e D7 -> R_EN dos BTS · D5 e D6 -> PWM dos BTS · D9 a D12 -> sinaleiros de 5 V, direto.  RECEBE (entradas): D23 <- STOP apertado · D24 <- emergencia acionada · D25 <- HA 24 V no BD-POT? · D2 <- temperatura do dissipador · D3 e A8 <- RPM dos 2 coolers · A0 e A1 <- corrente dos BTS · D22 <- o sensor diz se a posicao de ensaio ainda consome corrente · D20 e D21 <- I2C.  ⭐ Repare que ele NAO le os reles nem o botao verde: le o D25, que diz se a energia CHEGOU. Comando e verificacao sao fios diferentes.',
-    x: 32, largura: 134, altura: 96, cor: '#0ca678',
+    x: 127, largura: 134, altura: 96, cor: '#0ca678',
     nota: 'O Mega encaixa no meio da placa adaptadora e cada pino dele vira um borne '
         + 'de parafuso nas bordas. São 82 bornes em FILEIRA ÚNICA por borda, um ao '
         + 'lado do outro — é o que obriga a placa a ser comprida.',
@@ -222,7 +227,7 @@ export const COMPONENTES = [
         via('D30', 1, '⭐ Gatilho do KA2 → ventoinhas do RADIADOR'), via('D29', 1, '⭐ Gatilho do KA3 → as 5 ventoinhas INTERNAS (4 de circulação + a do PTC)'), via('D28'),
         via('D27', 1, '⭐ HAB_POTENCIA → gatilho do KA1. HIGH autoriza a potência; LOW derruba o selo e corta'),
         via('D26'), via('D25', 1, 'PI-1 J2-8 — vigia se os 24 V caíram'), via('D24', 1, 'Emergência — bloco NF de 5 V'), via('D23', 1, 'Botão STOP (NA, 5 V)'),
-        via('D22', 1, 'SC-1 · DOUT — detecção de dispositivo morto'), via('+5V', 1, 'BD-5V saída 1'), via('D21', 1, 'I²C SCL — o mesmo barramento'), via('D20', 1, 'I²C SDA — AM2315C (câmara) e DS3231'),
+        via('D22'), via('+5V', 1, 'BD-5V saída 1'), via('D21', 1, 'I²C SCL — o mesmo barramento'), via('D20', 1, 'I²C SDA — AM2315C (câmara) e DS3231'),
         via('D19', 1, 'Serial1 RX ← DNLCB30/ESP32'), via('D18', 1, 'Serial1 TX → DNLCB30/ESP32'), via('D17', 1, 'Serial2 RX ← conversor ← tela'), via('D16', 1, 'Serial2 TX → conversor → tela'),
         via('D15'), via('D14'), via('D0'), via('D1'),
         via('D2', 1, 'PI-1 J2-3 — 1-Wire do DS18B20 do RADIADOR'), via('D3', 1, 'RPM da ventoinha do radiador #1'), via('D4', 1, 'BTS #1 · R_EN e L_EN juntos'), via('D5', 1, 'BTS #1 · RPWM (frio)'),
@@ -263,9 +268,9 @@ export const COMPONENTES = [
     ],
   },
   {
-    id: 'SV-1', nome: 'SV-1 — módulo sensor de tensão (vigia do 24 V)', trilho: 3,
+    id: 'SV-1', nome: 'SV-1', trilho: 3,
     resumoFuncao: '🔎 O QUE ELE FAZ: divide por 5 a tensao do BD-POT para o Arduino poder olhar. 24 V viram 4,8 V, que o pino D25 le como "a potencia chegou". ⭐ E o mesmo divisor 22k/4,7k que estava soldado na PI-1 — comprado pronto, com borne de parafuso na entrada. Nao alimenta nada: e instrumento de medida.',
-    x: 176, largura: 30, altura: 30, cor: '#f08c00',
+    x: 233, largura: 30, altura: 30, cor: '#f08c00',
     nota: '⚠️ Ele divide por 5, e o divisor soldado dividia por 5,68. Com 24 V a saída passa de '
         + '4,22 V para 4,8 V — folgado para uma entrada DIGITAL como o D25, apertado se um dia '
         + 'alguém ligá-lo numa entrada analógica com a fonte acima de 25 V.',
@@ -280,15 +285,15 @@ export const COMPONENTES = [
         { nome: '−', usa: true, para: 'BD-0V-B · Z23 — referência da medida' },
       ]},
     ],
-    avisos: ['⭐ MEÇA A SAÍDA ANTES DE LIGAR NO D25. Com o BD-POT em 24 V ela deve dar ~4,8 V. '
-           + 'Se der mais que 5,0 V, a fonte está alta demais ou o módulo não é o de 5×.',
+    avisos: ['⚠️ A entrada não tem proteção reversa. Se inverter o VCC com o GND o módulo '
+           + 'sobrevive, mas o Arduino recebe 24 V negativos no D25 e morre.',
            '⚠️ A saída é barra de pinos, não borne. Use cabo com conector e prenda com abraçadeira: '
            + 'Dupont solto em painel que é transportado se desconecta sozinho.'],
   },
   {
     id: 'AD-1', nome: 'AD-1 — adaptador do DS18B20 (com pull-up)', trilho: 3,
     resumoFuncao: '🔎 O QUE ELE FAZ: e a ponta do barramento 1-Wire. Traz o resistor de pull-up de 4,7 kΩ ja montado — aquele SEM O QUAL o sensor nao responde — e transforma os tres fios da sonda em tres bornes de parafuso.',
-    x: 210, largura: 32, altura: 30, cor: '#0ca678',
+    x: 288, largura: 32, altura: 30, cor: '#0ca678',
     nota: '⚠️ CONFIRA O PULL-UP AO RECEBER: ohmímetro entre DAT e VCC deve dar ~4,7 kΩ. Há '
         + 'adaptadores vendidos como "com pull-up" que vêm sem o resistor — e aí o sensor '
         + 'simplesmente não responde, sem nenhum outro sintoma.',
@@ -306,9 +311,14 @@ export const COMPONENTES = [
     ],
   },
   {
-    id: 'ESP32', nome: 'ESP32 — Wi-Fi, MQTT e dashboard remoto', trilho: 2,
-    resumoFuncao: '🔎 O QUE ELE FAZ: e a janela do sistema para a internet. Recebe a telemetria do Mega pela Serial1, publica por MQTT e repassa comandos do dashboard. ⛔ So pode PARAR: o START e recusado por MQTT, porque ligar a maquina exige alguem olhando para ela. Nao aciona atuador nenhum — ele PEDE, o Mega valida e decide.',
-    x: 184, largura: 96, altura: 84, cor: '#1971c2',
+    id: 'ESP32', nome: 'ESP32 + MAX485 — Mestre Modbus RTU, Wi-Fi e MQTT', trilho: 2,
+    resumoFuncao: '🔎 O QUE ELE FAZ: E a janela do sistema para a internet E o mestre Modbus RTU. '
+        + 'Pela Serial1 recebe telemetria do Mega e repassa comandos. Pela Serial2 (D16/D17) '
+        + 'conversa com o módulo ADC via MAX485 (RS-485), interrogando os sensores ACS712 '
+        + 'a cada 1 segundo. Se detectar corrente zero = alarme de dispositivo morto. '
+        + '⛔ Só pode PARAR: o START é recusado por MQTT, porque ligar a máquina exige '
+        + 'alguém olhando para ela.',
+    x: 313, largura: 96, altura: 84, cor: '#1971c2',
     nota: 'Os nomes são os da serigrafia da borda externa, exatamente como estão '
         + 'impressos na placa. Cada bloco tem 15 bornes em FILEIRA ÚNICA — o "5V" é o '
         + 'primeiro borne de cada um, não uma coluna à parte.',
@@ -317,8 +327,8 @@ export const COMPONENTES = [
         { nome: '5V' },
         { nome: 'D15' },
         { nome: 'D4' },
-        { nome: 'D16' },
-        { nome: 'D17' },
+        { nome: 'D16', usa: true, para: 'MAX485 RX (Serial2) → Modbus' },
+        { nome: 'D17', usa: true, para: 'MAX485 TX (Serial2) → Modbus' },
         { nome: 'D5' },
         { nome: 'D18' },
         { nome: 'GND' },
@@ -365,44 +375,131 @@ export const COMPONENTES = [
       + 'fabricante: sinal ANALÓGICO que passe por esses bornes sai deformado. Para ler '
       + 'sensor analógico, ligue direto no pino do ESP32.',
       '📌 O 5V de cada bloco entrega no máximo 0,5 A. Serve para sensor, não para carga.',
-      '📌 O projeto usa 4 bornes de 32: RX0, TX0 e os dois de alimentação.',
+      '📌 O projeto usa 6 bornes de 32: RX0, TX0 (Serial1 → Mega), D16, D17 '
+      + '(Serial2 → MAX485 Modbus) e os dois de alimentação.',
     ],
   },
 
+  /* ════════════ SENSOR DE CORRENTE #1 — POSIÇÃO DE ENSAIO 1 ════════════ */
   {
-    id: 'SC-1', nome: 'SC-1 — sensor de corrente da posição de ensaio', trilho: 3,
-    resumoFuncao: '🔎 O QUE ELE FAZ: responde UMA pergunta — passa corrente pelo equipamento da posicao de ensaio? Se passa, ele esta vivo. Se nao passa, ou queimou, ou o fusivel abriu, ou alguem desligou a chave. ⭐ Ele nao MEDE: ele DECIDE, e entrega a decisao num fio, direto num pino digital do Mega. O fio da posicao passa POR DENTRO do furo do sensor — o circuito de ensaio nao e aberto para medir.',
-    x: 246, largura: 40, altura: 44, cor: '#ae3ec9',
-    nota: '⭐ O fio do +24 V da posição dá 10 VOLTAS pelo furo antes de seguir para a '
-        + 'câmara. O sensor enxerga 10 × a corrente (176 mA em vez de 17,6 mA) e o '
-        + 'comparador sai do ruído — é o mesmo princípio de espiras de um TC.',
+    id: 'ACS712-1', nome: 'ACS712 #1 — Sensor de corrente (Posição 1)', trilho: 3,
+    resumoFuncao: '🔎 O QUE ELE FAZ: fica EM SÉRIE com a lâmpada Pingo #1 (24 V / 208 mA). '
+        + 'A corrente da carga entra pelo borne de parafuso IP+ e sai pelo IP-. '
+        + 'O chip Hall mede essa corrente sem contato elétrico e entrega uma tensão '
+        + 'analógica no pino OUT: 2,5 V = 0 A (repouso), subindo 185 mV por Ampère. '
+        + 'O ADC Modbus lê esse OUT e decide se a lâmpada está viva.',
+    x: 417, largura: 40, altura: 44, cor: '#ae3ec9',
+    nota: '⭐ O ACS712 é um sensor INVASIVO por efeito Hall. A carga passa DENTRO '
+        + 'do chip (IP+ → IP-), mas o circuito de medição é isolado galvanicamente. '
+        + 'Sem corrente, OUT fica em VCC/2 (2,5 V). Com 208 mA, OUT sobe para '
+        + '≈ 2,538 V — acima do ruído, detectável pelo ADC de 12 bits.',
     grupos: [
-      { ref: 'ALIM', lado: 'baixo', legenda: 'Alimentação do módulo (2)', pinos: [
-        { nome: 'VCC', usa: true, para: 'BD-5V saída 8' },
+      { ref: 'CARGA', lado: 'esquerda', legenda: 'Bornes de parafuso — em SÉRIE com a carga (2)', pinos: [
+        { nome: 'IP+', usa: true, para: 'F-P1 saída (vem do fusível da posição 1)' },
+        { nome: 'IP-', usa: true, para: 'Lâmpada Pingo W5W #1 (+24 V) → na câmara. Retorno pela BD-0V' },
+      ]},
+      { ref: 'SINAL', lado: 'direita', legenda: 'Header 3 pinos — alimentação e sinal (3)', pinos: [
+        { nome: 'VCC', usa: true, para: 'BD-5V saída 8 (alimentação do chip Hall)' },
+        { nome: 'OUT', usa: true, para: 'ADC Modbus borne IN0 (sinal analógico 0–5 V)' },
         { nome: 'GND', usa: true, para: 'BD-0V-B · Z17' },
       ]},
-      { ref: 'SIG', lado: 'baixo', legenda: 'Saída digital (1)', pinos: [
-        { nome: 'DOUT', usa: true, para: 'Mega D22 — nível baixo enquanto houver corrente' },
+    ],
+    avisos: [
+      '⚠️ O sensor mede CORRENTE, não tensão. Ele fica em SÉRIE com a carga — '
+      + 'NÃO em paralelo. Ligar em paralelo é curto-circuito (a resistência '
+      + 'interna do condutor é < 1 mΩ).',
+      '⭐ Sensibilidade: 185 mV/A. Fórmula: I = (VOUT − 2,5) / 0,185. '
+      + 'Para a lâmpada de 208 mA, o VOUT sobe só 38 mV acima de 2,5 V.',
+      '⚠️ Sensores Hall são sensíveis a campos magnéticos externos. '
+      + 'Mantenha afastado de ímãs e da bobina do KM1.',
+    ],
+  },
+
+  /* ════════════ SENSOR DE CORRENTE #2 — POSIÇÃO DE ENSAIO 2 ════════════ */
+  {
+    id: 'ACS712-2', nome: 'ACS712 #2 — Sensor de corrente (Posição 2)', trilho: 3,
+    resumoFuncao: '🔎 O QUE ELE FAZ: idêntico ao #1, mas monitora a lâmpada Pingo #2.',
+    x: 481, largura: 40, altura: 44, cor: '#ae3ec9',
+    grupos: [
+      { ref: 'CARGA', lado: 'esquerda', legenda: 'Bornes de parafuso — em SÉRIE com a carga (2)', pinos: [
+        { nome: 'IP+', usa: true, para: 'F-P2 saída (vem do fusível da posição 2)' },
+        { nome: 'IP-', usa: true, para: 'Lâmpada Pingo W5W #2 (+24 V) → na câmara. Retorno pela BD-0V' },
+      ]},
+      { ref: 'SINAL', lado: 'direita', legenda: 'Header 3 pinos — alimentação e sinal (3)', pinos: [
+        { nome: 'VCC', usa: true, para: 'BD-5V saída 8 (em paralelo com ACS712 #1)' },
+        { nome: 'OUT', usa: true, para: 'ADC Modbus borne IN1 (sinal analógico 0–5 V)' },
+        { nome: 'GND', usa: true, para: 'BD-0V-B · Z17' },
       ]},
     ],
-    avisos: ['⚠️ AJUSTE O TRIMPOT NA BANCADA, com o equipamento ligado e depois desligado. '
-           + 'É ele que decide onde fica a fronteira entre "tem corrente" e "não tem".',
-           '⭐ O pino do Mega fica em INPUT_PULLUP: fio arrancado = nível alto = FALHA. '
-           + 'O defeito cai do lado do alarme, nunca do lado do silêncio.'],
   },
+
+  /* ════════════ MÓDULO ADC MODBUS RS-485 (2 CANAIS, 0–5 V) ════════════ */
   {
-    id: 'F-P', nome: 'F-P — fusível e chave da posição de ensaio', trilho: 2,
-    resumoFuncao: '🔎 O QUE ELE FAZ: e o disjuntor da posicao de ensaio, em miniatura. O fusivel abre se o dispositivo entrar em curto, e o interruptor liga e desliga a posicao a mao — e e com ele que se DEMONSTRA a deteccao de falha na apresentacao: desliga a chave, e em menos de 1 segundo o alarme aparece.',
-    x: 150, largura: 26, altura: 46, cor: '#fab005',
-    nota: '⭐ UM porta-fusível de 1 via COM INTERRUPTOR. Eram dois, um por posição de '
-        + 'ensaio; com a detecção digital o protótipo passou a ter uma posição só.',
+    id: 'ADC_Modbus', nome: 'Módulo ADC 2CH — Conversor A/D Modbus RTU RS-485', trilho: 3,
+    resumoFuncao: '🔎 O QUE ELE FAZ: recebe os sinais analógicos 0–5 V dos dois ACS712, '
+        + 'digitaliza com resolução de 12 bits e entrega os valores como registradores '
+        + 'Modbus RTU ao ESP32 (Mestre) via barramento RS-485. O ESP32 interroga '
+        + 'o escravo (polling a cada 1 s) e converte os bits em Ampères.',
+    x: 350.5, largura: 45, altura: 50, cor: '#20c997',
+    nota: '⭐ O módulo tem DIP switches para selecionar o modo de entrada: 4–20 mA, '
+        + '0–5 V ou 0–10 V. No projeto usamos 0–5 V (compatível com a saída do ACS712). '
+        + 'Possui proteção contra sobretensão, sobrecorrente e anti-interferência integradas.',
     grupos: [
-      { ref: 'IN', lado: 'cima', legenda: 'Entrada (1)', pinos: [
-        { nome: 'V+', usa: true, para: 'BD-24V saída 4' },
+      { ref: 'TOPO', lado: 'cima', legenda: 'Conector azul — Entradas analógicas + alimentação de sinal (6)', pinos: [
+        { nome: 'IN1', usa: true, para: 'ACS712 #2 pino OUT (sinal analógico da posição 2)' },
+        { nome: 'IN0', usa: true, para: 'ACS712 #1 pino OUT (sinal analógico da posição 1)' },
+        { nome: 'GND_SIG', usa: true, para: 'BD-0V-B (referência de sinal, comum com os ACS712)' },
+        { nome: 'VCC_SIG', usa: true, para: 'BD-5V (referência de tensão das entradas analógicas)' },
+        { nome: '运行 (Run)', nota: 'LED indicador de operação — não conectar' },
+        { nome: '模式 (Mode)', nota: 'Configuração de endereço Modbus — não conectar' },
       ]},
-      { ref: 'OUT', lado: 'baixo', legenda: 'Saída com fusível de 100 mA (1)', pinos: [
-        { nome: 'F-P1', usa: true, para: 'sensor SC-1 (10 voltas no furo) → DUT da posição 1, na câmara' },
+      { ref: 'BASE', lado: 'baixo', legenda: 'Conector verde — RS-485 + alimentação do módulo (4)', pinos: [
+        { nome: 'B-', usa: true, para: 'MAX485 (ESP32) borne B — com resistor 120 Ω de terminação' },
+        { nome: 'A+', usa: true, para: 'MAX485 (ESP32) borne A — com resistor 120 Ω de terminação' },
+        { nome: 'GND_PWR', usa: true, para: 'BD-0V (terra de potência do módulo)' },
+        { nome: 'VCC_PWR', usa: true, para: 'BD-24V saída 6 (alimentação do módulo: 9–30 V)' },
       ]},
+    ],
+    avisos: [
+      '⚠️ O módulo tem DOIS bornes VCC e DOIS bornes GND: os de CIMA (conector azul) '
+      + 'são a referência de sinal (5 V), os de BAIXO (conector verde) são a alimentação '
+      + 'do módulo (9–30 V, usamos 24 V). NÃO trocar.',
+      '⭐ Configurar o DIP switch para modo 0–5 V antes de energizar.',
+      '⭐ O endereço Modbus de fábrica é Slave ID = 1. Se precisar mudar, use o pino '
+      + '模式 (Mode) conforme o manual do fabricante.',
+      '⚠️ Resistores de 120 Ω de terminação nas duas pontas do barramento RS-485 '
+      + '(um aqui no borne A+/B- e outro no MAX485 do ESP32).',
+    ],
+  },
+
+  /* ════════════ PORTA-FUSÍVEIS DAS POSIÇÕES DE ENSAIO ════════════ */
+  {
+    id: 'F-P', nome: 'F-P1 / F-P2 — Porta-fusíveis seccionáveis das posições de ensaio', trilho: 2,
+    resumoFuncao: '🔎 O QUE ELES FAZEM: simulam os disjuntores de gaveta da indústria. '
+        + 'O fusível de vidro (500 mA) protege contra curto na lâmpada, e a '
+        + 'alavanca liga/desliga a posição manualmente — é com ela que se '
+        + 'DEMONSTRA a detecção de falha na apresentação: abre a gaveta e em '
+        + '< 1 segundo o alarme aparece no dashboard.',
+    x: 429, largura: 36, altura: 46, cor: '#fab005',
+    nota: '⭐ A saída de cada fusível vai DIRETO para o borne IP+ do ACS712 '
+        + 'correspondente. Depois do sensor (IP-), o fio segue para a lâmpada '
+        + 'na câmara. Caminho completo: BD-24V → F-P → ACS712 IP+ → IP- → Lâmpada → BD-0V.',
+    grupos: [
+      { ref: 'IN', lado: 'cima', legenda: 'Entrada — vem do BD-24V permanente (2)', pinos: [
+        { nome: 'F-P1 IN', usa: true, para: 'BD-24V saída 4 (24 V permanente, não cai na emergência)' },
+        { nome: 'F-P2 IN', usa: true, para: 'BD-24V saída 5 (24 V permanente)' },
+      ]},
+      { ref: 'OUT', lado: 'baixo', legenda: 'Saída — vai para o sensor ACS712 (2)', pinos: [
+        { nome: 'F-P1 OUT', usa: true, para: 'ACS712 #1 borne IP+ (entra no sensor em série)' },
+        { nome: 'F-P2 OUT', usa: true, para: 'ACS712 #2 borne IP+ (entra no sensor em série)' },
+      ]},
+    ],
+    avisos: [
+      '⚠️ Fusíveis de VIDRO 5×20 mm de 500 mA. A lâmpada W5W puxa 208 mA — '
+      + 'o fusível aguenta com margem, mas abre rápido num curto-circuito.',
+      '⭐ Para a demonstração: abrir a gaveta do F-P1 corta a corrente, '
+      + 'o ACS712 #1 cai para 2,5 V (zero Ampères), o ADC Modbus reporta '
+      + 'ao ESP32 e o alarme dispara. Fechar a gaveta restaura.',
     ],
   },
 
@@ -413,7 +510,7 @@ export const COMPONENTES = [
     aConferir: '📐 NO DESENHO os 8 pinos de sinal aparecem em FILA ÚNICA, na borda. '
              + 'No módulo real eles são uma barra de 2 × 4. A ordem é a mesma; o que '
              + 'muda é só o desenho, para dar para ver qual fio entra em qual pino.',
-    x: 34, largura: 50, altura: 50, cor: '#c92a2a',
+    x: 90, largura: 50, altura: 50, cor: '#c92a2a',
     grupos: [
       { ref: 'P1', lado: 'esquerda', legenda: 'Borne verde de potência (4 parafusos)', pinos: [
         via('M−', 1, 'Peltier — negativo'), via('M+', 1, 'Peltier — positivo'),
@@ -432,7 +529,7 @@ export const COMPONENTES = [
   {
     id: 'BTS2', nome: 'BTS2 — driver de potência do PTC (quente)', trilho: 2,
     resumoFuncao: '🔎 O QUE ELE FAZ: identico ao BTS1, mas para o aquecedor PTC. D6 = quanto, D7 = pode ou nao. ⚠ O firmware NUNCA habilita os dois ao mesmo tempo — e o intertravamento: aquecer e resfriar juntos so gastaria energia e brigaria consigo.',
-    x: 92, largura: 50, altura: 50, cor: '#c92a2a',
+    x: 190, largura: 50, altura: 50, cor: '#c92a2a',
     grupos: [
       { ref: 'P1', lado: 'esquerda', legenda: 'Borne verde de potência (4 parafusos)', pinos: [
         via('M−', 1, 'PTC — negativo'), via('M+', 1, 'PTC — positivo'),
@@ -449,7 +546,7 @@ export const COMPONENTES = [
   {
     id: 'KM1', nome: 'KM1 — o único relé da cadeia: cai em tudo, religa no verde', trilho: 1,
     resumoFuncao: '🔎 O QUE ELE FAZ: e O rele da cadeia de comando — o unico — e e ele quem liga e desliga os 24 V dos BTS. Tem selo proprio: o botao VERDE o arma; o COGUMELO e o botao PRETO o derrubam, cada um pelo seu bloco NF, e ele NAO volta sozinho; e o KA1 pode derruba-lo tambem, quando o firmware detecta uma falha. ⚠ Contato de 10 A em corrente continua — ele pode abrir sob os 6 A da Peltier.',
-    x: 372, largura: 34, altura: 50, cor: '#7048e8',
+    x: 77, largura: 34, altura: 50, cor: '#7048e8',
     nota: '⚠️ Contato declarado em CORRENTE CONTÍNUA, mínimo 10 A.',
     grupos: [
       { ref: 'CIMA', lado: 'cima', legenda: 'Fileira de cima · pinos 4 · 8 · 12 · 14', pinos: [
@@ -503,7 +600,7 @@ export const COMPONENTES = [
   {
     id: 'KA123', nome: 'KA1 (POTÊNCIA) + KA2 (FAN DO RADIADOR) + KA3 (FANS INTERNAS) — módulos de relé', trilho: 2,
     resumoFuncao: '🔎 O QUE FAZEM: sao as tres maos do FIRMWARE no mundo fisico. KA1 (POTENCIA) fica em serie com a bobina do KM1 — abrindo, derruba o selo e os 24 V somem do BD-POT, e nao voltam ate alguem apertar o botao verde. KA2 (FAN DO RADIADOR) chaveia o +12 V das 2 ventoinhas do radiador. KA3 (FANS INTERNAS) chaveia o +12 V das 5 ventoinhas de dentro da camara. ⭐ Os tres so RECEBEM ordem; quem confirma que a potencia chegou e o divisor no pino D25.',
-    x: 288, largura: 105, altura: 60, cor: '#e8590c',
+    x: 549.5, largura: 105, altura: 60, cor: '#e8590c',
     nota: 'Três módulos de relé de 1 canal, 5 V, com optoacoplador e jumper H/L, '
         + 'empilhados dentro de uma caixa modular DIN de 6 módulos. 51 × 25,5 mm cada. '
         + 'O DC+ e o DC− são pontelhados entre os três lá dentro — sai UM par de fios. '
@@ -592,7 +689,7 @@ export const COMPONENTES = [
   {
     id: 'BD-POT', nome: 'BD-POT — 24 V COMUTADO (morre na emergência)', trilho: 1,
     resumoFuncao: '🔎 O QUE ELE E: a barra dos 24 V que MORRE. Tudo o que sai daqui cai na emergencia, no STOP e em qualquer trip — sao os dois BTS. E daqui tambem que sai a amostra que o pino D25 vigia para saber se a potencia esta presente.',
-    x: 30, largura: 36, altura: 58, cor: '#c92a2a',
+    x: 152, largura: 36, altura: 58, cor: '#c92a2a',
     nota: 'COMUTADO pelo KM1 — cai na emergência.',
     grupos: [
       { ref: 'IN', lado: 'cima', legenda: 'Entrada 4 mm² (1)', pinos: [via('IN', 1, 'KM1 · terminal 14')] },
@@ -605,7 +702,7 @@ export const COMPONENTES = [
   {
     id: 'BD-AUX', nome: 'BD-AUX — 12 V das ventoinhas (permanente)', trilho: 1,
     resumoFuncao: '🔎 O QUE ELE E: os 12 V das ventoinhas, tambem permanente. Ele nao passa pelo KM1 de proposito: e o que permite as ventoinhas do radiador continuarem resfriando o dissipador quente DEPOIS de alguem socar o cogumelo.',
-    x: 68, largura: 36, altura: 58, cor: '#fab005',
+    x: 228, largura: 36, altura: 58, cor: '#fab005',
     grupos: [
       { ref: 'IN', lado: 'cima', legenda: 'Entrada 2,5 mm² (1)', pinos: [via('IN', 1, 'prensa-cabo do 12 V')] },
       { ref: 'OUT', lado: 'baixo', legenda: 'Saídas (4)', pinos: [
@@ -629,21 +726,23 @@ export const COMPONENTES = [
   {
     id: 'BD-24V', nome: 'BD-24V — 24 V PERMANENTE (comando)', trilho: 1,
     resumoFuncao: '🔎 O QUE ELE E: a barra dos 24 V que SOBREVIVE. Alimenta a cadeia de comando (o cogumelo, o STOP, o LIGAR e a bobina do KM1) e a posicao de ensaio. ⭐ Tem de ser permanente: se a cadeia de comando fosse alimentada pela potencia que ela mesma comanda, nada nunca ligaria. ⭐ AS SAIDAS O3 E O5 FICARAM LIVRES quando os sinaleiros passaram para 5 V — antes elas levavam o positivo comum das lampadas e o COM do ULN2803.',
-    x: 106, largura: 45, altura: 58, cor: '#e8590c',
+    x: 308.5, largura: 45, altura: 58, cor: '#e8590c',
     nota: 'PERMANENTE — não cai na emergência.',
     grupos: [
       { ref: 'IN', lado: 'cima', legenda: 'Entrada 2,5 mm² (1)', pinos: [via('IN', 1, 'prensa-cabo dos 24 V de serviços')] },
       { ref: 'OUT', lado: 'baixo', legenda: 'Saídas (6)', pinos: [
         via('O1', 1, 'DNLCB30 · VIN'), via('O2', 1, 'cadeia de comando · S0'),
-        via('O3'), via('O4', 1, 'F-P1/F-P2 — entrada do porta-fusível'),
-        via('O5'), via('O6'),
+        via('O3', 0),
+        via('O4', 1, 'F-P1 — porta-fusível posição 1'),
+        via('O5', 1, 'F-P2 — porta-fusível posição 2'),
+        via('O6', 1, 'ADC Modbus — alimentação do módulo (24 V)'),
       ]},
     ],
   },
   {
     id: 'BD-5V', nome: 'BD-5V — 5,10 V da eletrônica (permanente)', trilho: 1,
     resumoFuncao: '🔎 O QUE ELE E: os 5,10 V de toda a eletronica — Mega, IHM, ESP32, RTC e os dois modulos de rele. Permanente: o Arduino tem de continuar vivo depois da emergencia para registrar o evento no log e mostrar o alerta na tela.',
-    x: 153, largura: 87, altura: 58, cor: '#f08c00',
+    x: 414.5, largura: 87, altura: 58, cor: '#f08c00',
     grupos: [
       { ref: 'IN', lado: 'cima', legenda: 'Entrada 2,5 mm² (1)', pinos: [via('IN', 1, 'prensa-cabo dos 5 V')] },
       { ref: 'OUT', lado: 'baixo', legenda: 'Saídas (12) ⬆', pinos: [
@@ -651,10 +750,10 @@ export const COMPONENTES = [
         via('O3', 1, 'RTC DS3231'), via('O4', 1, 'BTS #1 · VCC'),
         via('O5', 1, 'BTS #2 · VCC'), via('O6', 1, 'PI-1 J1-4'),
         via('O7', 1, '4 LEDs da maquete'),
-        via('O8', 1, 'SC-1 · VCC — o sensor de corrente da posição de ensaio'),
-        via('O9'),
+        via('O8', 1, 'ACS712 #1 · VCC'),
+        via('O9', 1, 'ADC Modbus · VCC_SIG — referência de 5 V das entradas analógicas'),
         via('O10', 1, '⭐ AM2315C · VCC — o sensor DENTRO da câmara'),
-        via('O11'), via('O12', 1, '⭐ KA1 + KA2 + KA3 · DC+ — alimenta os três módulos de relé'), via('O13'),
+        via('O11', 1, 'ACS712 #2 · VCC'), via('O12', 1, '⭐ KA1 + KA2 + KA3 · DC+ — alimenta os três módulos de relé'), via('O13'),
       ]},
     ],
     avisos: ['📌 Cresceu de 10 para 12 pontos quando o AM2315C ganhou saída própria. '
@@ -663,7 +762,7 @@ export const COMPONENTES = [
   {
     id: 'BD-0V', nome: 'BD-0V — retorno único de tudo (star ground)', trilho: 1,
     resumoFuncao: '🔎 O QUE ELE E: o ponto onde TODO retorno do painel se encontra, um parafuso por dispositivo. ⭐ Estrela, nunca em cadeia: pendurar um retorno no outro faz a corrente de um virar erro de medicao do outro — e como os BTS chaveiam, esse erro PISCA no ritmo do PWM. Chama-se acoplamento por impedancia comum e e a causa numero 1 de medicao ruim em painel.',
-    x: 242, largura: 84, altura: 58, cor: '#212529',
+    x: 540, largura: 84, altura: 58, cor: '#212529',
     nota: '⭐ O ÚNICO 0 V do projeto — em DOIS blocos, unidos por ponte de 4 mm². Este, no '
         + 'trilho 1, recebe os 16 retornos do lado da potência. O BD-0V-B, no trilho 3, recebe '
         + 'os da eletrônica. ⭐ Continua sendo estrela: a ponte é curta e grossa, e todo retorno '
@@ -681,7 +780,7 @@ export const COMPONENTES = [
         via('Z11', 0),
         via('Z12', 1, '⭐ KA1 · NO1 — o retorno da bobina, depois do contato do módulo de relé'),
         via('Z13', 1, '⭐ fio X10 — o negativo das 5 ventoinhas internas, vindo da câmara'),
-        via('Z14', 0),
+        via('Z14', 1, 'ADC Modbus · GND_PWR — referência bruta (9-30 V)'),
         via('Z15', 1, '⭐ AM2315C · GND — o sensor DENTRO da câmara'),
         via('Z16', 1, 'LEDs da maquete −'),
       ]},
@@ -691,7 +790,7 @@ export const COMPONENTES = [
   },  {
     id: 'BD-0V-B', nome: 'BD-0V-B — retornos da eletrônica (trilho 3)', trilho: 3,
     resumoFuncao: '🔎 O QUE ELE E: a segunda metade do MESMO 0 V, ligada a primeira por uma ponte de 4 mm². Ele existe porque a barra unica passou de 28 pontos e nao cabia mais no trilho 1 — e porque o retorno da eletronica fica melhor curto, perto de quem retorna: o Arduino, os modulos de interface e o sensor de corrente.',
-    x: 294, largura: 63, altura: 58, cor: '#212529',
+    x: 556.5, largura: 63, altura: 58, cor: '#212529',
     nota: '⭐ NÃO É UM SEGUNDO TERRA. É o mesmo nó, em dois blocos: a ponte de 4 mm² tem '
         + 'resistência desprezível perto das correntes que passam aqui (miliampères). O que '
         + 'não se pode fazer é pendurar um retorno no outro — cada um tem o seu parafuso.',
@@ -700,10 +799,10 @@ export const COMPONENTES = [
         { nome: 'PT', usa: true, para: 'BD-0V · Z16 — ponte de 4 mm², o mais curta possível' },
       ]},
       { ref: 'R', lado: 'baixo', legenda: 'Retornos da eletrônica (12)', pinos: [
-        { nome: 'Z17', usa: true, para: 'SC-1 · GND — sensor de corrente' },
+        { nome: 'Z17', usa: true, para: 'ACS712 #1 · GND' },
         { nome: 'Z18', usa: true, para: 'botoeira S2 (STOP) — retorno do sinal' },
         { nome: 'Z19' },
-        { nome: 'Z20' },
+        { nome: 'Z20', usa: true, para: 'ACS712 #2 · GND' },
         { nome: 'Z21', usa: true, para: 'KA1/KA2 · DC−' },
         { nome: 'Z22', usa: true, para: 'retorno da posição de ensaio' },
         { nome: 'Z23', usa: true, para: 'SV-1 · − (saída do divisor)' },
@@ -721,7 +820,7 @@ export const COMPONENTES = [
   {
     id: 'RTC', nome: 'RTC DS3231 — data e hora reais para o log', trilho: 3,
     resumoFuncao: '🔎 O QUE ELE FAZ: guarda data e hora reais, com pilha propria, para que cada linha do log tenha carimbo de tempo verdadeiro mesmo depois de faltar energia. Sem ele o log comecaria em 1970 a cada boot, e a rastreabilidade do ensaio morreria.',
-    x: 365, largura: 35, altura: 40, cor: '#0ca678',
+    x: 629.5, largura: 35, altura: 40, cor: '#0ca678',
     nota: '⭐ Subiu para o trilho 3, ao lado do Arduino: o I²C fica curto e o módulo '
         + 'sai da canaleta de potência. Abriu espaço no trilho 1 para os dois relés, '
         + 'que precisam de canaleta de POTÊNCIA nas duas bordas — e no trilho 1 as '

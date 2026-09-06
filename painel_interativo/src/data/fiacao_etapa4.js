@@ -167,23 +167,10 @@ export const FIOS_ETAPA4 = [
          + 'seguro, porque sem Arduino o KA1 já cortou a potência e não há calor sendo '
          + 'gerado. ⭐ O firmware não mudou uma linha: HIGH continua ligando.' },
 
-  /* ── a detecção de dispositivo morto ────────────────────────────────
-     ⭐ ERAM SEIS FIOS AQUI: quatro bits para escolher o canal do
-        multiplexador, o sinal analógico do canal escolhido e o par I²C do
-        INA219 de referência. Todos existiam para MEDIR a corrente e só
-        então decidir se ela era zero.
-
-        A pergunta sempre foi binária — "passa corrente ou não?" — e o
-        sensor responde isso sozinho. Sobrou um fio. */
-  { ...sig('S20', { comp: 'SC-1', via: 'DOUT' }, meg('D22'),
-      'A resposta do sensor: nível baixo enquanto houver corrente na posição.'),
-    nome: 'sensor de corrente → D22', rota: ['CH-3x2', 'CV-dir', 'CH-topo'],
-    porque: '⭐ O pino fica em INPUT_PULLUP. Fio partido, sensor sem alimentação ou '
-          + 'módulo queimado deixam o pino em nível ALTO — que é o estado de FALHA. '
-          + 'O defeito cai do lado do alarme, nunca do lado do silêncio.',
-    aviso: '⚠️ Confira a polaridade do DOUT na bancada antes de confiar nele: há módulos '
-         + 'que aterram a saída com corrente e outros que a levantam. O firmware tem uma '
-         + 'constante para isso (NIVEL_COM_CORRENTE em detector_corrente.ino).' },
+  /* 🗑️ O S20 SAIU COM O SC-1. A detecção de falha migrou para o barramento RS-485
+     Modbus: os ACS712 entregam sinal analógico ao módulo ADC Modbus, que é lido pelo
+     ESP32 via Serial2/MAX485. O Mega não gasta mais pino com isso.
+     ⭐ O pino D22 ficou LIVRE. */
 
   /* ── o barramento I²C ─────────────────────────────────────────────── */
   { ...sig('S25', meg('D20'), { comp: 'RTC', via: 'SDA' },

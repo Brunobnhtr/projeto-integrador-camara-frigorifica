@@ -134,44 +134,32 @@ export const PASSOS = [
           + 'seco — a proteção passou a ser peça de projeto. Doc 31 §31.16.',
   },
   {
-    id: 'A-06', fase: 'A', titulo: 'Montar o canal detector: fusível, chave e sensor', tempo: '40 min',
-    pegue: ['1 sensor WCS2702', '1 porta-fusível DIN com interruptor', '1 fusível de 100 mA',
-            'fio 0,5 mm² vermelho', 'multímetro', 'chave de fenda pequena'],
-    antes: 'Painel DESENERGIZADO. Este é o circuito que prova a detecção de dispositivo morto.',
-    discretos: ['SC1-SENSOR'],
+    id: 'A-06', fase: 'A', titulo: 'Preparar as lâmpadas simuladoras (Posições 1 e 2)', tempo: '15 min',
+    pegue: ['2 lâmpadas W5W (Pingo) 24V 5W', '2 soquetes esmagadinhos para W5W', 'fios com terminais', 'chaves Philips'],
+    antes: 'Painel DESENERGIZADO. Estas lâmpadas ficarão dentro da câmara para gerar calor leve e consumir os ~200 mA necessários para teste.',
+    discretos: ['DUT1-L', 'DUT2-L'],
     faca: [
-      'Encaixe o porta-fusível com interruptor no trilho 2 e o sensor no trilho 3.',
-      'Alimente o sensor: VCC no BD-5V (saída 8) e GND no BD-0V (Z17).',
-      'Ligue o DOUT do sensor ao pino D22 do Arduino — um fio, sem nada no meio.',
-      '⭐ Pegue o fio de +24 V que sai do fusível e dê 10 VOLTAS pelo furo do sensor, TODAS no '
-      + 'mesmo sentido, antes de mandá-lo para a câmara.',
-      'Só então leve esse fio ao borne +24 V da posição de ensaio, e traga o retorno dela ao '
-      + 'BD-0V · Z22.',
-      'Grave o firmware `camada_4_programacao/firmware/detector_corrente/detector_corrente.ino` e abra o monitor '
-      + 'serial em 115200.',
-      'Ligue a chave do porta-fusível e ajuste o trimpot do sensor até o serial dizer '
-      + '"Equipamento em funcionamento".',
+      'Solde ou crimpe fios longos o suficiente aos soquetes das lâmpadas Pingo.',
+      'Instale as lâmpadas na câmara. Não importa a polaridade (carga resistiva).',
+      'Ligue os positivos de cada posição no + que sai da sua respectiva proteção e sensor.',
+      'Ligue o outro terminal das lâmpadas aos retornos do borne Z22 e Z23 no painel (via prensa-cabos).'
     ],
-    confira: 'Desligue a chave: em menos de 1 s aparece "FALHA: Corrente Zero detectada". '
-           + 'Religue: em 0,2 s volta "Equipamento em funcionamento". ⭐ E o teste que mais '
-           + 'importa: com tudo ligado, desconecte o fio do D22 — tem que dar FALHA, nunca '
-           + '"funcionando".',
-    seErrar: 'Serial sempre em FALHA com o equipamento ligado: ou faltam voltas no furo (com 1 '
-           + 'volta o sinal é 10× menor), ou o trimpot está fora do ponto, ou a polaridade do '
-           + 'DOUT é invertida — troque NIVEL_COM_CORRENTE no firmware e grave de novo.',
+    confira: 'Meça a resistência de cada lâmpada fria. Deve dar alguns poucos ohms, mas ao ser alimentada com 24V, a corrente vai estabilizar em 208 mA (5W).',
+    seErrar: 'Não ligar o retorno no 0 V fará a lâmpada não acender e o sensor medirá 0A, indicando alarme falso.',
   },
   {
-    id: 'A-06b', fase: 'A', titulo: 'Montar a placa simuladora da posição 1', tempo: '25 min',
-    pegue: ['1 placa ilhada pequena', '1 LED vermelho', '1 resistor 1,2 kΩ ½ W', '1 micro-chave ou barra de 2 pinos', 'ferro de solda'],
-    antes: 'Passo A-01 (sobras de placa servem aqui).',
-    discretos: ['DUT1-R', 'DUT1-LED', 'DUT1-J'],
+    id: 'A-07', fase: 'A', titulo: 'Testar os módulos ACS712 das posições de ensaio', tempo: '30 min',
+    pegue: ['Módulo Modbus ADC', '2 sensores ACS712 5A', 'multímetro'],
+    antes: 'Passo A-06 pronto (cargas instaladas).',
+    discretos: [],
     faca: [
-      'Monte em série: +24 V → resistor → ânodo do LED → catodo → retorno.',
-      'Ponha a micro-chave (ou o jumper) no caminho, para poder abrir o circuito na apresentação.',
-      'Etiquete a placa como POSIÇÃO 1 — as duas são parecidas e têm resistores diferentes.',
+      'Alimente os sensores ACS712 usando o BD-5V e BD-0V. Passe a força (24V) de cada lâmpada em série pelos bornes IP+ e IP- do seu sensor.',
+      'Meça a tensão no borne OUT de cada ACS712 SEM corrente. Deve ser exatamente VCC/2 (aprox. 2,5 V).',
+      'Ligue as cargas (via chaves dos porta-fusíveis F-P1 e F-P2). A corrente de 208 mA causará um desvio no OUT de 38 mV (185 mV/A * 0.208 A).',
+      'A tensão no OUT deve ir de ~2.500 V para ~2.538 V. Conecte os sinais no ADC Modbus e prepare para a comunicação RS-485 com o ESP32.'
     ],
-    confira: 'Ligando 24 V na bancada: LED aceso e amperímetro em série marcando 17,6 mA ± 1 mA.',
-    seErrar: 'Corrente muito diferente de 17,6 mA: é o resistor errado. O de 2,2 kΩ é da posição 2, e dá 9,8 mA.',
+    confira: 'Sinal linear de tensão que desvia da metade na presença de corrente. Isso é o Efeito Hall em ação.',
+    seErrar: 'Se o OUT ficar fixo em 0V ou 5V sem carga, o ACS712 queimou, está invertido ou os pinos VCC/GND estão soltos.'
   },
 
   /* ═══ FASE B · OS MÓDULOS DE INTERFACE ══════════════════════════
