@@ -374,6 +374,23 @@ void processarComandoRemoto() {
 
 ---
 
+## 41.3b Mestre Modbus RTU (Monitoramento de Dispositivos)
+
+A principal responsabilidade industrial do ESP32 neste projeto não é apenas WiFi, mas sim atuar como **Mestre Modbus RTU** pela porta Serial2 (pinos conectados ao adaptador MAX485).
+O Módulo ADC 2 Canais atua como Escravo (Slave ID = 1).
+
+A lógica funciona com polling cíclico (ex: a cada 1 segundo):
+
+1. **O ESP32 pergunta:** "Escravo 1, leia seus registradores analógicos de entrada (Input Registers)".
+2. **O ADC responde:** Retorna os valores brutos (0 a 4095) referentes às tensões dos sensores ACS712.
+3. **Conversão no ESP32:**
+   - Transforma o valor bruto em Volts (ex: `valor * 5.0 / 4096.0`).
+   - Converte a tensão em Corrente (O ACS712 envia 2.5V no repouso, e sobe 185mV a cada 1 Ampere).
+4. **Decisão:** Se a corrente da Posição 1 ou 2 cair abruptamente (abaixo de um limiar mínimo, ex: 50 mA), o ESP32 interpreta como falha (fio partido, lâmpada queimada, ou disjuntor de gaveta aberto).
+5. **Ação:** O ESP32 envia imediatamente um comando prioritário para o Arduino Mega: `{"cmd":"FALHA_DUT","pos":1}` para que o Mega aborte o processo e desligue o aquecimento/resfriamento por intertravamento. Ao mesmo tempo, publica o alarme via MQTT para o Dashboard.
+
+> 🎓 **Por que não no Mega?** O Arduino Mega já tem muito trabalho lidando com o PID das Peltiers (que exige microsegundos de atenção) e o controle crítico da máquina. Delegar a varredura Modbus (que envolve esperas de milissegundos e *timeouts*) para o ESP32 quebra o acoplamento e deixa a máquina mais robusta.
+
 ## 41.4 Firmware do ESP32
 
 ```cpp

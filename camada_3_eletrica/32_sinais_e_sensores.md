@@ -206,7 +206,7 @@ Duas armadilhas do Arduino Mega estão documentadas aqui, e as duas eram silenci
 >
 > 🎯 **Sobrou 1 pino de comando para as cinco ventoinhas internas** (o `D29`, hoje no gatilho do KA3) e o Mega tem `D22`, `D26`, `D28` e `D50–D53` livres.
 | ~~D31–D34~~ | 🗑️ **livres** — eram os 4 bits de seleção do multiplexador | — | Ver [Doc 13 §13.4](../camada_1_maquete/13_posicoes_de_ensaio.md) |
-| ⭐ **D22** | **SC-1 · DOUT** — detecção de dispositivo morto | `INPUT_PULLUP` | 1 bit: nível BAIXO enquanto houver corrente. Fio partido = ALTO = falha |
+| ~~D22~~ | 🗑️ **livre** — era a leitura do SC-1 | — | A detecção de falha migrou para um barramento **RS-485 Modbus RTU**, sendo lida de forma autônoma pela porta serial do **ESP32** (o Arduino Mega não gasta mais pino com isso) |
 | ~~A2~~ | 🗑️ **livre** — era a entrada analógica dos 16 canais do mux | — | |
 
 #### 🔥 Correção — as ventoinhas do radiador saíram do MV-1 (e depois o MV-1 saiu inteiro)
@@ -690,6 +690,18 @@ Fans padrão geram 2 pulsos por rotação:
 > A implementação está no [Doc 40 §40.6](../camada_4_programacao/40_firmware_arduino.md).
 
 ---
+
+## 32.5b Monitoramento de Falha — O Barramento RS-485 Modbus
+
+A maquete usa uma arquitetura industrial separada do Arduino Mega para monitorar os dispositivos. A inteligência mestre é o ESP32 (via placa DNLCB30), que conversa com um Módulo ADC via RS-485.
+
+| Trecho | Cabo | O que leva |
+|---|---|---|
+| **Sensores → Módulo A/D** | Fios soltos curtíssimos (20 cm) | O sinal analógico 0–5 V puro, saindo do pino `VOUT` dos 2 sensores ACS712, direto para as entradas `IN_0` e `IN_1` do Módulo Modbus. A alimentação deles (5 V / GND) vem do BD-5V e BD-0V. |
+| **Módulo A/D → MAX485** | Par trançado (preferencialmente blindado) | Os dados empacotados pelo protocolo Modbus. Os fios cruzam do borne `A` para o `A` e do `B` para o `B`. |
+| **MAX485 → ESP32** | Pinos diretos | O MAX485 converte os níveis diferenciais (RS-485) para TTL (3,3 V) da Serial2 do ESP32 (`RX` e `TX`). |
+
+> ⭐ **Resistores de Terminação:** O protocolo RS-485 precisa de dois resistores de 120 Ω nas extremidades do barramento (um no borne do MAX485 e outro no borne do Módulo A/D). Isso evita a reflexão do sinal (o famoso *echo* de linha).
 
 ## 32.6 Boas práticas de cabeamento de sinal
 

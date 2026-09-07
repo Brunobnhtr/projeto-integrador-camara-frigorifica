@@ -400,12 +400,14 @@ Esta seção descrevia uma placa com três diodos Zener (5V6 / 13 V / 15 V) que 
 | 55 | 12 V cooler dos BTS | 0,25 mm² | **BD-AUX** saída 1 → cooler 40 mm |
 | 56 | **24 V DNLCB30** | 0,5 mm² | **BD-24V** saída 1 → DNLCB30 `VIN` |
 | 57 | 24 V para a emergência | 0,5 mm² | **BD-24V** saída 2 → **S0 bloco NF de 24 V** entrada |
-| **57m** | **Posição de ensaio** | 0,5 mm² | **BD-24V** saída 4 → **F-P1** (fusível de 100 mA com chave) → 10 voltas no sensor **SC-1** → borne `+24 V` da posição, na câmara |
+| **57m** | **Força Posição de ensaio 1** | 0,5 mm² | **BD-24V** saída 4 → **F-P1** → Pino `IP+` do **ACS712 #1** → Pino `IP-` → `+24 V` da Lâmpada W5W |
+| **57n** | **Força Posição de ensaio 2** | 0,5 mm² | **BD-24V** saída 5 → **F-P2** → Pino `IP+` do **ACS712 #2** → Pino `IP-` → `+24 V` da Lâmpada W5W |
+| **57p** | **Alimentação Módulo Modbus** | 0,25 mm²| **BD-24V** saída 6 → Borne `+24V` (VCC) do **Módulo ADC Modbus RS-485** |
 | **57g** | **24 V dos sinaleiros** | 0,5 mm² | **BD-24V** saída 3 → **positivo comum dos 4 sinaleiros** na porta ⚠️ permanente, não cai com a emergência |
 
-> ⚠️ **Duas saídas estavam duplicadas e isso mudaria a compra.** O cabo 54b dividia a saída 6 do BD-5V com o cabo 54, e o 57h dividia a saída 3 do BD-24V com o 57g. Corrigido: cada carga tem a **sua** saída. Com isso o **BD-5V precisa de 8 saídas** (7 cargas + reserva) e o **BD-24V de 6** (5 cargas + reserva) — ver a tabela de conferência no [Doc 03](../camada_0_fundamentos/03_lista_materiais.md).
+> ⚠️ **Duas saídas estavam duplicadas e isso mudaria a compra.** O cabo 54b dividia a saída 6 do BD-5V com o cabo 54, e o 57h dividia a saída 3 do BD-24V com o 57g. Corrigido: cada carga tem a **sua** saída. Com isso o **BD-5V precisa de 8 saídas** (7 cargas + reserva) e o **BD-24V de 6** (ESP32, Emergência, Sinaleiros, FP1, FP2, Modbus ADC).
 >
-> 🔌 **A saída 4 do BD-24V alimenta os 4 porta-fusíveis das posições de ensaio com UM fio só.** Isso só funciona se o porta-fusível for de **4 vias com barramento de entrada comum** (ou 4 individuais unidos por um **pente**). Se você comprar 4 porta-fusíveis avulsos sem pente, precisará de **4 saídas** no BD-24V em vez de 1 — ou seja, um bloco de **9 saídas**.
+> 🔌 **A alimentação das posições de ensaio** sai do **BD-24V permanente**. Isso garante que, se a emergência for acionada (cortando o aquecimento), o ESP32 e o monitoramento continuam ligados e a falha fica registrada sem falso-alarme.
 | ~~57i–57l~~ | ~~Negativo dos 4 sinaleiros~~ | — | 🗑️ **saíram:** o sinaleiro virou de 5 V e o pino do Arduino o acende direto. Sobrou um retorno só, do último sinaleiro ao `GND2` do Mega |
 | 57b | As duas paradas em série | 0,5 mm² | **S0 saída (NF)** → **S2 bloco NF de 24 V** |
 | 57e | Nó do selo | 0,5 mm² | **S2 saída** → **S1 · 13 (LIGAR, NA)** e **KM1 · 21** (comum do contato de selo) |

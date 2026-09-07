@@ -135,13 +135,13 @@ A porta tem só o que a pessoa precisa **tocar ou ver**:
  │ L│ ══════════ CANALETA HORIZONTAL 30×30 ═══════════   │L │  │  40
  │ E├────────────────────────────────────────────────────┤E │  │
  │ T│ ▓▓▓▓▓▓▓▓▓▓ TRILHO DIN 2 — POTÊNCIA ▓▓▓▓▓▓▓▓▓▓▓▓▓   │T │  │
- │ A│  [BTS7960 #1] [BTS7960 #2] [F-P] [ESP32] [KA123]   │A │  │  90
+ │ A│  [BTS7960 #1] [BTS7960 #2] [F-P duplo] [ESP32] [KA123]│A │  │  90
  │  │        ▲ cooler 40 mm soprando aqui                 │  │  │
  │ V├────────────────────────────────────────────────────┤V │  │
  │ E│ ══════════ CANALETA HORIZONTAL 30×30 ═══════════   │E │  │  40
  │ R├────────────────────────────────────────────────────┤R │  │
- │ T│ ▓▓▓▓▓▓▓▓▓▓ TRILHO DIN 3 — CONTROLE ▓▓▓▓▓▓▓▓▓▓▓▓▓   │T │  │
- │  │  [ARDUINO MEGA + SHIELD] [DNLCB30+ESP32] [SD+RTC]  │  │  │  90
+ │ T│ ▓▓▓▓▓▓▓▓▓▓ TRILHO DIN 3 — CONTROLE e MEDIÇÃO ▓▓▓▓▓ │T │  │
+ │  │  [MEGA] [ADC_Modbus] [ACS712x2] [SD+RTC]           │  │  │  90
  │ 30│                                                    │30│  │
  │  ├────────────────────────────────────────────────────┤  │  │
  │  │ ══════════ CANALETA BASE 30×30 ════════════════    │  │  │  40
@@ -409,22 +409,22 @@ O projeto declarava um **PG9** ali, com "capacidade: 14 fios" escrito à mão. R
 |---:|---|---:|---:|---:|
 | 1 | **BTS1** — driver de potência da PELTIER (frio) | 34 | 50 mm | 84 |
 | 2 | **BTS2** — driver de potência do PTC (quente) | 92 | 50 mm | 142 |
-| 3 | **F-P** — fusível e chave da posição de ensaio | 150 | 26 mm | 176 |
-| 4 | **ESP32** — Wi-Fi, MQTT e dashboard remoto | 184 | 96 mm | 280 |
-| 5 | **KA123** — KA1 (POTÊNCIA) + KA2 (FAN DO RADIADOR) + KA3 (FANS INTERNAS) — módulos de relé | 288 | 105 mm | 393 |
-| | **Ocupação total** | | **359 mm** | livre até 458 — sobram **65 mm** |
+| 3 | **F-P1 / F-P2** — fusíveis com gaveta das posições de ensaio | 150 | 36 mm | 186 |
+| 4 | **ESP32 + MAX485** — Mestre Modbus RTU, Wi-Fi e MQTT | 194 | 110 mm | 304 |
+| 5 | **KA123** — KA1 (POT) + KA2 (RADIADOR) + KA3 (INTERNAS) | 310 | 105 mm | 415 |
+| | **Ocupação total** | | **381 mm** | livre até 458 — sobram **43 mm** |
 
-### TRILHO 3 — Controle (Y = 125)
+### TRILHO 3 — Controle e Medição (Y = 125)
 
 | # | Componente | X | Largura | Termina em |
 |---:|---|---:|---:|---:|
-| 1 | **MEGA** — o cérebro: PID, proteções e intertravamento | 32 | 134 mm | 166 |
+| 1 | **MEGA** — o cérebro: PID e proteções | 32 | 134 mm | 166 |
 | 2 | **SV-1** — módulo sensor de tensão (vigia do 24 V) | 176 | 30 mm | 206 |
-| 3 | **AD-1** — adaptador do DS18B20 (com pull-up) | 210 | 32 mm | 242 |
-| 4 | **SC-1** — sensor de corrente da posição de ensaio | 246 | 40 mm | 286 |
-| 5 | **BD-0V-B** — retornos da eletrônica (trilho 3) | 294 | 63 mm | 357 |
-| 6 | **RTC** — RTC DS3231 — data e hora reais para o log | 365 | 35 mm | 400 |
-| | **Ocupação total** | | **368 mm** | livre até 458 — sobram **58 mm** |
+| 3 | **ADC Modbus 2CH** — Coleta industrial RS-485 | 210 | 45 mm | 255 |
+| 4 | **ACS712 (x2)** — Sensores analógicos das posições | 260 | 40 mm | 300 |
+| 5 | **BD-0V-B** — retornos da eletrônica (trilho 3) | 305 | 63 mm | 368 |
+| 6 | **RTC DS3231** — data e hora reais para o log | 375 | 35 mm | 410 |
+| | **Ocupação total** | | **378 mm** | livre até 458 — sobram **48 mm** |
 
 ## 20.4 Layout da porta (vista externa)
 

@@ -973,24 +973,23 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 
 ## L.4b — Posições de ensaio (dispositivos sob teste)
 
-> ⭐ **É o núcleo do problema descrito no edital.** Detalhamento completo, com esquema e ensaios, em [Doc 13](../camada_1_maquete/13_posicoes_de_ensaio.md).
+> ⭐ **É o núcleo do problema descrito no edital.** Detalhamento completo, com esquema e ensaios, em [Doc 13](../camada_1_maquete/13_posicoes_de_ensaio.md). A maquete simula 2 posições usando cargas 24V.
 
 | Item | Qtd | Especificação | Link |
 |---|---:|---|---|
-| ~~Módulo multiplexador 16 canais CD74HC4067~~ | ~~1~~ | 🗑️ **NÃO COMPRE.** Ele levava 16 canais analógicos a uma entrada A/D — e não há mais canal analógico para levar: a detecção virou um bit por posição | |
+| ~~Sensor de corrente WCS2702~~ | ~~1~~ | 🗑️ **NÃO COMPRE.** Substituído pela arquitetura analógica/Modbus (ACS712) para demonstrar tecnologia industrial | |
+| ⭐ **Módulo ADC 2 Canais Modbus RTU RS-485** | 1 | 🔎 **O coração da digitalização industrial.** Módulo conversor A/D (0-5V ou 4-20mA configurável), 2 entradas, saída RS-485 Modbus RTU. Endereço configurável. Alimentação 24V | |
+| ⭐ **Módulo Conversor RS-485 para TTL (MAX485)** | 1 | Interface entre o barramento RS-485 e a UART do ESP32 (Modbus Master) | |
+| ⭐ **Sensor de corrente ACS712-5A** | 2 | **185 mV/A**. Lê a corrente das posições de ensaio (208 mA). Saída 0-5V conectada ao Módulo ADC. Alimentação 5V (puxar do BD-5V) | |
+| **Porta-fusível DIN 1 via com gaveta** | 2 | Proteção individual das 2 posições (e funciona como "disjuntor" didático para simular falha) | |
+| Fusível de vidro 5×20 mm · 500 mA | 4 | 2 usos + 2 reservas | |
+| **Lâmpada automotiva W5W (Pingo) 24V 5W** | 4 | 2 usos + 2 reservas. ⭐ **A carga simuladora perfeita:** consome 208 mA diretos em 24V, brilha forte e não precisa de resistores dissipadores | |
+| **Soquete T10 (pingo)** | 2 | Para encaixar as lâmpadas W5W. De preferência com rabicho de fio de boa bitola | |
+| Resistor 120 Ω · 1/4 W | 2 | Resistores de terminação (120 ohms) para as duas pontas do barramento RS-485 | |
+| Cabo par trançado blindado (ou cabo de rede) | 2 m | Para a rede RS-485 entre o MAX485 e o Módulo ADC | |
+| Borne DIN 2,5 mm² | 4 | Entrada e saída de cada posição | |
 
-| ~~Resistor 47 Ω · 1% (shunt de medição)~~ | ~~4~~ | 🗑️ **NÃO COMPRE.** O shunt existia para transformar 17,6 mA em 0,83 V legíveis pelo A/D. Ninguém mede mais essa corrente | |
-| ⭐ **Sensor de corrente WCS2702** | 1 | 🔎 **A detecção de dispositivo morto inteira, num módulo.** Hall, ±2 A, 1,0 mV/mA, com saída digital ajustável por trimpot. O fio de força passa pelo furo — **10 voltas**, para o sensor enxergar 176 mA em vez de 17,6 mA. Buscar `sensor de corrente WCS2702 hall`. ⚠️ **Para equipamento em CA** (a planta real, não a maquete) o sensor é a **SZC23**, que fecha a partir de 0,5 A | |
-| **Porta-fusível DIN 2 vias COM INTERRUPTOR** | 1 | **F-P1 e F-P2** — proteção individual de cada posição, com fusível tubular de **100 mA**. ⭐ O interruptor é o que permite simular a falha ao vivo | |
-| Fusível mini automotivo 500 mA | 8 | 4 usos + 4 reservas | |
-| Placa ilhada pequena | 4 | ~30 × 40 mm — corpo de cada placa simuladora de dispositivo | |
-| Resistor 1,2 kΩ · **1/2 W** | 2 | Limitador do LED da **posição 1** — 17,6 mA | |
-| Resistor 2,2 kΩ · **1/2 W** | 2 | Limitador do LED da **posição 2** — 9,8 mA. ⚠️ Valor diferente do da posição 1 **de propósito**: é o que prova que o sistema compara cada posição com o normal DELA, e não com um limiar único | |
-| LED 5 mm difuso | 4 | Indica "posição viva", visível pela porta da câmara | |
-| **Micro-chave ou jumper** | 4 | ⭐ **Simula a falha do dispositivo** — é o que permite demonstrar a detecção ao vivo na apresentação | |
-| Borne DIN 2,5 mm² | 8 | Entrada e saída de cada posição | |
-
-> 💡 **O item mais importante desta tabela é o jumper.** Sem ele você não consegue demonstrar a detecção de falha — que é justamente a melhoria que o edital pede.
+> 💡 **O interruptor (gaveta) do porta-fusível DIN** é o que simula a falha (abertura de circuito) durante a apresentação, provando a detecção Modbus em tempo real.
 
 ## L.5 — Módulos de interface e componentes em borne
 

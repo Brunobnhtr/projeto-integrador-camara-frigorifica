@@ -2,27 +2,27 @@ const fs = require('fs');
 let code = fs.readFileSync('src/data/painel_completo.js', 'utf8');
 
 const updates = {
-  'MEGA': 127,
-  'SV-1': 233,
-  'AD-1': 288,
-  'ADC_Modbus': 350.5,
-  'ACS712-1': 417,
-  'ACS712-2': 481,
-  'BD-0V-B': 556.5,
-  'RTC': 629.5,
+  'MEGA': 60,
+  'SV-1': 218,
+  'AD-1': 272,
+  'ADC_Modbus': 328,
+  'ACS712-1': 397,
+  'ACS712-2': 461,
+  'BD-0V-B': 525,
+  'RTC': 612,
 
-  'BTS1': 90,
-  'BTS2': 190,
-  'ESP32': 313,
-  'F-P': 429,
-  'KA123': 549.5,
+  'BTS1': 60,
+  'BTS2': 160,
+  'ESP32': 260,
+  'F-P': 406,
+  'KA123': 492,
 
-  'KM1': 77,
-  'BD-POT': 152,
-  'BD-AUX': 228,
-  'BD-24V': 308.5,
-  'BD-5V': 414.5,
-  'BD-0V': 540
+  'KM1': 60,
+  'BD-POT': 139,
+  'BD-AUX': 220,
+  'BD-24V': 301,
+  'BD-5V': 391,
+  'BD-0V': 523
 };
 
 for (const [id, x] of Object.entries(updates)) {
@@ -31,4 +31,4 @@ for (const [id, x] of Object.entries(updates)) {
 }
 
 fs.writeFileSync('src/data/painel_completo.js', code);
-console.log('Coordinates updated');
+console.log('Coordinates updated as left edges');

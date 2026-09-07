@@ -59,6 +59,7 @@
 | 01 | [Visão Geral](camada_0_fundamentos/01_visao_geral.md) | Objetivo, arquitetura de controle, princípios térmicos, os 8 cuidados críticos |
 | **02** ⭐ | [**Arquitetura de Energia**](camada_0_fundamentos/02_arquitetura_de_energia.md) | **127 V → 24 V → 12/5/3,3 V**, dimensionamento de correntes, escolha dos conversores, bitolas, queda de tensão, proteção contra falha do buck |
 | 03 | [Lista de Materiais](camada_0_fundamentos/03_lista_materiais.md) | BOM completa, organizada por camada e por lote de compra |
+| **04** ⭐ | [**Maquete vs. Indústria**](camada_0_fundamentos/04_maquete_vs_industria.md) | **Escalabilidade Tecnológica:** Como migrar do kit didático para as placas de chão de fábrica (ESP32-P4, Arduino Giga R1, Portenta) com RTC nativo, Ethernet, SD e TCs industriais. |
 
 ### CAMADA 1 — MAQUETE
 *A "obra civil". Cenário pronto, sem eletrônica.*
@@ -68,8 +69,8 @@
 | 10 | [Base e Chão de Fábrica](camada_1_maquete/10_base_e_chao_de_fabrica.md) | **Base 1500×500**, percurso linear da energia, **rua externa com carros e iluminação**, muro e portão, piso industrial, demarcação NR-10, roteamento por baixo |
 | 11 | [Subestação e Postes](camada_1_maquete/11_subestacao_e_postes.md) | Caixa da subestação, pátio com brita e cerca, 3 postes com cruzeta e isoladores, 3 transformadores (um por poste) com leitor digital, rede compacta protegida |
 | 12 | [Câmara Térmica](camada_1_maquete/12_camara_termica.md) | Cálculo de carga térmica, escolha do isolante, barreira de vapor, **porta dupla anticondensação**, dreno com sifão, 28 peças de acrílico |
-| **13** ⭐ | [**Posições de Ensaio e Detecção de Falha**](camada_1_maquete/13_posicoes_de_ensaio.md) | **Os dispositivos energizados dentro da cabine, proteção por posição e detecção de dispositivo morto por SINAL DIGITAL** (sensor de corrente com saída ON/OFF). Inclui o roteiro de fiação passo a passo, como explicar na apresentação e a arquitetura de 50 canais com MCP23017 |
-| **14** ⭐ | [**Escala e cabeamento**](camada_1_maquete/14_escala_e_cabeamento.md) | ⚠️ **Histórico.** Ele calcula o cabeamento da versão em que cada posição era MEDIDA. A arquitetura de escala hoje é outra — 1 bit por posição e expansores MCP23017 ([Doc 13 §13.9](camada_1_maquete/13_posicoes_de_ensaio.md)) —, mas o raciocínio de cabeamento continua valendo |
+| **13** ⭐ | [**Posições de Ensaio e Detecção de Falha**](camada_1_maquete/13_posicoes_de_ensaio.md) | **Os dispositivos energizados dentro da cabine, proteção por posição e detecção de dispositivo morto.** Dividido em duas escalas: a **Bancada (Maquete)** com lâmpadas 24 V, ACS712 e ADC Modbus RS-485; e a **Planta Real (Indústria)** com sensores não-invasivos e laços de 4-20 mA para CLPs |
+| **14** ⭐ | [**Escala e cabeamento**](camada_1_maquete/14_escala_e_cabeamento.md) | ⚠️ **Histórico.** O raciocínio original de cabeamento, mantido para consulta. A arquitetura de escala real hoje se resolve com barramentos RS-485 ([Doc 13](camada_1_maquete/13_posicoes_de_ensaio.md)) |
 
 ### CAMADA 2 — PAINEL
 *Montagem mecânica. Nenhum fio ligado.*
@@ -224,9 +225,9 @@ podia significar duas peças diferentes. Ficou assim:
 | Tensão de entrada | 127 V AC |
 | **Barramento de distribuição** | **24 Vcc** (SELV) |
 | Potência instalada | 240 W (fonte) |
-| Consumo calculado | **≈ 166 W / 6,9 A @ 24 V** |
-| Folga da fonte de 240 W | **1,44×** — a fonte de 150 W não atende |
-| Corrente AC de entrada | 2,37 A |
+| Consumo calculado | **≈ 176 W / 7,3 A @ 24 V** (inclui as 2 lâmpadas de ensaio) |
+| Folga da fonte de 240 W | **1,36×** — a fonte atende com margem segura |
+| Corrente AC de entrada | 2,50 A |
 | Queda de tensão na linha dos postes | **0,21 V (0,86 %)** |
 | Conversores | **2× LM2596 com display** (T2 e T3) · **P1 é derivação direta, sem conversor** |
 | Tensões derivadas | **24,0 V (potência, direto)** · 12,0 V (auxiliar) · 5,10 V (comando) · 3,3 V (ESP32) |
@@ -234,7 +235,7 @@ podia significar duas peças diferentes. Ficou assim:
 | Níveis de proteção | **5** (do disjuntor ao intertravamento por software) |
 | Acionamento | **4 relés** — KM1 (o selo e a potência, relé de 8 pinos) + KA1 (veto do firmware, NA) + KA2 (ventoinhas do radiador, **NF**) + KA3 (as 5 ventoinhas internas, NA), os três últimos módulos de 5 V numa caixa DIN 6M — emergência em hardware. 🗑️ **Nenhum módulo MOSFET no painel:** quem modula são os BTS7960 |
 | Volume útil da câmara | 5,0 litros |
-| Carga térmica calculada | **≈ 9,5 W** |
+| Carga térmica calculada | **≈ 19,5 W** (9,5 W de base + 10 W dissipados pelas 2 lâmpadas de ensaio) |
 | Refrigeração | **2× TEC1-12706 em SÉRIE** · 24 V · 6,0 A · 144 W |
 | Capacidade das Peltier a ΔT = 20 K | **~60 W** (margem de 6,3×) |
 | Aquecimento | **PTC cerâmico de 24 V** · 80 W · 3,3 A |
@@ -286,7 +287,7 @@ podia significar duas peças diferentes. Ficou assim:
 projeto integrador/
 ├── 00_indice_projeto.md              ← você está aqui
 ├── PLANO_REFATORACAO.md              o que está sendo refeito, e por quê
-├── camada_0_fundamentos/             01 · 02 ⭐ · 03
+├── camada_0_fundamentos/             01 · 02 ⭐ · 03 · 04 ⭐
 ├── camada_1_maquete/                 10 · 11 · 12 · 13 · 14
 ├── camada_2_painel/                  20
 ├── camada_3_eletrica/                30 · 31 · 32 · 33
