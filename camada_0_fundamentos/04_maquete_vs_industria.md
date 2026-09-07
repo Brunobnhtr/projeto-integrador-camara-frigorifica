@@ -51,9 +51,26 @@ Ao usar Módulos ADC **locais** (espalhados no quadro de disjuntores) que digita
 | Função | Na Maquete (Didático) | Na Indústria (Planta Real) |
 |---|---|---|
 | **Geração de Frio** | Pastilhas Termoelétricas (Peltier) | Compressores Frigoríficos, Válvulas de Expansão |
-| **Geração de Calor** | Resistor Cerâmico PTC | Resistências Tubulares Blindadas |
-| **Controle de Carga** | Drivers DC **BTS7960** modulando PWM. | Inversores de Frequência e Contatores de Estado Sólido (SSR). |
-| **Relés de Comando** | Módulos de relé 5V com optoacoplador. | Relés de Interface industriais Slim de 24V. |
+| **Geração de Calor** | Resistor Cerâmico PTC (80W) | Resistências Tubulares Blindadas |
+| **Controle de Carga (PID)** | Drivers de motor DC **BTS7960** modulando PWM. | **Controladores de Potência Tiristorizados (SCR)** com entrada 4-20mA ou **Inversores de Frequência**. |
+| **Relés Auxiliares (Sinal)** | Módulos de relé 5V genéricos (optoacoplados). | **Relés de Interface Slim 24V** (ex: Finder Série 39, Phoenix Contact PLC-RSC). |
+| **Relé Principal (Força)** | Módulo de relé 5V (usado no KM1). | **Contator Industrial 24V DC** (ex: Siemens Sirius) ou Relé de Estado Sólido (SSR) de alta potência. |
+| **Sensores de Temperatura**| Sonda DS18B20 (1-Wire) e AM2315C (I2C). | Sondas **PT100/PT1000** ligadas a Transmissores de Temperatura (saída 4-20mA ou Modbus). |
+
+---
+
+## 4. Infraestrutura, Energia e Painel (HMI)
+
+Para garantir que o equipamento sobreviva ao ambiente fabril (poeira, umidade, vibração e ruído elétrico), a infraestrutura de montagem muda drasticamente.
+
+| Função | Na Maquete (Didático) | Na Indústria (Planta Real) |
+|---|---|---|
+| **Fonte de Alimentação** | Fonte chaveada genérica "Colmeia" (24V 10A). | **Fontes Industriais de Trilho DIN** (ex: Mean Well NDR/EDR, Phoenix Contact QUINT) com PFC ativo e proteção robusta. |
+| **Redutores de Tensão** | Módulos Step-Down LM2596 (sem proteção). | **Conversores DC/DC Industriais DIN** isolados galvanicamente. |
+| **Gabinete (Painel)** | Caixa de acrílico ou quadro de sobrepor plástico. | **Painéis Rittal / Steck IP55 ou IP65** (chapa de aço ou policarbonato) com ventilação forçada e filtros de ar. |
+| **Botões e Sinalização** | Botões push-button 22mm genéricos e LEDs simples. | **Linha Industrial 22mm** (ex: Schneider Harmony XB4/XB5, WEG CEW) com blocos de contato independentes e vedação pesada. |
+| **Tela / IHM** | Display genérico ES3C28P SPI/I2C acoplado ao ESP32. | **IHM Industrial Touchscreen** (ex: WEG MT8000, Delta, Siemens KTP) comunicando via Ethernet ou RS-485 Modbus direto com o Arduino Portenta. |
+| **Distribuição Elétrica** | Blocos de barramento impressos em 3D ou parafusos simples. | **Bornes Sak/Sindal de Passagem** de trilho DIN (ex: Phoenix Contact PT, WAGO) com molas *Push-in* antivibração. |
 
 ---
 
@@ -62,3 +79,4 @@ A maquete foi desenhada para **provar o conceito lógico e arquitetural**. O có
 
 ---
 ⬅️ **Anterior:** [Doc 03 - Lista de Materiais](03_lista_materiais.md) | ➡️ **Próximo:** [Doc 10 - Base e Chão de Fábrica](../camada_1_maquete/10_base_e_chao_de_fabrica.md)
+
