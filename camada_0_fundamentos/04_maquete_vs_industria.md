@@ -43,8 +43,13 @@ O desafio principal é monitorar 50 disjuntores de cargas sem poluir o quadro co
 | **Digitalização do Sinal**| **Módulo ADC 2 Canais** (Conversor A/D 0-5V para Modbus RTU). | **Módulos ADC 8AI (ou 16AI) Industriais** de trilho DIN. Cada módulo concentra 8 TCs locais e despacha tudo via rede RS-485. |
 
 ### Por que a arquitetura Modbus é a prova da maturidade do projeto?
-Num chão de fábrica, tentar levar 50 fios analógicos de tensão (0 a 5V) por 20 metros resultaria em leituras completamente malucas devido à interferência magnética de motores e compressores.
-Ao usar Módulos ADC **locais** (espalhados no quadro de disjuntores) que digitalizam o sinal e cospem um sinal serial diferencial (**RS-485**), a comunicação se torna cega a ruídos elétricos, permitindo apenas um par trançado de fios (A e B) varrer a fábrica inteira. 
+Num chão de fábrica, tentar levar 50 fios analógicos de tensão (0 a 5V) por 20 metros resultaria em leituras completamente malucas devido à interferência magnética de motores e compressores. 
+
+**E por que não usar o padrão industrial 4-20 mA?**
+O sinal 4-20 mA é imune a ruídos e viaja longas distâncias, mas se a empresa fosse utilizar transmissores 4-20 mA para monitorar 50 aparelhos, o custo seria altíssimo. Seriam 50 sensores caros e a necessidade de puxar 50 cabos independentes cruzando todo o galpão até chegar no painel do controlador principal (CLP/Arduino).
+
+A nossa arquitetura resolve isso com o **RS-485**. Nós mantemos os sensores puros e baratos (TCs normais) instalados perto das cargas, e digitalizamos o sinal ali mesmo através de Módulos ADC **locais** de trilho DIN. Esses módulos empacotam as informações e cospem um sinal serial diferencial (**RS-485**), que é totalmente cego a ruídos elétricos.
+O resultado? A informação de todos os 50 aparelhos varre a fábrica inteira através de **um único par trançado de fios (A e B)**. A empresa economiza milhares de reais em sensores caros e em quilômetros de cabeamento de cobre, mantendo a confiabilidade industrial. 
 
 ---
 
