@@ -26,6 +26,8 @@ Na **Indústria**, manter módulos separados gera pontos de falha (fios soltos, 
 | **Confiabilidade** | Fios Jumper Dupont | **Bornes industriais de mola ou parafuso direto na placa** |
 
 > 📌 **A Evolução Industrial:** Placas da linha **Arduino Pro** (como o *Portenta Machine Control* ou a linha *Opta*) reúnem todo o poder do Arduino, combinam co-processadores de rede e já entregam portas RS-485 e Ethernet de fábrica num trilho DIN, sem jumpers. Se o cliente exige uma placa estilo devboard de altíssimo poder, o **ESP32-P4** (com expansões Ethernet PHY) ou o **Arduino GIGA R1 WiFi** (que tem o tamanho do Mega, mas tem RTC, USB-C e co-processador Wi-Fi) cumprem essa função magistralmente numa única peça.
+>
+> 🔄 **Evolução intermediária: Arduino UNO R4 WiFi.** Para quem já usa Arduino e quer dar o primeiro passo sem trocar toda a plataforma, o **UNO R4 WiFi** reúne processador Renesas (Arm Cortex-M4), co-processador **ESP32-S3** embutido (Wi-Fi + Bluetooth), **RTC interno** e USB-C — tudo numa única placa, programável na mesma IDE Arduino. Ele substitui o Arduino Mega + ESP32 + RTC DS3231 por uma peça só, mantendo compatibilidade com o código existente e reduzindo pontos de falha.
 
 ---
 

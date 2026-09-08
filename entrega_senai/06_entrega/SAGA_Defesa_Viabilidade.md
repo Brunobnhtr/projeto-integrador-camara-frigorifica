@@ -90,6 +90,26 @@ A fábrica **já tem o Arduino** controlando a câmara. O que falta é o sistema
 
 > Esse valor é para monitorar **todos os 50 dispositivos de uma vez**. Comparado com o custo de descartar lotes inteiros de ensaio porque ninguém viu a falha, o investimento se paga rápido.
 
+**Opção de evolução: Arduino UNO R4 WiFi**
+
+Na maquete, usamos 3 peças separadas que precisam conversar entre si por fios: o **Arduino Mega** (que controla a temperatura), o **ESP32** (que cuida do Wi-Fi e do Modbus) e o **módulo RTC DS3231** (que guarda a data e hora). São 3 placas, 3 alimentações, fios ligando uma na outra — mais pontos onde algo pode dar errado.
+
+O **Arduino UNO R4 WiFi** resolve isso juntando tudo numa placa só:
+- Tem um **processador Renesas** forte o bastante para rodar o PID (o controle de temperatura).
+- Tem um **ESP32-S3 embutido** que já cuida do Wi-Fi e do Bluetooth — sem precisar de módulo separado.
+- Tem **RTC interno** (relógio de tempo real) — sem precisar do módulo DS3231 externo.
+- Tem **USB-C** moderno em vez do USB-B antigo do Mega.
+- Se programa na mesma **IDE do Arduino** com a mesma linguagem — o código muda pouco.
+
+Ou seja: **2 componentes viram 1** (Arduino + ESP32 viram uma placa só), e o RTC sai de graça. Menos fios, menos pontos de falha, menos espaço no painel.
+
+Na fábrica, onde já existe Arduino, trocar o controlador atual por um UNO R4 WiFi significaria ganhar Wi-Fi, RTC e capacidade de ser o mestre Modbus RS-485 **sem adicionar nenhum módulo extra**. O custo de um UNO R4 WiFi fica em torno de **R$ 200 a R$ 280** — que é menos do que comprar um ESP32 industrial separado mais o RTC mais o conversor de nível lógico, e ainda sobra a economia de não precisar dos fios entre as placas.
+
+| Abordagem | Componentes | Custo estimado |
+|---|---|---|
+| Atual (maquete) | Arduino Mega + ESP32 + RTC + conversor de nível | ~R$ 350 (4 peças + fios entre elas) |
+| Evolução | **Arduino UNO R4 WiFi** (tudo em 1 placa) | ~R$ 200 a R$ 280 (1 peça) |
+
 ---
 
 ### 6. Quais são os riscos?
