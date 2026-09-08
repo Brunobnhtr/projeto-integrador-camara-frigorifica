@@ -207,6 +207,21 @@ Por isso nossa solução corta caminho: usamos sensores simples e baratos perto 
 
 ---
 
-### 12. Encerramento sugerido
+### 12. Perguntas "Pegadinha" que a banca pode fazer (e como responder)
+
+Se a banca quiser testar se vocês realmente entendem de eletrotécnica e não só de programação, eles farão perguntas difíceis. Aqui estão as principais e como responder:
+
+**Pergunta 1: "Por que usar 24 Volts para alimentar as Peltier e o Aquecedor, e não 110V ou 220V direto da tomada?"**
+*Como responder:* "Por segurança e norma (NR-10). Como é uma maquete didática que alunos vão operar, optamos por trabalhar em Extra-Baixa Tensão (SELV - 24V DC). Isso elimina o risco de choque elétrico letal durante a montagem e os testes. Na fábrica real, o comando continua em 24V, mas a potência seria em 220V/380V para os compressores. A nossa maquete simula a lógica de comando perfeitamente, mas com segurança total."
+
+**Pergunta 2: "O que acontece se o Arduino travar enquanto o aquecedor estiver ligado no máximo? Vai pegar fogo?"**
+*Como responder:* "Não. Nós pensamos no cenário de falha de software. Primeiro, o Arduino tem um *Watchdog* (um cão de guarda interno): se o programa travar, ele reinicia o chip em 2 segundos. Segundo, nós instalamos resistores de *pull-down* nos gatilhos de potência. Se o Arduino desligar ou travar, a energia vai para zero volts, e as chaves de potência desligam o aquecedor fisicamente. E, em último caso, o botão de emergência corta a energia direto no fio (em hardware), ignorando o Arduino."
+
+**Pergunta 3: "Se isso é para a indústria, por que usar Arduino e não um CLP (Controlador Lógico Programável) de mercado?"**
+*Como responder:* "Para fins didáticos, o Arduino e o ESP32 nos forçam a aprender a lógica de baixo nível (como calcular um PID matematicamente e como montar a rede Modbus do zero), conhecimentos que o CLP esconde do operador. Além disso, nós documentamos no projeto que a lógica migra perfeitamente para CLPs baseados em Arduino que já são certificados para a indústria, como o *Arduino Opta* ou o *Portenta Machine Control*, aproveitando o mesmo código."
+
+---
+
+### 13. Encerramento sugerido
 
 "Concluímos que o projeto é viável porque usa componentes baratos e comerciais, a montagem é por etapas e a segurança não depende de software. Ele aplica na prática o que aprendemos em comandos elétricos, instalações, instrumentação e automação. E o mais importante: resolve um problema real da empresa — saber na hora quando um dispositivo falha, em vez de descobrir horas depois. Na fábrica, com um investimento de R$ 3.300 a R$ 5.400, o sistema monitora os 50 dispositivos usando a mesma arquitetura RS-485 que provamos funcionar na maquete."

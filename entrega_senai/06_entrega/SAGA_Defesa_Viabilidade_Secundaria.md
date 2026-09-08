@@ -135,6 +135,21 @@ Nosso projeto propõe a tecnologia certa (radar) com o custo mais baixo possíve
 
 ---
 
-### 10. Encerramento sugerido
+### 10. Perguntas "Pegadinha" que a banca pode fazer (e como responder)
+
+Como esse é um projeto industrial voltado para o setor de mineração/gesso, a banca fará perguntas para testar se a solução para em pé na vida real.
+
+**Pergunta 1: "O silo é uma estrutura de metal gigante que funciona como Gaiola de Faraday, além do ambiente ser cheio de poeira. Como o Wi-Fi do ESP32 vai chegar na sala de controle?"**
+*Como responder:* "Na maquete nós usamos Wi-Fi, mas na fábrica nós documentamos opções mais robustas. O painel ficaria na base do silo (do lado de fora), ou usaríamos uma antena Wi-Fi externa apontada para um roteador industrial próximo. Se o Wi-Fi não for viável, a arquitetura permite trocar o módulo Wi-Fi por um Rádio LoRa (915 MHz, que atravessa obstáculos muito melhor) ou simplesmente passar um cabo de rede blindado até o switch mais próximo."
+
+**Pergunta 2: "Um radar industrial custa de R$ 3.000 a R$ 8.000. Vocês acham que a empresa vai pagar isso só para evitar que o operador suba uma escada?"**
+*Como responder:* "Com certeza. Primeiro, porque uma queda de altura (NR-35) pode ser fatal, e isso tem um custo humano imensurável, além de processos milionários. Segundo, o silo ficar vazio significa que os fornos da fábrica param. Uma hora de fábrica parada custa muito mais que 8 mil reais. O sensor se paga na primeira vez que evita a interrupção da produção."
+
+**Pergunta 3: "O sensor industrial envia o sinal em 4 a 20 mA. Mas o ESP32 só lê tensão de 0 a 3.3V. Como vocês vão ligar o sensor no ESP32 sem queimar a placa?"**
+*Como responder:* "Nós não ligamos o cabo direto. Usamos um resistor de precisão (um 'shunt', por exemplo de 165 ohms) que transforma a corrente de 4 a 20 mA em uma tensão segura de 0.66V a 3.3V. Ou, para ficar mais profissional, usamos um módulo conversor comercial de Corrente para Tensão, que já vem com isolamento elétrico para proteger o microcontrolador contra surtos vindos do silo."
+
+---
+
+### 11. Encerramento sugerido
 
 "Concluímos que o projeto é viável porque usa uma tecnologia comprovada na indústria — o radar — combinada com IoT de baixo custo. Ele resolve um problema real de segurança e logística da empresa, aplica os conhecimentos de instalações elétricas, instrumentação e automação do nosso curso, e pode ser validado com uma maquete de R$ 330 que funciona com a mesma lógica da planta real."
