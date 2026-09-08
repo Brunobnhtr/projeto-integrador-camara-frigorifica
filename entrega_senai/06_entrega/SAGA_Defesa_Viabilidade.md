@@ -42,7 +42,7 @@ A ideia é simples: colocamos um **sensor de corrente** em cada posição de tes
 **Na maquete (o que vamos construir):**
 - Em vez de uma cabine industrial gigante, usamos uma **caixinha de acrílico isolada** com pastilhas Peltier para esfriar (aquelas "pedrinhas" que transferem calor de um lado pro outro) e um **aquecedor PTC** para esquentar (uma peça cerâmica que gera calor quando ligada na corrente). Ela é pequena, mas funciona igualzinho: esfria, esquenta e controla a temperatura.
 - No lugar dos 50 aparelhos, usamos **2 lâmpadas automotivas** como carga de teste. Se a lâmpada queima ou se puxamos o fusível, o sensor detecta que a corrente sumiu e dispara o alarme.
-- Usamos **módulos de sensor de corrente miniatura com furo de passagem** (como o ZMCT103C ou a linha WCS). Assim, não precisamos cortar o fio de alimentação para medir a corrente — o fio só passa por dentro do furo do sensor, simulando exatamente o formato de um alicate amperímetro usado na indústria.
+- Usamos **módulos de sensor de corrente com furo de passagem** (como a linha WCS2702 ou WCS1800). Assim, não precisamos cortar o fio de alimentação para medir a corrente DC — o fio só passa por dentro do furo do sensor, simulando exatamente o formato de um alicate amperímetro usado na indústria.
 - O painel de comando é de verdade: trilho DIN, canaletas, relés, botão de emergência, sinaleiros — tudo como num painel industrial.
 
 **O que acontece passo a passo:**
