@@ -145,8 +145,8 @@ Como esse é um projeto industrial voltado para o setor de mineração/gesso, a 
 **Pergunta 2: "Um radar industrial custa de R$ 3.000 a R$ 8.000. Vocês acham que a empresa vai pagar isso só para evitar que o operador suba uma escada?"**
 *Como responder:* "Com certeza. Primeiro, porque uma queda de altura (NR-35) pode ser fatal, e isso tem um custo humano imensurável, além de processos milionários. Segundo, o silo ficar vazio significa que os fornos da fábrica param. Uma hora de fábrica parada custa muito mais que 8 mil reais. O sensor se paga na primeira vez que evita a interrupção da produção."
 
-**Pergunta 3: "O sensor industrial envia o sinal em 4 a 20 mA. Mas o ESP32 só lê tensão de 0 a 3.3V. Como vocês vão ligar o sensor no ESP32 sem queimar a placa?"**
-*Como responder:* "Nós não ligamos o cabo direto. Usamos um resistor de precisão (um 'shunt', por exemplo de 165 ohms) que transforma a corrente de 4 a 20 mA em uma tensão segura de 0.66V a 3.3V. Ou, para ficar mais profissional, usamos um módulo conversor comercial de Corrente para Tensão, que já vem com isolamento elétrico para proteger o microcontrolador contra surtos vindos do silo."
+**Pergunta 3: "O sensor industrial envia o sinal em 4 a 20 mA. Mas o ESP32 só lê tensão de 0 a 3.3V. Na indústria isso liga direto no CLP, mas como vocês vão ligar no ESP32 sem queimar a placa?"**
+*Como responder:* "Temos duas opções. A mais profissional é usar um **Módulo Conversor 4-20mA para Tensão** (como o HW-685). Ele recebe os fios industriais 24V/20mA de um lado e entrega 3.3V seguros para o ESP do outro. Mas, se precisarmos fazer na raça, usamos a **Lei de Ohm** ($V = R \times I$): colocamos um resistor de precisão (shunt) de 165 ohms em paralelo com a entrada do ESP32 ligada ao GND. Quando o sensor manda a corrente máxima de 20 mA ($0.02 A$), a tensão gerada sobre o resistor será de exatamente $3.3V$ ($165 \times 0.02$), que é o limite seguro do pino do ESP32."
 
 ---
 
