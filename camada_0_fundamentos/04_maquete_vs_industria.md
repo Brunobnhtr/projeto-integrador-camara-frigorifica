@@ -39,7 +39,7 @@ O desafio principal é monitorar 50 disjuntores de cargas sem poluir o quadro co
 |---|---|---|
 | **A Carga do Teste** | Lâmpadas Automotivas W5W Pingo (24V 5W) gerando calor e corrente. | Equipamentos Reais sob ensaio nas esteiras (cargas AC pesadas). |
 | **Proteção de Ramal** | Porta-Fusíveis Seccionáveis DIN (Fusível de Vidro 500mA). | Minidisjuntores Curva C de força. |
-| **O Sensor de Corrente**| **ACS712-5A**: Invasivo (precisa cortar o fio de força e parafusar no módulo). Escala 0-5A DC. | **Transformador de Corrente (TC) Split-Core** ou **Sensor SZC23**: Não invasivo (abotoado por fora do cabo). Mede AC pesada. |
+| **O Sensor de Corrente**| **ACS712-5A** (Invasivo) ou **Módulo TC Miniatura / Efeito Hall** com furo de passagem (ex: ZMCT103C para AC, ou WCS para DC). Permite medir sem cortar o fio. | **Transformador de Corrente (TC) Split-Core** ou **Sensor SZC23**: Não invasivo (abotoado por fora do cabo). Mede AC pesada. |
 | **Digitalização do Sinal**| **Módulo ADC 2 Canais** (Conversor A/D 0-5V para Modbus RTU). | **Módulos ADC 8AI (ou 16AI) Industriais** de trilho DIN. Cada módulo concentra 8 TCs locais e despacha tudo via rede RS-485. |
 
 ### Por que a arquitetura Modbus é a prova da maturidade do projeto?
