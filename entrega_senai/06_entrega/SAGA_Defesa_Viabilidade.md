@@ -192,8 +192,11 @@ A solução é o **RS-485**: um barramento industrial que funciona com **apenas 
 4. **Por que funciona bem em ambiente industrial?** Porque o RS-485 não manda tensão absoluta (tipo 0 V ou 5 V, que qualquer motor por perto bagunça). Ele manda a **diferença** de tensão entre os 2 fios. Se o ruído sobe nos dois fios ao mesmo tempo, a diferença fica igual — o ruído se cancela sozinho. Por isso o RS-485 funciona bem a **distâncias de até 1.200 metros**, mesmo perto de motores, compressores e inversores de frequência.
 
 5. **Por que não usar sensores 4-20 mA para longas distâncias?** 
-A indústria ama sensores 4-20 mA porque eles também andam longas distâncias sem perder o sinal. O problema é o **custo e os cabos**. Se a empresa quisesse monitorar 50 aparelhos, ela teria que comprar 50 transmissores 4-20 mA (que são muito caros) e teria que puxar **50 cabos independentes** cruzando todo o galpão até o painel principal.
-Com o RS-485, nós usamos sensores de corrente bem baratos perto dos aparelhos, ligamos eles nos módulos de 8 canais, e puxamos **um único cabo de 2 fios** cruzando a fábrica para ler todos os 50. A empresa economiza muito dinheiro em sensores e quilômetros de fio de cobre, com a mesma confiabilidade industrial.
+A indústria ama sensores 4-20 mA porque eles também andam longas distâncias sem perder o sinal. Mas se fôssemos usar transmissores 4-20 mA para 50 aparelhos, esbarraríamos em três problemas graves:
+- **Custo e Cabos:** Seriam 50 transmissores muito caros e 50 cabos cruzando a fábrica até o painel.
+- **Portas limitadas:** O Arduino Mega só tem 16 entradas analógicas. O ESP32 tem menos ainda. Não teríamos onde ligar 50 fios analógicos.
+- **Leitura incompatível:** Microcontroladores só leem *Tensão* (0 a 5 Volts). Para ler Corrente (4-20 mA), precisaríamos instalar 50 resistores de precisão ou 50 plaquinhas conversoras no painel. No fim das contas, para o Arduino ler os 50 sensores 4-20 mA, teríamos que usar módulos concentradores RS-485 de qualquer jeito!
+Por isso nossa solução corta caminho: usamos sensores simples e baratos perto das lâmpadas, ligamos eles direto nos módulos RS-485 lá na câmara, e puxamos **um único cabo de 2 fios** cruzando a fábrica. Economizamos muito dinheiro e resolvemos a falta de portas do Arduino.
 
 **No nosso protótipo (maquete):**
 - Temos 2 sensores de corrente ligados num módulo ADC de 2 canais.
