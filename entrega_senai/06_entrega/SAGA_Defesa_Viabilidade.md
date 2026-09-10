@@ -71,7 +71,7 @@ A ideia é simples: colocamos um **sensor de corrente** em cada posição de tes
 A fábrica **já tem o Arduino** controlando a câmara. O que falta é o sistema de monitoramento dos 50 dispositivos. Não dá para ligar 50 sensores direto no ESP32 — seriam fios demais e o ESP32 não tem 50 entradas. A solução é usar **módulos concentradores RS-485**.
 
 **Como funciona na indústria:**
-- Cada grupo de **8 sensores** é ligado a um **módulo ADC de 8 canais** (um "tradutor" que lê os 8 sensores e empacota tudo num único dado digital).
+- Cada grupo de **8 sensores** é ligado a um **módulo ADC de 8 canais** (ADC significa *Analog-to-Digital Converter*, ou Conversor Analógico-Digital. É um "tradutor" em formato de chip que lê o sinal analógico dos 8 sensores e transforma em um número digital que o microcontrolador entende).
 - Esses módulos ficam espalhados no quadro de disjuntores, **perto dos sensores** (fios curtos, sem ruído).
 - Todos os módulos são ligados entre si por apenas **2 fios** (o barramento RS-485), um atrás do outro, como uma corrente.
 - Na ponta dessa corrente, o ESP32 fica perguntando para cada módulo: "módulo 1, como estão seus 8 sensores?", "módulo 2, como estão os seus?" — e assim por diante.
@@ -212,13 +212,16 @@ Por isso nossa solução corta caminho: usamos sensores simples e baratos perto 
 Se a banca quiser testar se vocês realmente entendem de eletrotécnica e não só de programação, eles farão perguntas difíceis. Aqui estão as principais e como responder:
 
 **Pergunta 1: "Por que usar 24 Volts para alimentar as Peltier e o Aquecedor, e não 110V ou 220V direto da tomada?"**
-*Como responder:* "Por segurança e norma (NR-10). Como é uma maquete didática que alunos vão operar, optamos por trabalhar em Extra-Baixa Tensão (SELV - 24V DC). Isso elimina o risco de choque elétrico letal durante a montagem e os testes. Na fábrica real, o comando continua em 24V, mas a potência seria em 220V/380V para os compressores. A nossa maquete simula a lógica de comando perfeitamente, mas com segurança total."
+*Como responder:* "Por segurança e norma (NR-10). Como é uma maquete didática que alunos vão operar, optamos por trabalhar com **SELV** (*Safety Extra Low Voltage*, ou Extra-Baixa Tensão de Segurança). Uma rede SELV de 24V DC é eletricamente isolada da rede elétrica principal e tem uma tensão tão baixa que não causa choque letal caso alguém encoste nos fios acidentalmente. Na fábrica real, o comando continua em 24V, mas a força bruta seria 220V/380V."
 
 **Pergunta 2: "O que acontece se o Arduino travar enquanto o aquecedor estiver ligado no máximo? Vai pegar fogo?"**
-*Como responder:* "Não. Nós pensamos no cenário de falha de software. Primeiro, o Arduino tem um *Watchdog* (um cão de guarda interno): se o programa travar, ele reinicia o chip em 2 segundos. Segundo, nós instalamos resistores de *pull-down* nos gatilhos de potência. Se o Arduino desligar ou travar, a energia vai para zero volts, e as chaves de potência desligam o aquecedor fisicamente. E, em último caso, o botão de emergência corta a energia direto no fio (em hardware), ignorando o Arduino."
+*Como responder:* "Não, porque a segurança é garantida no hardware. Usamos resistores de **pull-down**. (*Se a banca pedir para explicar:* 'Pull-down' significa 'puxar para baixo'. É um resistor que garante que, se o Arduino travar ou o fio de sinal se soltar, a tensão do comando caia instantaneamente para o GND / 0V. O seu oposto é o 'pull-up', que garante nível alto, 5V, quando inativo). Com o pull-down, a chave de potência zera e se auto-desliga se perder comunicação. Além disso, o Arduino tem um *Watchdog* que o reinicia se travar, e temos o botão de emergência que corta tudo fisicamente."
 
 **Pergunta 3: "Se isso é para a indústria, por que usar Arduino e não um CLP (Controlador Lógico Programável) de mercado?"**
 *Como responder:* "Para fins didáticos, o Arduino e o ESP32 nos forçam a aprender a lógica de baixo nível (como calcular um PID matematicamente e como montar a rede Modbus do zero), conhecimentos que o CLP esconde do operador. Além disso, nós documentamos no projeto que a lógica migra perfeitamente para CLPs baseados em Arduino que já são certificados para a indústria, como o *Arduino Opta* ou o *Portenta Machine Control*, aproveitando o mesmo código."
+
+**Pergunta 4: "Vocês estão colocando componentes de FORÇA (Peltier/PTC consumindo 10A) e de COMANDO (Arduino/ESP32 de 5V) no mesmo painel. Isso não vai causar ruído magnético e travar as placas?"**
+*Como responder:* "Poderia causar interferência eletromagnética (EMI), mas nós montamos o painel seguindo exatamente as práticas da indústria: nós **não misturamos os fios**. Separamos o layout físico: usamos canaletas exclusivas para os fios de Força (cabos grossos) e canaletas separadas para o Comando (fios finos de sinal). A Força fica embaixo, o Comando em cima. Além disso, as fontes de alimentação possuem filtros de isolamento e usamos o protocolo RS-485 para os sensores, que foi inventado exatamente para rejeitar ruídos eletromagnéticos do chão de fábrica."
 
 ---
 

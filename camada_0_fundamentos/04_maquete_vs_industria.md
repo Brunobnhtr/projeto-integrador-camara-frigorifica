@@ -40,7 +40,7 @@ O desafio principal é monitorar 50 disjuntores de cargas sem poluir o quadro co
 | **A Carga do Teste** | Lâmpadas Automotivas W5W Pingo (24V 5W) gerando calor e corrente. | Equipamentos Reais sob ensaio nas esteiras (cargas AC pesadas). |
 | **Proteção de Ramal** | Porta-Fusíveis Seccionáveis DIN (Fusível de Vidro 500mA). | Minidisjuntores Curva C de força. |
 | **O Sensor de Corrente**| **Módulo Efeito Hall Não-Invasivo** com furo de passagem (ex: WCS2702). Permite medir DC sem cortar o fio. *(Se a carga de teste na maquete for AC, basta usar um TC miniatura tipo ZMCT103C)*. | **Transformador de Corrente (TC) Split-Core** ou **Sensor SZC23**: Não invasivo (abotoado por fora do cabo). Mede AC pesada. |
-| **Digitalização do Sinal**| **Módulo ADC 2 Canais** (Conversor A/D 0-5V para Modbus RTU). | **Módulos ADC 8AI (ou 16AI) Industriais** de trilho DIN. Cada módulo concentra 8 TCs locais e despacha tudo via rede RS-485. |
+| **Digitalização do Sinal**| **Módulo ADC 2 Canais** (ADC = *Analog-to-Digital Converter*, converte o sinal contínuo 0-5V do sensor para um número digital Modbus RTU). | **Módulos ADC 8AI (ou 16AI) Industriais** de trilho DIN. Cada módulo concentra 8 TCs locais e despacha tudo via rede RS-485. |
 
 ### Por que a arquitetura Modbus é a prova da maturidade do projeto?
 Num chão de fábrica, tentar levar 50 fios analógicos de tensão (0 a 5V) por 20 metros resultaria em leituras completamente malucas devido à interferência magnética de motores e compressores. 
@@ -78,6 +78,20 @@ Para garantir que o equipamento sobreviva ao ambiente fabril (poeira, umidade, v
 | **Botões e Sinalização** | Botões push-button 22mm genéricos e LEDs simples. | **Linha Industrial 22mm** (ex: Schneider Harmony XB4/XB5, WEG CEW) com blocos de contato independentes e vedação pesada. |
 | **Tela / IHM** | Display genérico ES3C28P SPI/I2C acoplado ao ESP32. | **IHM Industrial Touchscreen** (ex: WEG MT8000, Delta, Siemens KTP) comunicando via Ethernet ou RS-485 Modbus direto com o Arduino Portenta. |
 | **Distribuição Elétrica** | Blocos de barramento impressos em 3D ou parafusos simples. | **Bornes Sak/Sindal de Passagem** de trilho DIN (ex: Phoenix Contact PT, WAGO) com molas *Push-in* antivibração. |
+
+---
+
+## 4. Infraestrutura: O Painel e a Imunidade a Ruídos (EMI)
+
+Um dos erros mais comuns de quem migra do Arduino para a indústria é montar o painel elétrico colocando cabos de potência ("Força") colados nos cabos de sensores e microcontroladores ("Comando"). A potência gera Interferência Eletromagnética (EMI), que trava o Arduino e bagunça as leituras analógicas. 
+
+Na indústria, a regra absoluta é a **separação física e eletromagnética**. E o nosso projeto foi desenhado respeitando isso desde o protótipo:
+
+| Regra de Ouro | Como é na Indústria | Como fizemos no nosso Painel |
+|---|---|---|
+| **Separação de Rotas** | Canaletas cinzas exclusivas para cabos grossos de força. Canaletas azuis exclusivas para sinais de 24V e dados. | O painel possui 3 trilhos DIN. Os fios de Força (alimentação principal, Peltiers, resistores PTC, consumindo quase 10A) correm em **canaletas separadas** dos fios finos de Comando (Arduino, ESP32, sensores). |
+| **Isolamento de Sinal** | Uso de CLPs e fontes com acopladores óticos e filtros de linha potentes. | Adotamos módulos com **isolamento galvânico**, comunicação RS-485 (cega a ruídos graças à leitura diferencial de tensão) e mantemos o Arduino o mais longe possível das chaves contatoras de potência. |
+| **Proteção de Pinos (Pull-down)**| Entradas de CLP nunca ficam "flutuando", elas têm resistores internos para garantir sinal seguro se um fio arrebentar. | Adicionamos **resistores de pull-down** no hardware. O *pull-down* força a tensão do pino para 0V fisicamente caso o fio solte ou o Arduino trave, desligando as cargas perigosas imediatamente. |
 
 ---
 
