@@ -6,14 +6,42 @@ Este documento é o **Dossiê de Hardware** do projeto. Ele arquiva a pesquisa d
 
 ## 1. Microcontroladores e Processamento (O Cérebro)
 
-O projeto exige controle PID (matemática rápida), leitura de sensores, comunicação serial industrial (Modbus/RS-485) e conectividade de rede (Wi-Fi/IoT).
+Como a fábrica já utiliza o Arduino como padrão para o controle da câmara, o objetivo não é simplesmente descartá-lo, mas sim **adicionar conectividade (IoT)**. Estruturamos esta análise em duas partes: as arquiteturas possíveis e a escolha exata do chip de comunicação.
 
-| Opção Avaliada | Tipo | Prós | Contras | Veredito |
+### 1.1. Arquiteturas Possíveis para Adicionar Conectividade
+
+| Solução | Controle | Conectividade | Arquitetura | Complexidade | Quando usar |
+|---|---|---|---|---|---|
+| **Opção A: Arduino + ESP32 externo** | Arduino Legado | ESP32 | 2 MCUs | Média | Modernizar sistema existente sem mexer na placa atual. |
+| **Opção B: Arduino UNO R4 WiFi** | RA4M1 (32-bit) | ESP32-S3 | Integrada | Baixa | ⭐ Melhor evolução natural do ecossistema UNO. |
+| **Opção C: Arduino Nano ESP32** | ESP32-S3 | ESP32-S3 | Integrada | Baixa | Projetos compactos (O ESP32 é o MCU principal). |
+| **Opção D: Arduino GIGA R1 WiFi** | STM32H747 | Wi-Fi / BLE | Integrada | Média | Quando exige alto processamento (IHM avançada, IA). |
+| **Opção E: Arduino Portenta H7** | STM32H747 | Wi-Fi / BLE | Industrial Edge | Alta | Gateway industrial, integração com sistemas corporativos. |
+| **Opção F: Arduino Opta** | STM32H747 | Ethernet / Wi-Fi | CLP | Alta | Automação industrial pesada pura. |
+
+**Vias de Solução Recomendadas:**
+- **Caminho 1 (Menor alteração):** *Arduino atual + ESP32 externo.* Mantém o padrão de controle já utilizado pela empresa e adiciona uma camada independente de conectividade.
+- **Caminho 2 (Solução integrada otimizada):** *Arduino UNO R4 WiFi.* Integramos o microcontrolador Arduino e um ESP32-S3 na mesma plataforma, reduzindo componentes, cabeamento e pontos de falha.
+- **Caminho 3 (ESP32 como plataforma principal):** *Arduino Nano ESP32.* Simplifica o projeto rodando tudo direto no chip da Espressif, mantendo a linguagem do Arduino.
+- *(Nota sobre o Opta: Não foi selecionado como primeira via porque a empresa não utiliza arquitetura baseada em CLP hoje. Sua inclusão serve como referência para evolução futura).*
+
+### 1.2. Comparativo da Família ESP32 (Escolhendo o Gateway)
+
+Se seguirmos pelo "Caminho 1" ou precisarmos justificar o chip embutido do "Caminho 2", é preciso entender que **não existe apenas "o ESP32"**. Existem várias gerações, e algumas são muito mais adequadas para IoT industrial.
+
+| Critério | ESP32-WROOM-32 | ESP32-C3 | ESP32-S3 | ESP32-C6 |
 |---|---|---|---|---|
-| **Arduino Mega 2560** | Legado 5V | Muita porta I/O (54 digitais, 16 analógicas); ecossistema vasto; robustez em 5V. | Não tem Wi-Fi nem Bluetooth. Processador de 8-bits (lento para operações matemáticas complexas de vários PIDs simultâneos). | **Descartado / Substituto.** Usado inicialmente na lógica, mas exige muitas placas extras. |
-| **ESP32** | IoT 3.3V | Processador Dual-Core 32-bits (muito rápido); Wi-Fi e Bluetooth embutidos; extremamente barato. | Sinais de 3.3V exigem conversores lógicos. Pinos analógicos (ADC) são não-lineares e muito sensíveis a ruídos. | **Mantido como Gateway.** Usado apenas para ler o Modbus e enviar para a nuvem. |
-| **Arduino UNO R4 WiFi** | All-in-One | Junta o melhor dos dois mundos: Tolerância a 5V (fácil de ligar sensores), processador ARM Cortex-M4 (rápido para o PID) e chip ESP32 embutido para Wi-Fi. | Menos portas I/O que o Mega (mas o RS-485 resolve isso). | **Escolha Ideal (Recomendada).** Substitui o Mega, o ESP32 e o RTC (já tem relógio interno) em uma única placa confiável. |
-| **Arduino Opta (CLP)** | CLP Industrial | Homologado para a indústria (DIN); já tem relés e portas RS-485 embutidas e protegidas; programa em Ladder ou C++. | Custo elevado (R$ 1.500+). | **Fase Final (Mercado).** A evolução natural de hardware para vender o sistema à fábrica. |
+| **Wi-Fi** | ✅ Wi-Fi 4 | ✅ Wi-Fi 4 | ✅ Wi-Fi 4 | ✅ Wi-Fi 6 |
+| **Bluetooth** | BT + BLE | BLE 5 | BLE 5 | BLE 5 |
+| **CPU** | Dual-core | Single-core | Dual-core | Single-core |
+| **Arquitetura** | Xtensa | RISC-V | Xtensa | RISC-V |
+| **USB Nativo** | ❌ Não | ✅ Sim | ✅ Sim | ✅ Sim |
+| **IA / ML** | Limitado | Limitado | Excelente | Bom |
+| **802.15.4 (Zigbee)**| ❌ Não | ❌ Não | ❌ Não | ✅ Sim |
+| **Recomendação** | Clássico (Boa) | Econômica | ⭐ **Principal** | Avançada |
+
+**O Veredito do Gateway:** 🥇 **ESP32-S3**. 
+É a nossa escolha principal para conectividade. Tem Dual-core veloz, USB nativo, suporte a IA local (Machine Learning) e é exatamente o chip que a própria Arduino escolheu embutir no UNO R4 WiFi e no Nano ESP32. O clássico WROOM-32 fica como backup de baixo custo (Caminho 1 original), o C3 é excelente para baixo consumo em baterias, e o C6 sobra como excesso tecnológico (Wi-Fi 6) para a demanda atual.
 
 ---
 
@@ -89,3 +117,4 @@ Para resolver o problema de medir o nível de pó sem subir no silo.
 O sensor radar industrial transmite o nível no formato de corrente de loop de 4 a 20 mA.
 - **Solução Pobre (Resistor Shunt):** Usar um resistor de 165 Ohms no GND. Pela Lei de Ohm, 20mA viram 3.3V no ESP32. É funcional, mas vulnerável a surtos do silo.
 - **Solução Rica (Módulo HW-685 / XY-IT0V):** Um chip conversor 4-20mA para Tensão isolado opticamente. Garante que qualquer raio ou surto magnético no silo queime apenas o módulo de 10 reais, salvando o processador principal. **(Recomendado na Defesa).**
+
