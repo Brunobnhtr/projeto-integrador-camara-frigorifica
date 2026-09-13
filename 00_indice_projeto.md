@@ -60,6 +60,7 @@
 | **02** ⭐ | [**Arquitetura de Energia**](camada_0_fundamentos/02_arquitetura_de_energia.md) | **127 V → 24 V → 12/5/3,3 V**, dimensionamento de correntes, escolha dos conversores, bitolas, queda de tensão, proteção contra falha do buck |
 | 03 | [Lista de Materiais](camada_0_fundamentos/03_lista_materiais.md) | BOM completa, organizada por camada e por lote de compra |
 | **04** ⭐ | [**Maquete vs. Indústria**](camada_0_fundamentos/04_maquete_vs_industria.md) | **Escalabilidade Tecnológica:** Como migrar do kit didático para as placas de chão de fábrica (ESP32-P4, Arduino Giga R1, Portenta) com RTC nativo, Ethernet, SD e TCs industriais. |
+| 05 | [Estudo Comparativo e Catálogo de Componentes](camada_0_fundamentos/05_estudo_comparativo_componentes.md) | **Dossiê de Hardware:** Análise de alternativas de componentes (Arduino vs ESP32, TCs vs Efeito Hall, Radar vs Ultrassom) e registro de viabilidade comercial. |
 
 ### CAMADA 1 — MAQUETE
 *A "obra civil". Cenário pronto, sem eletrônica.*
