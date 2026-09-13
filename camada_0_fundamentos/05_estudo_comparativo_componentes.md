@@ -47,32 +47,50 @@ Se seguirmos pelo "Caminho 1" ou precisarmos justificar o chip embutido do "Cami
 
 ## 2. Sensores de Corrente (Monitoramento das Cargas)
 
-A escolha do sensor depende do tipo de tensão (AC ou DC) e de ser Invasivo (precisa cortar o fio e parafusar no módulo) ou Não-Invasivo (o fio apenas passa por dentro de um furo ou alicate, garantindo isolamento total).
+A escolha do sensor de corrente para este projeto foi dividida criteriosamente. Não existe um "sensor universal" perfeito: há sensores para maquetes, para equipamentos profissionais e para a indústria pesada. 
 
-### 2.1. Invasivos (Contato Direto)
-- **Módulo ACS712 (5A/20A/30A):** 
-  - *Tecnologia:* Efeito Hall.
-  - *Vantagem:* Muito barato, lê DC e AC.
-  - *Desvantagem:* Exige cortar o cabo de potência para passar na plaquinha. As trilhas finas esquentam e dão muito ruído magnético na leitura (instabilidade).
-  - *Veredito:* **Descartado.** 
+Primeiro, estabelecemos uma separação fundamental:
+- 🔴 **Invasivo:** O sensor fica eletricamente no caminho da corrente (Fonte → SENSOR → Carga). Exige interromper o condutor, o que em alta potência é um ponto de falha e risco térmico.
+- 🟢 **Não-Invasivo:** O sensor mede o campo magnético sem interromper o circuito de potência (o cabo apenas passa por dentro do sensor ou alicate). É o padrão ouro para retrofit na indústria pesada.
 
-### 2.2. Não-Invasivos (Isolamento Galvânico)
-- **Módulo WCS1800 / WCS2702 (Corrente Contínua - DC):**
-  - *Tecnologia:* Efeito Hall com Furo de Passagem.
-  - *Vantagem:* O fio da carga passa por dentro de um anel. Não há contato físico. Ideal para a maquete que usa Lâmpadas Automotivas 24V DC. 
-  - *Desvantagem:* Um pouco maior e mais caro que o ACS.
-  - *Veredito:* **Escolhido para a Maquete DC.**
+### 2.1. Tabela Mestre de Sensores de Corrente
 
-- **Sensores ZMCT103C / SCT-013 (Corrente Alternada - AC):**
-  - *Tecnologia:* Transformador de Corrente (TC Miniatura / Split-Core).
-  - *Vantagem:* Extrema precisão em AC, isolamento perfeito, o SCT-013 abre como um alicate para abraçar o fio pronto.
-  - *Desvantagem:* **Não funciona em DC** (A física do transformador exige variação magnética alternada).
-  - *Veredito:* **Escolhido para a Fábrica (Cargas AC 220V).**
+Catalogamos as principais famílias de sensores do mercado, da prototipagem à indústria pesada, para embasar nossa decisão arquitetural:
 
-- **Transdutor Industrial SZC23:**
-  - *Tecnologia:* Chave de Corrente ajustável.
-  - *Vantagem:* Em vez de mandar um sinal variável analógico, ele fecha um contato seco ("Ligou / Desligou") quando a corrente passa de um limite ajustável.
-  - *Veredito:* Opção de backup industrial caso a empresa só queira saber se "queimou" (0/1) sem precisar medir valores absolutos.
+| Sensor / Família | AC | DC | Invasivo | Não-Invasivo | Faixa Típica | Tecnologia | Nível de Aplicação |
+|---|---|---|---|---|---|---|---|
+| **ACS712** | ✅ | ✅ | ✅ | ❌ | 5A / 20A / 30A | Efeito Hall | 🟢 Maquete / Protótipo |
+| **ACS724** | ✅ | ✅ | ✅ | ❌ | 2,5A a 50A | Efeito Hall | 🟢 Maquete / 🟡 Funcional |
+| **ACS758** | ✅ | ✅ | ✅ | ❌ | 50A a 200A | Efeito Hall | 🟡 Funcional / 🟠 Profissional |
+| **ACS772** | ✅ | ✅ | ✅ | ❌ | 50A a 400A | Efeito Hall | 🔴 Industrial Pesado |
+| **INA219/226***| ❌ | ✅ | ✅ | ❌ | Depende do shunt | Shunt (I²C) | 🟢 Maquete / 🟠 Profissional |
+| **WCS1800** | ✅ | ✅ | ❌ | ✅ | DC 35A / AC 25A | Efeito Hall | 🟢 Maquete |
+| **LEM HXN** | ✅ | ✅ | ❌ | ✅ | 5A a 50A | Efeito Hall | 🟠 Equip. Profissional |
+| **LEM HO** | ✅ | ✅ | ❌ | ✅ | 6A a 250A | Efeito Hall | 🔴 Industrial |
+| **Tamura L07P** | ✅ | ✅ | ❌ | ✅ | 3A a 30A | Efeito Hall | 🟠 Equip. Profissional |
+| **Tamura L01Z/L34S**| ✅ | ✅ | ❌ | ✅ | 50A a 1500A | Efeito Hall | 🔴 Industrial Pesado |
+| **ZMCT103C** | ✅ | ❌ | ✅ | ❌ | ~5A | TC Miniatura | 🟢 Maquete (Placa PCB) |
+| **SCT-013** | ✅ | ❌ | ❌ | ✅ | 5A a 100A | TC Split-Core| 🟢 Maquete / 🟡 Funcional |
+| **AcuCT** | ✅ | ❌ | ❌ | ✅ | 50A a 600+A | TC Industrial| 🔴 Industrial Pesado |
+| **Yokogawa CT1000S**| ✅ | ✅ | ❌ | ✅ | Até 1000A | Fluxgate | 🔴 Industrial Pesado |
+
+*(Nota técnica: INA219/226 leem corrente via queda de tensão em um resistor shunt, não oferecendo o isolamento galvânico puro de um sensor Hall).*
+
+### 2.2. A Escolha para o NOSSO Projeto
+
+Ao invés de tentar encontrar um único sensor para todos os cenários, adotamos duas escolhas diferentes para provar a tese tecnológica, mantendo a **mesma arquitetura de leitura e comunicação**.
+
+🔵 **Para a Maquete (Cargas 24V DC)**
+- **Selecionado:** `WCS1800` (ou WCS2702).
+- **Justificativa:** É não-invasivo (o fio apenas passa pelo furo), mede DC perfeitamente na faixa de 0 a 35A, possui isolamento seguro e é simples de integrar com o Arduino. O ACS712 foi sumariamente descartado por ser invasivo e gerar ruído excessivo nas trilhas.
+
+🟠 **Para a Prova de Conceito em AC (Cargas 220V)**
+- **Selecionado:** `SCT-013`.
+- **Justificativa:** É um TC de núcleo dividido (alicate). Permite instalação simples sem interromper o condutor, simulando com exatidão o procedimento de campo (retrofit). Ideal para provar a lógica de aquisição AC.
+
+🔴 **A Evolução Definitiva para a Indústria (Chão de Fábrica Real)**
+- **Definição de Engenharia:** Não usaremos o SCT-013 de plástico numa indústria pesada. O SCT-013 serviu para **validar o princípio de medição e a arquitetura de software/Modbus**. Para a instalação definitiva no maquinário real, a especificação técnica determina a substituição direta pelo **AcuCT** (TC Split-core Industrial Classe 0.2) ou por transdutores **LEM HO / Tamura** (caso o cliente exija leitura simultânea AC/DC).
+- **Vantagem:** O código do controlador, os módulos RS-485 e o painel continuam *exatamente os mesmos*. Apenas o elemento físico de leitura na ponta do cabo é trocado pelo sensor de Nível 4 (Industrial Pesado).
 
 ---
 
