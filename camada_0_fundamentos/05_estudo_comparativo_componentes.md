@@ -96,14 +96,46 @@ Ao invés de tentar encontrar um único sensor para todos os cenários, adotamos
 
 ## 3. Módulos de Potência e Drivers (Para Peltier e PTC)
 
-Como o Arduino manda apenas sinais de controle (5V, poucos miliamperes), precisamos de "músculos" (drivers) para chavear as pesadas cargas térmicas (Peltier e PTC, que puxam 5A a 10A). E precisamos que aceitem *PWM* (sinal pulsado do PID) para variar a potência.
+Como o Arduino manda apenas sinais de controle (5V, poucos miliamperes), precisamos de "músculos" (drivers) para chavear as pesadas cargas térmicas (Peltier e PTC, que puxam de 5A a 10A). É obrigatório que os módulos aceitem *PWM* (sinal pulsado do PID) para variar a potência de forma proporcional.
 
-| Driver | O que é | Aceita PWM de alta freq? | Vantagens | Desvantagens | Veredito |
-|---|---|---|---|---|---|
-| **Relé Eletromecânico** | Bobina e contato de metal | **NÃO** | Barato, fácil de usar. | Faz "click-click", os contatos desgastam, não serve para PID porque a inércia mecânica não acompanha pulsos rápidos. | **Descartado.** |
-| **Relé de Estado Sólido (SSR)** | Chaveamento óptico com Triac | Baixa freq (Zero-cross) | Zero desgaste, silencioso, excelente para cargas AC pesadas. | Esquenta muito, exige dissipador. Ruim para controle PWM fino em DC. | **Opção para o Aquecedor PTC da Fábrica (220V AC).** |
-| **MOSFET (IRF520 / LR7843)** | Transistor de Efeito de Campo | **SIM (Perfeito)** | Chaveia milhares de vezes por segundo silenciosamente, sem desgaste. O LR7843 suporta até 30V e correntes altíssimas. | Só serve para DC. Exige diodo de roda-livre em cargas indutivas. | **Escolhido para a Maquete (Peltier/PTC em 24V DC).** |
-| **Ponte H (BTS7960)** | Driver Completo Bidirecional (43A) | **SIM** | Permite inverter a polaridade (fazer a Peltier esquentar e esfriar). Tem proteções térmicas embutidas. | Caro. Como no projeto usamos PTC para aquecer e Peltier só para esfriar, usar uma Ponte H gigante é matar mosca com bazuca. | **Descartado (Oversized).** |
+Uma premissa arquitetural mudou a nossa análise: **não precisaremos inverter a polaridade da Peltier**. Ela será usada exclusivamente para resfriar, enquanto o aquecimento é feito pelo PTC (ou pela inércia térmica). Logo, a função do driver é ser apenas um interruptor rápido unidirecional, tornando pontes H bidirecionais (como o BTS7960) um excesso estrutural, embora ainda úteis pela disponibilidade.
+
+### 3.1. Análise de Alternativas de Potência
+
+| Driver | Tipo | 24V | PWM | Reversão | Complexidade | Minha Avaliação |
+|---|---|---|---|---|---|---|
+| **BTS7960 / IBT-2** | Ponte H | ✅ | ✅ | ✅ | Baixa | ⭐⭐⭐⭐⭐ |
+| **Módulo IRLZ44N** | MOSFET Logic-Level | ✅ | ✅ | ❌ | Muito baixa | ⭐⭐⭐⭐⭐ |
+| **Módulo FQP30N06L**| MOSFET Logic-Level | ✅ | ✅ | ❌ | Muito baixa | ⭐⭐⭐⭐⭐ |
+| **Cytron MD30C** | Ponte H Profissional | ✅ | ✅ | ✅ | Baixa | ⭐⭐⭐⭐ |
+| **BTN8982TA** | Half-Bridge Industrial | ✅ | ✅ | ❌*| Alta | ⭐⭐⭐⭐ |
+| **Pololu VNH5019** | Ponte H | ⚠️ (Limite)| ✅ | ✅ | Baixa | ⭐⭐⭐ |
+| **TI DRV8876** | Ponte H Integrada | ✅ | ✅ | ✅ | Média | ⭐⭐⭐ (Pico 3.5A)|
+| **Módulo IRF520** | MOSFET Standard | ⚠️ | ✅ | ❌ | Baixa | ⭐ (Esquenta) |
+| **Relé Eletromecânico**| Relé Físico | ✅ | ❌ | ❌ | Baixa | ⭐ |
+| **Relé Sólido (SSR)**| Chaveamento Óptico | Depende | ⚠️ | ❌ | Baixa | ⭐⭐ |
+
+*(Nota: * Um único BTN8982TA atua como meia-ponte. SSRs são ótimos para AC, mas em DC de alta corrente com PWM rápido sofrem com aquecimento e ineficiência de corte).*
+
+### 3.2. A Hierarquia de Escolha para o Projeto
+
+🥇 **1º — BTS7960 (A escolha do Protótipo Atual)**
+Apesar de ser uma Ponte H (podendo inverter corrente), é a nossa escolha número um simplesmente porque **já possuímos o módulo e ele é extremamente robusto**. Ele suporta os 24V e a corrente com folga, aceita o PWM e já está validado. A desvantagem é que estamos usando uma ponte H para uma carga que só gira (ou esfria) para um lado.
+
+🥈 **2º — Módulo MOSFET IRLZ44N (A evolução limpa)**
+Seria a escolha perfeita para uma segunda versão do projeto. O **IRLZ44N é um MOSFET *Logic-Level***. Ele foi feito para abrir totalmente a "torneira" de corrente com apenas 4V a 5V no Gate, reduzindo drasticamente o RDS(on) e a dissipação de calor. O FQP30N06L é um candidato direto pelo mesmo motivo. Arquitetura super limpa: `Arduino -> IRLZ44N -> Peltier -> Resfriamento` (Unidirecional puro).
+
+🏭 **3º — Cytron MD30C / BTN8982TA (A referência)**
+Para apresentar como evolução industrial. O Cytron entrega 30A contínuos com uma construção blindada. O chip BTN8982TA é automotivo, com diagnósticos e proteção de temperatura no próprio silício (ideal se fôssemos desenhar a PCB do zero).
+
+❌ **O Erro Comum: Módulo IRF520**
+O módulo IRF520 foi **rebaixado e descartado**. O problema dele não é a falta de PWM. O problema é que o VGS (Tensão de Gate) necessário para saturá-lo bem é de 10V. Com os 5V/3.3V do Arduino/ESP32, ele não abre totalmente a passagem da corrente. Isso faz com que a resistência interna dele fique altíssima, o módulo ferva dissipando potência como calor, e não entregue a energia que a Peltier precisa.
+
+### 3.3. Veredito de Potência (Conclusão do Dossiê)
+
+Para o acionamento da Peltier, a solução **BTS7960 / IBT-2** apresenta elevada capacidade de corrente, controle por PWM e ampla disponibilidade, sendo adequada ao protótipo já existente. Entretanto, como a Peltier será utilizada exclusivamente para resfriamento na nossa câmara térmica, não existe necessidade funcional de inversão de polaridade. 
+
+Dessa forma, módulos baseados em MOSFET canal N *Logic-Level*, como o **IRLZ44N** e **FQP30N06L**, apresentam uma arquitetura muito mais simples e potencialmente mais eficiente para o acionamento unidirecional da carga. O clássico **IRF520**, apesar de possuir dezenas de módulos comerciais baratos, não é recomendado como primeira opção devido à sua inadequação para operação eficiente quando acionado diretamente por sinais lógicos de baixa tensão, o que aumenta a dissipação térmica. Para aplicações de maior robustez, drivers como o **Cytron MD30C** também podem ser considerados, embora a ponte H embutida continue desnecessária quando não há reversão térmica.
 
 ---
 
