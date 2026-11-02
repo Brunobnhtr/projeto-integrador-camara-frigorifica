@@ -12,10 +12,18 @@ import { setaEm } from '../lib/geometria_painel';
    Aqui o fio não morre na parede: ele entra pelo furo, corre pelo piso,
    sobe rente à parede e termina DENTRO de um borne que tem nome.
 
-   ⭐ POR QUE ESTA VISTA É HONESTA: a parede do fundo é exatamente o
-   plano deste desenho, então o x e o z dos prensa-cabos são os do
-   projeto, sem licença nenhuma. O que não se vê é a profundidade — o
-   cabo sai da parede na sua direção, e por isso o furo é um alvo.      */
+   ⚠️ ESTA VISTA É ESQUEMÁTICA, E NÃO SEM ESCALA — a correção desta revisão.
+   A versão anterior deste comentário dizia que "o x e o z são os do projeto,
+   sem licença nenhuma". Não é verdade, e a diferença é grande: a parede do
+   fundo real mede 300 × 250 (cavidade 300 × 200 × 250, ver
+   cad_corte/parametros_v11.py), e esta vista desenha 200 × 250. As peças
+   também são desenhadas menores que a peça real — a PCB, por exemplo, tem
+   95 × 75 mm e aparece aqui com 36 mm de largura, senão não caberia ao lado
+   das outras.
+
+   O que esta vista responde bem é "por onde o fio passa e em que borne ele
+   chega". O que ela NÃO responde é "cabe?". Para isso existe o CAD, em
+   placa_leds/ e cad_corte/ — que é 1:1 e é a fonte da verdade. */
 
 const E = E_CAM;
 const MARG = MARG_CAM;
@@ -227,9 +235,20 @@ export default function CamaraNoPainel({
             <rect x={cx(px0)} y={cy(pz1)} width={(px1 - px0) * E} height={(pz1 - pz0) * E}
                   rx={2} fill={on ? p.cor : '#fff'} stroke={p.cor}
                   strokeWidth={on ? 2.4 : 1.3} />
-            <text x={cx((px0 + px1) / 2)} y={cy((pz0 + pz1) / 2) + 2.4}
-                  textAnchor="middle" fontSize={6.5} fontWeight="700"
-                  fill={on ? '#fff' : p.cor}>{p.id}</text>
+            {/* ⭐ peça estreita (o SUP-E e o SUP-D têm 7 mm de largura): o
+                rótulo deitado sairia por cima da placa vizinha, então ele
+                gira 90° e fica dentro da própria faixa. */}
+            {(() => {
+              const estreita = (px1 - px0) < 12;
+              const mx = cx((px0 + px1) / 2), my = cy((pz0 + pz1) / 2);
+              return (
+                <text x={mx} y={my + (estreita ? 0 : 2.4)}
+                      textAnchor="middle" fontSize={estreita ? 5.2 : 6.5} fontWeight="700"
+                      fill={on ? '#fff' : p.cor}
+                      transform={estreita ? `rotate(-90 ${mx} ${my})` : undefined}
+                      dominantBaseline={estreita ? 'middle' : undefined}>{p.id}</text>
+              );
+            })()}
             {bornesDe(p).map(bo => {
               const q = pontoBorne(p.caixa, bo);
               return (
@@ -276,6 +295,10 @@ export default function CamaraNoPainel({
         os 2 furos ficam na parede do FUNDO — o cabo sai deles na sua direção
       </text>
       <text x={x0 + largura / 2} y={y0 + altura + 18} textAnchor="middle" fontSize={5.4}
+            fill="#868e96">
+        vista ESQUEMÁTICA: mostra por onde o fio passa, não o tamanho real das peças
+      </text>
+      <text x={x0 + largura / 2} y={y0 + altura + 26} textAnchor="middle" fontSize={5.4}
             fill="#f59f00">
         ─ ─ laranja tracejado = emenda feita ALI DENTRO · ⌒ = medição cruzando potência em 90°
       </text>

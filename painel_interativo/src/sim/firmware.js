@@ -33,6 +33,7 @@ export const RPM_MINIMA = 400;
 export const TEMPO_PARTIDA_FAN = 5000;    // ms — a fan tem de acelerar
 export const MARGEM_AMBIENTE = 5.0;       // °C acima da ambiente
 export const DUTY_MAXIMO = 95;            // %
+const LIMIAR_CORRENTE_DRIVER_COLADO_A = 0.5;
 
 // ⭐ FAIXA DE TRABALHO em vez de ponto. O operador pede "entre 10 e 12",
 //   não "10,0". Dentro da faixa o controle relaxa — é o que impede o
@@ -92,6 +93,7 @@ export function firmwareInicial() {
     estado: ESTADO.BOOT,
     modo: MODO.PARADO,
     alerta: '',
+    avisoPosVent: '',         // aviso ativo; desaparece ao normalizar RPM ou parar o radiador
     // saídas — todas nascem em nível baixo, e os pull-downs garantem
     // que "Arduino ausente" produza exatamente este mesmo quadro
     habPotencia: false,         // D27 → KA1
@@ -120,6 +122,7 @@ export function firmwareInicial() {
     tPatamar: 0,                // ms acumulados DENTRO da faixa
     dissipadorQuente: true,     // "não sei" vale como "pode estar quente"
     radiadorLigado: true,
+    tRadiadorLigado: 0,         // ms desde o comando atual do radiador
   };
 }
 
@@ -144,10 +147,16 @@ function desligarTudo(f) {
 function dispararTrip(f, motivo) {
   desabilitarDrivers(f);
   f.integral = 0;
+  f.pedidoStart = false;
   cortarPotencia(f);          // ⚡ e derruba o selo do KM1: retentivo
   desligarTudo(f);
   f.alerta = motivo;
+  f.avisoPosVent = '';
   f.estado = ESTADO.FALHA;
+}
+
+export function dispararTripTermico(f, motivo) {
+  dispararTrip(f, motivo);
 }
 
 /** Parada Categoria 2: a potência SEGUE ARMADA e a IHM religa. */
@@ -166,7 +175,7 @@ function pararProcesso(f) {
  *    inclusive EMERGENCIA. A pós-ventilação do radiador não pode viver
  *    dentro do `if (estado == RODANDO)`.
  */
-function gerenciarVentoinhas(f, ent) {
+function gerenciarVentoinhas(f, ent, dt) {
   // ⚠ SENSOR COM DEFEITO CONTA COMO QUENTE. O DS18B20 devolve −127 °C
   //   quando o fio se solta, e −127 é "frio" para qualquer comparação.
   const sensorOK = ent.tDissipador > -100 && ent.tDissipador < 150;
@@ -175,8 +184,12 @@ function gerenciarVentoinhas(f, ent) {
 
   const peltierAtiva = f.estado === ESTADO.RODANDO &&
     f.modo === MODO.RESFRIAMENTO;
+  const radiadorEstavaLigado = f.radiadorLigado;
   f.radiadorLigado = peltierAtiva || f.dissipadorQuente;
   f.ventRadiador = f.radiadorLigado;
+  f.tRadiadorLigado = f.radiadorLigado
+    ? (radiadorEstavaLigado ? f.tRadiadorLigado + dt : 0)
+    : 0;
 
   f.ventInternas = f.estado === ESTADO.RODANDO;
 }
@@ -199,7 +212,7 @@ export function passoFirmware(f, ent, dt = 50) {
   }
 
   f.tEmModo += dt;
-  gerenciarVentoinhas(f, ent);
+  gerenciarVentoinhas(f, ent, dt);
 
   // EMERGÊNCIA tem prioridade absoluta, em qualquer estado
   if (ent.emergencia && f.estado !== ESTADO.EMERGENCIA) {
@@ -211,6 +224,20 @@ export function passoFirmware(f, ent, dt = 50) {
     return f;
   }
 
+  if (f.estado !== ESTADO.FALHA && f.estado !== ESTADO.EMERGENCIA &&
+      (!f.renPeltier || f.duty < 5) &&
+      ent.correntePeltierA > LIMIAR_CORRENTE_DRIVER_COLADO_A) {
+    dispararTrip(f, 'DRIVER_PELTIER_COLADO');
+    return f;
+  }
+
+  if (f.estado !== ESTADO.FALHA && f.estado !== ESTADO.EMERGENCIA &&
+      (!f.renPtc || f.duty < 5) &&
+      ent.correntePtcA > LIMIAR_CORRENTE_DRIVER_COLADO_A) {
+    dispararTrip(f, 'DRIVER_PTC_COLADO');
+    return f;
+  }
+
   switch (f.estado) {
     case ESTADO.BOOT:
       autorizarPotencia(f);   // ⭐ "estou saudável" — o verde já pode armar
@@ -219,10 +246,21 @@ export function passoFirmware(f, ent, dt = 50) {
 
     case ESTADO.AGUARDA_START:
       // ⭐ INICIAR vem da IHM. O botão verde não é lido por pino nenhum:
-      //   ele arma a potência em hardware e o firmware vê pelo D25.
+      //   ele arma a potência em hardware e o firmware confirma via Modbus.
       if (f.pedidoStart) {
         f.pedidoStart = false;
-        if (!ent.potenciaDisponivel) { f.alerta = 'APERTE_O_VERDE'; break; }
+        const pedeAquecimento = ent.receita
+          ? ent.receita.tipo !== 'FRIO'
+          : ent.tCamara < (ent.faixa ?? FAIXA_PADRAO).min;
+        if (pedeAquecimento && !ent.ventilacaoPtcDisponivel) {
+          f.alerta = 'VENTILACAO_PTC_INDISPONIVEL';
+          break;
+        }
+        if (!ent.leituraPotenciaValida) {
+          f.alerta = 'MEDICAO_POTENCIA_INDISPONIVEL';
+          break;
+        }
+        if (!ent.potenciaDisponivel) { f.alerta = 'POTENCIA_AUSENTE'; break; }
         f.alerta = '';
         f.modo = MODO.PARADO;
         f.tEmModo = 0;
@@ -248,13 +286,14 @@ export function passoFirmware(f, ent, dt = 50) {
       //   classificaria toda parada normal como FALHA.
       if (ent.stop || f.pedidoStop) { pararProcesso(f); break; }
 
+      if (!ent.leituraPotenciaValida) {
+        dispararTrip(f, 'MEDICAO_POTENCIA_INDISPONIVEL');
+        break;
+      }
       if (!ent.potenciaDisponivel) { dispararTrip(f, 'POTENCIA_PERDIDA'); break; }
-
-      // Proteção de RPM — só arma quando a Peltier já teve tempo de partir
-      if (f.radiadorLigado && f.modo === MODO.RESFRIAMENTO &&
-          f.tEmModo > TEMPO_PARTIDA_FAN) {
-        if (ent.rpm1 < RPM_MINIMA) { dispararTrip(f, 'FAN1_PARADA'); break; }
-        if (ent.rpm2 < RPM_MINIMA) { dispararTrip(f, 'FAN2_PARADA'); break; }
+      if (f.renPtc && !ent.ventilacaoPtcDisponivel) {
+        dispararTrip(f, 'VENTILACAO_PTC_INDISPONIVEL');
+        break;
       }
 
       controlar(f, ent, dt);
@@ -278,6 +317,23 @@ export function passoFirmware(f, ent, dt = 50) {
         f.estado = ESTADO.AGUARDA_START;
       }
       break;
+  }
+
+  if (f.radiadorLigado && f.tRadiadorLigado >= TEMPO_PARTIDA_FAN &&
+      f.estado !== ESTADO.EMERGENCIA) {
+    const fanParada = ent.rpm1 < RPM_MINIMA ? 1
+      : ent.rpm2 < RPM_MINIMA ? 2
+      : 0;
+    if (fanParada && f.estado === ESTADO.RODANDO &&
+        f.modo === MODO.RESFRIAMENTO) {
+      dispararTrip(f, `FAN${fanParada}_PARADA`);
+    } else if (fanParada) {
+      f.avisoPosVent = `FAN${fanParada}_POSVENT`;
+    } else {
+      f.avisoPosVent = '';
+    }
+  } else {
+    f.avisoPosVent = '';
   }
   return f;
 }

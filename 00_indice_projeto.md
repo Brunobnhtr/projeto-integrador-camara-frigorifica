@@ -4,13 +4,19 @@
 
 > Uma maquete funcional que representa uma **planta industrial completa**: entrada de energia em 127 V AC na subestação, distribuição em **24 Vcc** sobre postes, transformadores reduzindo para 12 V / 5 V / 3,3 V, painel de comando industrial e uma câmara térmica com controle PID, IHM e IoT.
 
+> ⚠️ **Status desta revisão:** a corrente simulada do PTC e a leitura BTS2 IS/A1 são estados separados. Se IS não sinaliza, o curto pode continuar sem alarme; se o contato de potência KM1 solda, o trip de firmware não retira BD-POT. A medição independente do BTS e um corte DC independente do KM1 permanecem requisitos de engenharia, sem componentes/topologia aprovados. Os trechos do Documento 40 foram alinhados para PWM por timer e duty aplicado, mas ainda não formam um `.ino` consolidado e compilado. O permissivo de ventilação é hipótese, não sinal instalado; o modelo não calcula temperatura superficial nem dispara ST-1/ST-2. O PTC segue não liberado para energização até validar proteções físicas, termostatos, ventilação e temperaturas do acrílico.
+>
+> ⛔ **Proposta elétrica bloqueada:** T2 24→5,0 V/5 A, T3 24→12 V/20 A e PTC 12 V/50 W ainda não têm modelos/fichas aprovados. Confirmar a tensão máxima/transientes de T2; definir corte DC independente, F3 e condutores do PTC; validar proteção térmica. KM1 não corta o novo ramal de 12 V. Não comprar nem energizar o PTC.
+>
+> 📊 A planilha [BOM_Projeto_Integrador.xlsx](BOM_Projeto_Integrador.xlsx) já existia com alterações locais e não foi regenerada nesta revisão. O parser da BOM foi conferido: itens explicitamente bloqueados de T2/T3/PTC ficam fora da lista de compra. A planilha não libera ST-1/ST-2 nem substitui as validações físicas da aba **Divergencias**.
+
 ---
 
 ## ⚡ A mudança desta versão
 
 | Antes (v1) | Agora (v2) |
 |---|---|
-| Fonte ATX entregando 12 V e 5 V | **Fonte chaveada 24 Vcc + 3 conversores step-down** distribuídos na maquete |
+| Fonte ATX entregando 12 V e 5 V | **Fonte chaveada 24 Vcc + T2/T3 propostos**; modelos dos conversores ainda pendentes |
 | Sem disjuntor, só chave rotativa | **Disjuntor 2P 6 A curva C (acumula proteção e chave geral) + 3 fusíveis de ramal com seletividade** |
 | Liga/desliga só por software | **Emergência corta a energia em hardware** (relé de interface KM1, com selo), START/STOP por software — pelo botão do painel **ou** pela IHM |
 | Câmara térmica com Arduino | **Planta industrial em miniatura** onde a câmara é a carga do processo |
@@ -24,26 +30,12 @@
 ## 🗺️ Mapa da cadeia de energia
 
 ```
-127 V AC ─────[Q0 · 2P 6 A curva C]─────► FONTE 24 Vcc 240 W   ◄── SUBESTAÇÃO
-                                            │                      (única parte com 127 V)
-                    ┌───────────────────────┼───────────────────────┐
-                 [F1 10A]                [F2 2A]                 [F3 2A]
-                    │ RM1                    │ RM2                    │ RM3
-    ════════════════╪═══════════════════════╪═══════════════════════╪═════  LINHA COMPACTA
-                    │ vermelho 1,0          │ marrom 0,5            │ cinza  sobre 3 POSTES
-                    │        0 V azul 1,5 mm², 40 mm abaixo         │       (encapada!)
-                    ▼                       ▼                       ▼
-          POSTE P1 · DERIVAÇÃO      POSTE P2 · T2           POSTE P3 · T3   ◄── 2 TRAFOS
-             SEM CONVERSOR            LM2596 + display        LM2596 + display   + 1 DERIVAÇÃO
-             24 V passante            24 V → 5,10 V           24 V → 12,0 V
-                    │                       │                       │
-              desce por dentro do poste e segue por baixo da base
-                    │                       │                       │
-                  [KM1]                     │                       │        ◄── 3 ENTRADAS
-                    ▼                       ▼                       ▼             SEPARADAS
-                 BD-POT                  BD-5V                   BD-AUX      ◄── BLOCOS DE
-              BTS #1 → 2× Peltier    Arduino / tela           coolers / fans     DISTRIBUIÇÃO
-              BTS #2 → PTC 24 V      SD / RTC / lógica        LEDs / ESP32
+127 V AC ─────[Q0]─────► PS1 24 Vcc / 10 A / 240 W
+                              ├── BD-POT (24 V, comutado por KM1) ── BTS1 ── Peltier
+                              ├── T2 proposto: 24→5,0 V / 5 A ── BD-5V (modelo pendente)
+                              └── T3 proposto: 24→12 V / 20 A ── serviços 12 V
+                                                                  └── PTC 12 V/50 W proposto
+                                                                      corte DC/F3/fiação pendentes
                                                                               ◄── PAINEL + CÂMARA
 ```
 
@@ -70,7 +62,7 @@
 | 10 | [Base e Chão de Fábrica](camada_1_maquete/10_base_e_chao_de_fabrica.md) | **Base 1500×500**, percurso linear da energia, **rua externa com carros e iluminação**, muro e portão, piso industrial, demarcação NR-10, roteamento por baixo |
 | 11 | [Subestação e Postes](camada_1_maquete/11_subestacao_e_postes.md) | Caixa da subestação, pátio com brita e cerca, 3 postes com cruzeta e isoladores, 3 transformadores (um por poste) com leitor digital, rede compacta protegida |
 | 12 | [Câmara Térmica](camada_1_maquete/12_camara_termica.md) | Cálculo de carga térmica, escolha do isolante, barreira de vapor, **porta dupla anticondensação**, dreno com sifão, 28 peças de acrílico |
-| **13** ⭐ | [**Posições de Ensaio e Detecção de Falha**](camada_1_maquete/13_posicoes_de_ensaio.md) | **Os dispositivos energizados dentro da cabine, proteção por posição e detecção de dispositivo morto.** Dividido em duas escalas: a **Bancada (Maquete)** com lâmpadas 24 V, ACS712 e ADC Modbus RS-485; e a **Planta Real (Indústria)** com sensores não-invasivos e laços de 4-20 mA para CLPs |
+| **13** ⭐ | [**Posições de Ensaio e Detecção de Falha**](camada_1_maquete/13_posicoes_de_ensaio.md) | **Os dispositivos energizados dentro da cabine, proteção por posição e detecção de dispositivo morto.** Dividido em duas escalas: a **Bancada (Maquete)** com 8 posições de LED em 12 V, módulo N4AIC24 em Modbus RS-485; e a **Planta Real (Indústria)** com sensores não-invasivos e laços de 4-20 mA para CLPs |
 | **14** ⭐ | [**Escala e cabeamento**](camada_1_maquete/14_escala_e_cabeamento.md) | ⚠️ **Histórico.** O raciocínio original de cabeamento, mantido para consulta. A arquitetura de escala real hoje se resolve com barramentos RS-485 ([Doc 13](camada_1_maquete/13_posicoes_de_ensaio.md)) |
 
 ### CAMADA 2 — PAINEL
@@ -78,17 +70,17 @@
 
 | Doc | Arquivo | Conteúdo |
 |---|---|---|
-| 20 | [Painel de Comando](camada_2_painel/20_painel_projeto_e_layout.md) | Dimensionamento 400×500×200, layout dos 3 trilhos DIN cotado, layout da porta, furação, canaletas, ventilação |
+| 20 | [Painel de Comando](camada_2_painel/20_painel_projeto_e_layout.md) | Modelo React do painel 600×800×250; conferir medidas reais antes de fabricar |
 
 ### CAMADA 3 — ELÉTRICA
 *A instalação. Energizado e medido, ainda sem firmware.*
 
 | Doc | Arquivo | Conteúdo |
 |---|---|---|
-| 30 | [Força e Distribuição](camada_3_eletrica/30_forca_e_distribuicao.md) | Diagrama unifilar, 57 cabos identificados, distribuição no painel, roteiro de energização por trechos |
+| 30 | [Força e Distribuição](camada_3_eletrica/30_forca_e_distribuicao.md) | Arquitetura e cabos; instruções antigas de T2/T3/PTC estão bloqueadas até seleção e dimensionamento |
 | 31 | [Comando e Proteções](camada_3_eletrica/31_comando_e_protecoes.md) | **A cadeia de comando e o selo do KM1**, o que é hardware e o que é software, botoeiras, seletividade das proteções, aterramento, ensaios de segurança |
 | 32 | [Sinais e Sensores](camada_3_eletrica/32_sinais_e_sensores.md) | Pinout completo do Mega, BTS7960, sensores, comunicação, **correção do pino de RPM**, ensaios de sinal |
-| **33** 🔌 | [**Placa de Interface e Componentes Discretos**](camada_3_eletrica/33_placa_interface_componentes.md) | **Por que módulos prontos ainda exigem resistor e capacitor externos**, os 5 papéis desses componentes, ligação **perna por perna** de cada um, construção da placa PI-1 em caixa DIN, ensaios de verificação |
+| **33** 🔌 | [**Placa de Interface e Componentes Discretos**](camada_3_eletrica/33_placa_interface_componentes.md) | Componentes discretos atuais, seus pontos de ligação e ensaios; não há placas PI-1/PI-2 nem divisor D25 na arquitetura vigente |
 
 ### CAMADA 4 — PROGRAMAÇÃO
 *Firmware gravado e testado em bancada.*
@@ -124,6 +116,73 @@
 
 > Abra os `.svg` no navegador ou direto no VS Code. Para imprimir, use o navegador (Ctrl+P) — o SVG é vetorial e imprime em qualquer escala sem perder qualidade.
 
+### 📐 Pacote de corte — o que vai para a oficina
+
+> [`cad_corte/`](cad_corte/LEIA-ME.md) não é desenho de apresentação: são os **arquivos
+> de corte** da câmara (acrílico) e do painel (MDF), em DXF, **milímetro, escala 1:1**,
+> com furos, recortes e identificação em camadas separadas (`CORTE` corta,
+> `GRAVACAO` grava, o resto é desenho). Abre no Fusion 360 como sketch, no AutoCAD, no
+> LibreCAD e no software da laser/router.
+
+| | Câmara (V12) | Painel |
+|---|---|---|
+| Peças | **25 CAM + 9 ISO** em `cad_corte/camara/01_pecas/` — acrílico 2/3/5 mm, alumínio 1/2/3 mm, inox 1 mm, EPS 1 mm · 🔴 **CAM-15 e CAM-25 RETIRADAS** | **6** (MDF 15 mm) |
+| Envelope | **390 × 210 × 260 mm** — corpo de **310** + 2 dutos externos de 40 · **422 mm** com os alojamentos das ventoinhas | **600 × 800 × 250 mm** |
+| Volume interno | **15,00 L** bruto · **14,63 L** útil (EPS de 1 mm) · **14,01 L livre** (conjunto do PTC + dissipador) | — |
+| Conferência | `npm run valida` → **8 validadores** · `python placa_leds/testa_berco.py` → geometria do berço · ⚠️ `cad_corte/valida_cad_v8.py` **não vale mais** (foi para `_obsoleto/`) | idem |
+
+> 📐 Os números acima saem de `parametros_v12.resumo()` — a mesma função que o CAD usa.
+> ⚠️ O `analise_termica_tec.py` ainda importa os parâmetros **V11** e por isso imprime
+> **14,09 L** livres em vez de 14,01. A diferença (0,08 L, 0,5%) é o volume do conjunto
+> do PTC, que mudou entre as duas versões — não afeta nenhuma conclusão térmica.
+
+> ✅ **Os dutos ficam para fora da câmara, e isso vem da V8.** A V7 os havia
+> internalizado para a flange da ventoinha caber; isso comia 1,7 L do volume
+> refrigerado e contrariava o desenho original. Na câmara vigente os dois canais de
+> **40 × 40** ficam colados nas laterais — **310 + 40 + 40 = 390 mm** de largura
+> total (422 com os alojamentos das ventoinhas), sem consumir volume útil. O encaixe da
+> ventoinha passou a ser resolvido por um **alojamento de 56 × 56 × 50** com flange de
+> **furo circular Ø36** (num canal de 40 os furos M3 de passo 32 cairiam a 2,4 mm da
+> borda), o canal é **fechado no topo pela CAM-21**, o isolamento virou **8 modelos**
+> cobrindo também os dutos, e entraram **duas comportas de renovação** separadas da
+> recirculação. Tudo em [`HISTORICO_REVISOES_CAD.md`](HISTORICO_REVISOES_CAD.md).
+
+> ✅ **A pendência de largura da V4 está resolvida.** O painel de 600 mm dá **470 mm**
+> de faixa útil entre as canaletas verticais; a fileira mais carregada (T1, com os seis
+> bornes e o KM1) usa **376 mm**. Sobram 94 mm.
+
+> 🔴 **O que ainda impede o corte definitivo:** (1) o **vão do kit Peltier na
+> tampa técnica (CAM-05) está em branco** — sem ele a câmara não refrigera, e a medida
+> do conjunto montado não foi confirmada; (2) o **suporte das 2 placas (CAM-26)** foi
+> simplificado para **tiras de alumínio com espaçadores M3** (sem chapa maciça, ar 100% desobstruído),
+> apoiadas nas cantoneiras CAM-24; (3) **o modelo do PTC ainda
+> não foi comprado**: a potência está fechada (**80 W · 3,3 A**, ver abaixo), mas as
+> dimensões **110 × 30 × 20 mm são de estudo**, e o escudo CAM-14 e o suporte CAM-13
+> foram desenhados em volta delas — conferir no PTC recebido antes de cortar;
+> (4) a **espessura do isolamento (1 mm) é decisão registrada**, e nenhum EPS/XPS é
+> incombustível; (5) o **dissipador quente** precisa rejeitar **184 W a 43 °C** e o
+> modelo real ainda não foi escolhido. Detalhe na §12.10 do
+> [Doc 12](camada_1_maquete/12_camara_termica.md).
+
+> 🟢 **A limitação térmica de 40 L NÃO EXISTE MAIS — ela era da V8.** O texto antigo
+> dizia que com 1 mm de EPS em **39,3 L** as duas Peltier paravam em +8,1 °C a 30 °C
+> e o alvo de 5 °C não era atendido. A câmara de hoje tem **15,00 L brutos** (14,09 L
+> livres) e o número mudou de lado: a análise térmica dá **−5,3 °C a 25 °C** e
+> **+0,4 °C a 30 °C** de ambiente — o alvo de 5 °C é atendido **nos dois casos**, com
+> 4,6 K de folga no pior deles. Rode `python analise_termica_tec.py`; os cenários 1 e
+> 2 são exatamente essa conta. O que continua valendo é o **dissipador quente de
+> 184 W**, esse não mudou.
+>
+> ⚠️ **Modelo não é ensaio.** Os −5,3 °C saem de hipóteses que só a bancada fecha:
+> eficiência do dissipador (0,10 a 0,15 K/W), contato térmico da Peltier, vedação e
+> o EPS de 1 mm. Um contato ruim come 10 a 20 K e o modelo não vê. **Aprovar 5 °C
+> exige termopar no centro, ciclo real e 30 min de regime** — até lá, o que existe é
+> previsão favorável, não resultado.
+
+> 🟢 **A base de 1500 × 500 não precisa crescer.** Margem 50 + painel 600 + folga 60 +
+> câmara 500 = 1210 mm, com 290 mm de sobra à direita — mesmo com os dutos externos.
+> Ver [Doc 10](camada_1_maquete/10_base_e_chao_de_fabrica.md).
+
 ---
 
 ## 🖥️ O aplicativo do painel
@@ -145,7 +204,7 @@ mudaram o desenho, o guia e a validação juntos.
 cd painel_interativo
 npm install
 npm run dev        # abre em http://localhost:5173
-npm run valida     # os 10 validadores — o mesmo que trava a publicação
+npm run valida     # os 8 validadores — o mesmo que trava a publicação
 ```
 
 ### Onde mora a verdade
@@ -153,7 +212,7 @@ npm run valida     # os 10 validadores — o mesmo que trava a publicação
 | Arquivo | Guarda |
 |---|---|
 | `src/data/painel_completo.js` | Os componentes do painel e todos os terminais |
-| `src/data/fiacao*.js` | Os 126 fios, com as duas pontas, bitola, cor e rota |
+| `src/data/fiacao.js` | Os **133 condutores atualmente listados**, com as duas pontas, bitola, cor e rota |
 | `src/data/pi1_fisico.js` · `pi2_fisico.js` | A geometria das placas, furo por furo |
 | ⭐ `src/data/discretos.js` | **Todo componente que não é fio nem borne** — 23 registros, 29 peças, com pernas, polaridade, ensaio e passo |
 | ⭐ `src/data/guia.js` | **A ordem de montagem**: fases, passos, ferramentas e conferências |
@@ -226,26 +285,30 @@ podia significar duas peças diferentes. Ficou assim:
 | Tensão de entrada | 127 V AC |
 | **Barramento de distribuição** | **24 Vcc** (SELV) |
 | Potência instalada | 240 W (fonte) |
-| Consumo calculado | **≈ 176 W / 7,3 A @ 24 V** (inclui as 2 lâmpadas de ensaio) |
-| Folga da fonte de 240 W | **1,36×** — a fonte atende com margem segura |
-| Corrente AC de entrada | 2,50 A |
+| Consumo calculado pelo simulador (resfriamento) | **≈ 170,2 W / 7,09 A @ 24 V**; estimativa dependente dos rendimentos ainda não confirmados de T2/T3 |
+| Folga teórica da fonte de 240 W | **≈ 1,41×**; não substitui confirmar conversores, proteções e condições térmicas |
+| Ramal 5 V | Carga estimada de **≈0,7 A**; T2 proposto em 5 A, modelo e capacidade contínua pendentes |
+| Ramal 12 V | Ventoinhas/serviços estimados em **1,325 A**; PTC proposto em 4,17 A adicionais. T3 20 A é apenas valor declarado, sem modelo/ficha aprovados; F3 legado de 2 A não foi dimensionado para esse conjunto |
+| Ponto de operação real | a Peltier puxa **119 W / 4,96 A**, não os 144 W da placa — o modelo térmico devolve `Qh − Qc`. A folga no frio é **2,0×** |
+| Pior caso de **falha** | O modelo pode manter o PTC energizado por falha do BTS2 mesmo após STOP/KM1. A corrente simulada não valida a proteção física; o corte DC, F3 e caminho térmico ainda não foram aprovados |
+| Corrente AC de entrada | 2,50 A — **entrada máxima da fonte**, não o consumo calculado |
 | Queda de tensão na linha dos postes | **0,21 V (0,86 %)** |
-| Conversores | **2× LM2596 com display** (T2 e T3) · **P1 é derivação direta, sem conversor** |
-| Tensões derivadas | **24,0 V (potência, direto)** · 12,0 V (auxiliar) · 5,10 V (comando) · 3,3 V (ESP32) |
-| Fusíveis dos ramais | **F1 = 10 A · F2 = 2 A · F3 = 2 A** (sem F4/F5, sem crowbar) |
+| Conversores | **T2 24→5,0 V/5 A e T3 24→12 V/20 A propostos**, sem modelos aprovados |
+| Tensões derivadas | **24,0 V (potência da Peltier)** · 12 V e 5,0 V propostos, pendentes de validação · 3,3 V (ESP32) |
+| Fusíveis dos ramais | **F1 = 10 A legado da Peltier**; F2/F3 e proteção de saída/corte DC do PTC precisam de dimensionamento |
 | Níveis de proteção | **5** (do disjuntor ao intertravamento por software) |
 | Acionamento | **4 relés** — KM1 (o selo e a potência, relé de 8 pinos) + KA1 (veto do firmware, NA) + KA2 (ventoinhas do radiador, **NF**) + KA3 (as 5 ventoinhas internas, NA), os três últimos módulos de 5 V numa caixa DIN 6M — emergência em hardware. 🗑️ **Nenhum módulo MOSFET no painel:** quem modula são os BTS7960 |
-| Volume útil da câmara | 5,0 litros |
-| Carga térmica calculada | **≈ 19,5 W** (9,5 W de base + 10 W dissipados pelas 2 lâmpadas de ensaio) |
-| Refrigeração | **2× TEC1-12706 em SÉRIE** · 24 V · 6,0 A · 144 W |
-| Capacidade das Peltier a ΔT = 20 K | **~60 W** (margem de 6,3×) |
+| Volume da câmara | **15,00 L bruto** · 14,63 L com o EPS de 1 mm · **14,01 L livres** (conjunto do PTC + dissipador, `parametros_v12.resumo()`) |
+| Carga térmica calculada | **≈ 10,5 W** (9,5 W de base + 1 W dissipado pelas 8 posições de LED) |
+| Refrigeração | **2× TEC1-12706 em SÉRIE** · 24 V · **6,0 A / 144 W na placa** (dimensiona cabo e fusível) · **4,96 A / 119 W no ponto de operação** (dimensiona a fonte) |
+| Capacidade das Peltier a ΔT = 20 K | **~60 W** (margem de ~5,7× sobre 10,5 W) |
 | Aquecimento | **PTC cerâmico de 24 V** · 80 W · 3,3 A |
 | Componentes discretos | **16 registros / 22 peças, nenhuma soldada em placa** — 2 capacitores em borne, 3 nos bornes dos relés, 2 dentro dos BTS7960, 8 na maquete e na câmara, 3 módulos comprados (Doc 33) |
 | Sinalização | **4 sinaleiros 22 mm de 5 V** no painel, acesos direto pelo pino do Arduino · **4 LEDs brancos de 5 V** na iluminação da maquete |
-| Isolamento | XPS 30 mm + barreira de vapor · U = 0,86 W/m²·K |
-| Porta | Dupla, U = 2,42 W/m²·K (não condensa) |
+| Isolamento | **EPS 1 mm + acrílico 5 mm** (decisão registrada) · **U = 3,57 W/m²·K** — calculado por `analise_termica_tec.py` |
+| Porta | **Acrílico de 5 mm** (CAM-07), uma chapa só · mesma U das paredes. ⚠️ Não é porta dupla |
 | Base da maquete | **1500 × 500 mm** · escala cenográfica 1:50 · rua externa + muro em X = 640 |
-| Painel | 400 × 500 × 200 mm · 3 trilhos DIN |
+| Painel | 600 × 800 × 250 mm · 4 trilhos DIN |
 
 ---
 
@@ -261,10 +324,11 @@ podia significar duas peças diferentes. Ficou assim:
 - [ ] Subestação montada e entregando 24,0 V
 - [ ] Postes, linha e transformadores instalados e ajustados
 - [ ] Câmara térmica montada, isolada e vedada
+- [ ] Peças cortadas conforme `cad_corte/` (21 da câmara + 6 do painel)
 
 ### Camada 2 — Painel
 - [ ] Gabinete montado, furado e pintado
-- [ ] 3 trilhos, canaletas e todos os componentes encaixados
+- [ ] 4 trilhos, canaletas e todos os componentes encaixados
 
 ### Camada 3 — Elétrica
 - [ ] Força cabeada e testes 0–5 aprovados
@@ -296,11 +360,11 @@ projeto integrador/
 ├── camada_5_integracao/              50
 ├── painel_interativo/                ⭐ o aplicativo: dados, desenhos, guia e validadores
 ├── desenhos/                         desenhos técnicos em SVG
+├── cad_corte/                        ⭐ DXF 1:1 para a área de corte (câmara + painel)
 ├── referencias/                      relatórios externos, guardados como fonte
 ├── imagens/                          fotos dos componentes comprados
 ├── gerar_planilha_bom.py             gera o Excel de compras a partir da BOM
 └── BOM_Projeto_Integrador.xlsx       planilha gerada
 ```
 
-> 📊 A planilha de compras é **gerada a partir do markdown**, não escrita à mão: editou a BOM no [Doc 03](camada_0_fundamentos/03_lista_materiais.md), rodou `python gerar_planilha_bom.py`, a planilha está atualizada. Não existe lista duplicada para sair de sincronia.
-
+> 📊 A planilha não se atualiza automaticamente. Depois de alterar o [Doc 03](camada_0_fundamentos/03_lista_materiais.md) ou o inventário React, rode `python gerar_planilha_bom.py` e confira a data de geração, a lista e a aba **Divergencias**. Preserve os links e preços manuais ao regenerar. A lista reconciliada continua contendo itens bloqueados que não podem ser comprados.

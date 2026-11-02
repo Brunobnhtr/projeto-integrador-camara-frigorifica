@@ -84,8 +84,8 @@ export const FONTE = {
 
 export const FUSIVEIS = [
   { ref: 'F1', a: '10 A', x: 228, y: 118, cor: '#c92a2a', protege: 'o ramal de potência' },
-  { ref: 'F2', a: '2 A',  x: 228, y: 148, cor: '#f08c00', protege: 'o ramal que vira 5 V' },
-  { ref: 'F3', a: '2 A',  x: 228, y: 178, cor: '#fab005', protege: 'o ramal que vira 12 V' },
+  { ref: 'F2', a: 'pendente', x: 228, y: 148, cor: '#f08c00', protege: 'T2: dimensionar após selecionar o conversor' },
+  { ref: 'F3', a: 'pendente', x: 228, y: 178, cor: '#fab005', protege: 'T3/PTC: 2 A legado é insuficiente no modelo; dimensionamento pendente' },
 ];
 
 /* ── os postes ───────────────────────────────────────────────────── */
@@ -97,23 +97,25 @@ export const POSTES = [
     analogia: 'Como os postes que você vê na rua entre um transformador e outro: só '
             + 'sustentam o fio.' },
   { ref: 'P2', x: 560, base: Y_BASE_POSTE, nome: 'Poste 2 — transformador T2',
-    equipa: { ref: 'T2', de: '24 V', para: '5,10 V', modelo: 'LM2596 com display' },
-    desce: '5,10 V (a saída do T2)',
-    faz: 'O ramal 2 NÃO para aqui: ele segue em frente. O que existe é uma DERIVAÇÃO '
-       + 'que desce até o transformador, junto com o 0 V. Do T2 sai um fio só, com '
-       + '5,10 V, que desce e vai por baixo até o painel.',
-    porqueUmSo: '⭐ Sai só o positivo porque o 0 V da fonte já é o retorno de todas as '
-              + 'tensões. O conversor não isola nada — o negativo entra e sai como o '
-              + 'mesmo condutor. Um segundo fio de volta não teria função.',
+    equipa: { ref: 'T2', de: '24 V', para: '5,0 V / 5 A (proposta)', modelo: 'T2 — modelo e ficha pendentes' },
+    desce: '5,0 V propostos (não aprovado)',
+    faz: 'Proposta de derivação para T2; o modelo real, a faixa máxima de entrada '
+       + 'e os transientes ainda precisam ser confirmados. Não montar nem energizar '
+       + 'a saída até a aprovação.',
+    porqueUmSo: 'A representação de retorno comum só vale se a ficha do T2 confirmar '
+              + 'saída não isolada e se a referência 0 V for aprovada. A carga precisa '
+              + 'de um circuito de ida e retorno; não eliminar condutor de retorno por '
+              + 'esta ilustração.',
     analogia: 'É o transformador de poste: pendurado na rede, atende quem está embaixo '
             + 'dele, e a rede continua passando por cima.' },
   { ref: 'P3', x: 730, base: Y_BASE_POSTE, nome: 'Poste 3 — transformador T3',
-    equipa: { ref: 'T3', de: '24 V', para: '12,0 V', modelo: 'LM2596 com display' },
-    desce: '12,0 V (a saída do T3)',
-    faz: 'Diferente do P2: aqui o ramal 3 TERMINA. Ele desce inteiro no transformador, '
-       + 'com o 0 V junto, e sai como 12 V. Nada dele segue para o P4 — por isso só '
-       + 'dois 24 V chegam ao padrão de entrada.',
-    porqueUmSo: 'Também aqui o 0 V só entra — não sai. Mesmo motivo do P2.',
+    equipa: { ref: 'T3', de: '24 V', para: '12 V / 20 A (proposta)', modelo: 'T3 — modelo e ficha pendentes' },
+    desce: '12 V propostos (não aprovado)',
+    faz: 'Proposta de derivação para T3; confirmar capacidade contínua e térmica do '
+       + 'modelo real antes de montar. O ramal do PTC exige corte DC independente, '
+       + 'proteção e condutores dimensionados; não energizar.',
+    porqueUmSo: 'Confirmar na ficha do T3 se a saída é isolada e como o retorno deve '
+              + 'ser distribuído. Não inferir o caminho do 0 V a partir desta ilustração.',
     analogia: 'É o último cliente da rua: depois dele o ramal acaba, e só continuam os '
             + 'fios que servem a outra gente.' },
   { ref: 'P4', x: 900, base: Y_BASE_POSTE, nome: 'Poste 4 — PADRÃO DE ENTRADA',
@@ -258,7 +260,7 @@ export const FIOS = [
   },
   {
     id: 'GND', nome: '0 V — o retorno de tudo', cor: '#212529',
-    bitola: '1,50 mm²', corrente: '6,9 A (a soma de tudo)',
+    bitola: '1,50 mm²', corrente: '7,11 A (a soma de tudo)',
     resumo: 'Viaja um pouco abaixo dos positivos, entra nos dois transformadores e '
           + 'desce no P4 junto com os 24 V.',
     caminho: [[210, 208], [232, 208], [300, 190], [360, NIVEIS.GND], [390, NIVEIS.GND],

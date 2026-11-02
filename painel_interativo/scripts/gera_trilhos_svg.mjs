@@ -19,8 +19,12 @@ import { COMPONENTES, TRILHOS } from '../src/data/painel_completo.js';
 
 const SVG = new URL('../../desenhos/04_painel_layout.svg', import.meta.url);
 
-/* O trilho útil do modelo (42–458 mm) ocupa 110–450 px no desenho. */
-const MM0 = 42, MM1 = 458, PX0 = 110, PX1 = 450;
+/* O trilho útil do MODELO (42–658 mm) ocupa 110–450 px no desenho.
+   ⚠️ O desenho é da caixa antiga de 400 mm; o modelo já é de 700. Enquanto
+   o SVG não for redesenhado, esta escala mantém tudo DENTRO da placa — que é
+   o que importa aqui: um componente desenhado fora da placa mente sobre onde
+   ele fica. A escala real é assunto do desenho, não deste gerador. */
+const MM0 = 42, MM1 = 658, PX0 = 110, PX1 = 450;
 const px = (mm) => PX0 + ((mm - MM0) * (PX1 - PX0)) / (MM1 - MM0);
 
 /* Y de cada trilho no desenho, e a altura da faixa de componente. */
@@ -39,7 +43,8 @@ const CURTO = {
   'BD-0V': 'BD-0V', 'KM1': 'KM1', 'KA123': 'KA1+KA2+KA3',
   'BTS1': 'BTS #1', 'BTS2': 'BTS #2', 'F-P': 'F-P',
   'ESP32': 'ESP32', 'MEGA': 'ARDUINO MEGA', 'RTC': 'RTC',
-  'SV-1': 'SENSOR V', 'AD-1': 'ADAPT. 1-WIRE', 'BS-1': 'BORNES IS', 'SC-1': 'SENSOR A',
+  'AD-1': 'ADAPT. 1-WIRE', 'SC-1': 'SENSOR A',
+  'MAX485': 'MAX485', 'N4AIC24': 'N4AIC24', 'BD-12V': 'BD-12V',
   'BD-0V-B': 'BD-0V-B',
 };
 const SUB = {
@@ -47,8 +52,9 @@ const SUB = {
   'BD-5V': '5,10 V', 'BD-0V': 'star ground',
   'KM1': '⚡ 6 A · o selo', 'KA123': '⭐ D27 · D30 · D29',
   'BTS1': 'Peltier · frio', 'BTS2': 'PTC · quente',
-  'F-P': 'fusíveis', 'ESP32': 'DNLCB30 · MQTT', 'MEGA': '2560 + Shield',
-  'SV-1': 'divisor 5:1', 'AD-1': 'pull-up 4,7 k', 'BS-1': 'C1 · C2', 'SC-1': 'WCS2702',
+  'F-P': '8 chaves + fusíveis', 'ESP32': 'DNLCB30 · MQTT', 'MEGA': '2560 + Shield',
+  'AD-1': 'pull-up 4,7 k', 'SC-1': 'WCS2702',
+  'MAX485': 'RS-485 → Mega', 'N4AIC24': '22 I + 2 V', 'BD-12V': '12 V posições',
   'BD-0V-B': '0 V da eletrônica', 'RTC': 'DS3231',
 };
 

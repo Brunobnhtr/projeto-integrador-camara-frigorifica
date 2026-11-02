@@ -1,0 +1,61 @@
+==========================================================================
+VALIDACAO DO PACOTE CAD V8 — CAMARA COM DUTOS EXTERNOS
+==========================================================================
+  camara 410 x 250 x 390 interna  (39.98 L)
+  externo 420 x 260 x 400  |  total com dutos 500 mm
+  isolante 1 mm  |  pecas fisicas 42
+
+=== 1. ARQUIVOS ===
+  35 DXFs de peca procurados
+=== 2. CONTEUDO DOS DXF ===
+  350 verificacoes acumuladas
+=== 3. GEOMETRIA ===
+  451 verificacoes acumuladas
+=== 3b. PECAS (furos, recortes, dimensoes) ===
+  35 modelos | 68 pecas fisicas | 93 furos | 12 recortes
+=== 4. CHAPAS ===
+  10 chapas conferidas
+=== 5. TERMICO ===
+
+=== TESTES NEGATIVOS (erros injetados de proposito) ===
+  [DETECTADO     ] duto desenhado DENTRO da camara                (8 erro(s), ok)
+                   -> CAM-08: painel em X 100..105 esta DENTRO da camara (a V8 exige duto externo)
+  [DETECTADO     ] duto sem tampa no topo                         (2 erro(s), ok)
+                   -> CAM-21: 0 tampas de duto (esperado 2)
+  [DETECTADO     ] flange de 44 mm (sem aba para os furos)        (1 erro(s), ok)
+                   -> flange 44 sem aba para os furos M3 (precisa >= 52)
+  [DETECTADO     ] boca inferior acima da flange                  (1 erro(s), ok)
+                   -> boca inferior termina em Z67, acima da flange Z47
+  [DETECTADO     ] furo desenhado fora da peca                    (2 erro(s), ok)
+                   -> TESTE: furo D5 fora da peca em (120, 25) [fora]
+  [DETECTADO     ] dois furos sobrepostos                         (1 erro(s), ok)
+                   -> TESTE: furos D10 e D10 se sobrepoem em (50,25) e (52,25)
+  [DETECTADO     ] codigo de peca duplicado                       (1 erro(s), ok)
+                   -> codigos duplicados: ['CAM-01']
+  [DETECTADO     ] chapa maior que a comercial                    (1 erro(s), ok)
+                   -> CHAPA_X: chapa 3100x2100 nao cabe na padrao 2000x1000
+  [DETECTADO     ] vao do escudo sem folga para o PTC             (2 erro(s), ok)
+                   -> vao do escudo 110 deixa menos de 4 mm para o PTC 110
+  [DETECTADO     ] largura total 480 em vez de 500                (2 erro(s), ok)
+                   -> largura total 480 != 500 mm
+  [DETECTADO     ] alojamento menor que a ventoinha de 40         (2 erro(s), ok)
+                   -> alojamento 38 nao e maior que a ventoinha 40
+  [DETECTADO     ] uma peca fisica faltando em POSES              (2 erro(s), ok)
+                   -> POSES: CAM-21 tem 1 colocacoes (esperado 2)
+  [DETECTADO     ] comporta invadindo a tampa tecnica             (1 erro(s), ok)
+                   -> comporta da traseira invade a tampa tecnica
+  [DETECTADO     ] lampada encostando na plataforma do PTC        (1 erro(s), ok)
+                   -> folga plataforma do PTC x suporte de lampada: 0.00 mm (< 8 mm)
+  [DETECTADO     ] dimensao desenhada != parametro                (1 erro(s), ok)
+                   -> CAM-01: largura desenhada 420.00 != parametro 445
+
+  15 testes | 15 detectados | 0 passaram batido
+
+==========================================================================
+AVISOS (1):
+  ! LIMITACAO REGISTRADA: com isolante de 1 mm a camara para em +9.3 C a 30 C de ambiente (alvo 5 C) — ver secao E
+==========================================================================
+2001 verificacoes executadas | 15 testes negativos (15 detectados) | 0 erro(s) | 1 aviso(s)
+
+  Testes geometricos aprovados NAO significam liberado para fabricacao.
+  Falta medir o kit Peltier, o soquete da lampada e o PTC. Ver LEIA-ME.

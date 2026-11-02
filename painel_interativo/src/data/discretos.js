@@ -1,558 +1,827 @@
-/**
- * OS COMPONENTES DISCRETOS DO PROJETO INTEIRO — CADASTRO ÚNICO
- * ============================================================
- *
- * ⭐ POR QUE ESTE ARQUIVO EXISTE. Até aqui, "componente discreto" não era
- *    um tipo de coisa no modelo: só existiam FIO e BORNE. Cada resistor
- *    acabou encaixado à força num lugar diferente — os da PI-1 viraram
- *    peça de placa, os dos relés viraram um segundo cadastro, o D1 foi
- *    declarado DUAS vezes (uma delas fingindo ser um fio, o C12), e os
- *    que ficam longe do painel (R8, R9, R4–R7, D2, os DUTs) não existiam
- *    em cadastro nenhum: só em parágrafos de documento.
- *
- *    Parágrafo não é desenhado, não é validado e não vira passo de
- *    montagem. Por isso todos eles moram aqui agora, no mesmo formato.
- *
- * ⭐ E NÃO HÁ MAIS PLACA NENHUMA. A PI-2 saiu com a medição analógica e
- *    a PI-1 com os módulos comprados: hoje todo componente discreto do
- *    projeto mora num BORNE ou dentro de um módulo. Aqui está o que vale
- *    para todos eles — o que é, onde vive, como liga, por que existe e o
- *    que se mede para provar que ficou certo.
- *
- * O `valida_discretos.mjs` confere que os dois lados concordam.
- */
-
-/* ══════════════════════════════════════════════════════════════════════
-   HOSTS — os lugares onde componente discreto pode morar
-   ════════════════════════════════════════════════════════════════════
-   `compPainel` liga o host a um componente do `painel_completo.js`, e é
-   isso que deixa o validador conferir se o parafuso citado existe de
-   verdade. Host sem `compPainel` fica FORA do painel — aí os terminais
-   são declarados aqui mesmo, porque não há outro lugar que os conheça. */
-export const HOSTS = [
+/** Discretos em uso no painel autônomo. */
+export const HOSTS=[
   {
-    id: 'MEGA', tipo: 'borne', nome: 'Bornes do adaptador DIN do Mega',
-    onde: 'trilho 3 — a borda de BAIXO do adaptador, entre os pinos analógicos',
-    compPainel: 'MEGA',
-    diz: '⭐ AQUI HAVIA UMA PLACA, E DEPOIS TRÊS BORNES. A PI-1 tinha 6 peças soldadas; '
-       + 'o divisor e o pull-up viraram módulos comprados, e sobraram dois capacitores. '
-       + 'Eles chegaram a morar num bloco próprio de bornes (o BS-1) — mas ali as duas '
-       + 'pernas de cada capacitor ficavam a 30 mm uma da outra, penduradas no ar entre '
-       + 'bornes diferentes. No adaptador do Mega o `A0` é VIZINHO do `GND2`: passo de '
-       + '~3,9 mm, que é o passo da perna de um cerâmico. O capacitor deixou de ficar no ar.',
+    "id": "MEGA",
+    "tipo": "borne",
+    "nome": "Bornes do adaptador DIN do Mega",
+    "onde": "trilho 3 — a borda de BAIXO do adaptador, entre os pinos analógicos",
+    "compPainel": "MEGA",
+    "diz": "⭐ AQUI HAVIA UMA PLACA, E DEPOIS TRÊS BORNES. A PI-1 tinha 6 peças soldadas; o divisor e o pull-up viraram módulos comprados, e sobraram dois capacitores. Eles chegaram a morar num bloco próprio de bornes (o BS-1) — mas ali as duas pernas de cada capacitor ficavam a 30 mm uma da outra, penduradas no ar entre bornes diferentes. No adaptador do Mega o `A0` é VIZINHO do `GND2`: passo de ~3,9 mm, que é o passo da perna de um cerâmico. O capacitor deixou de ficar no ar."
   },
   {
-    id: 'KM1', tipo: 'borne', nome: 'Base PTF08A do KM1',
-    onde: 'trilho 1 do painel', compPainel: 'KM1',
-    diz: 'Componente parafusado direto no borne da base, sem placa nenhuma. '
-       + 'Dobre as pernas em U e aperte cada uma no seu parafuso.',
+    "id": "KM1",
+    "tipo": "borne",
+    "nome": "Base PTF08A do KM1",
+    "onde": "trilho 1 do painel",
+    "compPainel": "KM1",
+    "diz": "Componente parafusado direto no borne da base, sem placa nenhuma. Dobre as pernas em U e aperte cada uma no seu parafuso."
   },
   {
-    id: 'KA123', tipo: 'borne', nome: 'Bornes dos módulos KA1, KA2 e KA3',
-    onde: 'caixa DIN de 6M, trilho 2', compPainel: 'KA123',
-    diz: 'Os três módulos dividem a mesma caixa. Os resistores entram nos '
-       + 'bornes de parafuso do próprio módulo. 🔧 A caixa era de 4M com dois '
-       + 'módulos; o KA3 entrou no lugar do MV-1 e ela passou para 6M.',
+    "id": "KA123",
+    "tipo": "borne",
+    "nome": "Bornes dos módulos KA1, KA2 e KA3",
+    "onde": "caixa DIN de 6M, trilho 2",
+    "compPainel": "KA123",
+    "diz": "Os três módulos dividem a mesma caixa. Os resistores entram nos bornes de parafuso do próprio módulo. 🔧 A caixa era de 4M com dois módulos; o KA3 entrou no lugar do MV-1 e ela passou para 6M."
   },
   {
-    id: 'BTS1', tipo: 'modulo', nome: 'Driver BTS7960 #1 (Peltier)',
-    onde: 'trilho 2 do painel, sobre dissipador', compPainel: 'BTS1',
-    diz: '⚠️ O componente é soldado POR BAIXO do módulo comprado — fica '
-       + 'invisível depois de montado. Fotografe antes de fechar.',
+    "id": "BTS1",
+    "tipo": "modulo",
+    "nome": "Driver BTS7960 #1 (Peltier)",
+    "onde": "trilho 2 do painel, sobre dissipador",
+    "compPainel": "BTS1",
+    "diz": "⚠️ O componente é soldado POR BAIXO do módulo comprado — fica invisível depois de montado. Fotografe antes de fechar."
   },
   {
-    id: 'BTS2', tipo: 'modulo', nome: 'Driver BTS7960 #2 (PTC)',
-    onde: 'trilho 2 do painel', compPainel: 'BTS2',
-    diz: 'Idem ao BTS #1.',
+    "id": "BTS2",
+    "tipo": "modulo",
+    "nome": "Driver BTS7960 #2 (PTC)",
+    "onde": "trilho 2 do painel",
+    "compPainel": "BTS2",
+    "diz": "Idem ao BTS #1."
   },
   {
-    id: 'POSTE-IL', tipo: 'maquete', nome: 'Base do poste de iluminação',
-    onde: 'maquete — 3 postes da rua + 1 na guarita',
-    terminais: ['+5V', '0V', 'LED+', 'LED−'],
-    diz: 'Componente escondido dentro da base do poste, com termorretrátil. '
-       + 'Alimentado pelo BD-5V saída O7, sempre aceso.',
+    "id": "VENT-RAD",
+    "tipo": "camara",
+    "nome": "Ventoinhas do radiador (lado quente)",
+    "onde": "fora da câmara, no dissipador quente das Peltier",
+    "terminais": [
+      "+12V",
+      "0V"
+    ],
+    "diz": "O diodo vai junto das ventoinhas, e não no painel: o pico tem que ser grampeado onde ele nasce."
   },
   {
-    id: 'VENT-RAD', tipo: 'camara', nome: 'Ventoinhas do radiador (lado quente)',
-    onde: 'fora da câmara, no dissipador quente das Peltier',
-    terminais: ['+12V', '0V'],
-    diz: 'O diodo vai junto das ventoinhas, e não no painel: o pico tem que '
-       + 'ser grampeado onde ele nasce.',
+    "id": "VENT-INT",
+    "tipo": "camara",
+    "nome": "As 5 ventoinhas internas (2 frias, 2 dos dutos e a do PTC)",
+    "onde": "dentro da câmara, todas em paralelo no par X9 / X10",
+    "terminais": [
+      "+12V",
+      "0V"
+    ],
+    "diz": "⭐ HOST NOVO, E ELE NASCEU DE UMA TROCA DE COMPONENTE. Enquanto quem ligava estas cinco era um módulo MOSFET (o MV-1), o diodo de roda-livre vinha escondido dentro da placa comprada. Com o KA3 — contato seco — ele volta a ser peça de projeto, e vai onde o pico nasce: junto dos motores."
   },
   {
-    id: 'VENT-INT', tipo: 'camara', nome: 'As 5 ventoinhas internas (2 frias, 2 dos dutos e a do PTC)',
-    onde: 'dentro da câmara, todas em paralelo no par X9 / X10',
-    terminais: ['+12V', '0V'],
-    diz: '⭐ HOST NOVO, E ELE NASCEU DE UMA TROCA DE COMPONENTE. Enquanto quem '
-       + 'ligava estas cinco era um módulo MOSFET (o MV-1), o diodo de roda-livre '
-       + 'vinha escondido dentro da placa comprada. Com o KA3 — contato seco — ele '
-       + 'volta a ser peça de projeto, e vai onde o pico nasce: junto dos motores.',
+    "id": "MAX485",
+    "tipo": "modulo",
+    "nome": "Transceptor RS-485 (MAX485 em módulo)",
+    "onde": "trilho 3 do painel, ao lado do Mega",
+    "compPainel": "MAX485",
+    "diz": "⭐ É a peça que o projeto NÃO TINHA até a medição virar Modbus. Sem ele o Mega conversa TTL e o módulo de campo conversa diferencial — dois idiomas. O resistor de pull-down do DE/RE mora nos bornes dele."
   },
   {
-    id: 'SV-1', tipo: 'modulo', nome: 'Módulo sensor de tensão (vigia do 24 V)',
-    onde: 'trilho 3 do painel', compPainel: 'SV-1',
-    diz: 'Módulo comprado, com borne de parafuso na entrada e barra de pinos na saída. '
-       + 'Substituiu o divisor soldado da PI-1.',
+    "id": "N4AIC24",
+    "tipo": "modulo",
+    "nome": "Módulo de aquisição N4AIC24 (22 correntes + 2 tensões)",
+    "onde": "trilho 3 do painel, entre o AD-1 e o BD-0V-B",
+    "compPainel": "N4AIC24",
+    "diz": "Caixa DIN, bornes de parafuso. Substituiu o divisor do SV-1 e os dois ACS712 de uma vez: um instrumento, uma resposta, um par trançado."
   },
   {
-    id: 'AD-1', tipo: 'modulo', nome: 'Adaptador do DS18B20',
-    onde: 'trilho 3 do painel', compPainel: 'AD-1',
-    diz: 'Traz o pull-up do 1-Wire montado de fábrica e três bornes de parafuso para a sonda.',
+    "id": "AD-1",
+    "tipo": "modulo",
+    "nome": "Adaptador do DS18B20",
+    "onde": "trilho 3 do painel",
+    "compPainel": "AD-1",
+    "diz": "Traz o pull-up do 1-Wire montado de fábrica e três bornes de parafuso para a sonda."
   },
   {
-    id: 'SC-1', tipo: 'modulo', nome: 'Sensor de corrente da posição de ensaio',
-    onde: 'trilho 3 do painel, ao lado da PI-1', compPainel: 'SC-1',
-    diz: '⭐ O fio de força NÃO é cortado para medir: ele passa POR DENTRO do furo do '
-       + 'sensor. Quem decide se há corrente é o módulo; o Arduino só lê a decisão.',
+    "id": "PL-1",
+    "tipo": "camara",
+    "nome": "Placa PL-1 — 4 posições de ensaio",
+    "onde": "dentro da câmara, nas tiras de alumínio com espaçadores M3",
+    "terminais": [
+      "+1",
+      "+2",
+      "+3",
+      "+4",
+      "r1",
+      "r2",
+      "r3",
+      "r4"
+    ],
+    "diz": "PCB de 95 x 75 mm com 4 canais de LED. Cada canal consome 9 a 11 mA (12 V sobre 1 kOhm), para o sistema perceber quando a chave da posição abre. Os 4 retornos passam, um a um, pelo shunt do módulo de medição."
   },
   {
-    id: 'DUT1', tipo: 'camara', nome: 'Placa simuladora — posição de ensaio 1',
-    onde: 'dentro da câmara, posição 1',
-    terminais: ['+24V', 'RET'],
-    diz: 'Consome corrente para o sistema perceber quando ela some (lâmpada).',
-  },
-  {
-    id: 'DUT2', tipo: 'camara', nome: 'Placa simuladora — posição de ensaio 2',
-    onde: 'dentro da câmara, posição 2',
-    terminais: ['+24V', 'RET'],
-    diz: 'Consome corrente para o sistema perceber quando ela some (lâmpada).',
-  },
+    "id": "PL-2",
+    "tipo": "camara",
+    "nome": "Placa PL-2 — 4 posições de ensaio",
+    "onde": "dentro da câmara, nas tiras de alumínio com espaçadores M3",
+    "terminais": [
+      "+1",
+      "+2",
+      "+3",
+      "+4",
+      "r1",
+      "r2",
+      "r3",
+      "r4"
+    ],
+    "diz": "PCB de 95 x 75 mm com 4 canais de LED. Cada canal consome 9 a 11 mA (12 V sobre 1 kOhm), para o sistema perceber quando a chave da posição abre. Os 4 retornos passam, um a um, pelo shunt do módulo de medição."
+  }
 ];
-
-/* ══════════════════════════════════════════════════════════════════════
-   ARRANJOS — como o componente entra no circuito
-   ════════════════════════════════════════════════════════════════════
-   Esta é a pergunta que mais confunde quem nunca mexeu com eletrônica,
-   então ela virou campo obrigatório. */
-export const ARRANJOS = {
-  serie: {
-    nome: 'em série',
-    diz: 'A corrente ATRAVESSA o componente. Se ele sair, o circuito abre.',
+export const ARRANJOS={
+  "serie": {
+    "nome": "em série",
+    "diz": "A corrente ATRAVESSA o componente. Se ele sair, o circuito abre."
   },
-  paralelo: {
-    nome: 'em paralelo',
-    diz: 'Ele fica DE LADO, entre dois pontos que já se ligam por fio. Se ele '
-       + 'sair, o circuito continua fechado — só perde a função dele.',
+  "paralelo": {
+    "nome": "em paralelo",
+    "diz": "Ele fica DE LADO, entre dois pontos que já se ligam por fio. Se ele sair, o circuito continua fechado — só perde a função dele."
   },
-  antiparalelo: {
-    nome: 'em antiparalelo',
-    diz: 'Em paralelo, mas com polaridade invertida em relação à tensão normal: '
-       + 'no dia a dia ele não conduz nada, e só entra em ação no pico.',
+  "antiparalelo": {
+    "nome": "em antiparalelo",
+    "diz": "Em paralelo, mas com polaridade invertida em relação à tensão normal: no dia a dia ele não conduz nada, e só entra em ação no pico."
   },
-  passagem: {
-    nome: 'por passagem',
-    diz: 'O condutor ATRAVESSA o componente sem encostar nele — quem passa de um lado '
-       + 'para o outro é o campo magnético, não a corrente. É assim que se mede sem abrir '
-       + 'o circuito.',
+  "passagem": {
+    "nome": "por passagem",
+    "diz": "O condutor ATRAVESSA o componente sem encostar nele — quem passa de um lado para o outro é o campo magnético, não a corrente. É assim que se mede sem abrir o circuito."
   },
-  derivacao: {
-    nome: 'em derivação para o 0 V',
-    diz: 'Uma perna encosta no caminho do sinal, a outra desce para o 0 V. O '
-       + 'sinal NÃO passa por dentro dele.',
-  },
+  "derivacao": {
+    "nome": "em derivação para o 0 V",
+    "diz": "Uma perna encosta no caminho do sinal, a outra desce para o 0 V. O sinal NÃO passa por dentro dele."
+  }
 };
-
-/* ══════════════════════════════════════════════════════════════════════
-   OS COMPONENTES
-   ════════════════════════════════════════════════════════════════════
-   Campos obrigatórios (o validador cobra):
-     id · ref · peca · tipo · host · arranjo · pernas · papel · porque · ensaio · passo
-   E, quando `polaridade: true`:  comoIdentificar · seInverter
-
-   `pernas[].vai` aponta para { comp, via } — o mesmo par que a fiação usa,
-   para que o validador possa conferir se o parafuso existe de verdade. */
-export const DISCRETOS = [
-
-  /* ───── OS FILTROS DE CORRENTE, NOS BORNES DO PRÓPRIO MEGA ───── */
+export const DISCRETOS=[
   {
-    id: 'PI1-C1', ref: 'C1', peca: 'Capacitor cerâmico 100 nF (marcado 104)',
-    tipo: 'capacitor', valor: '100 nF', qtd: 1, host: 'MEGA', arranjo: 'derivacao', polaridade: false,
-    pernas: [
-      { nome: 'perna 1', vai: { comp: 'MEGA', via: 'A0' } },
-      { nome: 'perna 2', vai: { comp: 'MEGA', via: 'GND2' } },
+    "id": "PI1-C1",
+    "ref": "C1",
+    "peca": "Capacitor cerâmico 100 nF (marcado 104)",
+    "tipo": "capacitor",
+    "valor": "100 nF",
+    "qtd": 1,
+    "host": "MEGA",
+    "arranjo": "derivacao",
+    "polaridade": false,
+    "pernas": [
+      {
+        "nome": "perna 1",
+        "vai": {
+          "comp": "MEGA",
+          "via": "A0"
+        }
+      },
+      {
+        "nome": "perna 2",
+        "vai": {
+          "comp": "MEGA",
+          "via": "GND2"
+        }
+      }
     ],
-    papel: 'Filtra o ruído que o cabo do BTS #1 pegou no caminho até o Arduino',
-    porque: 'O sinal IS sai limpo do driver e percorre 30 cm dentro de um painel que '
-          + 'chaveia corrente. Sem o filtro, a leitura de A0 oscila e o firmware dispara '
-          + 'alarme de falha com o sistema funcionando bem.',
-    seFaltar: 'A leitura de A0 pula dezenas de contagens e o diagnóstico de corrente vira ruído.',
-    ensaio: 'Sistema energizado e em repouso: A0 estável dentro de ±2 contagens de A/D. '
-          + '⚠ Antes de energizar: o capacitor entre A0 e GND2 (bornes VIZINHOS) sem esticar perna.',
-    passo: 'B-03', fonte: 'Doc 33 §33.2',
+    "papel": "Filtra o ruído que o cabo do BTS #1 pegou no caminho até o Arduino",
+    "porque": "O sinal IS sai limpo do driver e percorre 30 cm dentro de um painel que chaveia corrente. Sem o filtro, a leitura de A0 oscila e o firmware dispara alarme de falha com o sistema funcionando bem.",
+    "seFaltar": "A leitura de A0 pula dezenas de contagens e o diagnóstico de corrente vira ruído.",
+    "ensaio": "Sistema energizado e em repouso: A0 estável dentro de ±2 contagens de A/D. ⚠ Antes de energizar: o capacitor entre A0 e GND2 (bornes VIZINHOS) sem esticar perna.",
+    "passo": "A-03",
+    "fonte": "Doc 33 §33.2"
   },
   {
-    id: 'PI1-C2', ref: 'C2', peca: 'Capacitor cerâmico 100 nF (marcado 104)',
-    tipo: 'capacitor', valor: '100 nF', qtd: 1, host: 'MEGA', arranjo: 'derivacao', polaridade: false,
-    pernas: [
-      { nome: 'perna 1', vai: { comp: 'MEGA', via: 'A1' } },
-      { nome: 'perna 2', vai: { comp: 'MEGA', via: 'GND2' } },
+    "id": "PI1-C2",
+    "ref": "C2",
+    "peca": "Capacitor cerâmico 100 nF (marcado 104)",
+    "tipo": "capacitor",
+    "valor": "100 nF",
+    "qtd": 1,
+    "host": "MEGA",
+    "arranjo": "derivacao",
+    "polaridade": false,
+    "pernas": [
+      {
+        "nome": "perna 1",
+        "vai": {
+          "comp": "MEGA",
+          "via": "A1"
+        }
+      },
+      {
+        "nome": "perna 2",
+        "vai": {
+          "comp": "MEGA",
+          "via": "GND2"
+        }
+      }
     ],
-    papel: 'O mesmo do C1, para o BTS #2',
-    porque: 'Mesma razão do C1 — o cabo é outro, o problema é igual.',
-    seFaltar: 'A leitura de A1 fica instável.',
-    ensaio: 'A1 estável dentro de ±2 contagens de A/D com o sistema em repouso.',
-    passo: 'B-03', fonte: 'Doc 33 §33.2',
-  },
-
-  /* ─────────────────── NOS BORNES DOS RELÉS ──────────────────── */
-  {
-    id: 'KM1-D1', ref: 'D1', peca: 'Diodo 1N4007',
-    tipo: 'diodo', valor: '1N4007', qtd: 1, host: 'KM1', arranjo: 'antiparalelo', polaridade: true,
-    comoIdentificar: '⭐ A faixa prateada impressa no corpo marca o CATODO. Ela vai no A1.',
-    seInverter: '🔥 Invertido ele curto-circuita a bobina e derruba o fusível F2 (2 A) assim que '
-              + 'o verde for apertado. Não queima nada — mas você vai procurar o defeito no lugar errado.',
-    pernas: [
-      { nome: 'catodo (faixa prateada)', vai: { comp: 'KM1', via: 'A1' } },
-      { nome: 'anodo',                   vai: { comp: 'KM1', via: 'A2' } },
-    ],
-    papel: 'Roda-livre da bobina do KM1',
-    porque: 'Quando o contato do KA1 abre, o campo da bobina colapsa e induz centenas de volts. '
-          + 'Sem o diodo esse pico aparece NO CONTATO DO KA1 e abre arco — contato que pita acaba '
-          + 'soldando, e um KA1 soldado é o veto do firmware perdido em silêncio.',
-    seFaltar: 'O contato do KA1 se degrada a cada desligamento e um dia solda fechado.',
-    ensaio: 'Multímetro em TESTE DE DIODO entre A1 e A2 → conduz num sentido só (~0,55 V com a '
-          + 'ponta vermelha no A2, nada no sentido inverso).',
-    antesDeMontar: '🔎 Faça o teste de diodo no KM1 ANTES: se ele já conduzir num sentido só, o relé '
-                 + 'tem diodo interno e o D1 é dispensável. Se conduzir nos dois, monte o D1.',
-    passo: 'C-07', fonte: 'Doc 31 §31.9',
+    "papel": "O mesmo do C1, para o BTS #2",
+    "porque": "Mesma razão do C1 — o cabo é outro, o problema é igual.",
+    "seFaltar": "A leitura de A1 fica instável.",
+    "ensaio": "A1 estável dentro de ±2 contagens de A/D com o sistema em repouso.",
+    "passo": "A-03",
+    "fonte": "Doc 33 §33.2"
   },
   {
-    id: 'KA1-R10', ref: 'R10', peca: 'Resistor 10 kΩ · ¼ W',
-    tipo: 'resistor', valor: '10 kΩ', qtd: 1, host: 'KA123', arranjo: 'paralelo', polaridade: false,
-    pernas: [
-      { nome: 'perna 1', vai: { comp: 'KA123', via: 'IN1' } },
-      { nome: 'perna 2', vai: { comp: 'KA123', via: '0V' } },
+    "id": "MAX-R13",
+    "ref": "R13",
+    "peca": "Resistor 10 kΩ (marrom-preto-laranja)",
+    "tipo": "resistor",
+    "valor": "10 kΩ",
+    "qtd": 1,
+    "host": "MAX485",
+    "arranjo": "derivacao",
+    "polaridade": false,
+    "pernas": [
+      {
+        "nome": "perna 1",
+        "vai": {
+          "comp": "MAX485",
+          "via": "DE/RE"
+        }
+      },
+      {
+        "nome": "perna 2",
+        "vai": {
+          "comp": "MEGA",
+          "via": "GND2"
+        }
+      }
     ],
-    papel: 'Pull-down do gatilho do KA1 — define o estado com o Arduino ausente',
-    porque: 'Fio do D27 rompido ou Arduino desligado → o resistor leva o IN a 0 V → relé aberto → '
-          + 'a potência nunca é armada. Ele torna MEDÍVEL o que antes era confiado.',
-    seFaltar: '⚠️ O IN fica alto-impedante e o módulo pode fechar por ruído — potência autorizada '
-            + 'sem ninguém mandar.',
-    ensaio: 'Ohmímetro entre o IN1 e o 0 V → ~10 kΩ. Com o painel energizado e o Arduino desligado, '
-          + 'o IN1 deve medir ~0 V.',
-    passo: 'C-08', fonte: 'Doc 31 §31.13',
+    "papel": "Mantém o DE/RE do MAX485 em nível BAIXO — escutando — enquanto o Mega não manda nada",
+    "porque": "⭐ Entre o reset e a primeira linha do setup, o pino do Arduino é ENTRADA e flutua. Flutuando, o DE pode ficar em 1 e o MAX485 transmite lixo no par — o módulo vê colisão e às vezes trava o barramento até o próximo ciclo de energia. O resistor resolve por 1 centavo.",
+    "seFaltar": "O barramento RS-485 fica instável no boot: às vezes responde, às vezes não, e o defeito some quando se mede com o multímetro na mão.",
+    "ensaio": "Com o Mega recém-ligado e o firmware ainda não rodando: medir D26 contra GND2 → 0 V, não 2,5 V.",
+    "montagem": "Uma perna no borne do DE/RE, a outra no GND2 do adaptador do Mega. Não precisa de placa.",
+    "passo": "D-01",
+    "fonte": "Doc 13 §13.2"
   },
   {
-    id: 'KA2-R11', ref: 'R11', peca: 'Resistor 10 kΩ · ¼ W',
-    tipo: 'resistor', valor: '10 kΩ', qtd: 1, host: 'KA123', arranjo: 'paralelo', polaridade: false,
-    pernas: [
-      { nome: 'perna 1', vai: { comp: 'KA123', via: 'IN2' } },
-      { nome: 'perna 2', vai: { comp: 'KA123', via: '0V' } },
+    "id": "KM1-D1",
+    "ref": "D1",
+    "peca": "Diodo 1N4007",
+    "tipo": "diodo",
+    "valor": "1N4007",
+    "qtd": 1,
+    "host": "KM1",
+    "arranjo": "antiparalelo",
+    "polaridade": true,
+    "comoIdentificar": "⭐ A faixa prateada impressa no corpo marca o CATODO. Ela vai no A1.",
+    "seInverter": "🔥 Invertido ele curto-circuita a bobina e derruba o fusível F2 (2 A) assim que o verde for apertado. Não queima nada — mas você vai procurar o defeito no lugar errado.",
+    "pernas": [
+      {
+        "nome": "catodo (faixa prateada)",
+        "vai": {
+          "comp": "KM1",
+          "via": "A1"
+        }
+      },
+      {
+        "nome": "anodo",
+        "vai": {
+          "comp": "KM1",
+          "via": "A2"
+        }
+      }
     ],
-    papel: 'Pull-down do gatilho do KA2 — e aqui o resultado é o oposto, de propósito',
-    porque: '⭐ O KA2 usa o contato NC: relé solto significa ventoinha do radiador GIRANDO. É o R11 '
-          + 'que garante que um Arduino morto ventile.',
-    seFaltar: 'A ventoinha do lado quente pode parar sozinha por ruído — e o lado quente sem '
-            + 'ventilação leva a Peltier à fuga térmica.',
-    ensaio: 'Ohmímetro entre o IN2 e o 0 V → ~10 kΩ. Puxar o fio do D30 com o ensaio rodando: as '
-          + 'ventoinhas CONTINUAM girando.',
-    passo: 'C-08', fonte: 'Doc 31 §31.14',
+    "papel": "Roda-livre da bobina do KM1",
+    "porque": "Quando o contato do KA1 abre, o campo da bobina colapsa e induz centenas de volts. Sem o diodo esse pico aparece NO CONTATO DO KA1 e abre arco — contato que pita acaba soldando, e um KA1 soldado é o veto do firmware perdido em silêncio.",
+    "seFaltar": "O contato do KA1 se degrada a cada desligamento e um dia solda fechado.",
+    "ensaio": "Multímetro em TESTE DE DIODO entre A1 e A2 → conduz num sentido só (~0,55 V com a ponta vermelha no A2, nada no sentido inverso).",
+    "antesDeMontar": "🔎 Faça o teste de diodo no KM1 ANTES: se ele já conduzir num sentido só, o relé tem diodo interno e o D1 é dispensável. Se conduzir nos dois, monte o D1.",
+    "passo": "A-03",
+    "fonte": "Doc 31 §31.9"
   },
   {
-    id: 'KA3-R12', ref: 'R12', peca: 'Resistor 10 kΩ · ¼ W',
-    tipo: 'resistor', valor: '10 kΩ', qtd: 1, host: 'KA123', arranjo: 'paralelo', polaridade: false,
-    pernas: [
-      { nome: 'perna 1', vai: { comp: 'KA123', via: 'IN3' } },
-      { nome: 'perna 2', vai: { comp: 'KA123', via: '0V' } },
+    "id": "KA1-R10",
+    "ref": "R10",
+    "peca": "Resistor 10 kΩ · ¼ W",
+    "tipo": "resistor",
+    "valor": "10 kΩ",
+    "qtd": 1,
+    "host": "KA123",
+    "arranjo": "paralelo",
+    "polaridade": false,
+    "pernas": [
+      {
+        "nome": "perna 1",
+        "vai": {
+          "comp": "KA123",
+          "via": "IN1"
+        }
+      },
+      {
+        "nome": "perna 2",
+        "vai": {
+          "comp": "KA123",
+          "via": "0V"
+        }
+      }
     ],
-    papel: 'Pull-down do gatilho do KA3 — as 5 ventoinhas internas',
-    porque: 'Mesma regra do R10: pino solto ou Arduino ausente → IN em 0 V → contato aberto → '
-          + 'ventoinhas paradas. ⭐ Aqui parado É o estado seguro: sem Arduino o KA1 já cortou a '
-          + 'potência, e o PTC é auto-limitado.',
-    seFaltar: 'O IN fica alto-impedante e as ventoinhas internas podem partir sozinhas por ruído, '
-            + 'com o painel parado.',
-    ensaio: 'Ohmímetro entre o IN3 e o 0 V → ~10 kΩ. Com o Arduino desligado, as 5 internas ficam '
-          + 'paradas e o LED do KA3 apagado.',
-    passo: 'C-08', fonte: 'Doc 31 §31.16',
-  },
-
-  /* ──────────── SOLDADOS NO MÓDULO COMPRADO (BTS7960) ─────────── */
-  {
-    id: 'BTS1-R8', ref: 'R8', peca: 'Resistor 10 kΩ · ¼ W',
-    tipo: 'resistor', valor: '10 kΩ', qtd: 1, host: 'BTS1', arranjo: 'paralelo', polaridade: false,
-    pernas: [
-      { nome: 'perna 1', vai: { comp: 'BTS1', via: 'R_EN' } },
-      { nome: 'perna 2', vai: { comp: 'BTS1', via: 'GND' } },
-    ],
-    papel: 'Pull-down do R_EN — define o estado seguro do driver de potência',
-    porque: '⭐ Fica NO TERMINAL DO DRIVER, e não na PI-1, porque assim ele cobre também o '
-          + 'rompimento do cabo: com o Arduino desligado OU com o fio partido, o R_EN vai a 0 V '
-          + 'e o driver não pode acordar sozinho. Um pull-down na placa protegeria só o primeiro caso.',
-    seFaltar: '🔥 R_EN solto: o driver pode habilitar por ruído e acionar a Peltier sem comando.',
-    ensaio: 'Ohmímetro entre R_EN e GND → ~10 kΩ. Com o painel energizado e o Arduino desligado, '
-          + 'R_EN medindo ~0 V.',
-    montagem: 'Soldar pelo lado de BAIXO do módulo, ligando o pad do R_EN ao pad do GND, pernas '
-            + 'curtas e rentes, e cobrir com termorretrátil de Ø 2 mm. Alternativa sem solda: '
-            + 'montar o resistor dentro de um alojamento Dupont de 2 vias e encaixar no barra de '
-            + 'pinos, com um ponto de cola quente.',
-    passo: 'A-03', fonte: 'Doc 33 §33.6',
-    aviso: '📷 Fotografe antes de fechar: resistor invisível embaixo de um módulo é armadilha para '
-         + 'quem for dar manutenção.',
+    "papel": "Pull-down do gatilho do KA1 — define o estado com o Arduino ausente",
+    "porque": "Fio do D27 rompido ou Arduino desligado → o resistor leva o IN a 0 V → relé aberto → a potência nunca é armada. Ele torna MEDÍVEL o que antes era confiado.",
+    "seFaltar": "⚠️ O IN fica alto-impedante e o módulo pode fechar por ruído — potência autorizada sem ninguém mandar.",
+    "ensaio": "Ohmímetro entre o IN1 e o 0 V → ~10 kΩ. Com o painel energizado e o Arduino desligado, o IN1 deve medir ~0 V.",
+    "passo": "A-03",
+    "fonte": "Doc 31 §31.13"
   },
   {
-    id: 'BTS2-R9', ref: 'R9', peca: 'Resistor 10 kΩ · ¼ W',
-    tipo: 'resistor', valor: '10 kΩ', qtd: 1, host: 'BTS2', arranjo: 'paralelo', polaridade: false,
-    pernas: [
-      { nome: 'perna 1', vai: { comp: 'BTS2', via: 'R_EN' } },
-      { nome: 'perna 2', vai: { comp: 'BTS2', via: 'GND' } },
+    "id": "KA2-R11",
+    "ref": "R11",
+    "peca": "Resistor 10 kΩ · ¼ W",
+    "tipo": "resistor",
+    "valor": "10 kΩ",
+    "qtd": 1,
+    "host": "KA123",
+    "arranjo": "paralelo",
+    "polaridade": false,
+    "pernas": [
+      {
+        "nome": "perna 1",
+        "vai": {
+          "comp": "KA123",
+          "via": "IN2"
+        }
+      },
+      {
+        "nome": "perna 2",
+        "vai": {
+          "comp": "KA123",
+          "via": "0V"
+        }
+      }
     ],
-    papel: 'O mesmo do R8, no driver do PTC',
-    porque: 'Mesma razão do R8. O R_EN do módulo está ligado ao L_EN, então um resistor cobre os dois.',
-    seFaltar: '🔥 O driver do aquecedor pode habilitar sozinho.',
-    ensaio: 'Ohmímetro entre R_EN e GND → ~10 kΩ.',
-    montagem: 'Idem ao R8.',
-    passo: 'A-03', fonte: 'Doc 33 §33.6',
-  },
-
-  /* ───────────────── FORA DO PAINEL — MAQUETE ────────────────── */
-  {
-    id: 'POSTE-R', ref: 'R4–R7', peca: 'Resistor 220 Ω · ¼ W',
-    tipo: 'resistor', valor: '220 Ω', qtd: 4, host: 'POSTE-IL', arranjo: 'serie', polaridade: false,
-    pernas: [
-      { nome: 'perna 1', vai: { comp: 'POSTE-IL', via: '+5V' } },
-      { nome: 'perna 2', vai: { comp: 'POSTE-IL', via: 'LED+' } },
-    ],
-    papel: 'Limita a corrente do LED branco da iluminação pública',
-    porque: 'Um LED é um diodo: não tem resistência que limite a própria corrente. Quem escolhe o '
-          + 'brilho escolhe o resistor. Com 5 V e Vf ≈ 3,1 V: (5 − 3,1)/220 = 8,6 mA.',
-    seFaltar: '🔥 Sem resistor o LED conduz sem limite e queima em segundos.',
-    ensaio: 'LED aceso e estável; medir sobre o resistor → ~1,9 V.',
-    montagem: 'Dentro da base do poste, com termorretrátil em cada emenda. Nunca solto no fio.',
-    passo: 'A-04', fonte: 'Doc 33 §33.2 · Doc 03 M.4',
-    aviso: '⚠️ 220 Ω, NÃO 2,2 kΩ. O valor de 2,2 kΩ é da versão antiga, quando estes LEDs eram '
-         + 'alimentados em 24 V.',
-  },
-  {
-    id: 'POSTE-LED', ref: 'LED-P', peca: 'LED 3 mm branco quente',
-    tipo: 'led', valor: 'Vf ≈ 3,1 V · 8,6 mA', qtd: 4, host: 'POSTE-IL', arranjo: 'serie', polaridade: true,
-    comoIdentificar: '⭐ A perna LONGA é o ânodo (+). Do lado do catodo (−) o corpo do LED tem um '
-                   + 'chanfro reto — dá para sentir com a unha.',
-    seInverter: 'Ele simplesmente não acende. Não queima — mas você vai procurar o defeito no fio.',
-    pernas: [
-      { nome: 'perna longa (ânodo, +)', vai: { comp: 'POSTE-IL', via: 'LED+' } },
-      { nome: 'perna curta (catodo, −)', vai: { comp: 'POSTE-IL', via: '0V' } },
-    ],
-    papel: 'Iluminação pública da maquete — 3 luminárias da rua e 1 na guarita',
-    porque: 'Cenografia que também prova o ramal de 5 V funcionando: se um poste apaga, o BD-5V '
-          + 'tem problema.',
-    seFaltar: '—',
-    ensaio: 'Com o BD-5V energizado, os 4 acendem juntos e continuam acesos na emergência (eles '
-          + 'são alimentados pelo permanente).',
-    passo: 'A-04', fonte: 'Doc 03 M.4 · Doc 30 fio 54b',
-  },
-
-  /* ─────────── OS MÓDULOS QUE SUBSTITUÍRAM A PLACA PI-1 ──────────── */
-  {
-    id: 'SV1-MODULO', ref: 'SV-1', peca: 'Módulo sensor de tensão 0–25 V (divisor 5:1)',
-    tipo: 'modulo', valor: '30 kΩ / 7,5 kΩ', qtd: 1, host: 'SV-1',
-    arranjo: 'derivacao', polaridade: true,
-    comoIdentificar: '⭐ O borne de parafuso tem VCC e GND marcados na placa: VCC é o positivo '
-                   + 'que se quer medir. Do outro lado, a barra de 3 pinos traz S (sinal), + e −.',
-    seInverter: 'Trocar VCC com GND no borne não queima o módulo (é só um divisor resistivo), '
-              + 'mas a saída fica em 0 V e o firmware conclui que a potência caiu — alarme com '
-              + 'tudo certo.',
-    pernas: [
-      { nome: 'VCC (entrada medida)', vai: { comp: 'SV-1', via: 'VCC' } },
-      { nome: 'GND (referência)',     vai: { comp: 'SV-1', via: 'GND' } },
-      { nome: 'S (saída)',            vai: { comp: 'SV-1', via: 'S' } },
-    ],
-    papel: 'Divide os 24 V do BD-POT por 5 para o Arduino poder olhar sem morrer',
-    porque: '⭐ Substituiu o divisor R1 + R2 + C3 que era soldado na PI-1. O princípio é o mesmo '
-          + '— dois resistores em série, e o Arduino lê o ponto do meio —, só que comprado pronto '
-          + 'e com borne de parafuso.',
-    seFaltar: 'Ligar o D25 direto nos 24 V destrói a entrada do Arduino.',
-    ensaio: 'Com o BD-POT energizado, medir S contra o 0 V → **~4,8 V**. Com a emergência '
-          + 'acionada → 0 V.',
-    montagem: '⚠️ MEÇA ANTES DE LIGAR NO D25. O módulo divide por 5 (24 V → 4,8 V), e não por '
-            + '5,68 como o divisor soldado (que dava 4,22 V). Para o D25, que é entrada DIGITAL, '
-            + '4,8 V é folgado; mas se a fonte estiver acima de 25 V a saída passa dos 5 V.',
-    passo: 'B-01', fonte: 'Doc 33 §33.4',
-    aviso: '⚠️ A saída é barra de pinos, não borne: use cabo com conector e prenda com '
-         + 'abraçadeira. Dupont solto em maquete transportada se desconecta sozinho.',
+    "papel": "Pull-down do gatilho do KA2 — e aqui o resultado é o oposto, de propósito",
+    "porque": "⭐ O KA2 usa o contato NC: relé solto significa ventoinha do radiador GIRANDO. É o R11 que garante que um Arduino morto ventile.",
+    "seFaltar": "A ventoinha do lado quente pode parar sozinha por ruído — e o lado quente sem ventilação leva a Peltier à fuga térmica.",
+    "ensaio": "Ohmímetro entre o IN2 e o 0 V → ~10 kΩ. Puxar o fio do D30 com o ensaio rodando: as ventoinhas CONTINUAM girando.",
+    "passo": "A-03",
+    "fonte": "Doc 31 §31.14"
   },
   {
-    id: 'AD1-MODULO', ref: 'AD-1', peca: 'Adaptador do DS18B20 com pull-up (terminal plugável)',
-    tipo: 'modulo', valor: 'pull-up 4,7 kΩ embutido', qtd: 1, host: 'AD-1',
-    arranjo: 'paralelo', polaridade: true,
-    comoIdentificar: 'Os três bornes vêm marcados DAT, VCC e GND — e a sonda tem as cores '
-                   + 'amarelo (DAT), vermelho (VCC) e preto (GND).',
-    seInverter: '🔥 Trocar VCC com GND alimenta a sonda ao contrário. O DS18B20 aguenta por '
-              + 'alguns segundos e esquenta; não conte com isso.',
-    pernas: [
-      { nome: 'DAT (da sonda)', vai: { comp: 'AD-1', via: 'DAT' } },
-      { nome: 'VCC (da sonda)', vai: { comp: 'AD-1', via: 'VCC' } },
-      { nome: 'GND (da sonda)', vai: { comp: 'AD-1', via: 'GND' } },
+    "id": "KA3-R12",
+    "ref": "R12",
+    "peca": "Resistor 10 kΩ · ¼ W",
+    "tipo": "resistor",
+    "valor": "10 kΩ",
+    "qtd": 1,
+    "host": "KA123",
+    "arranjo": "paralelo",
+    "polaridade": false,
+    "pernas": [
+      {
+        "nome": "perna 1",
+        "vai": {
+          "comp": "KA123",
+          "via": "IN3"
+        }
+      },
+      {
+        "nome": "perna 2",
+        "vai": {
+          "comp": "KA123",
+          "via": "0V"
+        }
+      }
     ],
-    papel: 'Traz o pull-up de 4,7 kΩ do 1-Wire já montado, e transforma a sonda em três bornes',
-    porque: '⭐ Substituiu o R3 que era soldado na PI-1. O resistor continua existindo — ele só '
-          + 'não é mais nosso: vem dentro do adaptador. E ele continua sendo o barramento: sem '
-          + 'ele o sensor não responde.',
-    seFaltar: 'O DS18B20 não responde — nem com sonda boa, fio bom e código bom.',
-    ensaio: '⚠️ AO RECEBER: ohmímetro entre DAT e VCC deve dar **~4,7 kΩ**. Há adaptadores '
-          + 'anunciados "com pull-up" que vêm sem o resistor, e o sintoma é sensor mudo.',
-    passo: 'B-02', fonte: 'Doc 33 §33.4',
-  },
-
-  /* ────────── A DETECÇÃO DE DISPOSITIVO MORTO (no painel) ────────── */
-  {
-    id: 'SC1-SENSOR', ref: 'SC-1', peca: 'Sensor de corrente WCS2702 (Hall, saída digital)',
-    tipo: 'modulo', valor: '±2 A · 1,0 mV/mA', qtd: 1, host: 'SC-1',
-    arranjo: 'passagem', polaridade: true,
-    comoIdentificar: '⭐ O FURO tem sentido: o fio entra por um lado e sai pelo outro. Como as '
-                   + '10 voltas são todas no mesmo sentido, basta enrolar sempre para o mesmo '
-                   + 'lado — se uma volta vier ao contrário, ela CANCELA outra.',
-    seInverter: 'Voltas em sentidos misturados fazem o sensor enxergar menos corrente do que '
-              + 'existe — no limite, zero, e o sistema acusa falha com o equipamento ligado.',
-    pernas: [
-      { nome: 'VCC', vai: { comp: 'SC-1', via: 'VCC' } },
-      { nome: 'GND', vai: { comp: 'SC-1', via: 'GND' } },
-      { nome: 'DOUT (saída digital)', vai: { comp: 'SC-1', via: 'DOUT' } },
-    ],
-    papel: 'Responde se ainda passa corrente pelo equipamento da posição de ensaio',
-    porque: '⭐ A pergunta do ensaio sempre foi binária: o dispositivo está vivo ou morreu? '
-          + 'Medir 17,6 mA com shunt de 1 %, multiplexador e conversor A/D era caminho longo '
-          + 'para uma resposta de um bit. O sensor decide sozinho e entrega o bit pronto.',
-    seFaltar: 'Sem ele o sistema não sabe que uma posição parou — que é a única coisa que o '
-            + 'ensaio precisa detectar.',
-    ensaio: 'Com o equipamento ligado, o DOUT fica em nível BAIXO (LED do módulo aceso). '
-          + 'Desligue a chave do F-P: em menos de 1 s o monitor serial acusa '
-          + '"FALHA: Corrente Zero detectada".',
-    montagem: '⚠️ 10 VOLTAS DO FIO DE +24 V PELO FURO, todas no mesmo sentido, antes de o fio '
-            + 'seguir para a câmara. Com uma volta só o sensor veria 17,6 mA — 17,6 mV de '
-            + 'sinal, dentro do ruído. Com 10, ele vê 176 mA e o trimpot ajusta com folga.',
-    passo: 'A-06', fonte: 'Doc 13 §13.4',
-    aviso: '⚠️ A SZC23 (a opção para corrente alternada) NÃO serve nesta posição: ela só fecha '
-         + 'o contato a partir de 0,5 A. Ela é para os equipamentos reais da planta, de '
-         + 'amperes — não para o DUT de bancada.',
-  },
-
-  /* ───────────────── FORA DO PAINEL — CÂMARA ─────────────────── */
-  {
-    id: 'VENT-D2', ref: 'D2', peca: 'Diodo 1N4007',
-    tipo: 'diodo', valor: '1N4007', qtd: 1, host: 'VENT-RAD', arranjo: 'antiparalelo', polaridade: true,
-    comoIdentificar: '⭐ Faixa prateada = catodo, e ela vai no +12 V.',
-    seInverter: '🔥 Invertido, ele curto-circuita a alimentação de 12 V das ventoinhas.',
-    pernas: [
-      { nome: 'catodo (faixa prateada)', vai: { comp: 'VENT-RAD', via: '+12V' } },
-      { nome: 'anodo',                   vai: { comp: 'VENT-RAD', via: '0V' } },
-    ],
-    papel: 'Roda-livre do motor das ventoinhas do lado quente',
-    porque: 'Ventoinha é carga indutiva e nada mais a grampeia. Sem ele o pico aparece no contato '
-          + 'do KA2 toda vez que a pós-ventilação termina.',
-    seFaltar: 'O contato do KA2 se degrada a cada parada da ventoinha.',
-    ensaio: 'Teste de diodo entre os terminais da ventoinha, com ela desconectada → conduz num '
-          + 'sentido só.',
-    montagem: '⚠️ NÃO fica no painel: vai junto das ventoinhas, onde o pico nasce.',
-    passo: 'A-05', fonte: 'Doc 31 §31.14',
-    aviso: '⚠️ Não confunda com o D1: mesmo componente, funções e lugares diferentes.',
+    "papel": "Pull-down do gatilho do KA3 — as 5 ventoinhas internas",
+    "porque": "Mesma regra do R10: pino solto ou Arduino ausente → IN em 0 V → contato aberto → ventoinhas paradas. Sem Arduino, o KA1 deve cortar a potência. A proteção térmica do PTC ainda não foi aprovada: se o KA1 soldar fechado, não considerar ST-1 como corte efetivo até identificar a peça, comprovar rating CC e validar o rearme manual.",
+    "seFaltar": "O IN fica alto-impedante e as ventoinhas internas podem partir sozinhas por ruído, com o painel parado.",
+    "ensaio": "Ohmímetro entre o IN3 e o 0 V → ~10 kΩ. Com o Arduino desligado, as 5 internas ficam paradas e o LED do KA3 apagado.",
+    "passo": "A-03",
+    "fonte": "Doc 31 §31.16"
   },
   {
-    id: 'VENT-D3', ref: 'D3', peca: 'Diodo 1N4007',
-    tipo: 'diodo', valor: '1N4007', qtd: 1, host: 'VENT-INT', arranjo: 'antiparalelo', polaridade: true,
-    comoIdentificar: '⭐ Faixa prateada = catodo, e ela vai no +12 V.',
-    seInverter: '🔥 Invertido, ele curto-circuita a alimentação de 12 V das ventoinhas.',
-    pernas: [
-      { nome: 'catodo (faixa prateada)', vai: { comp: 'VENT-INT', via: '+12V' } },
-      { nome: 'anodo',                   vai: { comp: 'VENT-INT', via: '0V' } },
+    "id": "BTS1-R8",
+    "ref": "R8",
+    "peca": "Resistor 10 kΩ · ¼ W",
+    "tipo": "resistor",
+    "valor": "10 kΩ",
+    "qtd": 1,
+    "host": "BTS1",
+    "arranjo": "paralelo",
+    "polaridade": false,
+    "pernas": [
+      {
+        "nome": "perna 1",
+        "vai": {
+          "comp": "BTS1",
+          "via": "R_EN"
+        }
+      },
+      {
+        "nome": "perna 2",
+        "vai": {
+          "comp": "BTS1",
+          "via": "GND"
+        }
+      }
     ],
-    papel: 'Roda-livre dos 5 motores das ventoinhas internas',
-    porque: '⭐ ELE APARECEU QUANDO O MOSFET SAIU. O MV-1 trazia a proteção dentro da placa '
-          + 'comprada; o KA3 é um contato seco e não protege nada sozinho. São cinco motores em '
-          + 'paralelo desligando ao mesmo tempo no fim de cada ensaio — o pico soma.',
-    seFaltar: 'O contato do KA3 abre arco a cada fim de ensaio e vai se degradando. É o modo de '
-            + 'falha clássico de relé em carga indutiva CC, onde não há passagem por zero.',
-    ensaio: 'Teste de diodo entre os dois fios do chicote das internas, desconectado do painel → '
-          + 'conduz num sentido só.',
-    montagem: '⚠️ NÃO fica no painel: vai dentro da câmara, na emenda onde os cinco positivos e os '
-            + 'cinco negativos se juntam. Um diodo só serve as cinco — elas estão em paralelo.',
-    passo: 'A-05', fonte: 'Doc 31 §31.16',
-    aviso: '⚠️ D1, D2 e D3 são o MESMO componente (1N4007) em três lugares diferentes: bobina do '
-         + 'KM1, ventoinhas do radiador e ventoinhas internas.',
+    "papel": "Pull-down do R_EN — define o estado seguro do driver de potência",
+    "porque": "⭐ Fica NO TERMINAL DO DRIVER, e não na PI-1, porque assim ele cobre também o rompimento do cabo: com o Arduino desligado OU com o fio partido, o R_EN vai a 0 V e o driver não pode acordar sozinho. Um pull-down na placa protegeria só o primeiro caso.",
+    "seFaltar": "🔥 R_EN solto: o driver pode habilitar por ruído e acionar a Peltier sem comando.",
+    "ensaio": "Ohmímetro entre R_EN e GND → ~10 kΩ. Com o painel energizado e o Arduino desligado, R_EN medindo ~0 V.",
+    "montagem": "Soldar pelo lado de BAIXO do módulo, ligando o pad do R_EN ao pad do GND, pernas curtas e rentes, e cobrir com termorretrátil de Ø 2 mm. Alternativa sem solda: montar o resistor dentro de um alojamento Dupont de 2 vias e encaixar no barra de pinos, com um ponto de cola quente.",
+    "passo": "A-03",
+    "fonte": "Doc 33 §33.6",
+    "aviso": "📷 Fotografe antes de fechar: resistor invisível embaixo de um módulo é armadilha para quem for dar manutenção."
   },
   {
-    id: 'DUT1-L', ref: 'L-DUT1', peca: 'Lâmpada Automotiva W5W (Pingo) 24V 5W',
-    tipo: 'carga', valor: '5 W / 208 mA', qtd: 1, host: 'DUT1', arranjo: 'serie', polaridade: false,
-    pernas: [
-      { nome: 'polo 1', vai: { comp: 'DUT1', via: '+24V' } },
-      { nome: 'polo 2', vai: { comp: 'DUT1', via: 'RET' } },
+    "id": "BTS2-R9",
+    "ref": "R9",
+    "peca": "Resistor 10 kΩ · ¼ W",
+    "tipo": "resistor",
+    "valor": "10 kΩ",
+    "qtd": 1,
+    "host": "BTS2",
+    "arranjo": "paralelo",
+    "polaridade": false,
+    "pernas": [
+      {
+        "nome": "perna 1",
+        "vai": {
+          "comp": "BTS2",
+          "via": "R_EN"
+        }
+      },
+      {
+        "nome": "perna 2",
+        "vai": {
+          "comp": "BTS2",
+          "via": "GND"
+        }
+      }
     ],
-    papel: 'Carga resistiva real para gerar corrente suficiente (208 mA) para ser lida pelos sensores ACS712 e aquecer levemente a câmara',
-    porque: 'Uma carga muito baixa (LED) cairia no ruído do sensor de 5A (que mede 185 mV/A). Com 208 mA, temos 38 mV de sinal no conversor A/D, o que é detectável com folga.',
-    seFaltar: 'O sistema lê corrente zero e dispara alarme de "dispositivo morto" na apresentação.',
-    ensaio: 'Retirar a lâmpada do soquete durante a demonstração → alarme de posição 1 morta.',
-    passo: 'A-06', fonte: 'Estudo de Cargas Simuladoras'
+    "papel": "O mesmo do R8, no driver do PTC",
+    "porque": "Mesma razão do R8. O R_EN do módulo está ligado ao L_EN, então um resistor cobre os dois.",
+    "seFaltar": "🔥 O driver do aquecedor pode habilitar sozinho.",
+    "ensaio": "Ohmímetro entre R_EN e GND → ~10 kΩ.",
+    "montagem": "Idem ao R8.",
+    "passo": "A-03",
+    "fonte": "Doc 33 §33.6"
   },
   {
-    id: 'DUT2-L', ref: 'L-DUT2', peca: 'Lâmpada Automotiva W5W (Pingo) 24V 5W',
-    tipo: 'carga', valor: '5 W / 208 mA', qtd: 1, host: 'DUT2', arranjo: 'serie', polaridade: false,
-    pernas: [
-      { nome: 'polo 1', vai: { comp: 'DUT2', via: '+24V' } },
-      { nome: 'polo 2', vai: { comp: 'DUT2', via: 'RET' } },
+  "id": "MAX485-MODULO",
+  "ref": "MAX485",
+  "peca": "Módulo transceptor RS-485 com MAX485",
+  "tipo": "modulo",
+  "valor": "5 V · até 2,5 Mbps",
+  "qtd": 1,
+  "host": "MAX485",
+  "arranjo": "serie",
+  "polaridade": true,
+  "comoIdentificar": "⭐ Os bornes estão serigrafados na placa: VCC, GND, RO, DI, DE, RE de um lado; A e B do outro. Em alguns módulos o DE e o RE já vêm unidos por uma trilha e saem num pino só — é o caso deste projeto.",
+  "seInverter": "Trocar VCC com GND queima o chip na hora. Inverter A com B não queima nada: o barramento simplesmente fica mudo, e o sintoma é timeout em todos os canais.",
+  "pernas": [
+    {
+      "nome": "VCC",
+      "vai": {
+        "comp": "MAX485",
+        "via": "VCC"
+      }
+    },
+    {
+      "nome": "GND",
+      "vai": {
+        "comp": "MAX485",
+        "via": "GND"
+      }
+    },
+    {
+      "nome": "RO",
+      "vai": {
+        "comp": "MAX485",
+        "via": "RO"
+      }
+    },
+    {
+      "nome": "DI",
+      "vai": {
+        "comp": "MAX485",
+        "via": "DI"
+      }
+    },
+    {
+      "nome": "DE/RE",
+      "vai": {
+        "comp": "MAX485",
+        "via": "DE/RE"
+      }
+    },
+    {
+      "nome": "A",
+      "vai": {
+        "comp": "MAX485",
+        "via": "A"
+      }
+    },
+    {
+      "nome": "B",
+      "vai": {
+        "comp": "MAX485",
+        "via": "B"
+      }
+    }
+  ],
+  "papel": "Traduz o Serial3 do Mega (TTL, 5 V) para o par diferencial que vai ao módulo de medição",
+  "porque": "⭐ O Mega não tem RS-485 dentro. E RS-485 não é luxo: são 24 canais a 9600 bps descendo por um par trançado, dentro de um painel onde dois BTS chaveiam 6 A em PWM de 20 kHz. Um fio TTL atravessando esse ambiente perderia leitura toda vez que a Peltier ligasse.",
+  "seFaltar": "Sem ele não há medição nenhuma: o painel fica cego para as 8 posições de ensaio.",
+  "ensaio": "Com o Mega enviando uma leitura, medir A contra B → deve haver diferença de ~1 a 2 V entre os dois (o par está trabalhando). Iguais, o driver não está transmitindo.",
+  "passo": "D-01",
+  "fonte": "Doc 13 §13.2"
+},
+    {
+    "id": "N4AIC24-MODULO",
+    "ref": "N4AIC24",
+    "peca": "Módulo de aquisição 22 correntes + 2 tensões, Modbus RTU",
+    "tipo": "modulo",
+    "valor": "0–20 mA / 0–30 V · 0,01 de resolução",
+    "qtd": 1,
+    "host": "N4AIC24",
+    "arranjo": "serie",
+    "polaridade": true,
+    "comoIdentificar": "⭐ Alimentação 9–30 V em V+ e GND, com polaridade marcada. Os canais de corrente são os bornes I1 a I22, e o retorno comum é o COM. Os dois canais de tensão são V1 e V2, e o RS-485 sai em A e B.",
+    "seInverter": "Inverter V+ com GND queima o módulo. Inverter A com B não queima: o barramento fica mudo até alguém trocar os dois fios.",
+    "pernas": [
+      {
+        "nome": "V+",
+        "vai": {
+          "comp": "N4AIC24",
+          "via": "V+"
+        }
+      },
+      {
+        "nome": "GND",
+        "vai": {
+          "comp": "N4AIC24",
+          "via": "GND"
+        }
+      },
+      {
+        "nome": "V1",
+        "vai": {
+          "comp": "N4AIC24",
+          "via": "V1"
+        }
+      },
+      {
+        "nome": "V2",
+        "vai": {
+          "comp": "N4AIC24",
+          "via": "V2"
+        }
+      },
+      {
+        "nome": "A",
+        "vai": {
+          "comp": "N4AIC24",
+          "via": "A"
+        }
+      },
+      {
+        "nome": "B",
+        "vai": {
+          "comp": "N4AIC24",
+          "via": "B"
+        }
+      },
+      {
+        "nome": "I1",
+        "vai": {
+          "comp": "N4AIC24",
+          "via": "I1"
+        }
+      },
+      {
+        "nome": "I2",
+        "vai": {
+          "comp": "N4AIC24",
+          "via": "I2"
+        }
+      }
     ],
-    papel: 'Idem DUT1, mas ligada ao circuito monitorado pelo ACS712 #2',
-    porque: 'Permite apresentar a câmara ensaiando múltiplos dispositivos e detectando falha individualmente.',
-    seFaltar: 'Idem DUT1.',
-    ensaio: 'Retirar a lâmpada → alarme de posição 2 morta.',
-    passo: 'A-06', fonte: 'Estudo de Cargas Simuladoras'
+    "papel": "É o instrumento do painel: mede as 8 correntes das posições de ensaio (de 22 canais disponíveis) e as duas tensões do sistema",
+    "porque": "⭐ Aposentou três peças de uma vez. O divisor do SV-1 media 24 V com uma casa e entregava um bit; o ACS712 não enxergava os 10 mA de um LED (185 mV/A × 0,010 A = 1,85 mV, contra 4,88 mV por passo do ADC). Este módulo mede 0,01 mA e 0,01 V, e ainda devolve tudo por um par de fios — com 14 canais de corrente sobrando para o futuro.",
+    "seFaltar": "O painel volta a ser cego: nenhuma posição é supervisionada e a queda dos 24 V não é percebida.",
+    "ensaio": "Com as duas posições desenhadas acesas, ler os registradores 0x0000 em diante: I1 e I2 devem dar 9 a 11 mA, V1 ≈ 24,0 V e V2 ≈ 12,0 V.",
+    "passo": "D-02",
+    "fonte": "Doc 13 §13.2"
   },
+  {
+    "id": "VENT-D2",
+    "ref": "D2",
+    "peca": "Diodo 1N4007",
+    "tipo": "diodo",
+    "valor": "1N4007",
+    "qtd": 1,
+    "host": "VENT-RAD",
+    "arranjo": "antiparalelo",
+    "polaridade": true,
+    "comoIdentificar": "⭐ Faixa prateada = catodo, e ela vai no +12 V.",
+    "seInverter": "🔥 Invertido, ele curto-circuita a alimentação de 12 V das ventoinhas.",
+    "pernas": [
+      {
+        "nome": "catodo (faixa prateada)",
+        "vai": {
+          "comp": "VENT-RAD",
+          "via": "+12V"
+        }
+      },
+      {
+        "nome": "anodo",
+        "vai": {
+          "comp": "VENT-RAD",
+          "via": "0V"
+        }
+      }
+    ],
+    "papel": "Roda-livre do motor das ventoinhas do lado quente",
+    "porque": "Ventoinha é carga indutiva e nada mais a grampeia. Sem ele o pico aparece no contato do KA2 toda vez que a pós-ventilação termina.",
+    "seFaltar": "O contato do KA2 se degrada a cada parada da ventoinha.",
+    "ensaio": "Teste de diodo entre os terminais da ventoinha, com ela desconectada → conduz num sentido só.",
+    "montagem": "⚠️ NÃO fica no painel: vai junto das ventoinhas, onde o pico nasce.",
+    "passo": "A-03",
+    "fonte": "Doc 31 §31.14",
+    "aviso": "⚠️ Não confunda com o D1: mesmo componente, funções e lugares diferentes."
+  },
+  {
+    "id": "VENT-D3",
+    "ref": "D3",
+    "peca": "Diodo 1N4007",
+    "tipo": "diodo",
+    "valor": "1N4007",
+    "qtd": 1,
+    "host": "VENT-INT",
+    "arranjo": "antiparalelo",
+    "polaridade": true,
+    "comoIdentificar": "⭐ Faixa prateada = catodo, e ela vai no +12 V.",
+    "seInverter": "🔥 Invertido, ele curto-circuita a alimentação de 12 V das ventoinhas.",
+    "pernas": [
+      {
+        "nome": "catodo (faixa prateada)",
+        "vai": {
+          "comp": "VENT-INT",
+          "via": "+12V"
+        }
+      },
+      {
+        "nome": "anodo",
+        "vai": {
+          "comp": "VENT-INT",
+          "via": "0V"
+        }
+      }
+    ],
+    "papel": "Roda-livre dos 5 motores das ventoinhas internas",
+    "porque": "⭐ ELE APARECEU QUANDO O MOSFET SAIU. O MV-1 trazia a proteção dentro da placa comprada; o KA3 é um contato seco e não protege nada sozinho. São cinco motores em paralelo desligando ao mesmo tempo no fim de cada ensaio — o pico soma.",
+    "seFaltar": "O contato do KA3 abre arco a cada fim de ensaio e vai se degradando. É o modo de falha clássico de relé em carga indutiva CC, onde não há passagem por zero.",
+    "ensaio": "Teste de diodo entre os dois fios do chicote das internas, desconectado do painel → conduz num sentido só.",
+    "montagem": "⚠️ NÃO fica no painel: vai dentro da câmara, na emenda onde os cinco positivos e os cinco negativos se juntam. Um diodo só serve as cinco — elas estão em paralelo.",
+    "passo": "A-03",
+    "fonte": "Doc 31 §31.16",
+    "aviso": "⚠️ D1, D2 e D3 são o MESMO componente (1N4007) em três lugares diferentes: bobina do KM1, ventoinhas do radiador e ventoinhas internas."
+  },
+{
+    "id": "PL-1-L",
+    "ref": "L-PL1",
+    "peca": "Placa PL-1 — 4 canais de LED 12 V com resistor de 1 kΩ em série",
+    "tipo": "modulo",
+    "valor": "12 V / 7 a 9 mA por canal",
+    "qtd": 1,
+    "host": "PL-1",
+    "arranjo": "serie",
+    "polaridade": false,
+    "pernas": [
+      {
+        "nome": "+1",
+        "vai": {
+          "comp": "PL-1",
+          "via": "+1"
+        }
+      },
+      {
+        "nome": "+2",
+        "vai": {
+          "comp": "PL-1",
+          "via": "+2"
+        }
+      },
+      {
+        "nome": "+3",
+        "vai": {
+          "comp": "PL-1",
+          "via": "+3"
+        }
+      },
+      {
+        "nome": "+4",
+        "vai": {
+          "comp": "PL-1",
+          "via": "+4"
+        }
+      },
+      {
+        "nome": "r1",
+        "vai": {
+          "comp": "PL-1",
+          "via": "r1"
+        }
+      },
+      {
+        "nome": "r2",
+        "vai": {
+          "comp": "PL-1",
+          "via": "r2"
+        }
+      },
+      {
+        "nome": "r3",
+        "vai": {
+          "comp": "PL-1",
+          "via": "r3"
+        }
+      },
+      {
+        "nome": "r4",
+        "vai": {
+          "comp": "PL-1",
+          "via": "r4"
+        }
+      }
+    ],
+    "papel": "Quatro cargas reais de 12 V na mesma PCB — 7 a 9 mA cada, o bastante para o módulo de medição ler com folga e para aquecer levemente a câmara",
+    "porque": "⭐ A TROCA DE SENSOR É O QUE PERMITE O LED. Com o ACS712 (185 mV/A), 7 mA davam 1,3 mV — um quarto de passo do ADC, invisível. O N4AIC24 lê 0,01 mA: os mesmos 7 mA aparecem como 700 contagens. A carga ficou 25 vezes menor e a leitura ficou 100 vezes melhor.",
+    "seFaltar": "O sistema lê corrente zero nos 4 canais da placa e dispara alarme de posição morta — que é exatamente o que se quer demonstrar.",
+    "ensaio": "Abrir a chave da posição 1 na placa F-P → o canal I1 cai a 0,00 mA e o alarme daquela posição dispara, sem mexer nos outros três canais desta placa.",
+    "passo": "A-03",
+    "fonte": "Estudo de Cargas Simuladoras"
+  },
+  {
+    "id": "PL-2-L",
+    "ref": "L-PL2",
+    "peca": "Placa PL-2 — 4 canais de LED 12 V com resistor de 1 kΩ em série",
+    "tipo": "modulo",
+    "valor": "12 V / 7 a 9 mA por canal",
+    "qtd": 1,
+    "host": "PL-2",
+    "arranjo": "serie",
+    "polaridade": false,
+    "pernas": [
+      {
+        "nome": "+1",
+        "vai": {
+          "comp": "PL-2",
+          "via": "+1"
+        }
+      },
+      {
+        "nome": "+2",
+        "vai": {
+          "comp": "PL-2",
+          "via": "+2"
+        }
+      },
+      {
+        "nome": "+3",
+        "vai": {
+          "comp": "PL-2",
+          "via": "+3"
+        }
+      },
+      {
+        "nome": "+4",
+        "vai": {
+          "comp": "PL-2",
+          "via": "+4"
+        }
+      },
+      {
+        "nome": "r1",
+        "vai": {
+          "comp": "PL-2",
+          "via": "r1"
+        }
+      },
+      {
+        "nome": "r2",
+        "vai": {
+          "comp": "PL-2",
+          "via": "r2"
+        }
+      },
+      {
+        "nome": "r3",
+        "vai": {
+          "comp": "PL-2",
+          "via": "r3"
+        }
+      },
+      {
+        "nome": "r4",
+        "vai": {
+          "comp": "PL-2",
+          "via": "r4"
+        }
+      }
+    ],
+    "papel": "Quatro cargas reais de 12 V na mesma PCB — 7 a 9 mA cada, o bastante para o módulo de medição ler com folga e para aquecer levemente a câmara",
+    "porque": "⭐ A TROCA DE SENSOR É O QUE PERMITE O LED. Com o ACS712 (185 mV/A), 7 mA davam 1,3 mV — um quarto de passo do ADC, invisível. O N4AIC24 lê 0,01 mA: os mesmos 7 mA aparecem como 700 contagens. A carga ficou 25 vezes menor e a leitura ficou 100 vezes melhor.",
+    "seFaltar": "O sistema lê corrente zero nos 4 canais da placa e dispara alarme de posição morta — que é exatamente o que se quer demonstrar.",
+    "ensaio": "Abrir a chave da posição 5 na placa F-P → o canal I5 cai a 0,00 mA e o alarme daquela posição dispara, sem mexer nos outros três canais desta placa.",
+    "passo": "A-03",
+    "fonte": "Estudo de Cargas Simuladoras"
+  }
 ];
-
-
-/* ⭐ O ULN2803A SAIU DO CADASTRO em 18/08/2026, junto com a mudança dos
-   sinaleiros para 5 V (Doc 33 §33.8): o pino do Arduino passou a acender
-   o sinaleiro direto, e o CI ficou sem função. Saíram com ele o soquete
-   DIP-18, 9 vias de borne da PI-1, 10 jumpers e 5 fios do painel. */
-
-/* ══════════════════════════════════════════════════════════════════════
-   FATOS VIGIADOS — o que os documentos NÃO podem mais dizer
-   ════════════════════════════════════════════════════════════════════
-   ⭐ POR QUE ISTO EXISTE. As contradições que confundiram a montagem não
-      foram erro de digitação: foram decisões tomadas em um documento e
-      nunca propagadas para os outros. Cada fato abaixo é uma decisão já
-      tomada; o validador varre os .md e avisa quem ainda diz o contrário.
-
-   `arquivos` limita a varredura ao contexto certo — sem isso o projeto,
-   que usa R1..R21 tanto para RAMAIS de energia quanto para PONTOS do
-   BD-0V quanto para RESISTORES, geraria só ruído. */
-export const FATOS_VIGIADOS = [
-  {
-    id: 'led-poste-220',
-    diz: 'O LED da iluminação da maquete é de 5 V e seu limitador é de 220 Ω',
-    porque: 'Na versão de 24 V o valor era 2,2 kΩ. Com a mudança para o ramal de 5 V ele '
-          + 'passou a 220 Ω, e os documentos do poste não acompanharam.',
-    arquivos: /11_subestacao|10_base|03_lista_materiais|30_forca/,
-    /* as DUAS expressões têm que aparecer na linha: só assim se sabe que ela fala do
-       LED do POSTE, e não do LED de uma posição de ensaio, que usa outro valor */
-    linha: [/LED/i, /poste|ilumina|luminária|guarita|rua/i],
-    unidade: 'Ω', aceitos: [220],
-    /* linha riscada ou que já corrige o valor antigo não é contradição, é histórico */
-    ignoraLinha: /~~|\(não |deixou de|passou a|virou|migraram|era d[ao]|vers[ãa]o antiga/i,
-  },
-  {
-    id: 'dut-sem-carga-termica',
-    diz: 'Os simuladores de DUT são LED + resistor de ½ W (1,2 kΩ e 2,2 kΩ) e NÃO simulam carga térmica',
-    porque: 'A decisão do Doc 13 §13.3b eliminou os 220 Ω / 5 W. Onde eles aparecerem, a lista '
-          + 'de compras e o cálculo de carga térmica ficam errados.',
-    arquivos: /13_posicoes|03_lista_materiais/,
-    linha: /simulador|DUT|posi[çc][ãa]o de ensaio/i, unidade: 'Ω', aceitos: [1200, 2200, 47, 4.7],
-    ignoraLinha: /~~|\(não |deixou de|passou a|virou|era d[ao]|vers[ãa]o antiga/i,
-  },
-  {
-    id: 'diodos-montados',
-    diz: 'D1, D2 e D3 são montados no projeto — não são peça sobressalente',
-    porque: 'O Doc 33 §33.7 ainda manda guardá-los no saquinho, enquanto o Doc 31, a fiação, o '
-          + 'desenho dos relés e o cadastro mandam montá-los.',
-    arquivos: /\.md$/,
-    texto: /1N4007/i, proibido: /sobressalente|sai do painel|n[ãa]o vai no painel/i,
-  },
-];
-
-/* ══════════════════════════════════════════════════════════════════════
-   ATALHOS
-   ════════════════════════════════════════════════════════════════════ */
-export const porHost = id => DISCRETOS.filter(d => d.host === id);
-export const porPasso = passo => DISCRETOS.filter(d => d.passo === passo);
-export const host = id => HOSTS.find(h => h.id === id);
-
-/** Quantas peças físicas ao todo (um registro pode valer 4 peças iguais). */
-export const TOTAL_PECAS = DISCRETOS.reduce((s, d) => s + (d.qtd ?? 1), 0);
+export const FATOS_VIGIADOS=[];
+export const TOTAL_PECAS=DISCRETOS.reduce((s,d)=>s+(d.qtd??1),0);
+export const porHost=id=>DISCRETOS.filter(d=>d.host===id);
+export const porPasso=passo=>DISCRETOS.filter(d=>d.passo===passo);
+export const host=id=>HOSTS.find(h=>h.id===id);

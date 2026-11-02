@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "simula": "node scripts/valida_simulador.mjs",
     "audita": "node scripts/audita.mjs",
-    "valida": "node scripts/valida_simulador.mjs && node scripts/valida_fiacao.mjs && node scripts/valida_discretos.mjs && node scripts/valida_maquete.mjs && node scripts/valida_painel.mjs && node scripts/valida_camara.mjs && node scripts/valida_camara_rotas.mjs && node scripts/valida_desenho.mjs && node scripts/gera_trilhos.mjs && node scripts/gera_trilhos_svg.mjs && node scripts/gera_reles_svg.mjs && node scripts/audita.mjs",
+    "valida": "node scripts/valida_painel_autonomo.mjs && node scripts/valida_simulador.mjs && node scripts/valida_fiacao.mjs && node scripts/valida_discretos.mjs && node scripts/valida_painel.mjs && node scripts/valida_camara.mjs && node scripts/valida_camara_rotas.mjs && node scripts/valida_desenho.mjs && node scripts/valida_energia.mjs && node scripts/valida_seguranca.mjs && node scripts/teste_corte_ptc_conceitual.mjs",
     "valida:maquete": "node scripts/valida_maquete.mjs",
     "valida:painel": "node scripts/valida_painel.mjs",
     "valida:camara": "node scripts/valida_camara.mjs",
@@ -18,7 +18,10 @@
     "valida:fiacao": "node scripts/valida_fiacao.mjs",
     "valida:camara:rotas": "node scripts/valida_camara_rotas.mjs",
     "valida:desenho": "node scripts/valida_desenho.mjs",
-    "trilhos": "node scripts/gera_trilhos.mjs --escreve && node scripts/gera_trilhos_svg.mjs --escreve && node scripts/gera_reles_svg.mjs --escreve"
+    "valida:energia": "node scripts/valida_energia.mjs",
+    "valida:seguranca": "node scripts/valida_seguranca.mjs",
+    "trilhos": "node scripts/gera_trilhos.mjs --escreve && node scripts/gera_trilhos_svg.mjs --escreve && node scripts/gera_reles_svg.mjs --escreve",
+    "valida:ptc:conceitual": "node scripts/teste_corte_ptc_conceitual.mjs"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.0",

@@ -1,0 +1,44 @@
+INTEGRACAO V12: 43/43 TESTES PASSARAM
+OK     Peltier duas ventoinhas frias 40x40x10
+OK     Distancia entre centros nao inferior ao tamanho
+OK     Distancia real nao confundida com hipotese
+OK     Envelope ilustrativo contem duas ventoinhas
+OK     Camara 15 litros
+OK     Tampa BLANK nao autorizada corte
+OK     CAM-05 SEM FUROS CORTE
+OK     CAM-05 possui referencias GRAVACAO
+OK     ISO-09 SEM FUROS CORTE
+OK     ISO-09 possui referencias GRAVACAO
+OK     CAM-04 sem furos prensa-cabo definitivos
+OK     CAM-04 4 circulos referencia
+OK     ISO-04 4 marcas de chicotes
+OK     PNL-05 nao cortada por PG estimado
+OK     PNL-05 seis posicoes referencia
+OK     CAMARA 4 circuitos segregados
+OK     posicao P1_PTC_24V dentro CAM04
+OK     posicao P1_PTC_24V fora comporta
+OK     posicao P2_FANS_12V dentro CAM04
+OK     posicao P2_FANS_12V fora comporta
+OK     posicao P3_LAMP_12V dentro CAM04
+OK     posicao P3_LAMP_12V fora comporta
+OK     posicao P4_SENS_I2C dentro CAM04
+OK     posicao P4_SENS_I2C fora comporta
+OK     3 sensores com coordenadas limites de câmara
+OK     prancha DETALHE_FANS_FRIAS_V12.dxf
+OK     prancha DETALHE_ENTRADAS_CABOS_V12.dxf
+OK     prancha LAYOUT_PAINEL_DETALHADO_V12.dxf
+OK     CAM-23 presente nas listas
+OK     CAM-24 presente nas listas
+OK     CAM-25 presente nas listas
+OK     CAM-15 teto removida
+OK     Bandeja lampadas 210x90
+OK     Base PTC superior 230x120
+OK     4 blocos lamina=16
+OK     4 cantoneiras nas paredes
+OK     Dois fans de duto internos
+OK     Furos do kit Peltier nao autorizados
+OK     Sensor S1 afastado bandeja
+OK     Boca circular de entrada das fans na CAM-03
+OK     DXF CAM-23
+OK     DXF CAM-24
+OK     DXF CAM-25

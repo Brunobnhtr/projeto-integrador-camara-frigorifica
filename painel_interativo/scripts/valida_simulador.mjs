@@ -60,7 +60,7 @@ cenario('1 · Painel energizado — o selo nasce aberto');
   const f = foto(ligarPainel());
   conferir('KM1 selado', f.km1, false);
   conferir('24 V no BD-POT', f.bdPot, 0);
-  conferir('5 V permanente vivo', f.bd5v, 5.1);
+  conferir('5 V permanente vivo', f.bd5v, 5.0);
   conferir('estado', f.estado, ESTADO.AGUARDA_START);
   conferir('KA1 autorizado pelo autoteste', f.ka1, true);
 }
@@ -119,7 +119,7 @@ cenario('6 · ⭐ Depois do STOP preto, só o VERDE religa — a IHM não conseg
   iniciarPelaIHM(sim); avancar(sim, 200);
   let f = foto(sim);
   conferir('a IHM não conseguiu armar', f.bdPot, 0);
-  conferir('a tela pede o verde', f.alerta, 'APERTE_O_VERDE');
+  conferir('a tela identifica barramento sem tensão', f.alerta, 'POTENCIA_AUSENTE');
 
   apertar(sim, 's1Verde'); avancar(sim, 200);
   iniciarPelaIHM(sim); avancar(sim, 200);
@@ -235,20 +235,26 @@ cenario('13 · ⭐ Fan travada → trip → corte FÍSICO e retentivo');
   conferir('e exige o verde', foto(sim).bdPot, 24);
 }
 
-cenario('14 · 🔥 BTS7960 com MOSFET em curto — o cenário que criou o KA1');
+cenario('14 · 🔥 BTS7960 da Peltier em curto — detecção do modelo');
 {
-  const sim = armar(ligarPainel({ tCamara: 25, setpoint: 5 }));
+  const sim = armar(ligarPainel({ tCamara: 25 }));
+  const tInicial = foto(sim).tDissipador;
   sim.falhas.btsPeltierEmCurto = true;
-  iniciarPelaIHM(sim); avancar(sim, 1000);
-  const antes = sim.tCamara;
-  avancar(sim, 60000);
-  conferir('a Peltier conduz ignorando o R_EN', sim.tCamara < antes - 0.3, true);
-
-  sim.falhas.fanTravada = true;
-  avancar(sim, 8000);
-  const f = foto(sim);
-  conferir('o trip disparou', f.estado, ESTADO.FALHA);
-  conferir('⭐ e o corte a montante funcionou', f.bdPot, 0);
+  passo(sim);
+  const antesDoCorte = foto(sim);
+  conferir('corrente inesperada de 6 A existe com renPeltier desligado',
+    antesDoCorte.correntePeltierRealA, 6);
+  conferir('o monitor modelado detecta o curto em AGUARDA_START',
+    antesDoCorte.estado, ESTADO.FALHA);
+  conferir('o trip identifica o driver da Peltier',
+    antesDoCorte.alerta, 'DRIVER_PELTIER_COLADO');
+  avancar(sim, 200);
+  conferir('o trip comanda corte do KM1 e de BD-POT',
+    foto(sim).bdPot, 0);
+  conferir('o comando do driver permanece desligado',
+    foto(sim).renPeltier, false);
+  conferir('a temperatura do dissipador não é apagada pelo corte',
+    tInicial < 35 && foto(sim).tDissipador >= tInicial, true);
   const t1 = sim.tCamara; avancar(sim, 60000);
   conferir('⭐ a câmara parou de esfriar', sim.tCamara > t1, true);
 }
@@ -434,28 +440,35 @@ cenario('27 · O caminho do AQUECIMENTO tambem funciona');
 cenario('28 · ENERGIA — o pior caso REAL, medido em vez de estimado');
 {
   const med = criarMedidor();
-  const sim = armar(ligarPainel({ tCamara: 30, setpoint: 5 }));
-  iniciarPelaIHM(sim);
-  for (let i = 0; i < 12000; i++) { passo(sim, 100); medir(med, sim); }
-  sim.faixa = { min: 49, max: 51 };
-  for (let i = 0; i < 12000; i++) { passo(sim, 100); medir(med, sim); }
+  const frio = armar(ligarPainel({ tCamara: 30, setpoint: 5 }));
+  iniciarPelaIHM(frio);
+  for (let i = 0; i < 12000; i++) { passo(frio, 100); medir(med, frio); }
+  const quente = armar(ligarPainel({ tCamara: 25, setpoint: 50 }));
+  iniciarPelaIHM(quente);
+  for (let i = 0; i < 12000; i++) { passo(quente, 100); medir(med, quente); }
 
   const p = med.picos;
+  const cargaT3 = p['T3-OUT'];
   const linha = (n, v, lim) => console.log(
     `  ${D}${n.padEnd(8)} pico ${v.toFixed(2)} A  (${(100 * v / lim).toFixed(0)} % de ${lim} A)` +
     `  em ${med.quando[n]}${R}`);
   linha('BD-POT', p['BD-POT'], LIMITES.F1);
-  linha('BD-AUX', p['BD-AUX'], LIMITES.caboT3);
+  linha('T3 OUT', cargaT3, LIMITES.t3SaidaDeclarada);
   linha('BD-5V', p['BD-5V'], LIMITES.caboT2);
   linha('fonte', p.fonte, LIMITES.fonte24);
 
   conferir('F1 (10 A) nao abre', p.F1 < LIMITES.F1, true);
   conferir('F2 (2 A) nao abre', p.F2 < LIMITES.F2, true);
-  conferir('F3 (2 A) nao abre', p.F3 < LIMITES.F3, true);
+  conferir('F3 legado de 2 A esta identificado como insuficiente',
+    p.F3 > LIMITES.F3, true);
   conferir('a fonte de 10 A da conta', p.fonte < LIMITES.fonte24, true);
-  conferir('o LM2596 do 12 V fica na faixa segura', p['BD-AUX'] < LIMITES.lm2596Seguro, true);
+  conferir('T3 anunciado para 20 A comporta a corrente modelada',
+    cargaT3 < LIMITES.t3SaidaDeclarada, true);
+  conferir('o cabo antigo de T3 esta identificado como insuficiente',
+    cargaT3 > LIMITES.caboT3, true);
   conferir('o cabo do 5 V aguenta os 2 modulos de rele', p['BD-5V'] <= LIMITES.caboT2, true);
-  conferir('o cabo do 12 V aguenta as 5 internas juntas', p['BD-AUX'] <= LIMITES.caboT3, true);
+  conferir('o barramento auxiliar de ventoinhas cabe no cabo antigo',
+    p['BD-AUX'] <= LIMITES.caboT3, true);
 }
 
 cenario('29 · O pior caso de corrente e uma FALHA, nao a operacao normal');
@@ -484,7 +497,7 @@ cenario('30 · ⭐ VIGILANCIA MUTUA — os ESP32 acusam a morte do Mega');
   const f = foto(sim);
   conferir('⭐ 4 s: os ESP concluem que o Mega morreu', f.megaSumido, true);
   conferir('e a potencia JA estava cortada, por hardware', f.bdPot, 0);
-  conferir('o BD-5V segue vivo — e por isso eles podem avisar', f.bd5v, 5.1);
+  conferir('o BD-5V segue vivo — e por isso eles podem avisar', f.bd5v, 5.0);
   console.log('  [2m→ os ESP CONTAM, nao ATUAM. Quem cortou foi o pull-down no');
   console.log('    gate do KA1. A vigilancia nao da poder novo a ninguem.[0m');
 
@@ -554,6 +567,133 @@ cenario('33 · 🔥 Contato do KA2 ABERTO — o pior caso, agora simulável');
   const f = foto(sim);
   conferir('⭐ e quem acusa é o trip por RPM', f.estado, ESTADO.FALHA);
   conferir('com a potencia cortada de verdade', f.bdPot, 0);
+}
+
+cenario('33a · KA2 aberto durante a pós-ventilação gera alarme sem trip');
+{
+  const sim = armar(ligarPainel({ tCamara: 25 }));
+  iniciarPelaIHM(sim);
+  avancar(sim, 3 * 60 * 1000, 200);
+  pararPelaIHM(sim);
+  avancar(sim, 200);
+  const temperaturaAntes = foto(sim).tDissipador;
+  sim.falhas.ka2Aberto = true;
+  avancar(sim, 6000, 100);
+  const f = foto(sim);
+  conferir('dissipador permanece quente e radiador foi comandado', f.ventRadiador, true);
+  conferir('KA2 aberto deixa as ventoinhas paradas', f.radiadorGirando, false);
+  conferir('perda de RPM após STOP gera aviso de pós-ventilação',
+    f.avisoPosVent === 'FAN1_POSVENT' || f.avisoPosVent === 'FAN2_POSVENT', true);
+  conferir('alarme de pós-ventilação não provoca trip', f.estado, ESTADO.AGUARDA_START);
+  conferir('a potência continua fora', f.bdPot, 24);
+  conferir('o cenário começa com dissipador quente', temperaturaAntes > 40, true);
+  sim.falhas.n4aic24LeituraInvalida = true;
+  avancar(sim, 300);
+  iniciarPelaIHM(sim);
+  const partidaRecusada = foto(sim);
+  conferir('recusa de partida mantém o motivo Modbus como alarme principal',
+    partidaRecusada.alerta, 'MEDICAO_POTENCIA_INDISPONIVEL');
+  conferir('aviso de RPM continua visível sem substituir o alarme principal',
+    partidaRecusada.avisoPosVent === 'FAN1_POSVENT' ||
+      partidaRecusada.avisoPosVent === 'FAN2_POSVENT', true);
+}
+
+cenario('33b · o cooler 2 pode ser falhado e diagnosticado isoladamente');
+{
+  const sim = armar(ligarPainel({ tCamara: 25 }));
+  iniciarPelaIHM(sim);
+  avancar(sim, 3 * 60 * 1000, 200);
+  pararPelaIHM(sim);
+  avancar(sim, 200);
+  sim.falhas.fan2Travada = true;
+  avancar(sim, 6000, 100);
+  const f = foto(sim);
+  conferir('cooler 1 continua girando', f.radiadorFan1Girando, true);
+  conferir('cooler 2 está parado', f.radiadorFan2Girando, false);
+  conferir('alarme identifica exclusivamente o cooler 2',
+    f.avisoPosVent, 'FAN2_POSVENT');
+}
+
+cenario('33c · KA2 normaliza o aviso de RPM quando a pós-ventilação termina');
+{
+  const sim = armar(ligarPainel({ tCamara: 25 }));
+  iniciarPelaIHM(sim);
+  avancar(sim, 3 * 60 * 1000, 200);
+  pararPelaIHM(sim);
+  avancar(sim, 200);
+  sim.falhas.ka2Aberto = true;
+  avancar(sim, 6000, 100);
+  conferir('aviso ativo enquanto radiador é comandado e não há RPM',
+    foto(sim).avisoPosVent, 'FAN1_POSVENT');
+  sim.falhas.ka2Aberto = false;
+  avancar(sim, 6000, 100);
+  conferir('aviso ativo desaparece após retorno da ventilação',
+    foto(sim).avisoPosVent, '');
+}
+
+cenario('33d · perda de RPM não oculta recusas de partida');
+{
+  const sim = armar(ligarPainel({ tCamara: 25 }));
+  iniciarPelaIHM(sim);
+  avancar(sim, 3 * 60 * 1000, 200);
+  pararPelaIHM(sim);
+  avancar(sim, 200);
+  sim.falhas.ka2Aberto = true;
+  avancar(sim, 6000, 100);
+  sim.faixa = { min: 48, max: 50 };
+  sim.falhas.ka3Aberto = true;
+  iniciarPelaIHM(sim);
+  const f = foto(sim);
+  conferir('recusa por ventilação interna fica como motivo principal',
+    f.alerta, 'VENTILACAO_PTC_INDISPONIVEL');
+  conferir('aviso secundário da pós-ventilação continua visível',
+    f.avisoPosVent, 'FAN1_POSVENT');
+  conferir('falha secundária não altera o estado nem habilita potência',
+    f.estado, ESTADO.AGUARDA_START);
+}
+
+cenario('35 · BTS da Peltier em curto com processo parado');
+{
+  const sim = armar(ligarPainel({ tCamara: 25 }));
+  const tInicial = foto(sim).tDissipador;
+  sim.falhas.btsPeltierEmCurto = true;
+  passo(sim);
+  const antesDoCorte = foto(sim);
+  conferir('corrente inesperada de 6 A é separada do comando desligado',
+    antesDoCorte.correntePeltierRealA, 6);
+  conferir('curto do BTS #1 em AGUARDA_START gera trip',
+    antesDoCorte.estado, ESTADO.FALHA);
+  conferir('trip identifica o driver da Peltier',
+    antesDoCorte.alerta, 'DRIVER_PELTIER_COLADO');
+  avancar(sim, 200);
+  conferir('trip abre o KM1 e corta BD-POT no modelo',
+    foto(sim).bdPot, 0);
+  conferir('comando da Peltier continua desligado',
+    foto(sim).renPeltier, false);
+  conferir('temperatura de base começa sem disparo térmico automático',
+    tInicial < 35, true);
+}
+
+cenario('36 · sensor IS sem sinal e KM1 soldado são limitações explícitas');
+{
+  const isSemSinal = armar(ligarPainel({ tCamara: 25 }));
+  isSemSinal.falhas.btsPeltierEmCurto = true;
+  isSemSinal.falhas.btsPeltierIsSemSinal = true;
+  passo(isSemSinal);
+  conferir('IS/A0 sem sinal deixa 6 A sem detecção no modelo',
+    foto(isSemSinal).correntePeltierRealA, 6);
+  conferir('sem leitura válida, não inventa um trip',
+    foto(isSemSinal).estado, ESTADO.AGUARDA_START);
+
+  const km1Soldado = armar(ligarPainel({ tCamara: 25 }));
+  km1Soldado.falhas.btsPeltierEmCurto = true;
+  km1Soldado.falhas.km1Colado = true;
+  passo(km1Soldado);
+  avancar(km1Soldado, 200);
+  conferir('trip com KM1 soldado mantém barramento de potência',
+    foto(km1Soldado).bdPot, 24);
+  conferir('curto da Peltier segue consumindo depois do trip',
+    foto(km1Soldado).correntePeltierRealA, 6);
 }
 
 cenario('34 · ⭐ Arduino morto: o KA1 abre a potencia E o KA2 FECHA a ventoinha');

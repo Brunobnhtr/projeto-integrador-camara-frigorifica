@@ -481,9 +481,12 @@ Os dois pull-downs **não vão na placa PI-1**, pelo motivo explicado na §33.2:
 | Componente | Quantidade na BOM | Destino |
 |---|---:|---|
 | ~~Diodo 1N4007~~ | ~~4~~ | ⚠️ **CORRIGIDO — os diodos FICAM no projeto.** Esta linha supunha que o relé da cadeia já trouxesse o roda-livre embutido. Quem traz são os **módulos de 5 V do KA1/KA2**; o KM1 é um relé de 8 pinos em base PTF08A, e a base não tem componente nenhum. Monte o **`D1`** na bobina do KM1 e o **`D2`** nas ventoinhas do radiador — ver [Doc 31 §31.9](31_comando_e_protecoes.md) e o cadastro `painel_interativo/src/data/discretos.js`. Sobram 2 diodos de reserva |
-| ~~Diodo Zener 5V6 / 13 V / 15 V~~ | ~~6~~ | 🗑️ Já eliminados na revisão do Plano B — proteção nativa do LM2596. Ver [Doc 02 §2.6](../camada_0_fundamentos/02_arquitetura_de_energia.md) |
+| ~~Diodo Zener 5V6 / 13 V / 15 V~~ | ~~6~~ | Remoção decidida na revisão intermediária com LM2596; T2/T3 atuais ainda não têm modelos aprovados. Confirmar as proteções exigidas após consultar as fichas escolhidas. Ver [Doc 02 §2.6](../camada_0_fundamentos/02_arquitetura_de_energia.md) |
 
-> 💡 **Repare no padrão:** os componentes que saíram são justamente os da categoria "proteção" — e saíram porque **os módulos realmente já protegem**. Os que ficaram são todos de **interface**. A sua intuição sobre proteção estava correta; ela só não se aplicava a estes nove componentes, porque eles nunca foram proteção.
+> 💡 **Nota de revisão:** a retirada dos Zener foi baseada em uma proposta anterior
+> de conversores. Não presumir que os T2/T3 atualmente propostos tenham as mesmas
+> proteções; verificar corrente-limite, curto-circuito, temperatura e sobretensão
+> nas fichas técnicas antes de concluir o projeto.
 
 **Componentes discretos da maquete (fora do painel):** os 6 resistores de 2,2 kΩ dos LEDs da iluminação pública ([Doc 03 · M.4](../camada_0_fundamentos/03_lista_materiais.md)) seguem a mesma regra — **não podem ficar no ar**. Monte cada um dentro da base do poste de iluminação, com termorretrátil, ou numa mini placa ilhada escondida sob a base da maquete.
 

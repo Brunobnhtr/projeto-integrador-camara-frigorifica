@@ -163,7 +163,7 @@ for (const p of PRENSAS_PAINEL) {
 
 /* ── o 0 V é único? ─────────────────────────────────────────────────── */
 console.log('\n=== o 0 V ===');
-const zeros = FIOS.filter(f => f.classe === 'comum' && f.etapa === 1);
+const zeros = FIOS.filter(f => f.de.comp === 'PS1' && f.de.via === '0V');
 if (zeros.length !== 1)
   erros.push(`entram ${zeros.length} condutores de 0 V — o projeto é de UM só, `
     + 'porque os LM2596 dos postes não são isolados');

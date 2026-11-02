@@ -79,19 +79,24 @@ export function barramentos(eletrica, hw = {}) {
   //   especificação existe para tornar a solda improvável, já que
   //   nenhuma lógica a corrige depois.
   const contatoKm1 = eletrica.km1Selado || hw.km1Colado === true;
+  // CANDIDATO DE ENGENHARIA, NÃO INSTALADO: dois contatos físicos NO
+  // INDEPENDENTES em série no ramal de 12 V do PTC, após o T3 e antes
+  // do BTS2. KPTC-S é comandado pelo permissivo físico de segurança;
+  // KPTC-E é comandado pela habilitação do aquecimento, não pelo PWM.
+  // A função não decide segurança por software: apenas recebe estados de
+  // contatos modelados, incluindo solda individual. A validação real ainda
+  // exige topologia, dispositivo DC, bobinas, supressores e supervisão.
+  const kptcS = hw.kptcSegurancaComando === true || hw.kptcSegurancaColado === true;
+  const kptcE = hw.kptcAquecimentoComando === true || hw.kptcAquecimentoColado === true;
+  const cortePtcConceitual = hw.cortePtcConceitual === true;
+  const ptcComEnergia = geral && (!cortePtcConceitual || (kptcS && kptcE));
   return {
     'BD-24V': geral ? 24 : 0,   // permanente — comando e sinaleiros
-    'BD-5V': geral ? 5.1 : 0,   // permanente — toda a eletrônica
+    'BD-5V': geral ? 5.0 : 0,   // permanente — toda a eletrônica
     'BD-AUX': geral ? 12 : 0,   // permanente — ventoinhas
+    // BASE: risco original preservado. Em modo de ensaio conceitual,
+    // os dois contatos independentes precisam conduzir em série.
+    'BD-PTC': ptcComEnergia ? 12 : 0,
     'BD-POT': geral && contatoKm1 ? 24 : 0,   // ⭐ o único comutado
   };
-}
-
-/**
- * O que o divisor 22 k / 4,7 k entrega ao pino D25.
- * É por AQUI que o firmware descobre se a potência chegou — ele nunca
- * lê um contato auxiliar de relé. Ver Doc 31 §31.6.
- */
-export function tensaoD25(barras) {
-  return barras['BD-POT'] * (4.7 / (22 + 4.7));   // 24 V → 4,22 V
 }

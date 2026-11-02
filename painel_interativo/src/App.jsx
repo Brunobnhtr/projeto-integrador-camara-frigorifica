@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
-import VistaMaquete from './components/VistaMaquete';
+import { useState, useEffect, lazy, Suspense } from 'react';
+import VistaSistema from './components/VistaSistema';
 import VistaPainelInterno from './components/VistaPainelInterno';
-import VistaSimulador from './components/VistaSimulador';
-import VistaMontagem from './components/VistaMontagem';
-import VistaComponentes from './components/VistaComponentes';
-import VistaGuia from './components/VistaGuia';
+const VistaSimulador = lazy(() => import('./components/VistaSimulador'));
+const VistaMontagem = lazy(() => import('./components/VistaMontagem'));
+const VistaComponentes = lazy(() => import('./components/VistaComponentes'));
+const VistaGuia = lazy(() => import('./components/VistaGuia'));
 import BarreiraDeErro from './components/BarreiraDeErro';
 
 /* A casca do aplicativo. Cada aba é uma forma diferente de olhar o mesmo
@@ -12,8 +12,8 @@ import BarreiraDeErro from './components/BarreiraDeErro';
    (componente por componente). */
 
 const ABAS = [
-  { id: 'maquete', nome: 'A maquete de cima', icone: '🗺️',
-    dica: 'Por onde a energia entra e como ela chega até a câmara' },
+  { id: 'sistema', nome: 'Sistema e alimentação', icone: '⚡',
+    dica: 'Painel autônomo, comunicação e alternativas industriais' },
   { id: 'painel',  nome: 'Dentro do painel',  icone: '🔧',
     dica: 'Todos os componentes e seus terminais, em escala real' },
   { id: 'componentes', nome: 'Componentes soltos', icone: '🔩',
@@ -27,7 +27,7 @@ const ABAS = [
 ];
 
 export default function App() {
-  const [aba, setAba] = useState('maquete');
+  const [aba, setAba] = useState('painel');
 
   /* ⭐ O BOTÃO DO MEIO NÃO LIGA MAIS O AUTO-SCROLL DO WINDOWS.
      Apertar a rodinha sobre qualquer área que rola abre aquele alvo de
@@ -53,7 +53,7 @@ export default function App() {
         <div>
           <b style={{ fontSize: 15 }}>Projeto Integrador CF-01</b>
           <span style={{ fontSize: 11.5, opacity: 0.7, marginLeft: 9 }}>
-            Cabine climatizada com ESP32
+            Painel autônomo · controle no Arduino Mega
           </span>
         </div>
         <nav style={{ display: 'flex', gap: 7, marginLeft: 'auto', flexWrap: 'wrap' }}>
@@ -77,7 +77,8 @@ export default function App() {
           presas na tela de erro. */}
       <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
         <BarreiraDeErro key={aba}>
-        {aba === 'maquete' && <VistaMaquete onIrPara={setAba} />}
+        <Suspense fallback={<p style={{ padding: 24 }}>Carregando vista…</p>}>
+        {aba === 'sistema' && <div style={{position:'absolute',inset:0,overflow:'auto'}}><VistaSistema onIrPara={setAba} /></div>}
         {aba === 'painel'  && <VistaPainelInterno />}
         {aba === 'componentes' && (
           <div style={{ position: 'absolute', inset: 0, overflow: 'auto' }}>
@@ -99,6 +100,7 @@ export default function App() {
             <VistaSimulador />
           </div>
         )}
+        </Suspense>
         </BarreiraDeErro>
       </div>
     </div>

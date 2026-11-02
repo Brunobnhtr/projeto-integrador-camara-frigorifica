@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import {
   criarSimulador, passo, foto,
+  dispararTermostato, rearmarTermostato,
   iniciarPelaIHM, pararPelaIHM, pararPeloMQTT, iniciarPeloMQTT,
 } from '../sim/index.js';
 import { consumo, LIMITES } from '../sim/energia.js';
@@ -33,6 +34,7 @@ function instantaneo(sim) {
     consumo: consumo(sim),
     botoes: { ...sim.botoes },
     falhas: { ...sim.falhas },
+    termostatos: { ...sim.termostatos },
     faixa: { ...sim.faixa },
     receita: sim.receita,
     duty: sim.firmware.duty,
@@ -62,8 +64,11 @@ export default function VistaSimulador() {
     };
     marca('estado', `estado → ${novo.estado}${novo.alerta ? ` (${novo.alerta})` : ''}`,
       novo.estado === 'EMERGENCIA' || novo.estado === 'FALHA' ? ALERTA : CX.texto);
+    marca('avisoPosVent', `aviso pós-ventilação → ${novo.avisoPosVent || 'normalizado'}`,
+      novo.avisoPosVent ? ATENCAO : CX.fraco);
     marca('km1', `selo do KM1 ${novo.km1 ? 'FEITO' : 'PERDIDO'}`, novo.km1 ? VIVO : ALERTA);
     marca('bdPot', `BD-POT → ${novo.bdPot} V`, novo.bdPot ? VIVO : ALERTA);
+    marca('bdPtc12v', `BD-PTC → ${novo.bdPtc12v} V`, novo.bdPtc12v ? ATENCAO : CX.fraco);
     marca('ventRadiador', `ventoinha do radiador ${novo.ventRadiador ? 'ligada' : 'desligada'}`, CX.fraco);
     if (ev.length) setLog(l => [...ev, ...l].slice(0, 40));
   }, []);
@@ -126,6 +131,7 @@ export default function VistaSimulador() {
         <Relogio {...{ s, rodando, setRodando, veloc, setVeloc, reiniciar }} />
         <Botoeiras s={s} pulso={pulso} alternar={alternar} />
         <Comandos s={s} mexer={mexer} />
+        <Termostatos s={s} mexer={mexer} />
         <Falhas s={s} alternar={alternar} />
         <Diario log={log} />
       </div>
@@ -295,13 +301,21 @@ function Bobina({ x, y, nome, on }) {
 /* ═══ BARRAMENTOS + CONSUMO ════════════════════════════════════════ */
 function Barramentos({ s: f }) {
   const c = f.consumo;
+  const cargaT3 = c['T3-OUT'];
   const linhas = [
     ['BD-POT', f.bdPot, c['BD-POT'], LIMITES.F1, '⚡ comutado — morre na emergência'],
-    ['BD-AUX', f.bdAux, c['BD-AUX'], LIMITES.caboT3, 'permanente — ventoinhas'],
+    ['T3 · 12 V', Math.max(f.bdAux, f.bdPtc12v), cargaT3, LIMITES.t3SaidaDeclarada,
+      `declarados 20 A; ficha/corte pendentes · ventoinhas ${c['BD-AUX'].toFixed(2)} A + PTC ${c['BD-PTC'].toFixed(2)} A`],
     ['BD-5V', f.bd5v, c['BD-5V'], LIMITES.caboT2, 'permanente — eletrônica'],
   ];
   return (
     <Cartao titulo="Barramentos" sub={`fonte: ${c.fonte.toFixed(2)} A de ${LIMITES.fonte24} A · ${c.potenciaTotal.toFixed(0)} W`}>
+      <div style={{ fontSize: 11.5, marginBottom: 10 }}>
+        <b>N4AIC24 · V1 / Modbus</b>
+        <span style={{ color: f.v1Valida ? VIVO : ALERTA, marginLeft: 8 }}>
+          {f.v1Valida ? `${f.v1.toFixed(1)} V · leitura válida` : 'leitura indisponível ou expirada'}
+        </span>
+      </div>
       {linhas.map(([nome, v, i, lim, obs]) => {
         const pct = Math.min(100, 100 * i / lim);
         return (
@@ -444,10 +458,10 @@ function Camara({ s: f }) {
         <text x="165" y="26" fontSize="9" fill="#fff" textAnchor="middle" fontWeight="700">
           {frio ? `PELTIER · GELANDO` : 'PELTIER'}
         </text>
-        <Helice cx={128} cy={6} r={9} on={f.ventRadiador} cor="#495057" rapido />
-        <Helice cx={202} cy={6} r={9} on={f.ventRadiador} cor="#495057" rapido />
+        <Helice cx={128} cy={6} r={9} on={f.radiadorGirando} cor="#495057" rapido />
+        <Helice cx={202} cy={6} r={9} on={f.radiadorGirando} cor="#495057" rapido />
         <text x="165" y="9" fontSize="7" fill={CX.fraco} textAnchor="middle">
-          {f.ventRadiador ? 'radiador ↑' : 'radiador off'}
+          {f.radiadorGirando ? 'radiador ↑' : 'radiador off'}
         </text>
 
         {/* blocos frios + ventoinhas internas soprando para baixo */}
@@ -455,11 +469,11 @@ function Camara({ s: f }) {
               stroke="#adb5bd" strokeWidth="0.8" />
         <rect x="172" y="30" width="40" height="12" fill={frio ? '#a5d8ff' : '#e9ecef'}
               stroke="#adb5bd" strokeWidth="0.8" />
-        <Helice cx={138} cy={52} r={11} on={f.ventInternas} cor="#1971c2" />
-        <Helice cx={192} cy={52} r={11} on={f.ventInternas} cor="#1971c2" />
+        <Helice cx={138} cy={52} r={11} on={f.ventInternasGirando} cor="#1971c2" />
+        <Helice cx={192} cy={52} r={11} on={f.ventInternasGirando} cor="#1971c2" />
 
         {/* setas do ar descendo pelo centro */}
-        {f.ventInternas && [150, 165, 180].map(x => (
+        {f.ventInternasGirando && [150, 165, 180].map(x => (
           <Fluxo key={x} x1={x} y1={70} x2={x} y2={150} />
         ))}
 
@@ -469,15 +483,15 @@ function Camara({ s: f }) {
         <text x="165" y="192" fontSize="8.5" fill="#fff" textAnchor="middle" fontWeight="700">
           {quente ? 'PTC · AQUECENDO' : 'PTC'}
         </text>
-        <Helice cx={165} cy={170} r={10} on={f.ventPtc ?? f.ventInternas} cor="#e8590c" />
+        <Helice cx={165} cy={170} r={10} on={f.ventPtcGirando} cor="#e8590c" />
         <text x="165" y="205" fontSize="7" fill={CX.fraco} textAnchor="middle">
           vent. do PTC
         </text>
 
         {/* ── VENTOINHAS DOS DUTOS, abaixo do PTC, soprando p/ as bocas ── */}
-        <Helice cx={92} cy={205} r={10} on={f.ventInternas} cor="#0ca678" />
-        <Helice cx={238} cy={205} r={10} on={f.ventInternas} cor="#0ca678" />
-        {f.ventInternas && (
+        <Helice cx={92} cy={205} r={10} on={f.ventInternasGirando} cor="#0ca678" />
+        <Helice cx={238} cy={205} r={10} on={f.ventInternasGirando} cor="#0ca678" />
+        {f.ventInternasGirando && (
           <>
             <Fluxo x1={80} y1={205} x2={50} y2={205} horiz />
             <Fluxo x1={250} y1={205} x2={280} y2={205} horiz />
@@ -543,7 +557,8 @@ function Processo({ s: f, onFaixa }) {
   const zonaCor = { URGENTE: ALERTA, AJUSTE: '#1971c2', PRONTO: VIVO };
   return (
     <Cartao titulo="Processo"
-            sub={`${f.estado}${f.alerta ? ` · ${f.alerta}` : ''}`}>
+            sub={`${f.estado}${f.alerta ? ` · ${f.alerta}` : ''}` +
+              `${f.avisoPosVent ? ` · ${f.avisoPosVent} (ativo)` : ''}`}>
       <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr 1fr', gap: 8,
                     marginBottom: 10 }}>
         <Numero rot="câmara" val={`${f.tCamara.toFixed(1)} °C`}
@@ -714,7 +729,16 @@ function Comandos({ s: f, mexer }) {
 const FALHAS = [
   ['arduinoMorto', 'Arduino morre', 'o KA1 abre e a potência cai — e não volta sozinha'],
   ['btsPeltierEmCurto', '🔥 BTS7960 em curto', 'conduz ignorando o R_EN. Só o KA1 ou as botoeiras param'],
+  ['btsPeltierIsSemSinal', 'BTS1 IS/A0 sem sinal', 'a Peltier pode conduzir sem comando, mas o modelo não a detecta por essa leitura'],
+  ['btsPtcEmCurto', '🔥 BTS do PTC em curto', 'o PTC conduz sem comando; só os contatos térmicos em série o interrompem'],
+  ['btsPtcIsSemSinal', 'BTS2 IS/A1 sem sinal', 'o PTC pode conduzir, mas o diagnóstico interno não reporta corrente; não existe medição independente simulada'],
+  ['n4aic24SemComunicacao', 'N4AIC24 sem Modbus', 'V1 para de atualizar; leitura expira e bloqueia partida ou dispara falha em operação'],
+  ['n4aic24LeituraInvalida', 'N4AIC24 V1 inválido', 'responde fora da faixa simulada de 0–30 V; o controle não aceita a leitura'],
   ['fanTravada', 'Ventoinha travada', 'RPM = 0 → trip em 5 s, com corte físico'],
+  ['fan1Travada', 'Cooler externo 1 travado', 'RPM1 = 0; testa FAN1 isoladamente'],
+  ['fan2Travada', 'Cooler externo 2 travado', 'RPM2 = 0; testa FAN2 isoladamente'],
+  ['ka3Aberto', 'Contato KA3 não fecha', 'a supervisão simulada bloqueia/recolhe o aquecimento; RPM do radiador não detecta isso'],
+  ['fanPtcTravada', 'Ventoinha do PTC travada', 'a supervisão simulada bloqueia/recolhe o aquecimento; não há tacômetro real'],
   ['ds18Solto', 'DS18B20 solto', 'lê −127 °C → conta como QUENTE e a ventoinha LIGA'],
   ['ka1Colado', 'Contato do KA1 soldado', 'o veto do firmware some; as botoeiras seguem'],
   ['ka2Aberto', '🔥 Contato do KA2 aberto', 'o radiador nunca ventila — só o trip por RPM acusa'],
@@ -723,8 +747,66 @@ const FALHAS = [
   ['geralDesligada', 'Chave geral desligada', 'tudo morre, inclusive a eletrônica'],
 ];
 
+function Termostatos({ s, mexer }) {
+  return (
+    <Cartao titulo="Contatos térmicos" sub="estados físicos · rearme manual">
+      {[
+        ['ST1', 'ST-1 · corpo do PTC', 'st1Aberto'],
+        ['ST2', 'ST-2 · parede da câmara', 'st2Aberto'],
+      ].map(([id, nome, chave]) => {
+        const aberto = s.termostatos[chave];
+        const rearmeBloqueado = aberto && (s.falhas.btsPtcEmCurto ||
+          s.estado === 'RODANDO' || s.renPtc);
+        return (
+          <div key={id} style={{ display: 'flex', justifyContent: 'space-between',
+                                gap: 8, alignItems: 'center', padding: '4px 0',
+                                fontSize: 11.5 }}>
+            <span><b>{nome}</b><br /><span style={{ color: aberto ? ALERTA : VIVO }}>
+              contato {aberto ? 'ABERTO' : 'fechado'}
+            </span></span>
+            <button type="button" disabled={rearmeBloqueado}
+                    onClick={() => mexer(sim => {
+                      if (aberto) {
+                        if (window.confirm('Confirme que a causa foi corrigida, o PTC está frio, a ventoinha do PTC e o fluxo de ar foram verificados fisicamente e a área foi inspecionada. Esta confirmação não substitui uma proteção/intertravamento físico.')) {
+                          if (!rearmarTermostato(sim, id, true)) {
+                            window.alert('Rearme recusado: confirme que o PTC está parado, que a cadeia está sem falha do BTS e que a ventilação interna simulada está disponível. A inspeção física continua obrigatória.');
+                          }
+                        }
+                      } else {
+                        dispararTermostato(sim, id);
+                      }
+                    })}
+                    style={{ padding: '5px 8px', cursor: 'pointer' }}>
+              {aberto ? 'Rearmar contato' : 'Simular disparo'}
+            </button>
+          </div>
+        );
+      })}
+      {s.falhas.btsPtcEmCurto && (
+        <div style={{ color: ALERTA, fontSize: 10.5, lineHeight: 1.4 }}>
+          Rearme bloqueado enquanto a falha do BTS do PTC persistir.
+        </div>
+      )}
+      {s.bloqueioTermico && (
+        <div style={{ color: ALERTA, fontSize: 10.5, lineHeight: 1.4 }}>
+          Bloqueio térmico retido: rearme do contato não reautoriza potência. Reconheça a falha,
+          corrija e inspecione a causa; só uma nova partida pelo botão verde pode liberar o KM1.
+        </div>
+      )}
+      <div style={{ color: CX.fraco, fontSize: 10.5, lineHeight: 1.4, marginTop: 6 }}>
+        Contato físico separado do firmware. O disparo não é inferido pela temperatura
+        do ar; rearme apenas após resfriar, corrigir a causa e inspecionar. RPM supervisiona
+        somente os dois coolers do radiador, não as cinco ventoinhas internas nem a do PTC.
+        O bloqueio por falha de ventilação é uma hipótese de intertravamento no simulador;
+        não existe sensor de fluxo/rotação instalado no modelo atual.
+      </div>
+    </Cartao>
+  );
+}
+
 function Falhas({ s, alternar }) {
-  const algumaAtiva = Object.values(s.falhas).some(Boolean);
+  const algumaAtiva = Object.values(s.falhas).some(Boolean) ||
+    s.termostatos.st1Aberto || s.termostatos.st2Aberto;
   return (
     <Cartao titulo="Injeção de falhas" sub={algumaAtiva ? '⚠️ há falha ativa' : 'tudo são'}>
       {FALHAS.map(([k, nome, efeito]) => (

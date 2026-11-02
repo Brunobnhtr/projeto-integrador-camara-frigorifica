@@ -1,46 +1,33 @@
-# Painel Interativo — Projeto Integrador CF-01
+# Painel Interativo - CF-01
 
-Visualização navegável do painel de comando: componentes, terminais e **para onde cada fio vai**.
+Revisao: 01/11/2026. Painel autonomo e camara termica sobre base de pinus, sem subestacao ou ambientacao. T2/T3 e o ramal do PTC seguem bloqueados para compra e energizacao.
 
-## Rodar
+## Executar
 
-```bash
-cd painel_interativo
+```sh
 npm install
 npm run dev
 ```
 
-Abre em `http://localhost:5173`.
+Abrir http://localhost:5173. As abas Sistema e alimentacao, Dentro do painel e Guia de montagem mostram a proposta vigente. Guia: 18 passos e 133 condutores atualmente listados. PTC 12 V/50 W, conversores T2 5,0 V/5 A e T3 12 V/20 A, F3 e corte DC ainda requerem modelos, fichas e dimensionamento; nao energizar o PTC.
 
-## Como usar
+## Dados e verificacao
 
-| Ação | O que acontece |
-|---|---|
-| **Clicar num componente** | Abre o painel lateral com todos os terminais dele |
-| **Clicar num destino** no painel lateral | Navega até o componente do outro lado do fio, com zoom |
-| **Clicar numa tensão** no topo | Filtra e mostra só os cabos daquele barramento |
-| **Clicar na placa PI-1** | Mostra também os 7 componentes soldados dentro dela |
+- `src/data/painel_completo.js`: equipamentos, terminais, trilhos e canaletas.
+- `src/data/fiacao.js`: lista canonica de fios, alimentacao AC/DC e Modbus.
+- `src/data/guia_painel_atual.js`: sequencia de montagem, derivada dos mesmos fios.
+- `src/data/alimentacao_industrial.js`: alternativas industriais e referencias oficiais.
+- `npm run valida`: arquitetura, simulador, fiacao, passivos, painel, camara e desenho.
+- `npm run build` e `npm run lint`: verificacoes do aplicativo.
 
-Com um componente selecionado, os cabos ligados a ele ficam **destacados** e os
-outros esmaecem — e cada cabo mostra `terminal de origem → terminal de destino`.
+Os arquivos `fiacao_etapa*.js` e a maquete representam estudos anteriores e nao alimentam a fiacao ativa. O validador historico continua em `npm run valida:maquete`.
 
-## Onde ficam os dados
+## Alimentacao e comunicacao
 
-**`src/data/painel.js`** é a fonte da verdade da tela. Três conceitos:
+Rede AC + PE -> Q0 -> PS1 24 V. T2 24->5,0 V/5 A e T3 24->12 V/20 A sao propostas sem modelo aprovado. Confirmar faixa maxima/transientes de entrada do T2 e capacidade continua/termica do T3. O PTC proposto precisa de ramal separado, corte DC independente de KM1, F3 e condutores dimensionados.
 
-| Conceito | O que é |
-|---|---|
-| `COMPONENTES` | Equipamentos, com terminais nomeados e em qual trilho ficam |
-| `CABOS` | Cada fio: de qual terminal sai, para qual vai, bitola, cor e número |
-| `PI1_INTERNO` | O que há soldado dentro da placa de interface |
+N4AIC24 -> Modbus RTU/RS-485 -> MAX485 -> Mega Serial3 (D14/D15), D26 para DE e /RE. ESP32 permanece na Serial1; IHM na Serial2. A medicao pelo BTS IS/A1 nao comprova um curto se a saida IS deixar de sinalizar.
 
-Os dados vêm do [Doc 30](../camada_3_eletrica/30_forca_e_distribuicao.md) (lista de cabos),
-[Doc 31](../camada_3_eletrica/31_comando_e_protecoes.md) (comando) e
-[Doc 33](../camada_3_eletrica/33_placa_interface_componentes.md) (placa PI-1).
+O gabinete 600 x 800 x 250 mm e as protecoes sao proposta para conferir com pecas reais, nao liberacao de fabricacao. Firmware Modbus depende do mapa de registradores; simulacao nao substitui teste fisico. KM1 corta BD-POT/24 V, nao o novo ramal permanente de 12 V do PTC.
 
-> ⚠️ **Mudou a fiação nos documentos? Mude aqui também.** Este arquivo não é gerado
-> automaticamente a partir deles — ainda.
-
-## Stack
-
-React 19 · Vite · [React Flow](https://reactflow.dev) (`@xyflow/react`)
+[Guia completo de ligacoes](../camada_3_eletrica/34_painel_autonomo_e_guia_ligacoes.md)

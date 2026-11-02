@@ -3,9 +3,91 @@
 > Toda a fiação de energia: do plugue de 127 V até os blocos de distribuição de **24 V, 12 V, 5 V e 0 V** dentro do painel. Feito **por trechos**, energizando e medindo cada um antes de seguir.
 >
 > 🔄 **Atualizado para a arquitetura "Potência em 24 V".** O poste P1 não tem mais conversor — os 24 V passam direto até os BTS7960. Saíram os fusíveis F4/F5 e os três crowbars Zener. Ver [Doc 02](../camada_0_fundamentos/02_arquitetura_de_energia.md).
+
+> ⛔ **A nova alimentação do PTC ainda não está liberada para montagem.** Este documento
+> contém trechos de cabeamento e cálculos da arquitetura anterior (PTC 24 V/80 W,
+> LM2596 e F3 2 A); eles não são instruções vigentes. A proposta atual é T2
+> 24→5,0 V/5 A, T3 24→12 V/20 A e PTC 12 V/50 W em ramal separado do BD-AUX.
+> Nenhum modelo ou ficha técnica foi aprovado. Não aplicar as bitolas, fusíveis,
+> proteções ou ajuste de tensão legados. Confirmar a entrada máxima/transientes do
+> T2 e dimensionar o corte DC, F3, condutores e conectores antes de emitir uma
+> instrução de ligação.
 >
 > ✅ **Pré-requisito:** Camadas 1 e 2 concluídas (maquete pronta, painel montado mecanicamente).
 > 🖼️ **Desenho:** [Diagrama unifilar](../desenhos/05_diagrama_unifilar.svg)
+
+---
+
+## 🔴 Orçamento de potência da V8 — os números que mudaram
+
+> Refeito a partir de `analise_termica_tec.py` e `cad_corte/parametros_v8.py`.
+> Substitui todos os números de potência das seções abaixo. **Não some correntes
+> de tensões diferentes**: o orçamento é por barramento.
+
+### Peltier — o número que mudou com a câmara de 40 L
+
+O modelo acoplado dá, por módulo TEC1-12706 a 12 V:
+**62 W elétricos, 5,2 A**, com Tc = 3,6 °C e Th = 43 °C.
+
+| | Valor |
+|---|---|
+| Por módulo | **62 W · 5,2 A · 12 V** |
+| Dois módulos | **124 W** |
+| Ligação | **série em 24 V** — a corrente da série é 5,2 A e cada módulo vê 12 V |
+| Calor rejeitado no lado quente | **184 W a 43 °C** |
+
+> ⚠️ **Série em 24 V e paralelo em 12 V dão o mesmo resultado elétrico** — desde
+> que cada módulo veja 12 V. A escolha pela série é de fiação (metade da corrente,
+> cabo mais fino), não de desempenho. Meça a resistência do conjunto antes de
+> energizar: em série ela é **o dobro** de uma pastilha isolada.
+
+### Orçamento por barramento
+
+| Barramento | Carga | Potência | Corrente |
+|---|---|---|---|
+| **24 V** | 2× Peltier em série | **124 W** | **5,2 A** |
+| **12 V proposto** | PTC **50 W** | **50 W** | **4,17 A** |
+| **12 V** | 2× ventoinha do duto (40 mm) | 2 W | 0,17 A |
+| **12 V** | 2× ventoinha do dissipador externo | 3 W | 0,25 A |
+| **12 V** | 8 posições de ensaio em LED (2 placas × 4) | **~1 W** | **0,08 A** |
+| **12 V** | Controle (Mega, ESP32, IHM, relés) | ~8 W | — |
+| | **Total em 12 V** | **~14 W** | **~1,2 A** |
+
+**Consequências diretas:**
+
+1. O ramal das Peltier é **24 V / 6 A** (5,2 A + margem), com cabo de **1,5 mm²**
+   — não 2,5 mm². Metade da corrente do arranjo em paralelo, mesmo resultado.
+2. O ramal de 12 V **não alimenta mais as Peltier**. Ele fica em ~14 W / 1,2 A;
+   fonte de **12 V / 3 A** é suficiente — com folga de 2,5×. Esta é a correção do
+   número antigo de "15 A", que somava cargas de barramentos diferentes.
+3. O calor rejeitado pelo dissipador quente é **184 W a 43 °C** — 3,1× a carga de
+   parede. É esse número que dimensiona o dissipador, as ventoinhas externas e o
+   espaço atrás do painel.
+4. O **PTC 12 V/50 W** é uma proposta, não uma decisão de compra: a corrente nominal
+   estimada é **4,17 A**. A temperatura real, ventilação e compatibilidade térmica
+   precisam ser verificadas em ensaio antes de liberar o aquecedor.
+5. T3 precisaria fornecer aproximadamente **5,49 A / 65,9 W** (PTC + serviços de
+   12 V, pior caso simultâneo). A ficha do conversor, rendimento, F3 e cabos ainda
+   não foram confirmados. O cálculo da fonte permanece estimativo e não valida a
+   capacidade real dos componentes.
+
+> ⚠️ **O que continua inconsistente neste documento.** As seções abaixo foram
+> escritas quando as Peltier ficavam no ramal de 12 V e ainda dizem "fonte de 12 V
+> de 15 A" e "cabo de 2,5 mm²". Leia esses dois números como **24 V / 6 A e
+> 1,5 mm²**. A arquitetura de 24 V descrita no resto do documento está correta; o
+> que estava errado era o barramento atribuído às Peltier no orçamento.
+
+> ⚠️ **A contradição das lâmpadas, resolvida — e depois resolvida de novo.** A
+> versão anterior deste documento dizia "+24 V" para as lâmpadas e, no mesmo
+> arquivo, "duas de 12 V em série". Depois a decisão foi **12 V em paralelo, no
+> ramal de 12 V, com fusível próprio de 2 A**.
+>
+> 🔴 **Hoje nem isso:** as 2 lâmpadas W5W **saíram do projeto**. O DUT são
+> **8 posições de LED em 12 V** (~10 mA cada, ~80 mA no total), cada uma com a
+> sua chave e o seu fusível de **1 A** no bloco de 8 posições. O fusível de 1 A
+> não protege o LED — protege o cabo de 0,5 mm², que é o que pode pegar fogo.
+> O caminho completo está em
+> [`../placa_leds/PLACA_LEDS.md`](../placa_leds/PLACA_LEDS.md) §9.
 
 ---
 
@@ -209,7 +291,7 @@ Quando precisarem se cruzar, cruze a **90°**. Cabos paralelos "conversam" por i
 | 15 | **Ramal R3** | **Cinza rígido** | 0,50 mm² | F3 saída → sobe no P1 → **cruzeta, posição DIR** |
 | 16 | **Retorno 0 V** | **Azul claro rígido** | **1,50 mm²** ⬆ | Borne 0V → sobe no P1 → **suporte a 220 mm** (40 mm abaixo da cruzeta) |
 
-> ⬆ **Duas bitolas subiram** com a arquitetura de potência em 24 V: o **R1** passou a conduzir **6,0 A** (era 3,55 A) e o **retorno 0 V** conduz a soma dos três ramais, **6,9 A** (era 4,2 A). Usar os valores antigos reprova no critério de queda de tensão.
+> ⬆ **Duas bitolas subiram** com a arquitetura de potência em 24 V: o **R1** passou a conduzir **6,0 A** (era 3,55 A) e o **retorno 0 V** conduz a soma dos três ramais, **7,11 A** (era 4,2 A). Usar os valores antigos reprova no critério de queda de tensão.
 
 > ⚠️ **Todos os quatro condutores da linha são COM CAPA.** Em corrente contínua, dois condutores nus a 35 mm um do outro é um curto esperando acontecer — e o arco em CC não se extingue sozinho. Justificativa completa em [Doc 11 §11.2](../camada_1_maquete/11_subestacao_e_postes.md).
 >
@@ -325,9 +407,13 @@ Num painel de verdade **não existem 24 cores de fio**. A cor diz **que circuito
 
 | Prensa-cabo | Rosca | X | O que sai | Feixe |
 |---|---|---:|---|---:|
-| **PG13-2** | PG13,5 | 230 mm | 12 fios de potência para a câmara | 9,9 mm |
-| **PG9-3** | PG9 | 470 mm | 9 fios de sinal e medição — **6 deles são RETORNO**, entrando no painel | 6,5 mm |
+| **PG13-2** | PG13,5 | 230 mm | 10 fios de potência para a câmara | 9,3 mm |
+| **PG9-3** | **PG11** | 470 mm | 11 fios de sinal e medição — **2 deles são RETORNO**, entrando no painel | 7,2 mm |
 | **PG7-3** | PG7 | 300 mm | 2 fios de 5 V para os LEDs da maquete | 2,9 mm |
+
+> ⚠️ **O PG9-3 SUBIU PARA PG11.** Com as **8 posições** da placa de LED o feixe deste furo vai a **9,5 mm** (8 retornos de 0,5 mm² + 4 do AM2315C + 3 do DS18B20 + 2 dos tacômetros = 17 condutores), e um PG9 aperta só até 8 mm. O mesmo vale para o **PC-2** na parede da câmara: é o mesmo feixe, do outro lado do cabo.
+>
+> 📐 Os números da tabela são os do **desenho**, que modela **2 das 8 posições**. Para a montagem completa: **PG13-2 = 14 condutores / 10,6 mm** (cabe no PG13,5, com 1,4 mm de folga) e **PG9-3 = 17 condutores / 9,5 mm**.
 
 > ⭐ **O PG9-3 é o único furo de mão dupla.** Três fios saem (5 V do sensor, SDA, SCL) e seis voltam (os dois retornos das posições, o GND do sensor, o DS18B20 do radiador e os dois RPM). É o que faz dele o furo mais sensível do painel: o retorno das posições carrega a corrente que está sendo medida.
 
@@ -347,7 +433,7 @@ Num painel de verdade **não existem 24 cores de fio**. A cor diz **que circuito
 |---|---|---|---|---|
 | 34 | **24 V potência** | Vermelho | 1,5 mm² | PG9-1 (X=50) → **KM1 · contato 11** (comum) |
 | 35 | **24 V potência comandado** | Vermelho | 1,5 mm² | **KM1 · contato 14** (NA) → **BD-POT** entrada |
-| ⭐ **36** | **0 V comum — o único** | **Azul claro** | **1,5 mm²** | PG9-1 (X=50) → **BD-0V** entrada. Conduz a soma de tudo: **6,9 A** no pior caso |
+| ⭐ **36** | **0 V comum — o único** | **Azul claro** | **1,5 mm²** | PG9-1 (X=50) → **BD-0V** entrada. Conduz a soma de tudo: **7,11 A** no pior caso |
 | 37 | 5 V | Laranja | 0,5 mm² | PG7-1 (X=110) → **BD-5V** entrada (direto, sem fusível) |
 | ~~38~~ | — | — | — | **vago** — era o "retorno 5 V" |
 | 39 | 12 V auxiliar | Amarelo | **0,75 mm²** | PG7-2 (X=170) → **BD-AUX** entrada |
@@ -431,7 +517,7 @@ Esta seção descrevia uma placa com três diodos Zener (5V6 / 13 V / 15 V) que 
 | 61 | BTS #2 M+ | Laranja | 1,5 mm² | BTS #2 saída → borne `24V-QUENTE` |
 | 62 | BTS #2 M− | Preto | 1,5 mm² | BTS #2 saída → borne `0V-QUENTE` |
 | 63 (X5) | Coolers do radiador **+** | Amarelo | 0,5 mm² | **BD-AUX** saída 2 → **os DOIS positivos**, em paralelo |
-| 64 (X6) | Coolers do radiador **−** | Azul escuro | 0,5 mm² | os dois negativos → **BD-0V · Z20** |
+| 64 (X6) | Coolers do radiador **−** | Azul escuro | 0,5 mm² | os dois negativos → **BD-0V · Z15** |
 | **64d** (X20) | RPM cooler #1 | Cinza | 0,25 mm² | Tacômetro do cooler #1 → **Arduino D3** (INT1) |
 | **64e** (X21) | RPM cooler #2 | Cinza | 0,25 mm² | Tacômetro do cooler #2 → **Arduino A8** (PCINT16) |
 | **64f** (X22) | DS18B20 do radiador · **VCC** | Violeta | 0,25 mm² | **BD-5V** saída 11 → fio vermelho do sensor |
@@ -455,7 +541,7 @@ Esta seção descrevia uma placa com três diodos Zener (5V6 / 13 V / 15 V) que 
 | Borne | Alimenta | Modo |
 |---|---|---|
 | `24V-FRIO` / `0V-FRIO` | **2× Peltier EM SÉRIE** (24 V / 6,0 A) | Frio (BTS #1) |
-| `24V-QUENTE` / `0V-QUENTE` | **PTC cerâmico de 24 V** (2,5 A) | Quente (BTS #2) |
+| `12V-PTC` / `0V-PTC` | **Ramificação proposta** para PTC 12 V / 50 W (4,17 A estimados) | BLOQUEADO — corte CC e proteção por dimensionar |
 | **`12V-FANS` / `0V-FANS`** | **As 4 fans internas** — vêm do **BD-AUX**, não do BTS | Comutadas por modo no firmware |
 | Direto do painel | 2× cooler externo dos dissipadores (3 fios cada) | Sempre |
 
@@ -473,16 +559,19 @@ Esta seção descrevia uma placa com três diodos Zener (5V6 / 13 V / 15 V) que 
 |---|---:|---:|---|---|
 | Entrada AC (L / N / PE) | 127 V CA | **2,4 A** | 1,5 mm² | PP 3 × 1,5 |
 | **Ramal R1 na linha** | 24 V | **6,0 A** | **1,00 mm²** ⬆ | **Rígido vermelho** |
-| Ramais R2 e R3 na linha | 24 V | ≤ 0,8 A | 0,50 mm² | **Rígido marrom / cinza** |
-| **Retorno 0 V na linha** | — | **6,9 A** | **1,50 mm²** ⬆ | **Rígido azul claro** |
+| Ramais R2 e R3 na linha | 24 V | ≤ 0,95 A | 0,50 mm² | **Rígido marrom / cinza** |
+| **Retorno 0 V na linha** | — | **recalcular para T3 20 A proposto** | **A definir** | **Rígido azul claro** |
 | **Saída do P1 → painel (24 V POT)** | 24 V | 6,0 A | **1,5 mm²** | Flexível vermelho/preto |
-| Saída do T2 → painel | 5 V | 0,7 A | 0,50 mm² | Flexível laranja/preto |
-| **Saída do T3 → painel** | 12 V | **1,0 A** | **0,75 mm²** ⬆ | Flexível amarelo/preto |
+| Saída do T2 → painel | 5 V | **0,695 A** ⚠️ (limite declarado 0,70 A) | 0,50 mm² | Flexível laranja/preto |
+| Saída T3 → BD-AUX (serviços) | 12 V | **1,325 A** estimados | **0,75 mm² legado; revisar** | Flexível amarelo/preto |
+| **Ramal T3 → PTC** | 12 V | **4,17 A** estimados | **A definir por cálculo** | **Bloqueado — corte/proteção e retorno não definidos** |
 | +24 V serviços do P3 → painel | 24 V | 0,20 A | 0,50 mm² | Flexível vermelho/preto |
-| Entrada do BD-0V | — | **6,9 A** | **10 mm²** (borne) | Flexível preto 1,5 mm² |
+| Entrada do BD-0V | — | **7,11 A** | **10 mm²** (borne) | Flexível preto 1,5 mm² |
 | Sinais e sensores | 5 V | < 0,05 A | 0,25 mm² | Flexível colorido |
 
-> ⬆ **Três bitolas subiram** com a arquitetura de potência em 24 V. Confira antes de comprar o fio rígido: trocar depois significa desmontar a cruzeta inteira. Cálculo de queda de tensão em [Doc 02 §2.7](../camada_0_fundamentos/02_arquitetura_de_energia.md) — dá **0,86 %**, contra o limite prático de 3 %.
+> ⛔ Os cabos do retorno e do novo ramal de 12 V precisam ser recalculados. Os números
+> históricos desta tabela não liberam a compra de condutores; avaliar queda, aquecimento,
+> agrupamento, terminais e proteção para o modelo exato de T3.
 
 ---
 

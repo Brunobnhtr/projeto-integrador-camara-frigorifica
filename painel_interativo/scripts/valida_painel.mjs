@@ -10,7 +10,7 @@ import { COMPONENTES, TRILHOS, CAIXA, PLACA, CANALETAS, CANALETAS_PORTA,
   from '../src/data/painel_completo.js';
 
 /* largura util = placa menos as canaletas verticais */
-const cv = CANALETAS.filter(k => k.vertical);
+const cv = CANALETAS.filter(k => ['CV-esq', 'CV-dir'].includes(k.id));
 const UTIL = Math.round(Math.min(...cv.map(k => k.x)) === cv[0].x
   ? cv[1].x - (cv[0].x + cv[0].w) : 0);
 

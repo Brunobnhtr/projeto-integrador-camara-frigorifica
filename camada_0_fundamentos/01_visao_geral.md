@@ -3,6 +3,12 @@
 > **Projeto Integrador 2026/01 · 6.01 03 — Implementação de Sistema de Controle Inteligente com ESP32 para Cabine Climatizada**
 > SENAI Antônio Adolpho Lobbe · Empresa: **Ensaios & Controle Tech** · Área: Automação
 
+> ⛔ **REVISÃO PROVISÓRIA DE POTÊNCIA:** este documento ainda contém referências
+> legadas a PTC 24 V/80 W e LM2596/5,10 V. Não use esses trechos como lista de
+> materiais, instrução de ligação ou autorização de energização. A proposta
+> vigente é PTC 12 V/50 W, T2 24→5 V/5 A e T3 24→12 V/20 A, todos pendentes de
+> modelo/ficha e validação; o PTC permanece sem corte DC aprovado.
+
 ---
 
 ## 🟢 Em palavras simples — o que estamos construindo, e por quê

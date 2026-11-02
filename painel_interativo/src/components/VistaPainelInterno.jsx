@@ -18,6 +18,11 @@ import { conferePrensa } from '../lib/prensas';
 /* Quais componentes do painel têm desenho de placa, e qual.
    'ilhada' = placa que VOCÊ monta furo por furo.
    'real'   = módulo comprado, desenhado a partir da foto.        */
+function ponta(p) {
+  if(p.comp) return `${p.comp}.${p.via}`;
+  const grupo=p.camara ? 'Câmara' : p.tampa ? 'Tampa' : 'Entrada';
+  return `${p.prensa ?? grupo} · ${p.camara ?? p.tampa ?? p.ref ?? ''}${p.borne ? ' · '+p.borne : ''}`;
+}
 const PLACAS = {
   BTS1: { tipo: 'real', chave: 'BTS1', rotulo: 'módulo comprado — pinagem tirada da foto' },
   BTS2: { tipo: 'real', chave: 'BTS1', rotulo: 'módulo comprado — igual ao BTS #1' },
@@ -641,7 +646,7 @@ export default function VistaPainelInterno() {
                 </text>
 
                 {/* terminais: quadrado com o ID dentro */}
-                {c.grupos.flatMap(g => posicoes(c, g).map(p => {
+                {c.grupos.flatMap(g => posicoes(c, g).map((p, terminalIndex) => {
                   if (soUsados && !p.usa) return null;
                   const k = `${c.id}.${g.ref}.${p.nome}`;
                   const on = pino === k;
@@ -654,7 +659,7 @@ export default function VistaPainelInterno() {
                      é o único jeito de "J1-11" ou "24V-SRV" caberem dentro */
                   const rot = vert ? 0 : (dentro > 0 ? 90 : -90);
                   return (
-                    <g key={k} onClick={e => { e.stopPropagation(); aoClicarTerminal(c, g, p, k); }}
+                    <g key={`${k}.${terminalIndex}`} onClick={e => { e.stopPropagation(); aoClicarTerminal(c, g, p, k); }}
                        style={{ cursor: 'pointer' }}>
                       <rect x={t.cx - rw / 2} y={t.cy - rh / 2}
                             width={rw} height={rh} rx={0.4}
@@ -805,8 +810,8 @@ export default function VistaPainelInterno() {
                     <div style={{ fontSize: 11.5, fontWeight: 600 }}>{f.nome}</div>
                     <div style={{ fontSize: 10, color: '#868e96',
                                   fontFamily: 'monospace' }}>
-                      {f.de.prensa ?? `${f.de.comp}.${f.de.via}`} →{' '}
-                      {f.para.comp}.{f.para.via} · {f.mm2} mm²
+                      {ponta(f.de)} →{' '}
+                      {ponta(f.para)} · {f.mm2} mm²
                     </div>
                   </div>
                 </div>

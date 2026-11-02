@@ -7,6 +7,165 @@
 
 ---
 
+## 🔴 Intertravamento — o que é físico e o que é software
+
+> Esta seção exigia três proteções que **não podem depender do firmware**. Por duas
+> revisões ela ficou só no papel: **nenhuma das três existia no cadastro, na fiação
+> nem na lista de compras.** O que está abaixo é o que foi efetivamente
+> implementado, com o nome das peças — e o que ficou de fora, com o motivo.
+>
+> 📌 **Status:** ST-1 e ST-2 são uma **arquitetura proposta**, não aprovada para
+> compra nem energização. Faltam modelos identificáveis com classificação CC
+> documentada, rearme seguro, proteção ambiental e validação térmica do acrílico.
+> Item **2 permanece em firmware**, com justificativa e risco residual declarados
+> no fim. RPM1/RPM2 supervisionam somente os dois coolers externos do radiador.
+> As cinco ventoinhas internas, inclusive a do PTC, têm dois fios e não têm
+> tacômetro; falha de KA3 ou travamento da ventoinha do PTC não é necessariamente
+> detectada pelo firmware. O simulador agora representa um permissivo de ventilação
+> proposto e recusa rearme/partida sob as falhas injetadas, mas esse sinal não existe
+> no circuito nem no firmware real. Até implementar supervisão física ou cumprir
+> um procedimento de inspeção verificável, a causa da sobretemperatura não pode ser
+> considerada corrigida. A proposta térmica também não é intertravamento de fluxo.
+>
+> O simulador também deriva uma corrente PTC idealizada do estado elétrico e dispara
+> `DRIVER_PTC_COLADO` quando há corrente acima do limiar modelado com o comando do
+> aquecedor desligado. A pinagem documenta BTS2 `IS`/A1, mas ainda falta validar em
+> bancada se essa saída mede corretamente corrente durante a falha do driver e se o
+> corte pelo KA1/KM1 interrompe esse modo de falha. Esse diagnóstico por firmware é
+> complementar, não proteção independente; a medição real e o corte físico continuam
+> pendentes de validação.
+>
+> O teste separa corrente real do ramal e leitura de `IS`: se A1 não sinalizar, o modelo
+> permanece sem diagnóstico apesar de o PTC continuar conduzindo. Com a proposta de
+> PTC em 12 V, a condição é mais crítica: o simulador mantém BD-PTC e a corrente do
+> aquecedor após abrir KM1, inclusive em STOP/emergência, porque o barramento do T3 é
+> permanente e o corte independente ainda não foi definido. Requer-se medição de
+> corrente independente do BTS e meio de interrupção DC independente do KM1; componentes,
+> topologia e dimensionamento ainda não foram selecionados nem validados. Não considerar
+> o trip por software como proteção para esses modos combinados.
+
+### 1. Proteção térmica do PTC — ⛔ PROPOSTA NÃO APROVADA PARA ENERGIZAÇÃO
+
+> ⚠️ **O que isto é e o que NÃO é.** Isto é **proteção térmica** — detecta que a
+> temperatura subiu demais e corta. **Não é intertravamento de ventilação**: não
+> detecta "ventoinha parada" antes do aquecimento. Se a ventoinha não partir, o PTC
+> ainda recebe energia até que uma proteção térmica validada abra. A distinção é
+> importante: a proteção responde à **consequência** (calor),
+> não à **causa** (falta de fluxo de ar). Um sensor de fluxo detectaria antes, mas
+> acrescenta uma peça que pode falhar em silêncio (palheta presa aberta) e não
+> cobre o BTS em curto — o termostato cobre todos os modos porque todos resultam
+> em temperatura subindo.
+
+O PTC fica na base da câmara de 15 L. Sem escoamento de ar, a carcaça e o acrílico
+ao redor podem aquecer. Os limites dependem do material comprado e ainda precisam
+ser confirmados; não energizar o PTC até encerrar as validações abaixo.
+
+A proposta é usar contatos térmicos **NF** em série com o aquecedor, fora do
+firmware. A topologia abaixo não comprova que os componentes selecionados
+interrompem CC com segurança e não autoriza a ligação direta:
+
+```
+BD-POT ─► BTS2 · M+ ─► PG13-2 ─► ST-1 (90 °C, no corpo do PTC)
+                                  └─► ST-2 (70 °C, na parede interna direita)
+                                        └─► PTC +
+```
+
+| | Peça | Onde | Abre em | Rearme | Por quê |
+|---|---|---|---|---|---|
+| **ST-1** | Variante **NF** de rearme manual, modelo pendente | Preso no corpo do PTC, montagem térmica a validar | **90 °C nominal**, tolerância pendente | **Manual obrigatório** | Um disparo deve manter o aquecedor desligado até inspeção e rearme deliberado |
+| **ST-2** | KSD301 manual é apenas candidato; modelo pendente | Parede interna direita, posição a validar | **70 °C nominal** é apenas proposta; tolerância pendente | **Manual** | Não aprovada até confirmar CC, temperatura, proteção ambiental e margem para o acrílico |
+
+**Por que NF e não NA.** Com o fio rompido, um NF fica **aberto** e o PTC não
+liga — a falha é segura. Um NA com o fio rompido ficaria fechado e a proteção
+desapareceria sem ninguém notar.
+
+> ⚠️ **A POSIÇÃO NO CIRCUITO NÃO DETERMINA A ORDEM DE ABERTURA.** ST-1 e ST-2
+> respondem a temperaturas em **pontos diferentes** do sistema. Quem abre primeiro
+> depende da montagem, da tolerância do termostato (±5 °C), do gradiente térmico
+> e da inércia de cada ponto — não de quem vem primeiro no fio. A corrente
+> atravessa os dois; qualquer um que abra corta o PTC.
+
+> ⛔ **ST-1: rearme manual é requisito, não uma característica confirmada da
+> peça citada.** O KSD9700-B anteriormente sugerido não está aprovado. Identificar
+> uma variante exata e obter ficha técnica do fabricante que confirme temperatura
+> e tolerância, rearme manual, proteção ambiental e capacidade de interrupção
+> em 24 Vcc para a corrente do PTC. Se não existir peça adequada, projetar e
+> validar uma trava externa de desligamento manual com elemento de corte DC-rated.
+>
+> ⛔ **ST-2: não comprar nem ligar diretamente em série com o PTC.** Não foi
+> identificada uma variante manual específica de KSD301 com ficha técnica que
+> comprove rating CC, temperatura/tolerância e proteção ambiental adequados.
+> Uma classificação de 16 A em 250 Vca não comprova interrupção de 3,33 A em
+> 24 Vcc. Se não houver componente que satisfaça todos os requisitos, projetar
+> uma arquitetura alternativa de corte/trava com contatos DC-rated dimensionados
+> para a carga, e validar o circuito antes da compra.
+
+> 🔒 **ST-1 também exige parada travada até intervenção.** A temperatura do
+> corpo do PTC não é medida pelo DS18B20, que acompanha o ar da câmara. Portanto,
+> não se pode presumir que o firmware reconhecerá um disparo de ST-1. O projeto
+> não aceitará auto-rearme de ST-1: a abertura deve impedir novo aquecimento
+> mesmo depois de o termostato esfriar, até que a causa seja inspecionada e o
+> operador rearme manualmente. A variante exata ou a arquitetura equivalente
+> permanece pendente de identificação e validação.
+>
+> O simulador trata o disparo e o rearme como eventos explícitos dos contatos
+> físicos. Ele não infere a temperatura do corpo do PTC a partir do DS18B20 nem
+> calcula a temperatura local do PTC, o efeito térmico da perda da ventoinha ou
+> o instante em que ST-1/ST-2 abririam. O permissivo de ventilação do simulador
+> deriva das falhas injetadas e é uma proposta, não uma leitura física presente no
+> painel. Os testes confirmam lógica modelada de bloqueio; não comprovam a dinâmica
+> térmica, a detecção física do fluxo ou a proteção instalada.
+>
+> 🔒 O bloqueio retentivo após trip é um requisito de arquitetura, não uma função
+> já demonstrada no painel: precisa interromper fisicamente a autorização/KM1,
+> permanecer ativo após o rearme do contato ST e exigir reconhecimento,
+> inspeção e nova ação deliberada no botão verde. O estado `bloqueioTermico` do
+> simulador representa essa trava externa proposta; não comprova que ela exista
+> na fiação nem autoriza energização.
+
+> ⚠️ **VALIDAÇÃO DO ACRÍLICO AINDA PENDENTE.** PLEXIGLAS GS (fundido) tem
+> temperatura máxima aproximada de serviço de 80 °C; PLEXIGLAS XT (extrudado),
+> aproximadamente 70 °C. Com tolerância de ±5 °C, um dispositivo nominal de
+> 70 °C pode abrir a 75 °C; atraso térmico e diferenças entre os pontos de
+> medição e os pontos quentes reduzem ainda mais a margem. Identificar o tipo
+> realmente comprado e, em ensaio controlado, medir vários pontos da parede,
+> especialmente próximos ao PTC. Não aprovar o limite de 70 °C nem energizar
+> antes de demonstrar margem abaixo do limite aplicável.
+>
+> ⚠️ **PROTEÇÃO AMBIENTAL PENDENTE.** Algumas variantes KSD301 são IP00 e a
+> câmara pode ter condensação. Confirmar a classificação da variante exata e
+> validar a proteção contra umidade da montagem; não assumir IP54 sem ficha técnica.
+
+### 2. PTC e Peltier não podem estar ligados juntos — ⚠️ PERMANECE EM FIRMWARE
+
+A V7 pedia exclusão mútua por hardware (o contato NF de um abrindo a bobina do
+outro). **Isso não foi implementado**, e a razão é honesta: os dois são acionados
+por **BTS7960**, que não tem bobina — tem `R_EN`, `L_EN` e `PWM`. Fazer exclusão
+mútua por hardware exigiria mais um módulo de relé só para espelhar o estado de um
+dos canais, e o ganho seria pequeno:
+
+| Se os dois ligarem juntos | Consequência | Quem limita |
+|---|---|---|
+| Firmware travado com `renPtc` e `renPeltier` verdadeiros | 9,30 A no ramal de potência · 10,42 A na fonte | A cadeia térmica foi proposta para interromper o PTC, mas **não está aprovada nem validada**; não energizar |
+| Câmara aquecendo com a Peltier tentando resfriar | energia desperdiçada; resultado térmico depende do ensaio real | ST-2 ainda não foi validado contra o acrílico |
+
+📌 **A exclusão mútua continua no firmware** (camada 7 do [Doc 02 §2.6](../camada_0_fundamentos/02_arquitetura_de_energia.md)), e o **watchdog de 2 s** derruba as duas saídas se o programa travar. A cadeia térmica não pode ser considerada proteção efetiva até que os componentes CC-rated, a trava manual e o desempenho térmico sejam identificados e validados. O modelo elétrico só prova as consequências lógicas dos contatos abertos; não prova o desempenho do hardware.
+
+### 3. Sobretemperatura da câmara — ⛔ PENDENTE DE COMPONENTE E VALIDAÇÃO (ST-2)
+
+É a função pretendida para ST-2: cortar o PTC se a parede aquecer demais,
+independentemente do DS18B20 e do PID. **Ainda não está demonstrado** que um
+termostato de 70 °C com a tolerância proposta proteja o tipo real de acrílico;
+ver requisitos de compra e ensaio do item 1.
+
+> ⚠️ **Sobre o BTS7960:** ele é um **driver de MOSFET**, não um relé. Tem pinos
+> `R_EN`, `L_EN` e `PWM` — **não tem bobina**. Qualquer texto deste repositório que
+> fale em "bobina do BTS7960" está errado. O intertravamento nele é feito
+> **puxando os dois `EN` para o nível inativo por um contato NF**, além do corte
+> físico no ramal de potência.
+
+---
+
 ## 🟢 Em palavras simples — como a máquina para quando precisa parar
 
 Este documento responde a uma pergunta só, mas ela é a mais importante do projeto:
@@ -181,7 +340,7 @@ Esta é a confusão mais fácil de ter, e vale deixar explícita: **potência e 
 
 > 🎯 **O Arduino não tem nenhum pino capaz de FECHAR a cadeia** — e essa é a regra que não se negocia. Se o software pudesse refazer o selo, a emergência dependeria dele, e aí não seria emergência. Não há um único fio do Arduino entre o BD-24V e a bobina do KM1.
 >
-> 🔧 **O que ele tem é um pino no RETORNO da bobina, e apenas em série:** o `D27` comanda o **KA1**, um módulo de relé depois do `A2` ([§31.13](#3113--o-veto-do-firmware-sobre-a-potência-ka1)). Isso lhe dá poder de **derrubar** a potência, nunca de segurá-la contra uma botoeira. Ele continua **lendo** pelo `D25` se a potência chegou.
+> 🔧 **O que ele tem é um pino no RETORNO da bobina, e apenas em série:** o `D27` comanda o **KA1**, um módulo de relé depois do `A2` ([§31.13](#3113--o-veto-do-firmware-sobre-a-potência-ka1)). Isso lhe dá poder de **derrubar** a potência, nunca de segurá-la contra uma botoeira. A confirmação de potência é a leitura `V1` do N4AIC24 via Modbus RTU/RS-485. Leitura fora da faixa válida, ausente ou expirada deve bloquear a partida; em operação, a perda de comunicação deve produzir falha retentiva, sem religamento automático. O timeout e os limites numéricos do simulador são hipóteses até serem confirmados no mapa/ciclo do firmware real.
 
 ### Dicionário rápido
 
@@ -227,9 +386,12 @@ O acionamento precisa satisfazer quatro exigências **ao mesmo tempo**:
 ║                                                             ▲              ║
 ║                                                  Mega · D27 ─┘  o veto     ║
 ╚════════════════════════════════════════════════════════════════════════════╝
-                    │ KM1 · contato de potência (≥ 10 A)
+                    │ KM1 · contatos de potência independentes (HH64P / LY4NJ 14 pinos · 10 A)
                     ▼
-   P1 (24 V) ──► KM1 ──► BD-POT ──► BTS7960 #1 e #2
+   P1 (24 V) ──► KM1 (Polo 1: 9→5)   ──► BD-POT ──► BTS #1 (Peltier)
+   P2 (12 V) ──► KM1 (Polo 2: 10→6)  ──► BD-PTC ──► BTS #2 (PTC)
+   Selo      ──► KM1 (Polo 3: 11→7)  ──► A1 (auto-retenção)
+   Reserva   ──► KM1 (Polo 4: 12→8)  ──► livre / sinal auxiliar
 ```
 
 ⭐ **Leia a malha de cima para baixo e o projeto inteiro cabe em três frases.** Os dois blocos NF estão em série: qualquer um aberto derruba a bobina. O selo está em paralelo com o verde: solto o botão, o relé se segura sozinho. O KA1 está em série no retorno: o firmware pode derrubar, nunca segurar.
@@ -340,7 +502,9 @@ Foi a alternativa considerada — **2N7000 + resistor + diodo, R$ 1,10**, montad
    Consumo dos TRÊS módulos no barramento de 5 V:
       3 × 65 mA = 195 mA          (KA1, KA2 e KA3)
       ⚠ Some com o Arduino, a tela e o ESP32 antes de fechar o Doc 02.
-      → T2 fecha em 0,635 A: 42 % do limite seguro do LM2596.
+      → Consumo estimado no 5 V: cerca de 0,7 A, abaixo dos 5 A propostos para T2.
+        Modelo, capacidade contínua, faixa de entrada e transientes ainda precisam
+        ser confirmados; esta conta não libera a compra ou a ligação.
 ```
 
 ### O que muda no comportamento
@@ -380,7 +544,7 @@ Com o BD-POT **desconectado** e só a cadeia de comando alimentada:
 - [ ] Ligar o Arduino e forçar `digitalWrite(27, HIGH)` → **clique, LED vermelho acende**
 - [ ] Com o cogumelo destravado e o STOP solto, apertar o **verde** → o KM1 atraca
 - [ ] Forçar `digitalWrite(27, LOW)` → o KM1 solta **e não volta** quando o pino voltar a HIGH ⭐ *(é o selo do KM1 trabalhando — só o verde religa)*
-- [ ] ⭐ **E a tela acusa `CORTE_FALHOU`?** Forçar `LOW` com o contato do KA1 propositalmente em ponte tem de fazer o alerta aparecer em ~150 ms. É o ensaio da conferência pelo `D25` ([Doc 40 §40.7](../camada_4_programacao/40_firmware_arduino.md))
+- [ ] ⭐ **E a tela acusa `CORTE_FALHOU`?** Com o contato do KA1 em ponte, confirmar a permanência de tensão em BD-POT pela leitura V1 do N4AIC24 via Modbus. O prazo de detecção depende do ciclo de leitura e do timeout definidos e medidos no firmware real; os valores do simulador são hipóteses de teste, não parâmetros aprovados.
 - [ ] Teste de diodo entre `A1` e `A2` do KM1: conduz num sentido só
 
 > 📋 **Filme o ensaio 6d.** Apertar o STOP uma vez, soltar, e mostrar o multímetro cravado em 0 V no BD-POT é a demonstração mais direta de que o painel tem selo — e é o tipo de evidência que vale mais que três páginas de texto na apresentação.
@@ -412,7 +576,7 @@ A decisão anterior foi tirar o comando e deixá-las **sempre ligadas**. Seguro,
                           │ gatilho
                    Mega · D30 ──[ R11 · 10 kΩ ]── 0 V
 
-   X6 ── ventoinhas − ──► BD-0V · Z20      ⭐ NUNCA chaveado
+   X6 ── ventoinhas − ──► BD-0V · Z15      ⭐ NUNCA chaveado
 ```
 
 > ### 🔥 O contato é o NC, e essa é a diferença mais importante entre o KA2 e o KA1
@@ -640,7 +804,9 @@ Nas cinco internas isso **não quebrava nada hoje**, porque elas são de 2 fios 
 > |---|---|---|
 > | O que acontece | ventoinhas **giram** | ventoinhas **param** |
 > | Por que está certo | dissipador quente **mata a pastilha em menos de 1 min** | ⭐ ventoinha interna parada **não queima nada** |
-> | Quem cobre o resto | — | o KA1 já cortou a potência, e o **PTC é auto-limitado**: sem fluxo de ar a resistência dele sobe e ele corta a própria potência |
+> | Quem cobre o resto | — | O corte térmico de ST-1 foi proposto, mas ainda não está validado; não tratar como proteção efetiva nem energizar o PTC |
+>
+> ⚠️ **Limite de diagnóstico:** o alarme de RPM só cobre os dois coolers do radiador. As cinco ventoinhas internas (incluindo a do PTC) são de dois fios, sem tacômetro; a tela pode mostrar o comando do KA3, mas isso não prova rotação nem fluxo de ar. Falha de KA3 ou travamento da ventoinha do PTC pode permanecer sem alarme.
 >
 > 📌 **E há um ganho de graça:** com o `NO` e o jumper em `H`, `HIGH` continua ligando as ventoinhas — **o firmware não muda uma linha**. Nenhuma inversão nova entra no código, ao contrário do que o `D30` teve de carregar.
 
@@ -648,7 +814,7 @@ Nas cinco internas isso **não quebrava nada hoje**, porque elas são de 2 fios 
 
 | Custo | Tamanho | Cabe? |
 |---|---|---|
-| Consumo no BD-5V | +65 mA (bobina + LED). O T2 vai de **0,57 A → 0,635 A** | ✅ **42 %** do limite seguro do LM2596 |
+| Consumo no BD-5V | +65 mA (bobina + LED). Estimativa total próxima de **0,7 A** | Abaixo dos **5 A propostos** para T2; modelo e capacidade contínua pendentes |
 | Clique mecânico | 1 por ensaio | ✅ |
 | **Diodo D3 obrigatório** | o MOSFET trazia o roda-livre dentro da placa comprada; contato seco não protege nada sozinho | ✅ já havia 2 reservas de 1N4007 |
 | Caixa DIN maior | 70 → 105 mm | ✅ e ainda sobra trilho |
@@ -705,38 +871,65 @@ Nada é ambíguo: **`KA3`, `KA4` e `KA5` deixaram de existir.** Se um texto, uma
 
 ---
 
-### 🔧 Por que TRÊS módulos de 1 canal, e não UM módulo de 4 canais
+### 🔧 Atualização de Arquitetura: Adoção da Placa de 8 Relés Optoacoplada (5 V)
 
-Foi considerado, e a economia é real: um módulo de 4 canais tem **uma** alimentação, **um** par de fios, e sobraria um canal de reserva. Mesmo assim, **ficaram três módulos separados** — por dois motivos.
+Originalmente, o projeto previa módulos de relé individuais de 1 canal. No entanto, para aproveitar os **sinaleiros industriais de 22 mm 24 Vcc fornecidos pelo SENAI** (custo R$ 0,00 na lista de compras) e manter total isolamento elétrico entre a lógica de 5 V dos microcontroladores e a tensão de 24 Vcc do painel, foi adotada uma **placa integrada de 8 relés de 5 V com optoacopladores**.
 
-**1 · Um módulo, uma placa, um ponto de falha — e um deles é o veto de segurança.**
+Essa solução reúne todas as saídas a relé em um único ponto organizado no trilho DIN:
 
-Os três relés não são iguais em consequência:
+| Canal | Tag | Função | Contato | Pino Arduino | Lógica de Acionamento | Carga Acionada |
+|:---:|:---:|---|:---:|:---:|:---:|---|
+| **Ch 1** | `KA1` | Veto de firmware da potência | `NO` | `D27` | `LOW` = Autoriza potência<br>`HIGH`/Solto = Corta KM1 | Bobina de KM1 (retorno A2 ao 0 V) |
+| **Ch 2** | `KA2` | Intertravamento coolers radiador | `NC` | `D30` | `LOW` = Desliga coolers<br>`HIGH`/Solto = Coolers girando | 2× Coolers 12 Vcc do radiador Peltier |
+| **Ch 3** | `KA3` | Ventiladores internos da câmara | `NO` | `D29` | `LOW` = Liga ventiladores<br>`HIGH`/Solto = Ventiladores parados | 5× Mini ventiladores 12 Vcc da câmara |
+| **Ch 4** | `H1` | Sinaleiro VERDE (Painel Energizado) | `NO` | `D9` | `LOW` = Aceso<br>`HIGH`/Solto = Apagado | Sinaleiro industrial LED 22 mm 24 Vcc |
+| **Ch 5** | `H2` | Sinaleiro AZUL (Ciclo Resfriamento) | `NO` | `D10` | `LOW` = Aceso<br>`HIGH`/Solto = Apagado | Sinaleiro industrial LED 22 mm 24 Vcc |
+| **Ch 6** | `H3` | Sinaleiro AMARELO (Ciclo Aquecimento)| `NO` | `D11` | `LOW` = Aceso<br>`HIGH`/Solto = Apagado | Sinaleiro industrial LED 22 mm 24 Vcc |
+| **Ch 7** | `H4` | Sinaleiro VERMELHO (Falha / Alarme)  | `NO` | `D12` | `LOW` = Aceso<br>`HIGH`/Solto = Apagado | Sinaleiro industrial LED 22 mm 24 Vcc |
+| **Ch 8** | `RES` | Reserva técnica | - | Livre | - | Disponível para expansão futura |
 
-| Se a placa falhar | O que se perde |
-|---|---|
-| KA2 e KA3 (ventoinhas) | ventilação — ruim, e o alarme de RPM acusa |
-| ⭐ **KA1** | **o veto do firmware sobre a potência** — a única coisa que mata um BTS7960 com MOSFET em curto ([§31.13](#3113--o-veto-do-firmware-sobre-a-potência-ka1)) |
+---
 
-Num módulo único, um defeito de trilha, de regulador ou de solda derruba **os três de uma vez**. Separados, cada um falha sozinho. **Custa R$ 0 manter separado** — o preço é o mesmo, três módulos de 1 canal ou um de 4.
+### 🛡️ Análise de Segurança e Fail-Safe (Placa Active-LOW)
 
-**2 · ⚠️ O gatilho da maioria dos módulos de 4 canais é NÍVEL BAIXO — e isso inverteria o fail-safe.**
+As placas comerciais de 8 relés com optoacoplador utilizam lógica **Active-LOW** (nível baixo ativo): o anodo do LED interno do optoacoplador é alimentado pelo VCC (+5 V) e o catodo é levado ao pino de entrada `IN`. Quando o pino do Arduino vai para `LOW` (0 V), a corrente flui pelo LED interno, disparando o relé.
 
-Os módulos de 1 canal do projeto têm **jumper H/L**, e o projeto os usa em **`H`**: `digitalWrite(pino, HIGH)` fecha o relé, e o pull-down de 10 kΩ garante que *pino solto = relé aberto*.
+Essa característica atende perfeitamente aos requisitos de segurança do projeto:
 
-Boa parte dos módulos de 4 canais **aciona em `LOW` e não tem jumper**. Nesses, o mesmo pull-down passa a significar **relé FECHADO**:
+1. **Com o Arduino desligado, sem alimentação ou durante o boot**:
+   - Os pinos do Mega ficam em alta impedância (`INPUT` tri-state).
+   - Não há corrente no LED do optoacoplador; portanto, **todos os 8 relés permanecem desenergizados**.
+2. **Comportamento em Fail-Safe**:
+   - **`KA1` (Veto KM1)**: Utiliza contato normalmente aberto (`NO`). Relé desenergizado = contato aberto. O circuito de selo de KM1 fica fisicamente interrompido. A potência só pode ser atracada se o firmware inicializar com sucesso e colocar conscientemente `digitalWrite(D27, LOW)`. Se o firmware travar, reiniciar ou sofrer trip por watchdog, o pino sobe para `HIGH`/alta impedância e KM1 cai imediatamente.
+   - **`KA2` (Radiador Peltier)**: Utiliza contato normalmente fechado (`NC`). Relé desenergizado = contato fechado. Se o microcontrolador queimar ou travar, as ventoinhas do dissipador da Peltier recebem alimentação direta de 12 Vcc, evitando superaquecimento do lado quente.
+   - **`KA3` (Ventilação da câmara)**: Contato `NO`. Relé desenergizado = ventiladores internos desligados.
+   - **`H1` a `H4` (Sinaleiros 24 V)**: Contatos `NO`. Relés desenergizados = sinaleiros apagados.
 
-| Com Arduino desligado | Módulo `H` (o do projeto) | Módulo `LOW` fixo |
-|---|---|---|
-| KA1 · veto | contato aberto → **potência cortada** ✅ | contato fechado → 🔥 **a potência é AUTORIZADA** |
-| KA3 · fans internas | paradas ✅ | girando com o painel morto |
+---
 
-🔥 **É o oposto do §31.13 inteiro.** Existe versão de 4 canais **com** jumper H/L, e ela resolveria — mas passa a ser uma exigência de compra que o anúncio nem sempre declara, e conferir isso custa mais atenção do que os R$ 0 que a troca economiza.
+### 💡 Esquema de Ligação dos Sinaleiros 24 Vcc (Canais 4 a 7)
 
-> 🎯 **A regra que fica:** *neste painel, o nível de gatilho de qualquer módulo de relé é **conferido antes de comprar**, e o pull-down de 10 kΩ é o que torna a escolha **medível** com um ohmímetro.* Ver o comissionamento em [§31.13](#3113--o-veto-do-firmware-sobre-a-potência-ka1).
->
-> 📌 **E se um dia entrar um quarto auxiliar** (o `KA4` — separar as ventoinhas dos dutos, ideia do [Doc 02](../camada_0_fundamentos/02_arquitetura_de_energia.md)), ele é mais um módulo de 1 canal de R$ 3,40: a caixa DIN de 6M tem lugar para **seis**, e hoje três estão ocupados.
+A alimentação de potência dos sinaleiros é derivada do barramento **`BD-24V`** da fonte industrial, eliminando qualquer drenagem de corrente dos pinos do microcontrolador e garantindo imunidade galvânica total contra ruídos:
 
+```
+BARRAMENTO 24 Vcc (BD-24V)
+      │
+      ├───► COM4 ──[ Jumper ]──► COM5 ──[ Jumper ]──► COM6 ──[ Jumper ]──► COM7
+                                                                             │
+PLACA 8 RELÉS (Contatos NO):                                                 │
+  NO4 ──────────────── Chicote da Porta ───────────────► H1.X1 (Verde)       │
+  NO5 ──────────────── Chicote da Porta ───────────────► H2.X1 (Azul)        │
+  NO6 ──────────────── Chicote da Porta ───────────────► H3.X1 (Amarelo)     │
+  NO7 ──────────────── Chicote da Porta ───────────────► H4.X1 (Vermelho)    │
+                                                                             │
+RETORNO DOS SINALEIROS NA PORTA:                                             │
+  H1.X2 ──[ Jumper Porta ]── H2.X2 ──[ Jumper Porta ]── H3.X2 ──[ Jumper ]── H4.X2
+                                                                             │
+  H4.X2 ────────────── Chicote da Porta ───────────────► BD-0V (0 Vcc Fonte 24V)
+```
+
+- **Economia gerada**: R$ 23,20 economizados nos sinaleiros (fornecidos pelo SENAI) e fiação padronizada em bornes industriais.
+- **Isolação**: O terra de potência dos sinaleiros (`BD-0V`) não se mistura com o terra de sinal analógico/sensores do Arduino, evitando loops de terra.
 ---
 
 📄 **Anterior:** [Doc 30 — Força e Distribuição](30_forca_e_distribuicao.md) · **Próximo:** [Doc 32 — Sinais e Sensores](32_sinais_e_sensores.md)

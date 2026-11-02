@@ -17,7 +17,7 @@ import FichaDiscreto from './FichaDiscreto';
 const C = { tinta: '#212529', fraco: '#6c757d', linha: '#dee2e6', fundo: '#eef1f5',
             papel: '#fff', destaque: '#e8590c', ok: '#2f9e44', perigo: '#c92a2a' };
 
-const CHAVE = 'guia:feitos';
+const CHAVE = 'guia:painel-autonomo-v2:feitos';
 
 export default function VistaGuia() {
   const [fase, setFase] = useState('A');
@@ -185,10 +185,10 @@ function ponta(p) {
 /* ── a lista de fios de uma etapa ────────────────────────────────────── */
 function TabelaFios({ fios }) {
   const [feitos, setFeitos] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('guia:fios')) ?? []; } catch { return []; }
+    try { return JSON.parse(localStorage.getItem('guia:painel-autonomo-v2:fios')) ?? []; } catch { return []; }
   });
   useEffect(() => {
-    try { localStorage.setItem('guia:fios', JSON.stringify(feitos)); } catch { /* cheio */ }
+    try { localStorage.setItem('guia:painel-autonomo-v2:fios', JSON.stringify(feitos)); } catch { /* cheio */ }
   }, [feitos]);
   const marca = n => setFeitos(f => f.includes(n) ? f.filter(x => x !== n) : [...f, n]);
   const faltam = fios.filter(f => !feitos.includes(f.n)).length;
@@ -209,6 +209,7 @@ function TabelaFios({ fios }) {
               <th style={{ padding: '4px 6px' }}>chega em</th>
               <th style={{ padding: '4px 6px' }}>bitola</th>
               <th style={{ padding: '4px 6px' }}>cor / função</th>
+                  <th style={{ padding: '4px 6px' }}>canaletas / conferência</th>
             </tr>
           </thead>
           <tbody>
@@ -235,6 +236,11 @@ function TabelaFios({ fios }) {
                                    background: cor?.hex, marginRight: 6,
                                    border: '1px solid #0002', verticalAlign: 'middle' }} />
                     {cor?.nome}
+                  </td>
+                  <td style={{ padding: '4px 6px', maxWidth: 260 }}>
+                    <div>{f.rota.length ? f.rota.join(' → ') : 'Ponte local no módulo'}</div>
+                    <small>{f.diz}</small>
+                    {f.aviso && <div style={{ color: C.perigo }}>{f.aviso}</div>}
                   </td>
                 </tr>
               );

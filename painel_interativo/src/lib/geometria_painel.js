@@ -229,7 +229,7 @@ export function tracarFio(f, comps, idx, portaX0 = CAIXA.largura + 40) {
   if (a.comp && a.comp === b.comp) return tracarPonte(f, a, b);
 
   /* a saída de um borne lateral também sai contornando. Usamos um spread para eles não se sobreporem */
-  const spreadA = a.lateral ? 7 + (idx % 6) * 2.5 : 0;
+  const spreadA = a.lateral ? 3.5 + (idx % 3) * 0.7 : 0;
   const saiLat = a.lateral ? [a.p[0] + (a.lado === 'esquerda' ? -spreadA : spreadA), a.p[1]] : null;
   const pts = [a.p.slice()];
   if (saiLat) pts.push(saiLat);
@@ -240,7 +240,7 @@ export function tracarFio(f, comps, idx, portaX0 = CAIXA.largura + 40) {
     if (!k) continue;
     const plano = id.startsWith('CP-') ? 'porta' : 'placa';
     if (planoAnt && plano !== planoAnt) {
-      const cl = calhaDe(f.classe);
+      const cl = calhaDe(f.rota.includes('CP-vsin') ? 'sinal' : f.classe);
       const yP = cl.y + cl.h / 2;
       pts.push([cur[0], yP]);
       pts.push([plano === 'porta' ? portaX0 + 30 : PLACA.x + PLACA.largura - 8, yP]);
@@ -255,7 +255,7 @@ export function tracarFio(f, comps, idx, portaX0 = CAIXA.largura + 40) {
      contornando o componente por fora — senão o fio sobe rente à borda
      e some atrás dele. */
   if (b.lateral) {
-    const spread = 7 + (idx % 6) * 2.5;
+    const spread = 3.5 + (idx % 3) * 0.7;
     const foraX = b.p[0] + (b.lado === 'esquerda' ? -spread : spread);
     pts.push([foraX, cur[1]]);
     pts.push([foraX, b.p[1]]);

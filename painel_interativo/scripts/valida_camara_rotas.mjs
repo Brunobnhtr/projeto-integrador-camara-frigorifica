@@ -39,14 +39,22 @@ for (const f of seis) {
 }
 const emendado = new Set(EMENDAS_CAMARA.flatMap(
   e => [`${e.de.p}.${e.de.b}`, `${e.para.p}.${e.para.b}`]));
+const terminaisPendentes = new Set(['PTC.+', 'PTC.−', 'ST1.1', 'ST1.2', 'ST2.1', 'ST2.2']);
 for (const k of [...BORNES_CAMARA.keys(), ...BORNES_TAMPA.keys()]) {
   const temFio = seis.some(f => {
     const a = naCamara(f) ?? naTampa(f);
     return `${a.camara ?? a.tampa}.${a.borne}` === k;
   });
-  if (!temFio && !emendado.has(k)) err(`o borne ${k} existe mas nenhum fio chega nele`);
+  if (!temFio && !emendado.has(k) && !terminaisPendentes.has(k))
+    err(`o borne ${k} existe mas nenhum fio chega nele`);
+  else if (!temFio && terminaisPendentes.has(k))
+    ok(`${k}: ramal PTC bloqueado, sem ligação física declarada`);
   else if (!temFio) ok(`${k}: vem de emenda interna, não tem fio próprio do painel`);
 }
+if (seis.some(f => {
+  const a = naCamara(f);
+  return a && terminaisPendentes.has(`${a.camara}.${a.borne}`);
+})) err('o ramal PTC/ST-1/ST-2 tem condutor declarado enquanto a topologia está bloqueada');
 ok(`${seis.length} fios, ${BORNES_CAMARA.size + BORNES_TAMPA.size} bornes declarados`);
 
 /* ── 2. quem atravessa a parede tem rota; quem não atravessa, não ──── */

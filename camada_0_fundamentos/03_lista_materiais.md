@@ -1,21 +1,33 @@
 # CAMADA 0 · Doc 03 — Lista de Materiais (BOM)
 
+> ⚠️ **Revisão da sétima auditoria:** trechos do carrinho e tabelas de versões
+> anteriores abaixo são históricos, não especificações de compra. A planilha
+> regenerada reconcilia o painel com o modelo atual (700 × 700 × 250 mm,
+> N4AIC24/Modbus, oito DUTs e sinaleiros de 5 V). ST-1 e ST-2 seguem bloqueados
+> para compra; o PTC não está liberado para energização.
+
+> ⛔ **Proposta provisória de potência — não comprar nem montar T2, T3 ou o PTC ainda.**
+> A especificação pretendida é T2 24→5,0 V/5 A, T3 24→12 V/20 A e PTC 12 V/50 W.
+> O modelo exato e as fichas, a tensão máxima/transientes de entrada de T2, o corte
+> CC independente do PTC, F3 e bitolas ainda estão pendentes. As linhas correspondentes
+> ficam fora da planilha de compra até a liberação técnica.
+
 > A BOM está organizada **na ordem de construção (por camada)**, não por tipo de peça. Assim você compra o que precisa quando precisa, e não fica com R$ 800 em componentes parados esperando a maquete ficar pronta.
 >
 > 🔄 **Mudanças em relação à versão anterior:** a **fonte ATX saiu** (não tem 24 V — ver [Doc 02 §2.1](02_arquitetura_de_energia.md)); entraram a **fonte chaveada de 24 V**, os **conversores step-down**, o **disjuntor**, o **relé de interface KM1** e todo o material de cenografia da maquete.
 >
-> ✅ **Revisão "Potência em 24 V" (Plano B) — o que mudou nesta BOM:**
+> 🗂 **Revisão intermediária "Potência em 24 V" — registro histórico, substituído pela proposta provisória acima:**
 >
 > | Saiu | Entrou |
 > |---|---|
-> | ~~1× XL4016 (T1)~~ + ~~2× XL4015~~ | **1× kit com 2 módulos LM2596 com display** (T2 e T3) |
-> | ~~6× Diodo Zener (5V6 / 13 V / 15 V)~~ | **nada** — proteção nativa no CI do LM2596 |
-> | ~~2× porta-fusível (F4/F5)~~ + ~~fusíveis de saída~~ | **nada** — F1/F2/F3 continuam |
-> | ~~2× voltímetro 3 fios~~ (T2 e T3) | **nada** — display já vem no módulo |
+> | ~~1× XL4016 (T1)~~ + ~~2× XL4015~~ + ~~kit LM2596~~ | **T2 e T3 provisórios, aguardando validação de modelo e ficha** |
+> | ~~6× Diodo Zener (5V6 / 13 V / 15 V)~~ | **Decisão antiga baseada no LM2596; revisar as proteções quando T2/T3 forem identificados.** |
+> | ~~2× porta-fusível (F4/F5)~~ + ~~fusíveis de saída~~ | A revisão retirou F4/F5; F1/F2/F3 e o novo ramal ainda exigem coordenação e dimensionamento |
+> | ~~2× voltímetro 3 fios~~ (T2 e T3) | Decisão baseada nos LM2596 da revisão intermediária; não presumir display nos conversores atualmente propostos |
 > | ~~Tubo PVC Ø 63 mm + tampas~~ + ~~cooler 30 mm do T1~~ | **Janelas de acrílico** nos tubos dos postes |
-> | ~~1× Peltier~~ · ~~1× PTC 12 V~~ · ~~1× cooler 80 mm~~ | **2× Peltier (série)** · **1× PTC 24 V** · **2× cooler 80 mm** |
+> | ~~1× Peltier~~ · ~~1× PTC 12 V antigo~~ · ~~1× cooler 80 mm~~ | **2× Peltier (série)** · **proposta PTC 12 V / 50 W, compra bloqueada** · **2× cooler 80 mm** |
 >
-> **Efeito líquido no orçamento: praticamente neutro.** O que se gasta a mais nas Peltier e nos coolers, economiza-se nos conversores, voltímetros e componentes de proteção.
+> **Orçamento ainda não fechado.** T2/T3 e o ramal do PTC não têm modelos nem proteções aprovados; não considerar economias ou equivalência de custo até obter as fichas e dimensionar o conjunto.
 
 ---
 
@@ -45,7 +57,7 @@ Não procure "todos os resistores" — eles estão espalhados de propósito, cad
 | **Especificação** | Os detalhes que **não podem** estar errados. É aqui que mora o motivo de o item ser aquele e não outro |
 | **Link** | Deixado em branco de propósito, para você colar o anúncio escolhido |
 
-> ⚠️ **Leia a coluna Especificação antes de comprar, sempre.** Muitos itens deste projeto têm um "sósia" mais barato que **não serve**. Exemplos reais: relé de 10 A que só vale 5 A em corrente contínua; PTC de 12 V no lugar do de 24 V; fusível de 6 A onde precisa de 10 A. Todos parecem certos no anúncio.
+> ⚠️ **Leia a coluna Especificação antes de comprar, sempre.** Muitos itens deste projeto têm um "sósia" mais barato que **não serve**. Exemplos: relé de 10 A que só vale 5 A em corrente contínua; PTC de 24 V/80 W no lugar da proposta provisória de 12 V/50 W (ainda bloqueada); fusível de 6 A onde precisa de 10 A. Todos parecem certos no anúncio.
 
 ### Os 6 erros de compra mais fáceis de cometer
 
@@ -54,7 +66,7 @@ Se você já tinha uma lista antiga em mãos, **confira estes seis antes de fech
 | ⚠️ | Item | O erro |
 |---|---|---|
 | 1 | **Peltier** | Comprar 1. São **3** (2 em uso + 1 reserva), do mesmo lote |
-| 2 | **PTC** | Comprar o de 12 V. Tem que ser **24 V** — e é o item mais difícil de achar |
+| 2 | **PTC** | Proposta atual: **12 V / 50 W**; confirmar modelo e proteções. **Não comprar enquanto bloqueado** |
 | 3 | **Cooler externo 80 mm** | Comprar 1. São **2**, e os dois com **3 fios** |
 | 4 | **Fusível F1** | Comprar 6 A. Tem que ser **10 A** |
 | 5 | **Fio rígido** | Comprar fino. **Vermelho 1,00 mm²** e **azul 1,50 mm²** |
@@ -75,26 +87,26 @@ Se você já tinha uma lista antiga em mãos, **confira estes seis antes de fech
 
 ---
 
-## 🛒 O carrinho de 19/08/2026 — o que já está separado
+## 🛒 Carrinho de 19/08/2026 — registro histórico, não usar para compras
 
 > 📌 **Esta seção é o retrato do carrinho real, com os preços do dia.** Ela existe porque
 > conferir anúncio contra projeto é o momento em que os erros de compra aparecem — e aqui já
 > apareceram seis.
 
-### ✅ O que está certo e pode fechar
+### Registro do que foi considerado correto naquela revisão (histórico; não comprar)
 
 | Item no carrinho | R$ | No projeto é | Conferir ao receber |
 |---|---:|---|---|
-| Módulo sensor de tensão DC 0-25 V (5 pçs) | 16,07 | ⭐ **SV-1** — vigia do 24 V, substituiu o divisor soldado | **Meça a saída com 24 V: ~4,8 V.** Ver [Doc 33 §33.4](../camada_3_eletrica/33_placa_interface_componentes.md) |
+| ~~Módulo sensor de tensão DC 0-25 V (5 pçs)~~ | 16,07 | ~~SV-1 — vigia analógica do 24 V~~. **Obsoleto; não comprar.** A tensão de BD-POT é medida pelo V1 do N4AIC24 via Modbus RTU/RS-485. | |
 | Sensor WCS2702 ajustável | 25,41 | ⭐ **SC-1** — detector de dispositivo morto | Que tenha **furo de passagem** para o fio (é por ele que entram as 10 voltas) |
 | Conversor de nível lógico 4 canais I²C | 10,44 | **CONV** — 5 V ↔ 3,3 V entre Mega e ESP32 | Bidirecional, com os dois lados alimentados |
 | BTS7960 ponte-H 43 A (2 pçs) | 20,96 | **BTS1 e BTS2** | Barra de pinos com `R_EN`, `L_EN`, `R_IS`, `GND` |
-| LM2596 com display (2 pçs) | 21,16 | **T2 (5 V)** e **T3 (12 V)** | ⚠️ **Ajuste na bancada antes de fechar no poste** |
+| LM2596 com display (2 pçs) | 21,16 | Proposta antiga para **T2/T3**, substituída pelas especificações provisórias atuais; não comprar | Modelo e ficha técnica pendentes |
 | Módulo relé 1 canal 5 V (2 pçs) | 6,79 | **KA1** (veto), **KA2** e **KA3** (ventoinhas) — ⚠️ **compre 2 pares**: são 3 em uso | ⭐ **"5VDC" no corpo do relé** e jumper em **H** |
 | AM2315C I²C | 68,59 | Sensor de temperatura e umidade da câmara | Endereço 0x38, não conflita com o RTC (0x68) |
 | ESP32-WROOM-32U DevKitC | 31,72 | **ESP32** — MQTT e dashboard | Versão **U** = conector de antena externa ✔ |
 | Antena 2,4 GHz RP-SMA + cabo U.FL→SMA + flange | 42,00 | A antena do ESP32, do lado de **fora** da caixa | ⚠️ **RP-SMA e SMA não encaixam entre si** — confira que antena e flange são o mesmo padrão |
-| Aquecedor PTC 24 V com ventilador | 78,08 | **PTC** — o lado quente da câmara | ⚠️ Confirme **24 V** (o anúncio vende 12/24/110/220) |
+| Aquecedor PTC 24 V com ventilador | 78,08 | Proposta antiga de PTC, substituída pela proposta provisória de **12 V/50 W**; não comprar | Modelo, corte DC e proteções pendentes |
 | DS18B20 à prova d'água, cabo 1 m | 6,90 | Sonda do dissipador (1-Wire) | ⚠️ **VEJA O ALERTA ABAIXO** |
 
 ### ⚠️ Os seis pontos de atenção do carrinho
@@ -179,13 +191,13 @@ Nada disso aparece no carrinho, e tudo é necessário para montar:
 | **Blocos de distribuição DIN** | ver ponto 3 | BD-24V, BD-POT, BD-5V, BD-AUX, BD-0V e BD-0V-B |
 | **Botoeira cogumelo com trava** | 1 | **S0** — a emergência |
 | **Botoeiras 22 mm** (verde e preta) | 2 | S1 LIGAR · S2 STOP |
-| **Relé 24 V 8 pinos + base PTF08A** | 1 | KM1 *(consta como item nacional)* |
+| **Relé 24 V 14 pinos HH64P / LY4NJ + base PTF14A** | 1 | KM1 *(Peltier 24 V + PTC 12 V + Selo)* |
 | **RTC DS3231** | 1 | Data e hora do log |
 | **Capacitor cerâmico 100 nF** | 4 | C1 e C2 + reservas |
 | **Resistores** ¼ W | ~10 | 2× 10 kΩ (BTS) · 3× 10 kΩ (pull-down dos KA1/KA2/KA3) · 4× 220 Ω (postes) · 1,2 kΩ (DUT) + reservas |
 | **Diodo 1N4007** | 4 | D1 (bobina do KM1), D2 (ventoinhas do radiador) e D3 (ventoinhas internas) + reserva |
 | **LED 3 mm branco** | 4 | Iluminação dos postes |
-| **Fusíveis** | 8 | F1 10 A · F2/F3 2 A · F-P 100 mA + reservas |
+| **Fusíveis** | A revisar | F1 e F-P conforme circuito; F2/F3 e o ramal novo do PTC sem liberação |
 | **Trilho DIN, canaleta, caixa do painel, cabo e anilhas** | — | A infraestrutura do painel ([Doc 20](../camada_2_painel/20_painel_projeto_e_layout.md)) |
 
 ---
@@ -194,7 +206,7 @@ Nada disso aparece no carrinho, e tudo é necessário para montar:
 
 | Lote | Quando comprar | Itens | Custo estimado |
 |---|---|---|---|
-| **Lote A** | Agora — prazo longo de entrega | Eletrônica importada, kit LM2596, fonte 240 W, **3× Peltier**, ⚠️ **PTC de 24 V** (item mais difícil de achar) | ~R$ 700 |
+| **Lote A** | Após liberar componentes de potência | Itens sem pendência técnica; **não comprar T2, T3 nem PTC** até aprovar modelos e proteção | Recalcular |
 | **Lote B** | Junto com o A | Estrutura da maquete e acrílico (gráfica leva 5–10 dias) | ~R$ 450 |
 | **Lote C** | Ao iniciar a Camada 2 | Painel, trilho DIN, bornes, botoeiras | ~R$ 350 |
 | **Lote D** | Ao iniciar a Camada 3 | Cabos, terminais, canaleta, fusíveis | ~R$ 200 |
@@ -296,20 +308,15 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 
 | Item | Qtd | Especificação | Ajuste | Link |
 |---|---:|---|---|---|
-| ⭐ **Kit 2× Módulo LM2596 com display** | 1 kit | Step-down **3 A**, Vin até 40 V, saída ajustável, **display LED vermelho de 3 dígitos** integrado. Um módulo vira o **T2**, o outro vira o **T3** | ver abaixo | [Mercado Livre](https://www.mercadolivre.com.br/kit-2-modulo-regulador-de-tensao-lm2596-display-ajustavel/up/MLBU4063333801) |
-| → **T2** (poste P2, comando) | — | 1º módulo do kit — alimenta Arduino, tela ES3C28P, RTC, lógica dos BTS, placa PI-1 e **os LEDs da iluminação da maquete** | **5,10 V** | |
-| → **T3** (poste P3, auxiliares) | — | 2º módulo do kit — alimenta as fans internas e os coolers | **12,0 V** | |
-| Kit LM2596 reserva | 1 kit | **Opcional mas recomendado.** São os únicos conversores do projeto; queimar um na véspera sem reserva significa não apresentar | — | |
-| **Dissipador de alumínio ~20 × 15 × 10 mm** | 2 | ⚠️ **Obrigatório**, colado no CI LM2596S de cada módulo. Sem ele o T3 passa dos 100 °C dentro do tubo — ver [Doc 02 §2.8](02_arquitetura_de_energia.md) | — | |
-| Fita térmica dupla face | 1 | Fixação dos dissipadores | — | |
-| **Acrílico transparente 1 mm** | 1 lâmina | **Janelas de visualização** nos 3 tubos dos postes (~20 × 12 mm cada) — protege o display e mantém o visual fechado | — | |
+| **T2 — conversor 24 V → 5 V / 5 A (25 W)** | 1 | **PROPOSTA · NÃO COMPRAR.** Saída fixa 5,0 V. Exigir ficha do modelo exato e confirmar Vin máximo acima da tensão máxima real da fonte e transientes; verificar dissipação, proteção e entrada segura da placa Arduino | `conversor buck 24v 5v 5a ficha tecnica` | |
+| **T3 — conversor 24 V → 12 V / 20 A (240 W)** | 1 | **PROPOSTA · NÃO COMPRAR.** Ficha do modelo exato deve comprovar operação contínua, faixa de entrada, térmica, proteção e capacidade em 5,49 A ou mais | `conversor buck 24v 12v 20a ficha tecnica` | |
+| Kit LM2596 reserva | — | ~~Removido da arquitetura proposta~~ | — | |
+| **Acrílico transparente 1 mm** | 1 lâmina | Janelas dos postes somente se o conversor escolhido tiver display e a decisão de exibição for mantida; modelo ainda pendente | — | |
 | **Voltímetro + amperímetro digital 3 fios** | 1 | **Único medidor comprado à parte** — vai na caixa de derivação do **P1**, mostrando os 24,0 V do barramento e **a corrente das Peltier ao vivo**. Faixa: 0-100 V / 10 A | — | |
 
-> ⭐ **Por que o LM2596 com display, e não os XL4015/XL4016 da versão anterior:** com a potência térmica ligada direto em 24 V, a maior carga que sobrou para um conversor é de **0,87 A** — o LM2596 de 3 A sobra. E ele traz duas coisas que os XL não têm: **display integrado** (a tensão de saída fica visível ao público em tempo real) e **proteção térmica + limite de corrente nativos no chip**, que foi o que permitiu eliminar todo o circuito crowbar. Ver [Doc 02 §2.5](02_arquitetura_de_energia.md).
+> ⛔ Os links e especificações dos LM2596 acima pertencem ao projeto anterior. A proposta nova ainda não tem modelos aprovados; não inferir proteção, corrente contínua ou segurança a partir do anúncio.
 
-> 💡 **Dica de apresentação — a janela de acrílico:** recorte uma janelinha de ~20 × 12 mm no tubo de PVC de cada "transformador" e cole por dentro a lâmina de acrílico transparente. O **display vermelho do LM2596 fica visível de longe**, marcando 5,10 V no poste P2 e 12,0 V no P3, enquanto o medidor do P1 mostra os 24,0 V da linha. A transformação de tensão deixa de ser um argumento e vira uma coisa que o público **lê**. Vire as janelas para o lado da rua e ponha os furos de ventilação nas costas do tubo.
->
-> A maioria das versões desse módulo tem um **botãozinho que alterna o display entre tensão de entrada e de saída** — se o seu tiver, é a demonstração inteira em um toque: 24,0 V → aperta → 5,10 V.
+> 📌 As janelas e a demonstração do display pertencem ao kit LM2596 anterior. Não fabricar os recortes antes de selecionar os conversores novos.
 
 ## E.3 — Proteção do sistema de energia
 
@@ -318,7 +325,7 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 | Porta-fusível mini automotivo | 3 | **Fusível de LÂMINA (automotivo)**, não de vidro. Trilho DIN 35 mm **ou** bloco parafusado — ver nota abaixo | **F1, F2, F3** — entrada dos 3 ramais, **na subestação** | |
 | *Alternativa:* **bloco de 3 posições para fusível lâmina** | 1 | Substitui os 3 suportes acima. ⚠️ Conferir: **fusível lâmina** · **≥ 10 A por posição** · **≥ 32 Vdc** · preferir **entrada comum** (1 entrada + 3 saídas). Parafusa na parede da caixa — dispensa trilho DIN na subestação | idem | |
 | **Fusível mini automotivo 10 A** | 2 | 1 uso + 1 reserva | **F1** — ramal RM1 (potência 24 V, 6,0 A) | |
-| Fusível mini automotivo 2 A | 4 | 2 usos + 2 reservas | **F2** (comando) e **F3** (auxiliares) | |
+| Fusível mini automotivo 2 A | 3 | 1 uso + 2 reservas | **F2** (comando); F3 para T3 está pendente de dimensionamento e não é item liberado | |
 | Terminal olhal M4 amarelo | 10 | Aterramento e barramento de 0 V | — | |
 
 > ⚠️ **F1 subiu de 6 A para 10 A.** O ramal de potência agora conduz 6,0 A contínuos em 24 V; um fusível de 6 A abriria em operação normal. **Confira antes de comprar** — é o erro mais fácil de cometer copiando a lista antiga.
@@ -400,7 +407,7 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 | **Fio rígido ENCAPADO 1,00 mm² VERMELHO** ⬆ | 2 m | Ramal **R1** (potência, **6,0 A**). ⚠️ Subiu de 0,75 para 1,00 mm² por causa da corrente das 2 Peltier. **Nunca condutor nu** — em CC qualquer ponte metálica é curto franco | |
 | **Fio rígido ENCAPADO 0,50 mm² MARROM** | 2 m | Ramal **R2** (comando) | |
 | **Fio rígido ENCAPADO 0,50 mm² CINZA** | 2 m | Ramal **R3** (auxiliares) | |
-| **Fio rígido ENCAPADO 1,50 mm² AZUL CLARO** ⬆ | 2 m | **Retorno comum 0 V** — o "neutro" da linha, 40 mm abaixo da cruzeta. Subiu de 1,00 para 1,50 mm²: conduz a **soma** dos 3 ramais (6,9 A) | |
+| **Fio rígido ENCAPADO 1,50 mm² AZUL CLARO** ⬆ | 2 m | **Retorno comum 0 V** — o "neutro" da linha, 40 mm abaixo da cruzeta. Subiu de 1,00 para 1,50 mm²: conduz a **soma** dos 3 ramais (7,11 A) | |
 | Contas/miçangas marrom ou branca Ø 6 mm | 20 | **Isoladores** de pino da cruzeta | |
 | **Tubo de PVC Ø 50 mm** | 24 cm | Corpos dos 3 postes — 8 cm cada: **T2** (P2), **T3** (P3) e a **caixa de derivação** (P1). Agora os três têm o mesmo diâmetro, porque o P1 deixou de ter conversor | |
 | Tampa/cap PVC Ø 50 mm | 6 | Tampas dos 3 corpos | |
@@ -457,6 +464,22 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 
 ## C.1 — Acrílico (levar a lista para a gráfica — corte a laser)
 
+> ⚠️ **REVISÃO V7 — esta tabela está duplamente superada.** Ela descreve o envelope
+> **V4** (câmara de 5,25 L), que por sua vez já foi substituído pela V6 (40,8 L) e
+> agora pela **V7** (15,0 L). A lista válida hoje é
+> [`cad_corte/LISTA_FERRAGENS_E_MATERIAIS_V7.md`](../cad_corte/LISTA_FERRAGENS_E_MATERIAIS_V7.md),
+> gerada a partir dos dois CSV de corte:
+>
+> | | V7 |
+> |---|---|
+> | Câmara | **300 × 200 × 250 internos (15,0 L)**, corpo de 310 × 205 × 260 |
+> | Peças | **36 físicas em 22 modelos + 6 de isolamento** |
+> | Acrílico 5 mm | 0,475 m² (chapa de 1150 × 700) |
+> | Isopor EPS 1 mm | 0,364 m² |
+> | Painel | 600 × 800 × 250, 6 peças de MDF 15 mm (1,59 m²) |
+>
+> Use a tabela abaixo **só como histórico** do que já foi comprado na V4.
+
 | Peça | Espessura | Dimensão | Qtd | Observação |
 |---|---|---|---:|---|
 | Parede lateral ESQ / DIR | 5 mm transp. | 110 × 250 mm | 2 | Recorte 90 × 210 mm (duto), bordas 45° |
@@ -506,7 +529,7 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 
 | Item | Qtd | Especificação | Link |
 |---|---:|---|---|
-| Caixa de comando ou MDF | 1 | **400 × 500 × 200 mm** — comprada pronta ou feita em MDF 15 mm | |
+| Caixa de comando ou MDF | 1 | **500 × 500 × 200 mm** — comprada pronta ou feita em MDF 15 mm | |
 | Porta do painel | 1 | MDF 12 mm ou acrílico fumê 5 mm (fica bonito ver os LEDs) | |
 | **Trilho DIN 35 mm** | 1,5 m | Aço galvanizado — 3 trilhos de ~360 mm | |
 | **Canaleta perfurada 30 × 30 mm** | 3 m | Com tampa. **Placa de montagem:** 4 horizontais + 2 verticais ≈ 2,8 m | |
@@ -797,7 +820,7 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 | Driver ponte-H **BTS7960** | 2 | 43 A, pino IS de diagnóstico | |
 | Suporte SPCI4 trilho DIN | 2 | Fixa PCI 100 × 79 mm | |
 | Cooler 40 mm 12 V | 1 | Refrigeração dos BTS | |
-| **KM1 — Relé 8 pinos 24 Vcc + base DIN** | **2** | 1 em uso + 1 reserva. Relé eletromecânico **8 pinos, bobina 24 Vcc, 2 contatos reversíveis (2 NA + 2 NF) de 10 A cada**, com **base para trilho DIN inclusa**. Buscar `relé 8 pinos 24v 10a base din` · `JQX-13F 24v` · `LY2N 24vdc`. ~R$ 39 o conjunto. Ele usa os **2 contatos**: o `11-14` para os 6,0 A da carga e o `21-24` para o selo | |
+| **KM1 — Relé 14 pinos 24 Vcc (HH64P / LY4NJ 10 A) + base DIN PTF14A** | **2** | 1 em uso + 1 reserva. Relé eletromecânico **14 pinos, bobina 24 Vcc, 4 contatos reversíveis (4 NA + 4 NF) de 10 A cada**, com **base para trilho DIN PTF14A inclusa**. Modelo: `HH64P` / `LY4NJ 24VDC 10A`. Ele usa os contatos independentes: Polo 1 (9-5) para os 6,0 A da Peltier (24 V), Polo 2 (10-6) para os 4,2 A do PTC (12 V) e Polo 3 (11-7) para o selo do botão Ligar. Ao bater emergência ou STOP, desenergiza Peltier e PTC simultaneamente! | |
 | *Alternativa premium (só se sobrar orçamento)* | — | **Finder 46.61 24VDC** (1 reversível **16 A**) + base **95.05** para o KM1, ~R$ 80–110. Vale se você quiser folga grande sobre os 6,0 A e datasheet publicado | |
 | **Resistor 10 kΩ 1/4 W** | 4 | **Pull-down** em cada `R_EN` dos BTS7960 (2) + reservas. ⚠️ Garante que **pino solto = driver desligado** — ficou ainda mais crítico com os 24 V permanentes na entrada dos BTS | |
 | **Resistor 22 kΩ 1/4 W** ⬆ | 2 | **Braço superior** do divisor de realimentação de tensão para o pino D25 | |
@@ -901,13 +924,14 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 > - **O optoacoplador entrega imunidade a ruído, não isolação galvânica**, num projeto de 0 V único. O mesmo vale para os módulos de relé — e neles a isolação de verdade está no **contato**, que é seco.
 | 🔄 **DS18B20 à prova d'água** | 1 | **Mudou de lugar:** saiu de dentro da câmara e foi para o **dissipador do lado quente**. É ele que diz quando a pós-ventilação pode parar | |
 | 🔄 **AM2315C** | 1 | **Passou a ser o único sensor de dentro da câmara.** Mede temperatura **e umidade** no mesmo encapsulamento, e já estava no barramento I²C | |
-| ~~PI-2 — caixa DIN 4 módulos~~ | ~~1~~ | 🗑️ **NÃO COMPRE.** Ela abrigava o multiplexador, os shunts e o INA219 — as três peças saíram com a detecção digital ([Doc 13 §13.4](../camada_1_maquete/13_posicoes_de_ensaio.md)) | |
-| ⭐ **Porta-fusível DIN 1 via COM INTERRUPTOR** | 1 | Para a posição de ensaio, com fusível tubular de **100 mA**. ⭐ **O interruptor é a demonstração:** desligando a chave na frente da banca, o sensor vê a corrente sumir e o sistema acusa a falha em menos de 1 s. ⚠️ Era de 2 vias, para 2 posições; o protótipo passou a ter **um** canal de teste | |
-| **Aquecedor PTC cerâmico 24 V / 80 W** | 1 | Com aletas e ventilador, **versão de 24 V** (~3,3 A) para ligar direto no barramento. ⚠️ **60 W não existe no mercado brasileiro** — as versões reais são **80 W, 100 W e 150 W**. Use a de **80 W**: fica bem equilibrada contra os ~60 W de capacidade de refrigeração das 2 Peltier, e mantém a corrente em 3,3 A (metade da Peltier). A de 150 W passaria a ser o pior caso do ramal (6,25 A) e desequilibra o controle. Buscar `aquecedor ptc 24v ventilador` | |
-| ⚠️ **Ventoinha de reposição do RADIADOR — 3 fios** | 2 | ⭐ **A troca mais importante do kit.** As originais são de **2 fios** e não informam rotação. Têm que ser **as do radiador (lado quente)** — se elas param, a Peltier queima em < 1 min. As dos **blocos frios** podem continuar de 2 fios. Medir o tamanho no kit antes de comprar | |
+| **PI-2 — caixa DIN 4 módulos** | 1 | Abriga o multiplexador, os shunts e o INA219 para a detecção de corrente das 2 posições de ensaio | |
+| **Módulo CD74HC4067** | 1 | Multiplexador analógico de 16 canais (PI-2) | |
+| **Módulo INA219** | 1 | Medição de corrente/tensão (PI-2) | |
+| ⭐ **Porta-fusível DIN 2 vias COM INTERRUPTOR** | 1 | Para as 2 posições de ensaio, com fusíveis tubulares de **100 mA**. ⭐ **O interruptor é a demonstração:** desligando a chave na frente da banca, o sensor vê a corrente sumir e o sistema acusa a falha em menos de 1 s. | |
+| **Aquecedor PTC 12 V / 50 W** | 1 | **PROPOSTA · NÃO COMPRAR/ENERGIZAR.** Corrente estimada 4,17 A. Exigir variante identificável, ficha técnica, ventilação e compatibilidade térmica; aguardar projeto do corte CC independente, proteção do ramal, cabos e F3. Buscar `aquecedor PTC 12v 50w` | |
+| ⭐ **Ventoinha de reposição do RADIADOR — 3 fios** | 2 | ⭐ **A troca mais importante do kit.** As originais são de **2 fios** e não informam rotação. Têm que ser **as do radiador (lado quente)** — se elas param, a Peltier queima em < 1 min. As dos **blocos frios** podem continuar de 2 fios. Medir o tamanho no kit antes de comprar | |
 | Pasta térmica | 1 | Seringa 5 g. **O kit já vem com a junta térmica montada** — a pasta é só para retrabalho, se você abrir para trocar uma pastilha | |
-| Fan 60 × 60 mm 12 V | 2 | Internas — lado PTC (1 sopra ↑, 1 sopra ↓) | |
-| Fan 40 × 40 mm 12 V | 2 | Internas — lado Peltier (1 sopra ↓, 1 sopra ↑) | |
+| **Ventoinha interna 12 V** | 5 | Internas — 4 de circulação + 1 do PTC (grupo único em paralelo) | |
 
 > ### ⭐ Kit duplo de Peltier — as 3 modificações obrigatórias
 >
@@ -965,44 +989,44 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 
 | Item | Qtd | Especificação | Link |
 |---|---:|---|---|
-| Sensor DS18B20 à prova d'água | 1 | 1-Wire, ±0,5 °C — centro da câmara | |
-| Resistor 4,7 kΩ 1/4 W | 2 | Pull-up do barramento 1-Wire | |
+| Sensor DS18B20 à prova d'água | 1 | 1-Wire, no dissipador quente; não mede o corpo do PTC nem substitui ST-1 | |
+| Resistor 4,7 kΩ 1/4 W | 1 | Reserva somente se o adaptador do DS18B20 não incluir pull-up | |
 | Sensor AM2315C | 1 | I²C, umidade + temperatura, carcaça selada | |
-| Capacitor cerâmico 100 nF | **6** | Filtro dos pinos IS dos BTS (2) + filtro do divisor D25 (1) + reservas | |
-| Resistor 220 Ω 1/4 W | 6 | 4 usos + 2 reservas — **série dos LEDs brancos da iluminação da maquete (5 V)**. ⚠️ Não são mais dos sinaleiros do painel, que agora são de 24 V | |
+| Resistor 220 Ω 1/4 W | 6 | 4 usos + 2 reservas — série dos LEDs brancos da iluminação da maquete (5 V); os sinaleiros do painel são módulos de 5 V | |
 
 ## L.4b — Posições de ensaio (dispositivos sob teste)
 
-> ⭐ **É o núcleo do problema descrito no edital.** Detalhamento completo, com esquema e ensaios, em [Doc 13](../camada_1_maquete/13_posicoes_de_ensaio.md). A maquete simula 2 posições usando cargas 24V.
+> ⭐ **É o núcleo do problema descrito no edital.** Detalhamento completo em [Doc 13](../camada_1_maquete/13_posicoes_de_ensaio.md). A maquete tem **8 posições de LED em 12 V** (2 placas de 95 × 75 mm), medidas por **um** módulo N4AIC24 em Modbus RS-485 — o Mega **não** gasta entrada analógica: A2 e A3 estão livres.
 
 | Item | Qtd | Especificação | Link |
 |---|---:|---|---|
-| ~~Sensor de corrente WCS2702~~ | ~~1~~ | 🗑️ **NÃO COMPRE.** Substituído pela arquitetura analógica/Modbus (ACS712) para demonstrar tecnologia industrial | |
-| ⭐ **Módulo ADC 2 Canais Modbus RTU RS-485** | 1 | 🔎 **O coração da digitalização industrial.** Módulo conversor A/D (0-5V ou 4-20mA configurável), 2 entradas, saída RS-485 Modbus RTU. Endereço configurável. Alimentação 24V | |
-| ⭐ **Módulo Conversor RS-485 para TTL (MAX485)** | 1 | Interface entre o barramento RS-485 e a UART do ESP32 (Modbus Master) | |
-| ⭐ **Sensor de corrente ACS712-5A** | 2 | **185 mV/A**. Lê a corrente das posições de ensaio (208 mA). Saída 0-5V conectada ao Módulo ADC. Alimentação 5V (puxar do BD-5V) | |
-| **Porta-fusível DIN 1 via com gaveta** | 2 | Proteção individual das 2 posições (e funciona como "disjuntor" didático para simular falha) | |
-| Fusível de vidro 5×20 mm · 500 mA | 4 | 2 usos + 2 reservas | |
-| **Lâmpada automotiva W5W (Pingo) 24V 5W** | 4 | 2 usos + 2 reservas. ⭐ **A carga simuladora perfeita:** consome 208 mA diretos em 24V, brilha forte e não precisa de resistores dissipadores | |
-| **Soquete T10 (pingo)** | 2 | Para encaixar as lâmpadas W5W. De preferência com rabicho de fio de boa bitola | |
-| Resistor 120 Ω · 1/4 W | 2 | Resistores de terminação (120 ohms) para as duas pontas do barramento RS-485 | |
-| Cabo par trançado blindado (ou cabo de rede) | 2 m | Para a rede RS-485 entre o MAX485 e o Módulo ADC | |
-| Borne DIN 2,5 mm² | 4 | Entrada e saída de cada posição | |
+| ~~Sensor de corrente WCS2702~~ | ~~1~~ | 🗑️ **NÃO COMPRE.** Substituído pelo ACS712 | |
+| ~~Módulo ADC 2 Canais Modbus RTU RS-485~~ | ~~1~~ | 🗑️ **NÃO COMPRE PARA A BANCADA.** Desnecessário no painel local (< 40 cm). Mantido apenas no memorial conceitual de 50 posições da fábrica | |
+| ~~Módulo Conversor RS-485 para TTL (MAX485)~~ | ~~1~~ | 🗑️ **NÃO COMPRE PARA A BANCADA.** Eliminado junto com o módulo ADC | |
+| ~~Sensor de corrente ACS712-5A~~ | ~~2~~ | 🗑️ **NÃO COMPRE.** Substituído pelo **N4AIC24** (Modbus RS-485, 22 canais de corrente + 2 de tensão). Com ele saíram também o divisor do POT-02 e o uso das entradas A2/A3 |
+| ~~Porta-fusível DIN 1 via com gaveta~~ | ~~2~~ | 🗑️ **NÃO COMPRE.** As 8 posições usam **um bloco de 8 vias com chave** (CMD-10), com um fusível de lâmina de 1 A por posição |
+| ~~Fusível de vidro 5×20 mm · 500 mA~~ | ~~4~~ | 🗑️ Substituído pelos fusíveis ATO/ATC de **1 A** do bloco de 8 vias (CMD-12) |
+| ~~Lâmpada automotiva W5W (Pingo) 24 V 5 W~~ | ~~4~~ | 🗑️ **NÃO COMPRE.** A lâmpada saiu do projeto: o dispositivo sob ensaio são **8 posições de LED em 12 V**. O caminho novo está em [`../placa_leds/PLACA_LEDS.md`](../placa_leds/PLACA_LEDS.md) §9 |
+| ~~Soquete T10 (pingo)~~ | ~~2~~ | 🗑️ **NÃO COMPRE.** Não existe mais lâmpada para encaixar: as 8 posições são 2 placas de 95 × 75 mm com LED e resistor soldados |
+| ⭐ **Capacitor cerâmico 100 nF** | 2 | `C1` e `C2` nos pinos A0/A1 (diagnóstico dos BTS). ⚠️ **Eram 4:** os dois dos A2/A3 saíram junto com os ACS712 |
+| ~~Borne DIN 2,5 mm²~~ | ~~4~~ | 🗑️ **NÃO COMPRE.** As posições não passam mais por borne DIN: o retorno entra direto no `I_n` do N4AIC24 |
 
-> 💡 **O interruptor (gaveta) do porta-fusível DIN** é o que simula a falha (abertura de circuito) durante a apresentação, provando a detecção Modbus em tempo real.
+> 💡 **O interruptor (gaveta) do porta-fusível DIN** é o que simula a falha (abertura de circuito) durante a apresentação, provando a detecção direta de falha em tempo real pelo Mega (< 1 segundo).
 
 ## L.5 — Módulos de interface e componentes em borne
 
 > ⭐ **Nenhum resistor ou capacitor deste projeto fica pendurado no fio — e nenhum é soldado
-> dentro do painel.** O que era a placa PI-1 virou dois módulos comprados e três bornes; o resto
-> dos discretos mora parafusado no borne do próprio equipamento. A ligação **perna por perna** de
+> dentro do painel.** As placas PI-1/PI-2, o divisor D25, o CD74HC4067 e o INA219 não pertencem
+> à arquitetura atual. A aquisição é feita pelo N4AIC24/Modbus; os discretos atuais moram nos
+> bornes dos módulos. A ligação **perna por perna** de
 > cada um está no [Doc 33](../camada_3_eletrica/33_placa_interface_componentes.md), e o passo a
 > passo com o que medir está na aba **Guia de montagem** do aplicativo.
 
 | Item | Qtd | Especificação | R$ |
 |---|---:|---|---:|
-| ⭐ **Módulo sensor de tensão 0–25 V** | 1 (pacote de 5) | **SV-1** — substituiu o divisor `R1 + R2 + C3`. Divisor 30 kΩ / 7,5 kΩ com borne de parafuso. ⚠️ **Divide por 5** (24 V → 4,8 V), e o soldado dividia por 5,68 (4,22 V): **meça a saída antes de ligar no D25** | 16,07 |
-| ⭐ **DS18B20 à prova d'água + adaptador com pull-up** | 2 | **AD-1** — substituiu o `R3`. ⚠️ **O pull-up de 4,7 kΩ está no ADAPTADOR, não na sonda.** Se comprar só a sonda, compre também 1 resistor de 4,7 kΩ. **Meça ao receber:** ~4,7 kΩ entre `DAT` e `VCC` | 6,90 |
+| ⭐ **Módulo de aquisição N4AIC24** | 1 | Mede correntes e tensões; `V1` ligado a BD-POT e `V2` a BD-12V. Alimentado pelo 24 V permanente; requer validação do mapa Modbus e do timeout no firmware real | — |
+| ⭐ **Transceptor RS-485 MAX485** | 1 | Interface entre o N4AIC24 e Serial3 do Mega; par A/B conforme Doc 13 e a fiação atual | — |
+| ⭐ **DS18B20 à prova d'água + adaptador** | 1 | **AD-1** — mede o dissipador quente, não o corpo do PTC. Confirmar pull-up de 4,7 kΩ integrado ao adaptador | 6,90 |
 | ~~Borne de passagem DIN 2,5 mm² (BS-1)~~ | ~~6~~ | 🗑️ **NÃO SÃO MAIS NECESSÁRIOS** para os filtros. O `C1` e o `C2` foram para os bornes `A0`, `A1` e `GND2` do adaptador do Mega — ali o `A0` é **vizinho** do `GND2` (~3,9 mm) e a perna do cerâmico entra sem esticar. No BS-1 as duas pernas caíam em bornes a **30 mm** um do outro, penduradas no ar. ⭐ **Compre 4 assim mesmo, como reserva** — borne de passagem 2,5 mm² resolve emenda de qualquer fio. Ver [Doc 33 §33.10](../camada_3_eletrica/33_placa_interface_componentes.md) |
 | **Capacitor cerâmico 100 nF** | 4 | `C1` e `C2` + reservas — parafusados nos bornes do **Mega** (`A0`–`GND2` e `A1`–`GND2`), sem solda | — |
 | ⭐ **Módulo relé 1 canal 5 V, optoacoplado** | 4 | **`KA1`** (veto, contato `NO`), **`KA2`** (ventoinhas do radiador, contato `NC`) e ⭐ **`KA3`** (as 5 ventoinhas internas, contato `NO`) — **3 em uso + 1 reserva**. ⚠️ Exija *optoacoplador*, **jumper H/L** e a variante de **5 V** (a foto costuma ser da de 24 V). 💰 Relé de 8 pinos aqui seria R$ 75 de folga que ninguém usa — só o **KM1** precisa dos 10 A | 6,79 |
@@ -1020,7 +1044,7 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 >
 > | Lugar | Peças |
 > |---|---|
-> | Bornes do **adaptador do Mega** | `C1`, `C2` (100 nF), entre `A0`/`A1` e o `GND2` vizinho |
+> | Bornes do **adaptador do Mega** | `C1`, `C2` (100 nF em `A0`/`A1`) para `GND2`; `A2`/`A3` não medem tensão |
 > | Bornes dos relés | `D1` no KM1 · `R10`, `R11` e `R12` nos três módulos |
 > | Dentro dos **BTS7960** | `R8`, `R9` (10 kΩ, soldados no módulo) |
 > | Na **maquete** | `R4`–`R7` (220 Ω) + 4 LEDs brancos, nas bases dos postes |
@@ -1037,24 +1061,27 @@ O edital exige *"garantir conformidade com normas de segurança elétrica"*. Com
 
 | Grupo | Itens-chave |
 |---|---|
-| **Energia** | 1× fonte 24 V/10 A ⚠️ **240 W é o mínimo** · 1× disjuntor 2P 6 A · **1× kit 2 LM2596 com display** · 3× porta-fusível |
-| **Proteção** | fusíveis **10 A (F1)** e 2 A (F2/F3) · **KM1 (10 A em DC, 2 contatos: carga + selo)** · **3× módulo de relé 5 V (KA1, KA2, KA3) em caixa DIN 6M** · **sem Zener, sem crowbar** |
-| **Controle** | 1× Arduino Mega · 1× ESP32 · 1× DNLCB30 · 1× tela ES3C28P · 1× RTC · **1× placa PI-1 (6 passivos, sem CI)** |
-| **Potência** | 2× BTS7960 · **2× Peltier EM SÉRIE** (+1 reserva) · **1× PTC 24 V 80 W** · 4× fan interna · **2× cooler externo 3 fios** · 🗑️ **sem módulo MOSFET** |
+| **Energia** | 1× fonte 24 V/10 A (verificar pior caso) · 1× disjuntor 2P 6 A · T2/T3 propostos, **compra bloqueada** · suportes de fusível a revisar |
+| **Proteção** | F1 10 A legado; F2/F3 e o ramal PTC precisam de novo dimensionamento · **KM1 não corta o PTC 12 V** · proteção CC independente pendente |
+| **Controle** | 1× Arduino Mega · 1× ESP32 · 1× DNLCB30 · 1× tela ES3C28P · 1× RTC · **1× N4AIC24 + 1× MAX485 (Modbus RS-485)** |
+| **Potência** | 2× BTS7960 · **2× Peltier em série** (+1 reserva de compra) · proposta PTC 12 V/50 W, **não comprar/energizar** até fechar corte e proteção · ventoinhas a revisar |
 | **Sensores** | 1× DS18B20 · 1× AM2315C |
 | **Maquete** | 3× poste Ø 8 mm · ~8 m de fio rígido ENCAPADO (4 cores, **R1 e 0 V mais grossos**) · 2× "transformador" + **1× caixa de derivação** · 3× janela de acrílico · 1× caixa de subestação |
 | **Comando** | 1× emergência (2 NF) · 1× LIGAR (NA) · 1× STOP (NF+NA) · 1× seccionadora · **4× sinaleiro 22 mm de 5 V** |
 
-### ✅ Checklist de compra dos 6 itens que o Plano B mudou
+### ⛔ Checklist provisório — não libera compra
 
 Se você já tinha uma lista antiga em mãos, confira **estes seis** antes de fechar o pedido — são os erros mais fáceis de cometer copiando a versão anterior:
 
 - [ ] **Peltier: 3 unidades** (2 em uso + 1 reserva), do mesmo lote
-- [ ] **PTC de 24 V**, não de 12 V ⚠️ *item de prazo longo — comprar no Lote A*
+- [ ] PTC proposto **12 V/50 W** (~4,17 A); modelo e ficha pendentes, não comprar
+- [ ] T2 **24→5,0 V/5 A**; confirmar faixa máxima de entrada e transientes
+- [ ] T3 **24→12 V/20 A**; confirmar capacidade contínua e térmica do modelo exato
+- [ ] Definir corte DC independente, F3 e bitolas do PTC/T3; **não dimensionar pelo limite anunciado de 20 A**
 - [ ] **Cooler externo 80 mm de 3 fios: 2 unidades**, não 1
 - [ ] **Fusível F1 de 10 A**, não de 6 A
 - [ ] **Fio rígido vermelho 1,00 mm²** e **azul claro 1,50 mm²** (ambos subiram)
-- [ ] **Fonte de 240 W** — a de 150 W não atende mais
+- [ ] Fonte e conversores: recalcular orçamento com rendimento real após seleção dos modelos
 - [ ] ⭐ **Sinaleiros 22 mm de 5 V** (não de 24 V) — e o ULN2803A e o soquete DIP-18 saíram da lista
 - [ ] **Resistores de 220 Ω** (não 2,2 kΩ) para os LEDs da maquete, que agora são de 5 V
 
@@ -1067,22 +1094,22 @@ Se você já tinha uma lista antiga em mãos, confira **estes seis** antes de fe
 | ~~Fonte ATX 500 W~~ | Não possui trilho de 24 V; substituída pela fonte chaveada de 24 V |
 | ~~Jumper PS_ON (verde-preto)~~ | Era específico da ATX |
 | ~~Módulo XL4016 (T1)~~ | **Plano B:** a potência térmica ligou direto em 24 V — não há tensão a transformar no ramal RM1 |
-| ~~2× Módulo XL4015 (T2, T3)~~ | Substituídos pelos **LM2596 com display**: mesma função, mais barato, com leitura visível e proteções nativas |
-| ~~6× Diodo Zener (5V6 / 13 V / 15 V)~~ | Crowbar dispensado — o LM2596 traz limite de corrente e desligamento térmico no CI |
+| ~~2× Módulo XL4015 (T2, T3)~~ | Uma revisão intermediária propôs LM2596; essa proposta também foi substituída. T2/T3 atuais continuam sem modelo aprovado |
+| ~~6× Diodo Zener (5V6 / 13 V / 15 V)~~ | O descarte foi baseado em uma proposta anterior de LM2596; confirmar as proteções exigidas após selecionar T2/T3 |
 | ~~Fusíveis F4 e F5 + 2 porta-fusíveis~~ | Eram os fusíveis de **saída** do crowbar. Os de **entrada** dos ramais (F1/F2/F3) continuam |
-| ~~2× Voltímetro digital 3 fios~~ | O display já vem integrado ao LM2596 |
+| ~~2× Voltímetro digital 3 fios~~ | Dispensados na revisão intermediária dos LM2596; não presumir display nos conversores atualmente propostos |
 | ~~Tubo PVC Ø 63 mm + 2 tampas~~ | Era o corpo maior do T1; hoje os 3 postes usam Ø 50 mm |
 | ~~Cooler 30 mm 12 V~~ | Ventilava o XL4016 dentro do T1 |
 | ~~Fusível 6 A~~ | **F1 subiu para 10 A** (ramal RM1 conduz 6,0 A contínuos) |
-| ~~Aquecedor PTC de 12 V~~ | Trocado pela **versão de 24 V**, alimentada direto do barramento |
-| ~~Resistor 220 Ω / 5 W (carga térmica do simulador)~~ | O DUT **não** simula carga térmica: é LED + resistor de ½ W, 0,37 W e 0,21 W ([Doc 13 §13.3b](../camada_1_maquete/13_posicoes_de_ensaio.md)) |
+| ~~Aquecedor PTC de 24 V / 80 W~~ | Substituído pela proposta provisória de **12 V / 50 W**; ramal, corte DC e proteção seguem bloqueados |
+| ~~Resistor 220 Ω / 5 W (carga térmica do simulador)~~ | O DUT **não** simula carga térmica: são 8 posições de LED + resistor de ¼ W, **0,12 W cada** (~1 W no total), e o conjunto todo dissipa menos que uma das duas W5W antigas ([Doc 13 §13.2](../camada_1_maquete/13_posicoes_de_ensaio.md)) |
 | ~~Resistor 2,2 kΩ (LEDs da maquete em 24 V)~~ | A iluminação da maquete passou para **5 V** — o limitador virou **220 Ω** |
 | ~~4× resistor 220 Ω nos sinaleiros do painel~~ | Os sinaleiros passaram por duas mudanças: viraram módulos de 24 V com ULN2803, e depois **módulos de 5 V acionados direto pelo pino** — que dispensa CI e resistor. Os 220 Ω migraram para os LEDs da maquete |
 | ~~Acrílico preto 3 mm (cobertura)~~ | Trocado por **branco**, visual de câmara frigorífica real |
 | ~~Porta simples de acrílico 10 mm~~ | Trocada por **porta dupla com câmara de ar** (metade da perda térmica) |
 | ~~XPS 20 mm~~ | Aumentado para **30 mm** |
 
-> 📊 O script [`gerar_planilha_bom.py`](../gerar_planilha_bom.py) gera a planilha de compras a partir desta lista — **precisa ser atualizado** para refletir esta BOM. A planilha `BOM_Projeto_Integrador.xlsx` ainda está na versão anterior (com XL4016, XL4015, Zener e 1 Peltier): **regere antes de usá-la para comprar.**
+> 📊 O script [`gerar_planilha_bom.py`](../gerar_planilha_bom.py) gera a planilha a partir das seções de compra e reconcilia os itens com o modelo React atual. As tabelas do carrinho e trechos marcados como históricos não são fonte de compra. Mesmo na planilha regenerada, ST-1/ST-2 permanecem pendentes: não comprar esses itens nem energizar o PTC até encerrar as validações.
 
 ---
 

@@ -38,14 +38,14 @@ export const RELES = {
     tipo: 'rele8',
     cor: '#5f3dc4',
     titulo: 'KM1 — o relé da cadeia',
-    peca: 'Relé 8 pinos · bobina 24 Vcc · ⚠️ contato declarado 10 A em CORRENTE CONTÍNUA · base PTF08A',
-    oQueE: 'O único relé da cadeia de comando, e o único que chaveia potência de verdade: '
+    peca: 'Relé 14 pinos HH64P / LY4NJ · bobina 24 Vcc · ⚠️ 4 contatos 10 A em CC · base PTF14A',
+    oQueE: 'O relé mestre da cadeia de comando (HH64P / LY4NJ 14 pinos): chaveia a potência de 24 V da Peltier no Polo 1, os 12 V do PTC no Polo 2, e faz o selo no Polo 3. '
          + '6,0 A em 24 Vcc para os dois BTS7960. É por causa DELE que o modelo de 10 A foi '
          + 'escolhido. Relé de painel, encaixado numa base parafusada no trilho DIN: o relé '
          + 'sai da base puxando, e a base fica. ⭐ Nenhum fio do Arduino chega à cadeia que o '
          + 'comanda — o firmware só alcança o RETORNO da bobina, pelo contato do KA1, e em '
          + 'série. É por isso que a emergência não depende de software.',
-    conduz: 'Contato 1 (11→14): 6,0 A em 24 Vcc. Contato 2 (21→24, o selo): ~37 mA.',
+    conduz: 'Polo 1 (9→5): 6,0 A em 24 Vcc (Peltier). Polo 2 (10→6): 4,2 A em 12 Vcc (PTC). Polo 3 (11→7): selo (~37 mA). Polo 4 (12→8): reserva.',
     discretos: [
       {
         ref: 'D1', peca: 'Diodo 1N4007', onde: 'direto nos bornes A1 e A2 da base',
@@ -78,100 +78,79 @@ export const RELES = {
 
   KA123: {
     comp: 'KA123',
-    tipo: 'modulo2',
+    tipo: 'modulo8',
     cor: '#e8590c',
-    titulo: 'KA1 + KA2 + KA3 — as três mãos do firmware',
-    peca: '3 × módulo de relé 1 canal · 5 V · optoacoplado · jumper H/L · 51 × 25,5 mm cada, '
-        + 'empilhados numa caixa modular DIN de 6 módulos',
-    oQueE: 'Os três módulos ficam na MESMA caixa, com o DC+ e o DC− pontelhados entre eles lá '
-         + 'dentro — sai um par de fios só para o BD-5V e o BD-0V. São a única coisa no painel '
-         + 'que o firmware pode acionar. ⭐ O KA3 é o mais novo: ele entrou no lugar do MV-1, '
-         + 'o módulo MOSFET de 4 canais que ligava as 5 ventoinhas internas usando 1 canal.',
-    conduz: 'KA1: 37 mA (a bobina do KM1). KA2: 0,36 A (as duas ventoinhas do radiador). '
-          + 'KA3: 0,63 A (as cinco internas) — 6 % dos 10 A do contato. '
-          + 'Nenhum dos três chega perto do limite — e é por isso que aqui NÃO se '
-          + 'justifica o relé caro de 8 pinos.',
+    titulo: 'Módulo de 8 Relés 5 V Optoacoplado — KA1..KA3 + H1..H4 (24 V) + Reserva',
+    peca: '1 × Módulo de 8 relés 5 V com optoacoplador · contatos reversíveis 10 A · suporte trilho DIN',
+    oQueE: 'Placa central de acionamentos e sinalização do painel. Reúne em uma única placa compacta '
+         + 'os 3 relés de comando/segurança e os 4 canais de chaveamento dos sinaleiros industriais de 24 Vcc fornecidos pelo SENAI, '
+         + 'com acionamento optoacoplado ativo em nível baixo (Active-LOW).',
+    conduz: 'KA1: 37 mA (bobina KM1). KA2: 0,36 A (coolers radiador). KA3: 0,63 A (5 coolers câmara). '
+          + 'H1 a H4: ~15 a 20 mA cada em 24 Vcc (sinaleiros industriais LED 22 mm). Ch 8: reserva técnica.',
     canais: [
       {
-        id: 'KA1', papel: 'veto sobre a potência', contato: 'NO', gatilho: 'D27',
-        regra: 'Módulo sem energia = contato ABERTO = potência cortada. Estado seguro é DESLIGADO.',
+        id: 'KA1 (Ch 1)', papel: 'Veto do firmware sobre KM1', contato: 'NO', gatilho: 'D27 (LOW = atracado)',
+        regra: 'Módulo sem energia ou Mega desligado = contato ABERTO = potência cortada. Estado seguro é DESLIGADO.',
       },
       {
-        id: 'KA2', papel: 'ventoinhas do radiador', contato: 'NC', gatilho: 'D30',
-        regra: '⭐ Módulo sem energia = contato FECHADO = ventoinha GIRANDO. Estado seguro é LIGADO — '
-             + 'o oposto do KA1, e é de propósito.',
+        id: 'KA2 (Ch 2)', papel: 'Ventoinhas do radiador', contato: 'NC', gatilho: 'D30 (LOW = desliga pós-vent)',
+        regra: '⭐ Módulo sem energia = contato FECHADO = ventoinha GIRANDO. Estado seguro é LIGADO (fail-safe térmico passivo).',
       },
       {
-        id: 'KA3', papel: 'as 5 ventoinhas internas', contato: 'NO', gatilho: 'D29',
-        regra: 'Módulo sem energia = contato ABERTO = ventoinhas PARADAS. Estado seguro é '
-             + 'DESLIGADO, como no KA1 — e pelo motivo oposto ao do KA2: ventoinha interna '
-             + 'parada não queima nada. Sem Arduino, o KA1 já cortou a potência; e o PTC é '
-             + 'auto-limitado, corta a própria potência sem fluxo de ar.',
+        id: 'KA3 (Ch 3)', papel: 'As 5 ventoinhas internas da câmara', contato: 'NO', gatilho: 'D29 (LOW = ligadas)',
+        regra: 'Módulo sem energia = contato ABERTO = ventoinhas PARADAS. Estado seguro é DESLIGADO.',
+      },
+      {
+        id: 'H1 (Ch 4)', papel: 'Sinaleiro industrial 24 V VERDE — Painel Energizado / Operação', contato: 'NO', gatilho: 'D9 (LOW = aceso)',
+        regra: 'Comuta +24 V do BD-24V para o borne X1 do sinaleiro verde H1.',
+      },
+      {
+        id: 'H2 (Ch 5)', papel: 'Sinaleiro industrial 24 V AZUL — Resfriando (Peltier Ativa)', contato: 'NO', gatilho: 'D10 (LOW = aceso)',
+        regra: 'Comuta +24 V do BD-24V para o borne X1 do sinaleiro azul H2.',
+      },
+      {
+        id: 'H3 (Ch 6)', papel: 'Sinaleiro industrial 24 V AMARELO — Aquecendo (PTC Ativo)', contato: 'NO', gatilho: 'D11 (LOW = aceso)',
+        regra: 'Comuta +24 V do BD-24V para o borne X1 do sinaleiro amarelo H3.',
+      },
+      {
+        id: 'H4 (Ch 7)', papel: 'Sinaleiro industrial 24 V VERMELHO — Falha / Alarme', contato: 'NO', gatilho: 'D12 (LOW = aceso)',
+        regra: 'Comuta +24 V do BD-24V para o borne X1 do sinaleiro vermelho H4.',
+      },
+      {
+        id: 'RES (Ch 8)', papel: 'Canal Sobressalente', contato: 'NO/NC', gatilho: 'Livre',
+        regra: 'Reserva técnica disponível para expansão de comando.',
       },
     ],
     discretos: [
       {
-        ref: 'R10', peca: 'Resistor 10 kΩ · ¼ W', onde: 'entre o IN1 e o 0 V, nos bornes do módulo do KA1',
-        orientacao: 'Resistor não tem polaridade. Vai no borne, não em placa.',
-        porque: 'O anúncio promete tolerância a falha, e o LED do optoacoplador de fato precisa '
-              + 'de corrente. O resistor torna isso MEDÍVEL em vez de confiado: fio do D27 '
-              + 'rompido ou Arduino ausente → IN em 0 V → relé aberto → potência cortada.',
-        cuidado: '⚠️ Sem ele, o IN fica alto-impedante e o módulo pode fechar por ruído — o que '
-               + 'significa a potência sendo autorizada sem ninguém mandar.',
-        preco: 'R$ 0,10',
-      },
-      {
-        ref: 'R11', peca: 'Resistor 10 kΩ · ¼ W', onde: 'entre o IN2 e o 0 V, nos bornes do módulo do KA2',
-        orientacao: 'Idem ao R10.',
-        porque: 'Mesma função — mas aqui o resultado é o oposto, e melhor: relé solto significa '
-              + 'ventoinha do radiador LIGADA. É o R11 que garante que um Arduino morto ventile.',
-        cuidado: '⚠️ Vale o mesmo ensaio: ohmímetro entre IN e 0 V deve dar ~10 kΩ.',
-        preco: 'R$ 0,10',
-      },
-      {
-        ref: 'D2', peca: 'Diodo 1N4007', onde: '⚠️ NÃO fica aqui — vai junto das ventoinhas, dentro da câmara',
+        ref: 'D2', peca: 'Diodo 1N4007', onde: 'junto das ventoinhas do radiador, na emenda do chicote',
         orientacao: 'Catodo (faixa prateada) no +12 V.',
-        porque: 'Roda-livre do motor. Ventoinha é carga indutiva e nada mais a grampeia — sem '
-              + 'ele o pico aparece no contato do KA2 toda vez que a pós-ventilação termina.',
-        cuidado: '⚠️ Não confunda com o D1, que é da bobina do KM1. São o mesmo componente com '
-               + 'funções diferentes, em lugares diferentes do projeto.',
+        porque: 'Roda-livre do motor das ventoinhas do radiador.',
+        cuidado: 'Não confundir com o D1, que fica nos bornes A1/A2 da bobina do KM1.',
         preco: 'R$ 0,20',
       },
       {
-        ref: 'R12', peca: 'Resistor 10 kΩ · ¼ W', onde: 'entre o IN3 e o 0 V, nos bornes do módulo do KA3',
-        orientacao: 'Idem ao R10.',
-        porque: 'Mesma função, terceiro módulo: Arduino ausente → IN em 0 V → contato aberto → '
-              + 'ventoinhas internas paradas. Aqui parado É o estado seguro.',
-        cuidado: '⚠️ Vale o mesmo ensaio: ohmímetro entre IN e 0 V deve dar ~10 kΩ.',
-        preco: 'R$ 0,10',
-      },
-      {
-        ref: 'D3', peca: 'Diodo 1N4007', onde: '⚠️ NÃO fica aqui — vai junto das 5 internas, dentro da câmara',
+        ref: 'D3', peca: 'Diodo 1N4007', onde: 'junto das 5 ventoinhas internas da câmara',
         orientacao: 'Catodo (faixa prateada) no +12 V, na emenda dos cinco positivos.',
-        porque: '⭐ ELE APARECEU QUANDO O MOSFET SAIU. O MV-1 trazia a proteção dentro da placa '
-              + 'comprada; o contato do KA3 não protege nada sozinho, e são CINCO motores '
-              + 'desligando juntos no fim de cada ensaio.',
-        cuidado: '⚠️ Um diodo só serve as cinco, porque elas estão em paralelo no mesmo par.',
+        porque: 'Roda-livre dos 5 micromotores que desligam juntos.',
+        cuidado: 'Um único diodo atende as cinco ventoinhas em paralelo.',
         preco: 'R$ 0,20',
       },
     ],
     pontes: [
-      { de: 'DC+ do KA1', para: 'DC+ do KA2 e do KA3', diz: 'Ponte dentro da caixa — sai um fio só para o BD-5V · O12. 🗑️ Foi ela que dispensou o fio D13, que levava 5 V ao VCC do MV-1.' },
-      { de: 'DC− do KA1', para: 'DC− do KA2 e do KA3', diz: 'Idem — um fio só para o BD-0V · Z21. ⚠️ Ponto PRÓPRIO na barra, não pendurado: este 0 V é também a referência dos três gatilhos.' },
+      { de: 'COM4', para: 'COM5, COM6 e COM7', diz: 'Ponte de distribuição do positivo +24 V (BD-24V) entre os quatro canais de sinalização.' },
+      { de: 'H1.X2', para: 'H2.X2, H3.X2 e H4.X2', diz: 'Ponte do negativo comum 0 V na porta, retornando via chicote até o borne BD-0V da fonte.' },
     ],
     ensaios: [
-      '⭐ Jumper em H nos TRÊS módulos — em L a lógica inverte e o firmware vira armadilha',
-      'Fio do KA1 no NO. Fio do KA2 no NC. Fio do KA3 no NO. ⚠️ O do meio é o diferente, de propósito',
-      'Ohmímetro entre cada IN e o 0 V → ~10 kΩ (é o R10, o R11 e o R12 trabalhando)',
-      'Sem o Arduino ligado: LED do KA1 apagado, e a potência não arma nem apertando o verde',
-      '⭐ Sem o Arduino ligado: as ventoinhas do radiador GIRAM. Se estiverem paradas, o fio do KA2 está no NO',
-      '⭐ Sem o Arduino ligado: as 5 internas ficam PARADAS. Se girarem, o fio do KA3 está no NC',
-      'Confirme 5VDC escrito no corpo dos três relés — o mesmo anúncio vende 12 e 24 V',
+      'Entradas IN1 a IN7: nível lógico LOW aciona o respectivo canal (LED indicador do canal acende na placa)',
+      'Sem Arduino conectado: todos os canais desenergizados -> KA1 aberto (KM1 impedido), KA2 fechado (coolers giram), H1..H4 apagados',
+      'Forçar D9 a LOW: relé 4 fecha -> sinaleiro Verde H1 acende com 24 V',
+      'Forçar D10 a LOW: relé 5 fecha -> sinaleiro Azul H2 acende com 24 V',
+      'Forçar D11 a LOW: relé 6 fecha -> sinaleiro Amarelo H3 acende com 24 V',
+      'Forçar D12 a LOW: relé 7 fecha -> sinaleiro Vermelho H4 acende com 24 V',
     ],
-    naoConfundir: 'A isolação aqui é NOMINAL, não galvânica. O módulo tem três bornes de '
-                + 'entrada (DC+, DC−, IN), então o DC− É a referência do sinal — ele partilha o '
-                + '0 V do Arduino. O optoacoplador entrega imunidade a ruído, não separação de '
-                + 'terras. A isolação de verdade está no CONTATO, que é seco.',
+    naoConfundir: 'Os canais 1 a 3 operam circuitos de comando/12 V, e os canais 4 a 7 operam o circuito de 24 V dos sinaleiros. '
+                + 'Os contatos a relé são totalmente isolados e secos, garantindo separação galvânica entre 5 V, 12 V e 24 V.',
   },
 };
 

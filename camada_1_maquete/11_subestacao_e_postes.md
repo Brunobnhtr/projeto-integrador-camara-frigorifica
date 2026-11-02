@@ -5,6 +5,13 @@
 > ✅ **Pré-requisito:** [Doc 10](10_base_e_chao_de_fabrica.md) concluído (base furada e pintada).
 > 🖼️ **Desenhos:** [Detalhe do poste](../desenhos/03_poste_detalhe.svg) · [Planta baixa](../desenhos/01_maquete_planta.svg)
 
+> ⛔ **Revisão elétrica:** as instruções de conversores e aquecimento deste documento
+> são históricas. A proposta atual é T2 24→5,0 V/5 A, T3 24→12 V/20 A e PTC
+> 12 V/50 W, mas modelos, fichas, entrada máxima de T2 e dimensionamento ainda
+> estão pendentes. Não comprar nem montar LM2596 conforme os desenhos antigos,
+> não ligar BTS2 ao PTC e não energizar o ramal. Use o documento apenas para a
+> maquete mecânica até a revisão elétrica ser aprovada.
+
 ---
 
 ## 🟢 Em palavras simples — você vai construir a rua elétrica em miniatura
@@ -30,7 +37,7 @@ Repare: **nem todo mundo recebe um transformador de poste.** Uma casa recebe, po
 Na maquete acontece igual:
 
 - **P2 e P3** têm transformador, porque o Arduino precisa de 5 V e os ventiladores de 12 V
-- **P1 não tem**, porque a carga dele — as pastilhas Peltier e o aquecedor — **já trabalha em 24 V**, a mesma tensão da linha. Não há nada a transformar
+- **P1 não tem**, porque as pastilhas Peltier trabalham em 24 V, a mesma tensão da linha. O PTC deixou de ser uma carga de 24 V: a proposta de 12 V/50 W depende de T3 e de um ramal/corte DC ainda não definidos.
 
 > 🎓 **Frase para a defesa:** *"O P1 representa o consumidor industrial atendido em tensão primária. Ele não recebe transformador porque sua carga já opera na tensão da rede — exatamente como acontece com um grande consumidor real."*
 
@@ -92,7 +99,7 @@ Como tudo volta por ele, **ele conduz a soma das três correntes**. Por isso é 
  Quadro do consumidor               ──►   PAINEL DE COMANDO
 ```
 
-> ⚡ **Ponto forte da apresentação:** você percorre a maquete mostrando **24,0 V** na linha, **24,0 V passando direto** pelo P1 (com a corrente das Peltier ao vivo no amperímetro), **5,10 V** saindo do T2 e **12,0 V** saindo do T3. E os **displays vermelhos dos LM2596**, visíveis pelas janelas de acrílico, mostram isso o tempo todo, de longe, sem multímetro.
+> ⚡ **Demonstração futura, após aprovação:** P1 representa a derivação de 24 V para a Peltier. As saídas propostas são 5,0 V/5 A em T2 e 12 V/20 A em T3; tensão, capacidade, displays e janelas só podem ser anunciados depois de selecionar e validar os modelos reais.
 
 ---
 
@@ -125,10 +132,10 @@ A versão anterior deste documento previa fio de cobre **nu** na linha, imitando
 |---|---|---|---:|---|---|
 | Cruzeta, esquerda | **R1 — potência** (P1, direto) | **1,00 mm²** rígido | **6,00 A** | **Vermelho** | fase R |
 | Cruzeta, centro | **R2 — comando** (T2) | 0,50 mm² rígido | 0,19 A | **Marrom** | fase S |
-| Cruzeta, direita | **R3 — auxiliares** (T3) | 0,50 mm² rígido | 0,75 A | **Cinza** | fase T |
-| **40 mm abaixo da cruzeta** | **0 V — retorno comum** | **1,50 mm² rígido** | **6,9 A** | **Azul claro** | neutro |
+| Cruzeta, direita | **R3 — auxiliares** (T3) | 0,50 mm² rígido | 0,92 A | **Cinza** | fase T |
+| **40 mm abaixo da cruzeta** | **0 V — retorno comum** | **1,50 mm² rígido** | **7,11 A** | **Azul claro** | neutro |
 
-> 📐 **Por que o retorno é o mais grosso?** Porque ele conduz a **soma** das correntes dos três ramais (**6,9 A**), enquanto o ramal mais carregado conduz 6,0 A. Em CC não existe o cancelamento vetorial que ocorre entre fases equilibradas em CA. **É o detalhe que separa quem entendeu de quem só copiou o visual.**
+> 📐 **Por que o retorno é o mais grosso?** Porque ele conduz a **soma** das correntes dos três ramais (**7,11 A**), enquanto o ramal mais carregado conduz 6,0 A. Em CC não existe o cancelamento vetorial que ocorre entre fases equilibradas em CA. **É o detalhe que separa quem entendeu de quem só copiou o visual.**
 >
 > 🎯 **A diferença ficou visível a olho nu:** com o retorno em 1,50 mm² e as "fases" em 1,00 e 0,50 mm², dá para apontar o cabo azul com o dedo durante a defesa e dizer por que ele é mais grosso. Em uma rede trifásica CA equilibrada seria o contrário — o neutro é o mais fino.
 >
@@ -317,8 +324,8 @@ A fonte dissipa ~18 W. Sem ventilação a caixa passa de 60 °C e a vida dos cap
           ║   ╎ derivação ╎         ← 2 fios descem por FORA do tubo
    165 ──╫──[ TRAFO / DERIV. ]      ← DERIVAÇÃO (P1) · T2 (P2) · T3 (P3)
    mm     ║   ╎  ┌───────┐ ╎
-          ║   ╎  │ 5.10V │ ╎        ← DISPLAY do LM2596, pela janela de
-          ║   ╎  └───────┘ ╎          acrílico (no P1, medidor V/A)
+          ║   ╎  │ 5.0 V*│ ╎        ← valor proposto para T2; indicador
+          ║   ╎  └───────┘ ╎          visual ainda não confirmado
           ║   ╰╌╌│───────│╌╯
           ║      └───┬───┘
           ║          │ saída desce por DENTRO do tubo
@@ -373,8 +380,8 @@ Em cada poste você tira **dois fios da linha**: o **positivo do seu ramal** e o
 | Poste | Tira da linha | Alimenta |
 |---|---|---|
 | **P1** | **R1 (vermelho)** + 0 V (azul) | **Derivação** → 24 V potência (sem conversor) |
-| **P2** | **R2 (marrom)** + 0 V (azul) | **T2** → 5,10 V comando |
-| **P3** | **R3 (cinza)** + 0 V (azul) | **T3** → 12 V auxiliar **+ 24 V de serviços** |
+| **P2** | **R2 (marrom)** + 0 V (azul) | **T2** → 5,0 V/5 A propostos; modelo pendente |
+| **P3** | **R3 (cinza)** + 0 V (azul) | **T3** → 12 V/20 A propostos; modelo pendente |
 
 ### Como fazer a derivação (simulando o conector perfurante)
 
@@ -411,17 +418,22 @@ Em cada poste você tira **dois fios da linha**: o **positivo do seu ramal** e o
 
 ## 11.6 O TOPO DOS POSTES — 2 transformadores e 1 derivação
 
-### Distribuição
+### Distribuição (valores atuais são propostas bloqueadas)
 
 | Poste | Equipamento | Módulo | Entrada | **Saída** | Carga |
 |---|---|---|---:|---:|---|
-| **P1** | ⭐ **DERIVAÇÃO** — sem conversor | Bornes de emenda + medidor V/A | 24 V | **24 V passante** | 2× Peltier em série, PTC 24 V (via BTS7960) |
-| **P2** | **T2** — transformador | **LM2596 com display** | 24 V | **5,10 V** | Arduino, tela ES3C28P, RTC, lógica, placa PI-1 |
-| **P3** | **T3** — transformador | **LM2596 com display** | 24 V | **12,0 V** | Coolers, fans internas, iluminação da maquete |
+| **P1** | ⭐ **DERIVAÇÃO** — sem conversor | Bornes de emenda + medidor V/A | 24 V | **24 V passante** | 2× Peltier em série; sem alimentação do PTC |
+| **P2** | **T2** — conversor proposto | Modelo ainda não selecionado | 24 V | **5,0 V / 5 A propostos** | Arduino e lógica, após validar alimentação da placa |
+| **P3** | **T3** — conversor proposto | Modelo ainda não selecionado | 24 V | **12 V / 20 A propostos** | Serviços 12 V e eventual ramal PTC com corte independente, ainda pendente |
+
+> ⛔ T2/T3 não estão liberados para compra ou montagem. Confirmar modelos, tensão
+> máxima real e transientes de entrada do T2, capacidade contínua/térmica do T3,
+> proteções e condutores. O PTC não pode ser ligado diretamente ao BD-AUX ou ao
+> T3 sem uma arquitetura de corte DC independente dimensionada.
 
 > ⭐ **Por que o P1 não tem transformador — e por que isso é MELHOR para a defesa.**
 >
-> A carga do ramal RM1 (duas pastilhas Peltier em série e um PTC de 24 V) **já opera na tensão da linha**. Não há nada a transformar. E isso reproduz exatamente uma situação real da rede de distribuição:
+> As duas pastilhas Peltier em série operam em 24 V, a tensão da linha. O PTC foi retirado dessa hipótese: a proposta atual é de 12 V, mas segue sem ligação aprovada. A representação de P1 sem conversor aplica-se apenas à Peltier.
 >
 > | Na rede real | Na maquete |
 > |---|---|
@@ -439,14 +451,18 @@ Em cada poste você tira **dois fios da linha**: o **positivo do seu ramal** e o
 | | **P1 (derivação)** | **T2 e T3 (transformadores)** |
 |---|---|---|
 | Corpo | Tubo PVC **Ø 50 mm × 60 mm** | Tubo PVC **Ø 50 mm × 70 mm** |
-| Conteúdo | Bornes de emenda + medidor V/A | **LM2596 + dissipador colado no CI** |
-| Dissipação | ~0 W | T2 ~1,0 W · **T3 ~1,6 W** |
-| Ventilação | 4 furos Ø 3 mm | **8 furos Ø 3 mm — obrigatórios no T3** |
-| Instrumento | **Voltímetro + amperímetro** (comprado à parte) | **Display integrado ao próprio LM2596** |
+| Conteúdo | Bornes de emenda + medidor V/A | **T2/T3 ainda sem modelo selecionado** |
+| Dissipação | ~0 W | Pendente de ficha técnica e ensaio dos conversores reais |
+| Ventilação | 4 furos Ø 3 mm | Dimensionar após selecionar conversores e suportes |
+| Instrumento | **Voltímetro + amperímetro** (comprado à parte) | Display não confirmado; não recortar janela ainda |
 | Altura de montagem | 165 mm (centro) | 165 mm (centro) |
 
-> ⚠️ **O dissipador do T3 não é opcional.** Ele dissipa 1,6 W dentro de um tubo fechado; sem dissipador colado no CI, a elevação de temperatura passa de 85 °C e o LM2596 entra em proteção térmica no meio da apresentação. Cálculo em [Doc 02 §2.8](../camada_0_fundamentos/02_arquitetura_de_energia.md).
+> ⚠️ As dimensões e a dissipação dos conversores não podem ser derivadas dos
+> LM2596 antigos. Selecionar modelos, consultar fichas e verificar temperatura
+> antes de definir suportes, ventilação ou janelas.
 
+> 🗂 O desenho abaixo é uma representação histórica dos LM2596 e do visor de
+> 5,10 V; não usar para fabricar ou energizar os conversores propostos.
 ```
         VISTA FRONTAL (voltada para a rua)
 
@@ -456,44 +472,44 @@ Em cada poste você tira **dois fios da linha**: o **positivo do seu ramal** e o
      ┌────●───●────┐                ┌────●───●────┐
      │             │                │             │
      │  ╔═══════╗  │                │  ┌───────┐  │
-     │  ║LM2596 ║  │ ← na vertical  │  │bornes │  │ ← só emenda,
+     │  ║T2/T3? ║  │ ← modelo pend. │  │bornes │  │ ← só emenda,
 70mm │  ╚═══════╝  │                │  └───────┘  │   sem conversor
      │ ┌─────────┐ │                │ ┌─────────┐ │
-     │ │  5.10V  │ │ ← DISPLAY DO   │ │24.0V 6.0A│ │ ← medidor V/A
-     │ └─────────┘ │   PRÓPRIO      │ └─────────┘ │   (comprado à parte)
-     │  ∘ ∘ ∘ ∘ ∘  │   MÓDULO       │  ∘ ∘ ∘ ∘ ∘  │
+     │ │display? │ │ ← não recortar │ │24.0V 6.0A│ │ ← medidor V/A
+     │ └─────────┘ │   sem confirmar│ └─────────┘ │   (comprado à parte)
+     │  ∘ ∘ ∘ ∘ ∘  │   o conversor   │  ∘ ∘ ∘ ∘ ∘  │
      └──●───●──────┘   (janela      └──●───●──────┘
      ◄─── Ø 50 mm ──►   22 × 12 mm)  ◄─── Ø 50 mm ──►
 ```
 
-### ⭐ A janela de acrílico — o instrumento da apresentação
+### Janela do conversor — definir somente após a seleção do modelo
 
-O LM2596 traz um **display LED vermelho de 3 dígitos soldado na própria placa**. Ele deixa de ser detalhe do módulo e vira o instrumento de demonstração da maquete:
+Os modelos propostos para T2/T3 ainda não foram identificados; não há confirmação de display integrado nem de sua posição:
 
 | Vantagem | Na apresentação |
 |---|---|
-| Tensão de saída **visível em tempo real** | O público **lê** a transformação: 24,0 V na linha, 5,10 V saindo do trafo de poste. Não precisa acreditar no que você diz |
-| **Botão IN/OUT** (presente na maioria das versões) | Um toque alterna entre entrada e saída no mesmo display — a demonstração inteira em um gesto |
-| Diagnóstico instantâneo | "O conversor está entregando tensão?" se responde de longe, sem multímetro |
+| Display visível, se existir | Confirmar na ficha do modelo exato |
+| Dimensão e posição | Medir a placa real antes de cortar o tubo |
+| Diagnóstico elétrico | Usar instrumento adequado; não confiar em rótulos genéricos |
 
-**Execução:** recorte a janela de **22 × 12 mm** antes de montar o módulo, cole por dentro uma lâmina de acrílico transparente de 1 mm com cola instantânea em gel (só nas bordas, para não manchar) e posicione a placa com o display encostado na janela. **Janela voltada para a rua; furos de ventilação nas costas do tubo.**
+**Execução pendente:** não recortar janela nem instalar conversor até selecionar o modelo e medir seu envelope, dissipação e necessidade de ventilação.
 
 ### Montagem
 
 1. Cortar o tubo de PVC no comprimento e **lixar as bordas**.
-2. **Recortar a janela** (22 × 12 mm nos três) na face que vai ficar **voltada para a rua**.
+2. Deixar o recorte de janela pendente da seleção e medição dos conversores.
 3. **Furos de ventilação:** 8 na tampa superior e 8 na inferior nos T2/T3 (4+4 no P1).
-4. **T2 e T3:** colar o dissipador no CI LM2596S com fita térmica e fixar o módulo na vertical, com o display encostado na janela.
+4. **T2 e T3:** não instalar; modelos, suportes, dissipação e ventilação ainda não foram aprovados.
 5. **P1:** fixar os bornes de emenda e o medidor V/A. ⚠️ **O cabo de saída passa pelo shunt do amperímetro** — é o que faz o display mostrar a corrente das Peltier ao vivo.
 6. Colar a lâmina de acrílico de 1 mm por trás da janela.
 7. **Buchas:** 2 pinos no topo (alta) e 2 na lateral inferior (baixa) — pedaços de palito pintados de marrom.
 8. Fixar no poste com **cinta de alumínio 10 mm + 2 parafusos M3**, centro a 165 mm do piso.
 9. Pintar de cinza médio (deixar a janela mascarada).
-10. Etiquetar: **"P1 — DERIVAÇÃO 24 V"**, **"T2 — 24/5 V"**, **"T3 — 24/12 V"**.
+10. Etiquetar provisoriamente como **T2 24→5,0 V/5 A (proposta)** e **T3 24→12 V/20 A (proposta)**; não identificar como equipamento aprovado.
 
 ### Ligação do medidor do P1
 
-É o **único instrumento comprado à parte** — nos postes P2 e P3 o display já vem no conversor. Use módulo de **3 fios** (alimentação separada da medição):
+O medidor de P1 é independente. A presença de displays nos conversores de P2/P3 não foi confirmada:
 
 ```
    +24 V (da derivação) ──► VCC do medidor (fio vermelho)
@@ -504,10 +520,12 @@ O LM2596 traz um **display LED vermelho de 3 dígitos soldado na própria placa*
 | Poste | Instrumento | Mostra |
 |---|---|---|
 | **P1** | Voltímetro **+ amperímetro** com shunt | **24,0 V e a corrente das Peltier ao vivo** |
-| **T2** | Display integrado ao LM2596 | 5,10 V |
-| **T3** | Display integrado ao LM2596 | 12,0 V |
+| **T2** | Display não confirmado | 5,0 V / 5 A propostos |
+| **T3** | Display não confirmado | 12 V / 20 A propostos |
 
-> ⚠️ **Ajuste os dois conversores na bancada ANTES de fechar dentro do tubo, com a saída NO AR.** O LM2596 sai de fábrica com o potenciômetro em posição arbitrária e pode entregar 20 V direto no Arduino. Depois de montado no poste, mexer no potenciômetro é um pesadelo. Procedimento completo em [Doc 02 §2.5](../camada_0_fundamentos/02_arquitetura_de_energia.md). **Marque a posição final do trimpot com um risco de esmalte** — vibração desregula trimpot.
+> ⛔ Não ajustar nem energizar conversores até confirmar modelo, entrada máxima,
+> transientes, limite contínuo/térmico e comportamento de falha pelas fichas e
+> ensaios apropriados. Não assumir que possuem trimpot ou display.
 
 ---
 
@@ -539,7 +557,7 @@ O braço curvo se faz com **arame de 1,5 mm** dobrado em curva suave, 25 mm de a
 
 ### Subestação
 - [ ] Caixa montada, **opaca**, com tampa de 4 parafusos e etiqueta de perigo
-- [ ] Q0, chave rotativa, fonte e 3 porta-fusíveis instalados e cabeados
+- [ ] Q0, chave rotativa, fonte e porta-fusíveis selecionados/dimensionados por profissional habilitado
 - [ ] Grade de entrada + cooler 60 mm **de 24 V** instalados
 - [ ] Barra de terra ligada à carcaça da fonte
 - [ ] **Teste:** plugue na tomada, chave em "1" → medir **24,0 V ± 0,5 V** nos bornes
@@ -557,16 +575,16 @@ O braço curvo se faz com **arame de 1,5 mm** dobrado em curva suave, 25 mm de a
 
 ### Topo dos postes
 - [ ] **P1 = caixa de DERIVAÇÃO** (Ø 50, bornes de emenda + medidor V/A, **sem conversor**)
-- [ ] **T2 no P2** e **T3 no P3** — LM2596 com display, tubos Ø 50
-- [ ] Os **dois conversores ajustados na bancada, com a saída no ar**, e trimpots marcados com esmalte
-- [ ] **Dissipador colado no CI dos dois LM2596** — obrigatório, principalmente no T3
+- [ ] Dimensionar envelopes, suportes e dissipação para os modelos reais de T2/T3 antes de montar nos postes
+- [ ] **Não comprar, instalar ou energizar T2/T3** até aprovação dos modelos e fichas; a proposta atual é 5,0 V/5 A e 12 V/20 A
+- [ ] **Não ligar nem energizar o PTC 12 V/50 W** até definir e validar o ramal com corte DC independente, proteção e condutores
 - [ ] Derivações soldadas e isoladas com termorretrátil, **sem cortar a linha**
 - [ ] Saídas descendo por **dentro** do tubo, com fio encapado
-- [ ] **Janelas de acrílico** nos 3 tubos, displays legíveis a 2 m, voltadas para a rua
+- [ ] Definir janelas somente se o modelo real de T2/T3 tiver display e após conferir dimensões
 - [ ] Cabo de saída do P1 passando **através do shunt** do amperímetro
-- [ ] **Teste de carga:** T3 com carga resistiva por 30 min; corpo do LM2596 **abaixo de 80 °C**
+- [ ] Teste de carga de T2/T3 somente após aprovação do modelo, conforme os limites térmicos da ficha técnica
 - [ ] Cada saída chegando ao painel pelo **seu próprio prensa-cabo**
-- [ ] Etiquetas coladas: **"P1 — DERIVAÇÃO 24 V"** · **"T2 — 24/5 V"** · **"T3 — 24/12 V"**
+- [ ] Etiquetas distinguindo tensão proposta de equipamento validado: **T2 5,0 V/5 A** e **T3 12 V/20 A**, somente após aprovação
 
 ### Rua
 - [ ] 3 postes de iluminação pública (Ø 5 mm, 180 mm) na calçada da frente

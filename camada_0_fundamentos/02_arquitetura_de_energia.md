@@ -1,10 +1,21 @@
 # CAMADA 0 · Doc 02 — Arquitetura de Energia (127 V AC → 24 V → 12 V / 5 V / 3,3 V)
 
-> **Este é o documento mais importante do projeto.** Ele substitui a antiga solução "fonte ATX entrega tudo" pela arquitetura industrial de **barramento 24 Vcc + conversores step-down distribuídos**.
+> ⛔ **REVISÃO PROVISÓRIA — NÃO MONTAR NEM COMPRAR OS ITENS DE POTÊNCIA.** A proposta
+> atual substitui o PTC de 24 V/80 W por um PTC de 12 V/50 W, T2 por 24→5 V/5 A
+> e T3 por 24→12 V/20 A. Os dados e procedimentos legados abaixo não descrevem essa
+> topologia. Use a nova especificação em [§2.12](#212-proposta-provisoria-t2-t3-e-ptc-12-v).
+> A faixa real de entrada de T2, o modelo exato dos conversores, F3/cabos e o corte
+> CC independente do PTC ainda não foram validados.
 >
-> Tudo que vem depois (maquete, painel, fiação, firmware) depende das decisões tomadas aqui.
+> **Não use as tabelas, cálculos, desenhos ou procedimentos históricos abaixo para
+> fabricar, comprar ou energizar.** A proposta de §2.12 não é uma aprovação elétrica:
+> aguarde fichas técnicas, dimensionamento e validação independente do corte/proteções.
 
-> ✅ **Revisão adotada — "Potência em 24 V" (antigo Plano B).** A arquitetura desta versão é mais simples e mais segura que a anterior:
+> Este arquivo preserva cálculos e decisões de uma arquitetura anterior para rastreabilidade.
+> Ele não substitui os documentos atuais de painel, proteções e dimensionamento, nem autoriza
+> a montagem da proposta provisória.
+
+> 📜 **Histórico — "Potência em 24 V" (antigo Plano B), superado pela revisão provisória §2.12.** A tabela registra a arquitetura anterior; não é especificação vigente:
 >
 > | Mudança | Consequência |
 > |---|---|
@@ -35,7 +46,7 @@ Agora a pergunta central do projeto:
 
 **Resposta: aumentando a pressão.** Se você dobra a pressão, entrega a mesma quantidade de água com **metade da vazão** — e aí um cano fino resolve.
 
-Na eletricidade é idêntico. O nosso sistema precisa entregar **166 W**. Podia fazer isso de dois jeitos:
+Na eletricidade é idêntico. O nosso sistema precisa entregar **171 W**. Podia fazer isso de dois jeitos:
 
 | | Com 12 V | Com **24 V** |
 |---|---:|---:|
@@ -186,8 +197,8 @@ Na maquete, 3 condutores de +24 V na cruzeta + 1 condutor de 0 V embaixo fica **
 │ 12 V AUX ──► 2× cooler externo das Peltier · 4 fans internas            │
 │              cooler dos BTS7960                                          │
 │                                                                          │
-│ 24 V SERV ─► DNLCB30 ─► ESP32 3,3 V · bobina do KM1 · 4 SINALEIROS      │
-│        (sinaleiros de 5 V: o Arduino os acende, e ele não cai)           │
+│ 24 V SERV ─► DNLCB30 ─► ESP32 3,3 V · bobina do KM1 · N4AIC24           │
+│        (serviços permanentes: sobrevivem ao cogumelo de emergência)     │
 └──────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -198,7 +209,7 @@ Na maquete, 3 condutores de +24 V na cruzeta + 1 condutor de 0 V embaixo fica **
 | Barramento | Origem | Passa pelo KM1? | Alimenta |
 |---|---|---|---|
 | **BD-POT** — 24 V de **potência** | Ramal R1 (P1) | ✅ **Sim** — cai com a emergência | Entrada VCC dos 2 BTS7960 |
-| **BD-24V** — 24 V de **serviços** | Ramal R3 | ❌ Não — permanente | DNLCB30/ESP32, bobina do KM1, **4 sinaleiros 22 mm** |
+| **BD-24V** — 24 V de **serviços** | Ramal R3 | ❌ Não — permanente | DNLCB30/ESP32, bobina do KM1, **N4AIC24** (o instrumento) |
 
 > Essa separação é o que permite a emergência **derrubar a potência sem derrubar a supervisão**: com o botão socado, os atuadores morrem em hardware, mas o ESP32 continua ligado e publica o evento por MQTT. É exatamente o comportamento de um painel industrial de verdade.
 
@@ -248,16 +259,31 @@ Esta é a tabela para colocar no relatório e usar na defesa. **É o que transfo
 | Tela **ES3C28P** (ESP32-S3 + backlight) | 5 | **0,14 A** típico · 0,25 A com alto-falante | 0,70 W · 1,25 W no pico |
 | Módulo SD + RTC DS3231 | 5 | 0,06 A | 0,3 W |
 | Lógica (VCC) dos 2 BTS7960 | 5 | 0,02 A | 0,1 W |
-| ~~4 LEDs sinalizadores 22 mm~~ | — | — | — |
 | **4 LEDs da iluminação da maquete** (branco 3 mm, 220 Ω) | 5 | 0,04 A | 0,2 W |
 | ⭐ **KA1 + KA2 + KA3 — módulos de relé** | 5 | **0,195 A** (0,065 cada, só com o relé atracado) | 1,0 W |
-| **Total do ramal** | **5** | **0,655 A** medido · **0,765 A** no pior caso | **3,3 W** |
+| ⭐ **H1…H4 — 4 sinaleiros de 5 V** | 5 | **0,08 A** (0,020 cada, só o aceso) | 0,4 W |
+| **Total do ramal** | **5** | **0,695 A** no ensaio · **0,735 A** no pior caso | **3,5 W** |
 
-> 🔄 **Os LEDs trocaram de ramal.** Os **4 sinaleiros do painel viraram módulos de 24 V** (acionados por um ULN2803, ver [Doc 33](../camada_3_eletrica/33_placa_interface_componentes.md)) e saíram do 5 V. No lugar deles entraram os **4 LEDs brancos da iluminação pública da maquete**, que passaram de 12 V para **5 V** — LED branco tem Vf ≈ 3,1 V e funciona melhor a partir de 5 V que de 12 V, com resistor menor e menos calor dissipado à toa.
+> 🔄 **Os LEDs sinalizadores voltaram para cá — e essa é a versão final.** Eles já moraram em três barramentos: eram **5 V** no projeto original, foram para **24 V** com um ULN2803 na fase do Plano B, e hoje são **5 V de novo**, cada um saindo direto de um pino do Mega. A razão é simples: **um LED de 20 mA não precisa de driver nenhum**, e o ULN2803 era um CI inteiro para acender quatro LEDs. Quem paga a conta agora é o ramal de 5 V — 80 mA com os quatro acesos —, e o limite real passou a ser o **pino do Mega** (20 mA por pino, dentro do absoluto de 40 mA).
 >
-> Resultado: o R2 **caiu** de 0,69 A para **0,57 A** — usava **38 % da corrente contínua segura do LM2596**.
+> **A iluminação da maquete também migrou** — eram 12 V, hoje são **5 V** (LED branco tem Vf ≈ 3,1 V e trabalha melhor a partir de 5 V que de 12 V, com resistor menor e menos calor dissipado à toa).
 >
-> 🔧 **E subiu de novo, de propósito: 0,635 A (42 %).** O **KA3** — terceiro módulo de relé — entrou no lugar do módulo MOSFET que ligava as 5 ventoinhas internas, e um relé custa **65 mA de bobina** onde o MOSFET custava ~10 mA de LED. **É o preço da troca, e ele cabia:** em troca vieram R$ 43,51 de economia, o chaveamento do lado **positivo** e uma família de componente a menos no painel ([Doc 31 §31.16](../camada_3_eletrica/31_comando_e_protecoes.md)).
+> Resultado: o R2 fechou em **0,695 A** no ensaio, **0,735 A** no pior caso — **46 % a 49 % da corrente contínua segura do LM2596** (1,5 A com dissipador). Ainda sobra mais da metade do conversor.
+>
+> 🔧 **E já subiu de propósito uma vez:** o **KA3** — terceiro módulo de relé — entrou no lugar do módulo MOSFET que ligava as 5 ventoinhas internas, e um relé custa **65 mA de bobina** onde o MOSFET custava ~10 mA de LED. **É o preço da troca, e ele cabia:** em troca vieram R$ 43,51 de economia, o chaveamento do lado **positivo** e uma família de componente a menos no painel ([Doc 31 §31.16](../camada_3_eletrica/31_comando_e_protecoes.md)).
+
+> ### ⚠️ O ramal mais apertado do painel não é o de potência — é este
+>
+> O F1 conduz 6,0 A e tem 10 A de fusível: sobra 67 %. O T3 conduz 1,325 A de 1,5 A. **O T2 é o único que chega perto de um limite declarado:** 0,695 A contra os **0,70 A** que o [§2.7](#27-bitolas-e-queda-de-tensão) atribui ao cabo de 0,50 mm² da saída do T2 — **99,3 %**.
+>
+> 📌 **E o limite é declarado, não físico.** 0,50 mm² de cobre conduz muito mais que 0,7 A; o número do §2.7 foi escrito quando o ramal puxava 0,57 A e virou restrição por hábito, não por cálculo. O que **não** se pode é descobrir isso com o painel fechado.
+>
+> **Providência obrigatória antes da montagem final** — três medidas, dez minutos:
+> 1. Corrente real no fio de 5 V com tudo ligado, incluindo os quatro sinaleiros acesos e a IHM no pico do alto-falante;
+> 2. Temperatura do dissipador do LM2596 depois de 20 min no pior caso;
+> 3. Se a corrente passar de **0,9 A** ou o dissipador passar de **70 °C**, trocar o cabo do T2 por **0,75 mm²** e atualizar o §2.7 — é um fio, não um redesenho.
+>
+> ✅ **O que já está garantido:** o `npm run valida:energia` reprova sozinho se alguém acrescentar carga a este ramal sem revisar o cabo. A verificação deixou de depender de alguém lembrar.
 
 ### Ramal R3 — Serviços auxiliares (T3 · LM2596: 24 V → 12,0 V) + cargas diretas em 24 V
 
@@ -267,13 +293,15 @@ Esta é a tabela para colocar no relatório e usar na defesa. **É o que transfo
 | Cooler externo da Peltier **#2** (80 mm, 3 fios) | 12 | 0,25 A | 3,0 W | **novo** — cada pastilha tem o seu dissipador |
 | ⭐ **5 ventoinhas INTERNAS** (2 frias + 2 dos dutos + a do PTC) | 12 | **0,63 A** | 7,5 W | 🔧 **eram "2 ativas por modo"** — hoje as cinco dividem o contato do **KA3** e ligam JUNTAS |
 | Cooler 40 mm dos BTS7960 | 12 | 0,12 A | 1,5 W | sem comando |
+| ⭐ **As 8 posições de ensaio** (LED 5 mm + 1 kΩ) | 12 | **0,08 A** (0,010 cada) | 1,0 W | 🔧 **estavam fora do orçamento** — são a carga que o projeto mede |
 | ~~Cooler 40 mm do próprio T1~~ | — | — | — | **eliminado junto com o T1** |
 | ~~Iluminação da maquete~~ | — | — | — | **migrou para o 5 V (R2)** |
-| **Subtotal em 12 V** | **12** | 🔧 **1,25 A** | **15,0 W** | pior caso medido pelo simulador |
-| DNLCB30 + ESP32 (**direto em 24 V**) | 24 | 0,10 A | 2,4 W | |
-| Bobina do relé **KM1** (**direto em 24 V**) | 24 | 0,04 A | 0,9 W | |
+| **Subtotal em 12 V** | **12** | 🔧 **1,325 A** | **15,9 W** | pior caso medido pelo simulador |
+| DNLCB30 + ESP32 (**direto em 24 V**) | 24 | 0,100 A | 2,4 W | |
+| Bobina do relé **KM1** (**direto em 24 V**) | 24 | 0,037 A | 0,9 W | só com o selo fechado |
+| ⭐ **N4AIC24 — módulo de aquisição** (**direto em 24 V**) | 24 | **0,030 A** | 0,7 W | 🔧 **novo na conta** — e ele nunca desliga |
 | ~~4 sinaleiros LED 22 mm de 24 V~~ | ~~24~~ | — | — | 🗑️ **migraram para o BD-5V**: viraram de 5 V e são acesos direto pelo pino |
-| **Subtotal direto em 24 V** | **24** | **0,28 A** | **6,7 W** | |
+| **Subtotal direto em 24 V** | **24** | 🔧 **0,167 A** | **4,0 W** | |
 
 > ### 🔧 Correção — este ramal estava subestimado, e quem apontou foi o simulador
 >
@@ -283,17 +311,29 @@ Esta é a tabela para colocar no relatório e usar na defesa. **É o que transfo
 >
 > | | Antes (estimado) | **Medido** |
 > |---|---|---|
-> | Subtotal em 12 V | 0,87 A | **1,25 A** |
-> | % da corrente segura do LM2596 | 58 % | ⚠️ **83 %** |
-> | Cabo T3 → painel (0,75 mm²) | declarava 1,0 A | **1,25 A** — a bitola aguenta, o número é que estava velho |
+> | Subtotal em 12 V | 0,87 A | **1,325 A** |
+> | % da corrente segura do LM2596 | 58 % | ⚠️ **88 %** |
+> | Cabo T3 → painel (0,75 mm²) | declarava 1,0 A | **1,325 A** — a bitola aguenta, o número é que estava velho |
 >
-> ⚠️ **O dissipador colado no LM2596 do T3 deixou de ser recomendação e virou obrigação.** A 83 % da corrente segura, sem dissipador o módulo passa dos 100 °C e entra em proteção térmica no meio da apresentação.
+> **A segunda correção foi a pior das duas, e ela veio de fora.** O simulador já havia acusado as cinco ventoinhas juntas; faltava ainda a carga que o projeto **existe para medir** — as **8 posições de ensaio**, 10 mA cada. Elas ficavam de fora de todo orçamento de consumo porque "são só LEDs". São 80 mA, o que parece nada — e é, no total —, mas um orçamento que esquece a carga principal é o tipo de erro que só aparece na auditoria. Com elas, o subtotal de 12 V vai a **1,325 A**, e o T3 passa a operar a **88 % da corrente segura**.
+>
+> ⚠️ **O dissipador colado no LM2596 do T3 deixou de ser recomendação e virou obrigação.** A 88 % da corrente segura, sem dissipador o módulo passa dos 100 °C e entra em proteção térmica no meio da apresentação. Com o dissipador, o CI trabalha na faixa para a qual foi especificado — mas é o item do painel com **menos folga térmica** e deve ser o primeiro a ser medido no comissionamento.
 >
 > 💡 **Se quiser folga de volta, há uma saída barata:** as duas ventoinhas dos dutos não precisam girar durante o resfriamento com a mesma vazão do aquecimento. Um **quarto módulo de relé** (KA6, R$ 3,40, e a caixa de 6M ainda tem lugar) separaria os grupos e devolveria ~0,25 A. **Não fiz** — é complexidade nova para resolver um problema que ainda cabe na folga.
 
-> 📌 **Os sinaleiros de 24 V ficam no BD-24V permanente, não no BD-POT comutado.** É de propósito: **o sinaleiro vermelho de FALHA precisa continuar aceso com a emergência acionada.** Se estivesse no barramento comutado, apertar o cogumelo apagaria justamente a luz que informa que há um problema.
+> 📌 **Os sinaleiros ficam no BD-5V permanente, nunca no BD-POT comutado.** É de propósito: **o sinaleiro vermelho de FALHA precisa continuar aceso com a emergência acionada.** Se estivesse no barramento comutado, apertar o cogumelo apagaria justamente a luz que informa que há um problema.
 
-> 💡 **Alívio opcional (se quiser folga extra no T3):** troque os 2 coolers externos de 80 mm por modelos de **24 V** e ligue-os direto no barramento. O T3 cai para **0,47 A** e passa a operar friíssimo. Custa a mesma coisa; só é preciso conferir que o modelo de 24 V também tenha os **3 fios** (sinal de RPM), que é obrigatório para a proteção da Peltier.
+> ### 📌 Por que o N4AIC24 fica no 24 V **permanente**, e não no 12 V que ele mede
+>
+> O módulo tem dois bornes de tensão, e um deles (`V2`) **mede o barramento de 12 V**. A tentação é alimentá-lo do próprio 12 V — a folga do T3 melhoraria e a fiação ficaria mais curta. **Não.**
+>
+> Um instrumento que se alimenta do barramento que vigia perde a capacidade de distinguir **"a posição queimou"** de **"a fonte de 12 V caiu"**: nos dois casos ele para de responder, e o operador vê a mesma tela. Alimentado pelo `BD-24V`, ele continua medindo 0 V em `V2` e **denunciando** o barramento morto — que é exatamente o diagnóstico cruzado que o painel existe para ensinar.
+>
+> **E não custa disponibilidade:** o `BD-24V` é o barramento que **sobrevive à emergência**. O caminho é fonte → F-R → `BD-24V` → pino 11 do KM1 → pino 14 → `BD-POT`. O KM1 comuta **depois** do `BD-24V`, então apertar o cogumelo derruba a potência e **mantém** a supervisão.
+>
+> 💡 **Se algum dia a folga do 12 V apertar de verdade**, a saída é um fio: mover o `V+` do módulo para `BD-12V · O3`. Fica documentado aqui, e **não** recomendado — o custo é perder o diagnóstico cruzado.
+
+> 💡 **Alívio opcional (se quiser folga extra no T3):** troque os 2 coolers externos de 80 mm por modelos de **24 V** e ligue-os direto no barramento. O T3 cai para **0,825 A** — de 88 % para 55 % da corrente segura. Custa a mesma coisa; só é preciso conferir que o modelo de 24 V também tenha os **3 fios** (sinal de RPM), que é obrigatório para a proteção da Peltier.
 
 ### Corrente refletida no barramento de 24 V
 
@@ -301,12 +341,30 @@ Para os ramais com conversor, `I₂₄ = P_saída / (η × 24 V)`. Para o **R1 n
 
 | Ramal | P saída | η típico | P entrada | **I @ 24 V** | Fusível |
 |---|---:|---:|---:|---:|---:|
-| **R1 — potência (24 V direto)** | 144 W | **1,00** ⭐ | 144 W | **6,00 A** | **10 A** |
-| R2 — comando (T2 · LM2596) | 2,9 W | 0,78 | 3,7 W | **0,16 A** | **2 A** |
-| R3 — auxiliares (T3 · LM2596 + 24 V direto) | 10,5 W + 6,7 W | 0,88 | 18,6 W | **0,78 A** | **2 A** |
-| **TOTAL** | | | **≈ 166 W** | **≈ 6,9 A** | |
+| **R1 — potência (24 V direto)** | 144,0 W | **1,00** ⭐ | 144,0 W | **6,00 A** | **10 A** |
+| R2 — comando (T2 · LM2596) | 3,5 W | 0,78 | 4,5 W | **0,19 A** | **2 A** |
+| R3 — auxiliares (T3 · LM2596 + 24 V direto) | 15,9 W + 4,0 W | 0,88 | 22,1 W | **0,92 A** | **2 A** |
+| **TOTAL** | | | **170,6 W** | **7,11 A** | |
 
-> 📌 **A troca dos LEDs praticamente não mexeu no total** (167 → 166 W). O que mudou foi a **distribuição**: os sinaleiros saíram do 5 V e foram para o 24 V permanente; a iluminação da maquete saiu do 12 V e foi para o 5 V. O consumo do conjunto é quase o mesmo, mas cada carga passou a estar no barramento certo para a função que cumpre.
+> ### 📌 De onde vêm estes números — e por que não são mais somados à mão
+>
+> **Eles saem de [`src/sim/energia.js`](../../painel_interativo/src/sim/energia.js)**, que calcula o consumo do estado real do painel a cada passo e guarda o **maior valor que de fato aconteceu**. O `npm run valida:energia` compara esse pior caso contra os limites de cada ramal e **reprova sozinho** se alguém acrescentar carga sem revisar a fiação.
+>
+> A soma à mão errou duas vezes, e as duas vezes para baixo: primeiro esqueceu que as cinco ventoinhas internas passaram a ligar juntas; depois esqueceu **as 8 posições de ensaio** — a carga que o projeto existe para medir — e o **próprio N4AIC24**, que nunca desliga. Somar carga de memória é o que produz planilha de 162 W num painel que pede 171 W.
+>
+> | | Soma à mão (estimativa antiga) | **Modelo (vigente)** | Δ |
+> |---|---:|---:|---:|
+> | R1 — potência | 144,0 W | 144,0 W | — |
+> | R2 — 5 V | 3,7 W | 4,5 W | +0,8 W (4 sinaleiros) |
+> | R3 — 12 V | 18,6 W | 18,1 W | −0,5 W |
+> | R3 — 24 V direto | 6,7 W | 4,0 W | −2,7 W (a linha antiga somava 0,28 A sem que as parcelas fechassem) |
+> | N4AIC24 | — | 0,7 W | +0,7 W |
+> | 8 posições | — | 1,1 W | +1,1 W |
+> | **TOTAL** | **166 W / 6,9 A** | **170,6 W / 7,11 A** | **+4,3 W** |
+>
+> ⚠️ **A diferença de 4,3 W não é ruído: é o custo de ter esquecido a carga principal.** E o efeito não é no total — 4 W em 240 W não muda a escolha da fonte —, é na **folga de cada ramal**, onde 80 mA sobre 1,25 A valem 6 pontos percentuais.
+
+> 📌 **A troca dos LEDs mexeu pouco no total e muito na distribuição.** Os sinaleiros andaram de barramento duas vezes (5 V → 24 V → **5 V**) e a iluminação da maquete desceu de 12 V para **5 V**. O consumo do conjunto quase não mudou; o que mudou é que **cada carga passou a estar no barramento certo para a função que cumpre** — e o 24 V permanente ficou com o que de fato precisa sobreviver à emergência.
 
 > ⭐ **O `η = 1,00` do R1 é o argumento central do Plano B.** No arranjo anterior, os 75 W térmicos atravessavam o XL4016 e **10 W viravam calor** dentro do poste P1. Agora a potência térmica vai da fonte à carga **sem nenhum estágio de conversão no meio** — o único caminho de energia do projeto com rendimento 100 % de barramento a carga.
 
@@ -316,25 +374,74 @@ Para os ramais com conversor, `I₂₄ = P_saída / (η × 24 V)`. Para o **R1 n
 
 | Critério | Valor |
 |---|---|
-| Consumo calculado | **166 W / 6,9 A @ 24 V** |
-| Margem de projeto recomendada (≥ 30 %) | **216 W / 9,0 A** |
+| Consumo calculado (pior caso normal) | **170,6 W / 7,11 A @ 24 V** |
+| Margem de projeto recomendada (≥ 30 %) | **222 W / 9,2 A** |
 | **Fonte especificada** | **24 Vcc / 10 A / 240 W** (ex.: S-240-24) |
-| Folga real | **1,44×** (44 % acima do consumo) |
+| Folga real | **1,41×** (41 % acima do consumo) |
 
-> ⚠️ **Mudou o significado da fonte de 240 W.** No arranjo anterior ela tinha 2,4× de folga e era quase um exagero confortável. Com as duas Peltier, o consumo saltou de 101 W para 167 W e a folga caiu para **44 %** — a fonte de 240 W deixou de ser luxo e virou **o mínimo correto**.
+> ⚠️ **Mudou o significado da fonte de 240 W.** No arranjo anterior ela tinha 2,4× de folga e era quase um exagero confortável. Com as duas Peltier, o consumo saltou de **101 W para 171 W** e a folga caiu para **1,41×** — a fonte de 240 W deixou de ser luxo e virou **o mínimo correto**.
 >
-> 🚫 **Uma fonte de 150 W (6,5 A) NÃO atende mais.** Ela ficaria em 111 % da capacidade no modo frio e desligaria por sobrecarga. Se você já tinha cotado a de 150 W, **descarte**: é o único item cujo dimensionamento o Plano B tornou mais exigente, e não há como contornar.
+> 🚫 **Uma fonte de 150 W (6,5 A) NÃO atende mais.** Ela ficaria em **110 %** da capacidade no modo frio e desligaria por sobrecarga. Se você já tinha cotado a de 150 W, **descarte**: é o único item cujo dimensionamento o Plano B tornou mais exigente, e não há como contornar.
+
+> ### 🔴 O caso que a folga de 1,41× **não** cobre — e uma correção que este documento precisou receber
+>
+> Todos os números acima supõem o painel **funcionando**. Existe um estado em que ele não funciona: o **BTS7960 da Peltier falhando em curto** com o PTC ainda comandado. O BTS em curto entrega os **6,0 A** cheios ignorando o duty, o firmware não vê motivo para desligar o aquecimento, e o ramal de potência pede **9,30 A** — **10,41 A** na fonte.
+>
+> **Uma versão anterior deste documento afirmava que a fonte resolvia esse caso**: "entra em limitação de corrente, a tensão cai e o aquecimento cessa". ⚠️ **Essa afirmação foi retirada. Ela não estava demonstrada.**
+>
+> O que se pode afirmar e o que não se pode:
+>
+> | | Situação |
+> |---|---|
+> | **F1 abre?** | ❌ **Não.** 9,30 A não abre um fusível de 10 A — e não se deve contar com isso |
+> | **A fonte limita?** | ⚠️ **Provavelmente, mas não está demonstrado.** Fontes chaveadas respondem à sobrecarga de formas diferentes: *hiccup* (desliga e tenta de novo), travamento, *foldback* ou corrente constante com tensão reduzida. **Nas duas últimas o aquecimento continua** — só que mais devagar. A S-240-24 só se comporta de um jeito depois de medida |
+> | **KM1 abre?** | ✅ **Sim, e zera.** Modelado: **0 A** no ramal de potência e **1,07 A** na fonte (só os serviços permanentes) |
+> | **ST-1 / ST-2 abrem?** | ✅ **Sim no modelo elétrico com contatos idealizados.** Capacidade real dos componentes e corte físico ainda não estão validados |
+>
+> ### ⚠️ O que o modelo mostra — e o que ainda não foi provado
+>
+> O PTC requer corte térmico independente do Arduino. **ST-1 e ST-2 são a arquitetura proposta**, mas nenhum componente exato ou ensaio confirmou ainda que ela interrompa CC e proteja o acrílico. Não energizar o PTC até encerrar os requisitos de compra e validação em [§2.6](#26-proteções-do-sistema--quem-protege-o-quê) e no [Doc 31 §31.0](../camada_3_eletrica/31_comando_e_protecoes.md).
+>
+> Como cálculo idealizado, o modelo prevê que, **se um contato realmente abrir**, a corrente do PTC some:
+>
+> ```
+> falha completa     Peltier em curto 6,0 A + PTC 3,3 A = 9,30 A no F1 · 10,42 A na fonte
+> ST-1 aberto        Peltier em curto 6,0 A + PTC 0,0 A = 6,00 A no F1 ·  7,11 A na fonte
+> ```
+>
+> 📌 Esse resultado demonstra somente a lógica elétrica do simulador com um contato ideal aberto. **Não demonstra** que um termostato real abre, interrompe 3,3 A em 24 Vcc ou limita as temperaturas da câmara.
+>
+> ⚠️ **Cuidado com a leitura dos dois números.** O F1 vê só o ramal de potência (9,30 → 6,00 A); a **fonte** vê isso mais os dois conversores e os serviços permanentes (10,42 → 7,11 A). Dizer "cai para 6 A" sem dizer de qual ponto de medida é o tipo de número que a banca derruba.
+>
+> ### ⛔ Validação pendente — não tratar como risco aceito
+>
+> O comportamento da fonte e a atuação térmica ainda não foram caracterizados.
+> **Não energizar o PTC** nem aceitar a janela de sobrecorrente como protegida até
+> selecionar componentes e definir ensaios seguros. A validação deve ser feita em
+> bancada controlada, com fonte limitada/proteções independentes, instrumentação
+> adequada e supervisão qualificada:
+>
+> 1. Registrar o comportamento da fonte usando carga de teste apropriada e limitada;
+> 2. Confirmar abertura e rearme manual de cada proteção sem induzir curto no driver
+>    nem superaquecimento no conjunto montado;
+> 3. Medir a temperatura em vários pontos do acrílico e do PTC sob condições
+>    controladas, considerando tolerância e atraso térmico.
+>
+> Pull-downs de 10 kΩ em cada `R_EN` e intertravamento no firmware reduzem riscos
+> durante operação normal, mas não evitam um BTS travado em curto. O ensaio de
+> comissionamento deve verificar os drivers com as cargas desconectadas; não
+> substitui a validação de ST-1/ST-2 nem autoriza energizar o PTC.
 
 ### Corrente no lado AC (127 V)
 
 ```
-I_AC = P_total / (V × FP × η_fonte) = 166 / (127 × 0,65 × 0,85) ≈ 2,37 A
+I_AC = P_total / (V × FP × η_fonte) = 170,6 / (127 × 0,65 × 0,85) ≈ 2,43 A
 ```
 
 | Item | Especificação | Justificativa |
 |---|---|---|
-| Disjuntor de entrada | **2P, 6 A, curva C** | Corrente nominal subiu para 2,37 A, mas o disjuntor de 6 A **continua correto** (2,5× a corrente de operação). Curva C porque fonte chaveada tem **corrente de inrush** alta (carga dos capacitores) — um curva B de 2 A dispararia toda vez que ligasse |
-| Cabo AC | 1,5 mm² (PP 3×1,5 mm²) | Mínimo normativo para circuitos de força; sobra folga para os 2,4 A |
+| Disjuntor de entrada | **2P, 6 A, curva C** | Corrente nominal de 2,43 A, mas o disjuntor de 6 A **continua correto** (2,5× a corrente de operação). Curva C porque fonte chaveada tem **corrente de inrush** alta (carga dos capacitores) — um curva B de 2 A dispararia toda vez que ligasse |
+| Cabo AC | 1,5 mm² (PP 3×1,5 mm²) | Mínimo normativo para circuitos de força; sobra folga para os 2,5 A |
 
 > ### ❓ "6 A é pouco para uma fonte de 10 A?"
 >
@@ -369,10 +476,10 @@ A versão anterior deste documento descartava o LM2596 com a nota "❌ fraco dem
 
 | | Arquitetura anterior | Arquitetura adotada |
 |---|---|---|
-| Maior corrente que um conversor precisa entregar | **6,3 A** (ramal da Peltier) | **0,87 A** (ramal auxiliar) |
-| Conversor necessário | XL4016 de 8 A | **LM2596 de 3 A com folga de 3×** |
+| Maior corrente que um conversor precisa entregar | **6,3 A** (ramal da Peltier) | **1,325 A** (ramal auxiliar) |
+| Conversor necessário | XL4016 de 8 A | **LM2596 de 3 A com folga de 2,3×** |
 
-> 💡 **Tirar a potência de cima dos conversores não simplificou só o T1 — simplificou os três.** Quando o ramal pesado passou a ser alimentado direto em 24 V, a maior carga restante caiu para menos de 1 A, e a família inteira de conversores pôde ser rebaixada para o CI mais barato, mais comum e mais bem documentado do mercado. **É esse tipo de consequência em cadeia que se espera que você mostre na defesa:** uma decisão de arquitetura bem tomada não resolve um problema, resolve vários de uma vez.
+> 💡 **Tirar a potência de cima dos conversores não simplificou só o T1 — simplificou os três.** Quando o ramal pesado passou a ser alimentado direto em 24 V, a maior carga restante caiu de **6,3 A para 1,3 A**, e a família inteira de conversores pôde ser rebaixada para o CI mais barato, mais comum e mais bem documentado do mercado. **É esse tipo de consequência em cadeia que se espera que você mostre na defesa:** uma decisão de arquitetura bem tomada não resolve um problema, resolve vários de uma vez.
 
 ### Comparativo dos módulos
 
@@ -382,7 +489,11 @@ A versão anterior deste documento descartava o LM2596 com a nota "❌ fraco dem
 | XL4015 | XL4015 | 5 A | ~3 A | ❌ | Descartado — sem display, e não é mais necessária a corrente |
 | XL4016 | XL4016 | 8 A | ~6 A | ❌ | **Eliminado junto com o T1** |
 
-Carga real de cada conversor: **T2 = 0,635 A (42 % do limite seguro)** · **T3 = 0,87 A (58 % do limite seguro)**.
+Carga real de cada conversor: **T2 = 0,695 A (46 % do limite seguro)** · **T3 = 1,325 A (88 % ⚠️ do limite seguro)**.
+
+> ⚠️ **O T3 virou o ponto quente do painel.** Ele não é o ramal de maior potência — o R1 é, e sobra folga nele —, mas é o que mais se aproxima do **limite do próprio CI**. A 88 % da corrente contínua segura, o LM2596 do T3 **não funciona sem dissipador**: passa dos 100 °C e entra em proteção térmica. O dissipador colado deixou de ser boa prática e passou a ser item de lista de materiais.
+>
+> 📌 **Por que não trocar o T3 por um XL4015 de 5 A?** Poderia — sobraria folga. Mas custaria **perder o display**, que é a razão didática da escolha (§2.5), e acrescentaria um CI que não existe no projeto. Um dissipador de R$ 1,50 resolve o mesmo problema sem mudar a arquitetura. **A conta é essa, e ela está aberta:** se no comissionamento a temperatura passar de 70 °C, a decisão muda e o XL4015 volta — com display externo.
 
 ### Especificação real do LM2596 (datasheet, não o anúncio)
 
@@ -431,8 +542,8 @@ O módulo traz um **display LED vermelho de 3 dígitos** soldado na própria pla
 
 | Conversor | Poste | Tensão alvo | Carga | Ocupação do limite |
 |---|---|---:|---:|---:|
-| **T2 · LM2596** | **P2** | **5,10 V** | 0,635 A | 42 % |
-| **T3 · LM2596** | **P3** | **12,0 V** | 0,87 A | 58 % |
+| **T2 · LM2596** | **P2** | **5,10 V** | 0,695 A | 46 % |
+| **T3 · LM2596** | **P3** | **12,0 V** | 1,325 A | ⚠️ **88 %** |
 
 > 🔧 **Procedimento obrigatório de ajuste (fazer ANTES de conectar qualquer carga):**
 > 1. Alimente o módulo com 24 V **sem nada na saída**.
@@ -458,9 +569,32 @@ A proteção do projeto não está em um componente, está em **camadas**. Cada 
 | 3 | Ramais | **F1 (10 A) · F2 (2 A) · F3 (2 A)** | Curto em um ramal, com **seletividade**: cai só o ramal defeituoso | Trilho DIN da subestação |
 | 4 | Conversores | ⭐ **Limite de corrente + shutdown térmico do LM2596** | Sobrecarga, curto na saída e superaquecimento de T2 e T3 | Nativo no chip |
 | 5 | Comando | **KM1 com selo e a emergência em série com a bobina** | Corta os **24 V de potência em hardware**, independente do firmware | Painel |
+| 5b | ⭐ **Térmica — pendente** | Proposta: ST-1 no corpo do PTC + ST-2 na parede, em série; modelos, capacidade CC, rearme manual e proteção ambiental ainda não comprovados | Pretende interromper falhas térmicas; eficácia ainda não demonstrada | **Câmara** — topologia proposta no chicote do PG13-2 |
 | 6 | Drivers | **Pull-down de 10 kΩ em cada `R_EN`** | Pino solto ou Arduino resetado = driver **desligado** | Painel |
 | 7 | Firmware | **Intertravamento Peltier/PTC + watchdog de 2 s** | As duas cargas juntas; travamento do programa | Arduino |
 | 8 | Firmware | **Monitoramento de RPM dos 2 coolers externos** | Peltier operando sem dissipação | Arduino |
+
+> ### ⭐ Por que a camada 5b foi proposta, e por que ela **não** pode depender do firmware
+>
+> As camadas 7 e 8 já olham ventilação e intertravamento — **mas olham pelo Arduino**. Se o que falha é o próprio Arduino, ou o BTS que ele comanda, nenhuma das duas vê nada. O PTC é a única carga do painel que pode **fugir sozinha**: 80 W num corpo pequeno, sem fluxo de ar, sem dissipador.
+>
+> A arquitetura proposta é um corte **físico, em série com a resistência**, e não uma condição de software:
+>
+> ```
+> BD-POT ─► BTS2 · M+ ─► PG13-2 ─► ST-1 (90 °C, no corpo do PTC)
+>                                    └─► ST-2 (70 °C, na parede interna)
+>                                          └─► PTC +
+> ```
+>
+> Quando os componentes e a ligação forem selecionados e validados, os contatos de corte não dependerão de 5 V, firmware, RS-485 ou do Arduino estar vivo. **Isso ainda não está comprovado no projeto atual**: a topologia no diagrama não demonstra a capacidade de interrupção dos contatos nem o desempenho térmico.
+>
+> ⚠️ **Os dois são NF (normalmente fechados) — e isso é o ponto.** Um termostato NF com o fio rompido fica **aberto** e o PTC não liga: a falha é segura. Um NA com o fio rompido ficaria fechado e a proteção desapareceria sem ninguém notar.
+>
+> ⛔ **Não comprar nem energizar o PTC ainda.** KSD9700-B e KSD301 são apenas sugestões de família; não há variante exata aprovada. Para ST-1 e ST-2, a ficha técnica do fabricante precisa comprovar temperatura e tolerância, rearme manual e capacidade de interrupção em **24 Vcc** para a corrente do PTC. Rating de 16 A em 250 Vca não demonstra interrupção em CC. Confirmar também proteção ambiental adequada à condensação.
+>
+> 🔒 **Qualquer disparo de ST-1 deve exigir parada travada e rearme manual**, independentemente do DS18B20: este mede o ar da câmara, não a temperatura do corpo do PTC. A variante manual ou uma trava externa equivalente ainda precisa ser identificada e validada.
+>
+> ⚠️ O limite proposto de ST-2 (70 °C ±5 °C) não foi validado contra o acrílico real. PLEXIGLAS GS fundido tem temperatura máxima aproximada de serviço de 80 °C; PLEXIGLAS XT extrudado, aproximadamente 70 °C. Identificar o material comprado e, em ensaio controlado, medir vários pontos da parede — especialmente próximos ao PTC — considerando tolerância, atraso e gradiente térmico. Não aprovar a temperatura de corte nem energizar o PTC antes de demonstrar margem segura.
 
 ### Por que o crowbar (Zener + fusível de saída) saiu do projeto
 
@@ -507,17 +641,34 @@ R_total = 0,0344 Ω
 
 | Circuito | Tensão | Corrente | **Bitola** | Tipo de cabo |
 |---|---:|---:|---|---|
-| Entrada AC (L / N / PE) | 127 V AC | 2,4 A | **1,5 mm²** | PP 3×1,5 mm² |
+| Entrada AC (L / N / PE) | 127 V AC | 2,5 A | **1,5 mm²** | PP 3×1,5 mm² |
 | **Ramal R1 nos postes (+24 V)** | 24 V | **6,0 A** | **1,00 mm²** ⬆ | Rígido **encapado vermelho** |
-| Ramais R2 e R3 nos postes (+24 V) | 24 V | ≤ 0,8 A | **0,50 mm²** | Rígido **encapado marrom / cinza** |
-| **Retorno comum 0 V nos postes** | — | **6,9 A (soma)** | **1,50 mm²** ⬆ | Rígido **encapado azul claro** |
+| Ramais R2 e R3 nos postes (+24 V) | 24 V | ≤ 0,95 A | **0,50 mm²** | Rígido **encapado marrom / cinza** |
+| **Retorno comum 0 V nos postes** | — | **7,11 A (soma)** | **1,50 mm²** ⬆ | Rígido **encapado azul claro** |
 | **Saída P1 → painel (24 V potência)** | 24 V | 6,0 A | **1,50 mm²** | Flexível vermelho/preto |
-| Saída T2 → painel (5 V) | 5 V | 0,7 A | **0,50 mm²** | Flexível |
-| Saída T3 → painel (12 V aux) | 12 V | 1,0 A | **0,75 mm²** ⬆ | Flexível |
-| Retorno geral 0 V painel → subestação | — | 6,9 A | **1,5 mm²** | Flexível preto |
+| ⚠️ Saída T2 → painel (5 V) | 5 V | **0,695 A** — limite **declarado** de 0,70 A | **0,50 mm²** | Flexível |
+| ⚠️ Saída T3 → painel (12 V aux) | 12 V | **1,325 A** | **0,75 mm²** ⬆ | Flexível |
+| Retorno geral 0 V painel → subestação | — | 7,11 A | **1,5 mm²** | Flexível preto |
 | Sinais, sensores, botões | 5 V | < 0,05 A | **0,25 mm²** | Flexível colorido |
 
 > ⬆ **Três bitolas subiram** por causa do aumento de corrente do Plano B: R1, o retorno comum e a saída do T3. Atualize a lista de compras antes de encomendar o fio rígido — a diferença de preço é de poucos reais, mas trocar depois significa desmontar a cruzeta inteira.
+
+> ### ⚠️ Os dois ⚠️ da tabela são limites **declarados**, não limites físicos
+>
+> Nenhuma das duas linhas está errada — e nenhuma das duas é confortável. As duas merecem uma frase de honestidade, porque a diferença importa para quem for montar:
+>
+> | Ramal | Corrente do modelo | Limite da tabela | Situação |
+> |---|---:|---:|---|
+> | **5 V (T2)** | 0,695 A | 0,70 A | **99,3 %** — o fio de 0,50 mm² conduz muito mais que isso; o número foi escrito quando o ramal puxava 0,57 A |
+> | **12 V (T3)** | 1,325 A | 1,0 A | **132 %** — o 0,75 mm² também aguenta; o que **não** aguenta é o LM2596 **sem dissipador** |
+>
+> 📌 **O que é limitação real e o que é número velho.** A ampacidade de um condutor de 0,50 mm² em ar livre, em trecho curto de painel, é da ordem de **3 A** — não 0,7 A. O que aperta de verdade é o **conversor**: 1,325 A de 1,5 A deixa o LM2596 do T3 a **88 %**, e aí o dissipador colado deixa de ser recomendação e vira item obrigatório de montagem.
+>
+> **Duas providências, nesta ordem:**
+> 1. **Medir antes de fechar o painel** — corrente real nos dois ramais e temperatura dos dois dissipadores após 20 min no pior caso;
+> 2. **Se a medida confirmar o modelo**, atualizar esta tabela para 0,75 mm² nos dois (é um fio cada) e registrar a data. **Não deixar um ⚠️ envelhecer no documento**: um limite que ninguém revê vira limite que ninguém respeita.
+>
+> ✅ **O `npm run valida:energia` já reprova sozinho** se alguma carga nova estourar estes números — a tabela pode estar otimista, mas o validador não deixa ela ficar silenciosamente errada.
 >
 > 🎯 **Bônus didático:** o retorno azul de 1,50 mm² agora é **visivelmente mais grosso** que os três condutores de "fase" na cruzeta. Isso é o oposto do que acontece em uma rede trifásica AC equilibrada, onde o neutro é mais fino — e é exatamente o ponto explicado em [§2.1](#-dá-pra-ter-3-fases-de-24-v-uma-por-regulador). Em CC o retorno conduz a **soma** de todas as correntes. Vale apontar o cabo com o dedo durante a defesa.
 
@@ -623,8 +774,8 @@ O **Plano A** era a arquitetura original: um conversor em cada um dos três post
 | Proteção dos barramentos | 6 Zener + 2 fusíveis de saída, em fio volante | **Nativa no CI dos conversores** |
 | Componentes soltos para soldar | 6 Zener + 2 porta-fusíveis | **nenhum** |
 | Leitura de tensão para o público | 3 voltímetros comprados à parte | **display integrado ao conversor** |
-| Consumo total | 101 W / 4,2 A | 166 W / 6,9 A |
-| Folga da fonte de 240 W | 2,4× | 1,44× |
+| Consumo total | 101 W / 4,2 A | **170,6 W / 7,11 A** |
+| Folga da fonte de 240 W | 2,4× | **1,41×** |
 | Dissipação externa da Peltier | 1 conjunto dissipador+cooler | **2 conjuntos** |
 | Calor de conversão na maquete | ~34 W | **~36 W** (mas ~29 W disso é a fonte, que tem exaustão própria) |
 
@@ -640,7 +791,7 @@ O **Plano A** era a arquitetura original: um conversor em cada um dos três post
 | Custo | Mitigação |
 |---|---|
 | **Dobrou a dissipação externa** — 2 conjuntos dissipador + cooler de 80 mm em vez de 1 | Está previsto na BOM; ocupa mais espaço atrás da câmara |
-| **A folga da fonte caiu de 2,4× para 1,44×** | Ainda acima dos 30 % recomendados, mas **fecha a porta** para a fonte de 150 W e reduz o espaço para cargas futuras |
+| **A folga da fonte caiu de 2,4× para 1,41×** | Ainda acima dos 30 % recomendados, mas **fecha a porta** para a fonte de 150 W e reduz o espaço para cargas futuras |
 | *(logístico)* PTC de **24 V** é menos comum nas lojas que o de 12 V | Comprar cedo, no **Lote A**; existe como resistência de ar quente 24 V para incubadora/impressora 3D |
 
 > 🎓 **Frase pronta para a defesa:** *"Nós tínhamos uma arquitetura com três conversores, e um deles operava em 95 % da capacidade real para alimentar uma carga que já poderia funcionar na tensão do barramento. Eliminamos esse conversor ligando duas pastilhas em série. O resultado foi dobrar a refrigeração, zerar a perda no caminho de maior potência e remover oito componentes de proteção que só existiam por causa dele."*
@@ -657,15 +808,59 @@ O **Plano A** era a arquitetura original: um conversor em cada um dos três post
 | 4 | **Toda a parte visível da maquete é SELV (24 V)** | 127 V AC fica confinado dentro da subestação fechada — segurança na apresentação |
 | 5 | ⭐ **Potência térmica ligada DIRETO em 24 V** — 2× Peltier em série + PTC de 24 V | Elimina o conversor mais crítico do projeto, zera a perda no caminho de maior potência e dobra a capacidade de refrigeração |
 | 6 | ⭐ **T1 (XL4016) ELIMINADO — P1 vira poste de derivação** | Não há tensão a transformar nesse ramal. Ganha a analogia do consumidor industrial atendido em tensão primária |
-| 7 | ⭐ **T2 e T3 = LM2596 com display** | A maior carga restante é de 0,87 A: o LM2596 de 3 A sobra. Traz **display integrado** (didática) e **proteção térmica + curto nativas** (segurança) |
+| 7 | ⭐ **T2 e T3 = LM2596 com display** | A maior carga restante é de **1,325 A** (12 V, com as 8 posições): o LM2596 de 3 A sobra, mas o de T3 opera a **88 %** da corrente segura — **dissipador obrigatório**. Traz **display integrado** (didática) e **proteção térmica + curto nativas** (segurança) |
 | 8 | ⭐ **Crowbar (Zener + fusíveis F4/F5) ELIMINADO** | As proteções internas do LM2596 cobrem sobrecarga, curto e temperatura. Menos 8 componentes soltos em fio volante — ver [§2.6](#26-proteções-do-sistema--quem-protege-o-quê) |
 | 9 | **F1 subiu para 10 A; F2 e F3 seguem em 2 A** | O ramal RM1 passou a conduzir 6,0 A contínuos. Os fusíveis de entrada dos ramais são a seletividade da rede e continuam obrigatórios |
-| 10 | **Fonte 24 V / 10 A / 240 W confirmada como mínimo** | Com 166 W de consumo, a folga é de 1,44×. **A fonte de 150 W foi descartada** |
+| 10 | **Fonte 24 V / 10 A / 240 W confirmada como mínimo** | Com **170,6 W** de consumo, a folga é de **1,41×**. **A fonte de 150 W foi descartada** |
 | 11 | **ESP32 alimentado pela DNLCB30 em 24 V** | A DNLCB30 aceita 7–35 V e já gera 3,3 V regulado — não precisa de um 3º conversor |
 | 12 | **Volta o disjuntor 2P 6 A curva C** | Ambiente industrial exige proteção de entrada; curva C por causa do inrush da fonte. Continua adequado com os 2,4 A do novo consumo |
 | 13 | **KM1** com selo, e a emergência em série com a bobina | Só a emergência precisa ser hardware; o **KM1 chaveia os 24 V de potência**. START/STOP viram software e funcionam pela IHM também — ver [Doc 31 §31.0](../camada_3_eletrica/31_comando_e_protecoes.md) |
 | 14 | **Linha com condutores encapados**, nunca nus | Em CC qualquer ponte metálica é curto franco, e o arco não se extingue sozinho |
 | 15 | **Blocos de distribuição por tensão** no painel, com **BD-POT e BD-24V separados** | Uma entrada, várias saídas. A separação permite a emergência derrubar a potência sem derrubar a supervisão |
+
+## 2.12 Proposta provisória: T2, T3 e PTC 12 V
+
+Esta seção é a referência provisória para revisar o orçamento. Ela **não aprova
+compra, instalação ou energização**: ainda faltam fichas dos modelos exatos e um
+projeto de proteção/corte CC para o ramal do PTC.
+
+| Identificação | Proposta | Estado |
+|---|---|---|
+| T2 | 24 V → 5,0 V / 5 A (25 W) | Confirmar faixa máxima de entrada com a tensão máxima real da fonte e transientes; saída de 5,0 V não é alimentação direta aprovada do pino 5V do Mega |
+| T3 | 24 V → 12 V / 20 A (240 W) | Corrente anunciada não valida operação contínua, dissipação nem proteções do modelo exato |
+| PTC | 12 V / 50 W ≈ **4,17 A** | Proposta; identificar elemento, temperatura, ventilação e ficha antes de comprar |
+| BD-AUX | 12 V permanente para ventoinhas e serviços | Permanece separado do ramal comutado do aquecedor |
+| Ramal PTC 12 V | Saída do T3, carga independente das ventoinhas | Topologia de corte DC, proteção, condutores e retorno ainda por dimensionar; F3 legado de 2 A não foi validado |
+
+### Orçamento provisório de 12 V
+
+| Carga | Corrente estimada |
+|---|---:|
+| Ventoinhas, cooler e posições de ensaio (BD-AUX) | 1,325 A |
+| PTC 12 V / 50 W | 4,17 A |
+| **T3 no pior caso simultâneo** | **≈ 5,49 A / 65,9 W** |
+
+O conversor de 20 A anunciado teria margem aritmética para 5,49 A, mas essa
+comparação não substitui verificação de corrente contínua, temperatura, proteção,
+cabos ou capacidade da fonte. Com rendimento de 88 % usado apenas como estimativa,
+T3 demandaria cerca de 3,12 A no lado de 24 V; portanto o F3 legado de 2 A e a
+bitola antiga do ramal não podem ser mantidos como aprovados. **Não trocar F3 por
+um valor arbitrário nem por 20 A.** Coordenar primeiro conversor, proteção DC,
+condutores, conectores e corrente de partida.
+
+### Falha do driver e corte independente
+
+Como o T3 e o BD-AUX permanecem alimentados quando o KM1 abre, um BTS2 em curto
+pode manter o PTC energizado apesar de `renPtc=false`, STOP pela IHM, trip ou
+emergência. O corte do KM1 interrompe a Peltier de 24 V, mas **não é o corte do
+ramal do PTC em 12 V**. A medição de corrente é diagnóstico; não substitui um
+dispositivo DC em série, independente do BTS, com classificação documentada e
+adequada à carga. A escolha e a lógica desse dispositivo permanecem pendentes.
+
+O simulador representa esta lacuna deliberadamente: com BTS2 em curto, mostra
+≈4,17 A no BD-PTC mesmo após abrir KM1. Os testes provam apenas a aritmética e a
+lógica modeladas, não a capacidade real de T2/T3, F3, termostatos, fusíveis ou
+contatos. O PTC segue **sem aprovação para energização física**.
 
 ---
 

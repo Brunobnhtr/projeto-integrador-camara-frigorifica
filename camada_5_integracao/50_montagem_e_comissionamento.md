@@ -1,5 +1,11 @@
 # CAMADA 5 · Doc 50 — Montagem Final, Comissionamento e Apresentação
 
+> ⛔ **NÃO EXECUTAR ESTE ROTEIRO PARA O PTC OU PARA A NOVA POTÊNCIA.** Este documento
+> contém passos e valores legados (PTC 24 V/80 W, LM2596 e 5,10 V). A proposta
+> atual de PTC 12 V/50 W, T2 5 V/5 A e T3 12 V/20 A ainda não tem modelos, corte
+> DC, fusíveis ou condutores aprovados. Não energize o PTC nem atrase a isolação
+> elétrica em uma emergência para manter ventilação ou aguardar resfriamento.
+
 > A última camada: juntar tudo sobre a base, energizar em sequência controlada, ensaiar cada subsistema e preparar a defesa.
 >
 > ✅ **Pré-requisito:** Camadas 0 a 4 concluídas, **com todos os checklists de aceitação marcados**.
@@ -52,7 +58,7 @@ Um relatório que diz *"os 24 V foram medidos em 24,1 V no poste P3, com queda d
 
 | Demonstração | Por que impressiona |
 |---|---|
-| **Percorrer a cadeia de energia com o multímetro** | A teoria virando número na frente da banca: 127 V → 24 V → 5,10 V |
+| **Percorrer a cadeia de energia com o multímetro** | Demonstrar apenas tensões medidas e modelos aprovados; T2/T3 permanecem propostas bloqueadas |
 | **Socar a emergência com o sistema rodando** | Tudo para na hora e **não religa** ao destravar. É segurança visível |
 | **Abrir o jumper de uma posição de ensaio** | O alarme aparece em 2 s dizendo **qual** posição morreu. É a melhoria que o edital pediu, acontecendo ao vivo |
 
@@ -102,7 +108,7 @@ Um relatório que diz *"os 24 V foram medidos em 24,1 V no poste P3, com queda d
 | Componente | Posição | Alimentação | Cuidado |
 |---|---|---|---|
 | **2× Peltier EM SÉRIE + 2 dissipadores + 2 coolers de CPU** | Recortes da tampa superior, com folga entre elas | `24V-FRIO` (BTS #1); os 2 coolers direto na 12V-AUX; **RPM #1 no D3, RPM #2 em PCINT** | Pasta térmica nos **dois** lados de cada pastilha; lado frio para dentro. ⚠️ **Medir a resistência do conjunto: deve ser 2× a de uma pastilha** |
-| **PTC de 24 V + fan integrada 60 mm (sopra ↑)** | Sobre a base interna, ao centro | PTC em `24V-QUENTE` (BTS #2); **a fan de 12 V vai no `12V-FANS` (BD-AUX)** | Não encostar no acrílico — use espaçadores. ⚠️ **Fan de 12 V nunca no borne de 24 V** |
+| **PTC — proposta 12 V/50 W, bloqueada** | Posição e fixação pendentes | **Sem ligação física aprovada** | Não comprar, montar ou energizar; definir corte DC, proteção, condutores, dimensões e validação térmica antes |
 | Fan extra 60 mm (sopra ↓) | Ao lado do PTC | `12V-FANS` (BD-AUX, comutada por firmware) | Conferir a seta de fluxo |
 | Fan 40 mm (sopra ↓) | Sob as Peltier | `12V-FANS` (BD-AUX) | Conferir a seta |
 | Fan extra 40 mm (sopra ↑) | Ao lado das Peltier | `12V-FANS` (BD-AUX) | Conferir a seta |
@@ -186,8 +192,8 @@ Um relatório que diz *"os 24 V foram medidos em 24,1 V no poste P3, com queda d
 | 3 | Ramal R2 (marrom) no fim da linha, poste P3 | ≥ 23,8 V | ______ |
 | 4 | Ramal R3 (cinza) no fim da linha, poste P3 | ≥ 23,8 V | ______ |
 | 5 | Saída da derivação (poste P1) — **24 V potência** | **24,0 V ± 0,3 V** | ______ |
-| 6 | Saída do T2 (poste P2) — 5 V comando | 5,10 V ± 0,05 V | ______ |
-| 7 | Saída do T3 (poste P3) — 12 V auxiliar | 12,0 V ± 0,1 V | ______ |
+| 6 | Saída do T2 — proposta 5 V comando | Somente após selecionar o modelo e definir limites de aceitação | ______ |
+| 7 | Saída do T3 — proposta 12 V auxiliar | Somente após selecionar o modelo e definir limites de aceitação | ______ |
 | 8 | 3,3 V do ESP32 (na DNLCB30) | 3,3 V ± 0,1 V | ______ |
 
 > 📋 **Preencha a coluna "Medido" e leve esta tabela para o relatório.** Comparar valor projetado × medido é o que caracteriza um comissionamento.
@@ -231,7 +237,7 @@ Um relatório que diz *"os 24 V foram medidos em 24,1 V no poste P3, com queda d
 
 - [ ] Setpoint em 5 °C, porta fechada
 - [ ] Registrar a temperatura a cada 15 min
-- [ ] **Medir a temperatura do corpo do T3 (LM2596)** → < 80 °C
+- [ ] Medir conversores selecionados e comparar com os limites de suas fichas técnicas aprovadas
 - [ ] **Medir a temperatura dos 2 dissipadores das Peltier** → < 60 °C cada
 - [ ] Verificar a caixa da subestação → < 55 °C internos
 - [ ] Após 2 h, confirmar o **ciclo de degelo** disparando sozinho
@@ -313,7 +319,7 @@ Comparar com o **valor calculado no Doc 02 §2.7: 0,17 V (0,71 %)**.
 | Tempo | Tema | O que mostrar |
 |---|---|---|
 | 0–2 min | **O problema** | Por que controlar temperatura importa (alimentos, fármacos, processos) |
-| 2–5 min | **A cadeia de energia** ⭐ | Percorra a maquete: 127 V na entrada → 24 V no poste → **24 V passando direto pelo P1** (com a corrente das Peltier no amperímetro) → **5,10 V e 12,0 V nos displays dos LM2596**. **É o momento mais forte da apresentação** — e agora os valores estão visíveis de longe, sem multímetro |
+| 2–5 min | **A cadeia de energia** ⭐ | Apresente apenas valores realmente medidos e modelos aprovados. A configuração PTC/T2/T3 permanece bloqueada; não alegue 5,10 V nem displays LM2596 como especificações vigentes |
 | 5–7 min | **Proteção e comando** | Diagrama unifilar, tabela de seletividade, o selo do KM1. Acione a emergência ao vivo, mostre os 0 V no BD-POT e que **destravar não religa** |
 | 7–10 min | **Controle** | PID, intertravamento, proteção de RPM. Mostre a curva do ensaio 2 |
 | 10–12 min | **IoT** | Dashboard no celular, mude o setpoint remotamente, mostre o STOP remoto |

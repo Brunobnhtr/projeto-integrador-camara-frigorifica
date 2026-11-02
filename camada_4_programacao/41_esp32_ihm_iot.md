@@ -241,7 +241,9 @@ Uma linha por segundo, terminada em `\n`:
 | `rpm1` | int | RPM do cooler do dissipador da **Peltier #1** |
 | `rpm2` | int | RPM do cooler do dissipador da **Peltier #2** |
 | `estado` | string | `BOOT` · `AGUARDA_START` · `RODANDO` · `EMERGENCIA` · `FALHA` |
-| `pot` | bool | **24 V** presentes no BD-POT (divisor 22k/4k7 no pino D25). `false` = emergência acionada ou fusível aberto |
+| `pot` | bool | `true` apenas quando V1 do N4AIC24 é válido, recente e acima do limiar configurado; `false` também cobre leitura inválida/expirada |
+| `pot_v1` | float/null | Último valor válido de V1 em volts; `null` quando não há leitura válida |
+| `pot_ok` | bool | Indica se a leitura Modbus de V1 está dentro da faixa e do timeout |
 | `alerta` | string/null | `FAN_PARADA`, `SOBRECORRENTE`, `CARGA_ABERTA`, `EMERGENCIA`, `DEGELO` |
 
 ```cpp
@@ -259,6 +261,10 @@ void enviarJSON() {
     Serial1.print(F(",\"rpm\":"));       Serial1.print(rpmAtual);
     Serial1.print(F(",\"estado\":\""));  Serial1.print(nomeEstado());
     Serial1.print(F("\",\"pot\":"));     Serial1.print(potenciaDisponivel() ? "true" : "false");
+    Serial1.print(F(",\"pot_ok\":"));    Serial1.print(leituraV1Valida() ? "true" : "false");
+    Serial1.print(F(",\"pot_v1\":"));
+    if (leituraV1Valida()) Serial1.print(tensaoV1BdPot, 2);
+    else                   Serial1.print(F("null"));
     Serial1.print(F(",\"alerta\":"));
     if (alerta[0]) { Serial1.print('"'); Serial1.print(alerta); Serial1.print('"'); }
     else             Serial1.print(F("null"));
@@ -374,22 +380,13 @@ void processarComandoRemoto() {
 
 ---
 
-## 41.3b Mestre Modbus RTU (Monitoramento de Dispositivos)
+## 41.3b Aquisição Direta dos DUTs no Arduino Mega
 
-A principal responsabilidade industrial do ESP32 neste projeto não é apenas WiFi, mas sim atuar como **Mestre Modbus RTU** pela porta Serial2 (pinos conectados ao adaptador MAX485).
-O Módulo ADC 2 Canais atua como Escravo (Slave ID = 1).
+Arquitetura vigente da maquete: os dois sensores ACS712 entregam tensão analógica 0–5 V diretamente às entradas analógicas **A2** e **A3** do Arduino Mega, filtradas por capacitores de 100 nF para o terra analógico (GND2). O Arduino Mega faz a leitura e detecção de falha localmente e transmite o estado das cargas e alarmes para o ESP32 via Serial1 (D18/D19). A IHM mantém a Serial2 (D16/D17).
 
-A lógica funciona com polling cíclico (ex: a cada 1 segundo):
+Isso simplifica a programação do Mega: não há necessidade de bibliotecas Modbus, transceptor MAX485, controle de direção DE/RE ou timeouts seriais de linha. A leitura analógica é instantânea e a detecção de corrente zero por queima de lâmpada ou abertura do porta-fusível aciona o alerta de DUT em menos de 1 segundo.
 
-1. **O ESP32 pergunta:** "Escravo 1, leia seus registradores analógicos de entrada (Input Registers)".
-2. **O ADC responde:** Retorna os valores brutos (0 a 4095) referentes às tensões dos sensores ACS712.
-3. **Conversão no ESP32:**
-   - Transforma o valor bruto em Volts (ex: `valor * 5.0 / 4096.0`).
-   - Converte a tensão em Corrente (O ACS712 envia 2.5V no repouso, e sobe 185mV a cada 1 Ampere).
-4. **Decisão:** Se a corrente da Posição 1 ou 2 cair abruptamente (abaixo de um limiar mínimo, ex: 50 mA), o ESP32 interpreta como falha (fio partido, lâmpada queimada, ou disjuntor de gaveta aberto).
-5. **Ação:** O ESP32 envia imediatamente um comando prioritário para o Arduino Mega: `{"cmd":"FALHA_DUT","pos":1}` para que o Mega aborte o processo e desligue o aquecimento/resfriamento por intertravamento. Ao mesmo tempo, publica o alarme via MQTT para o Dashboard.
-
-> 🎓 **Por que não no Mega?** O Arduino Mega já tem muito trabalho lidando com o PID das Peltiers (que exige microsegundos de atenção) e o controle crítico da máquina. Delegar a varredura Modbus (que envolve esperas de milissegundos e *timeouts*) para o ESP32 quebra o acoplamento e deixa a máquina mais robusta.
+Guia físico vigente: [painel autônomo e ligações](../camada_3_eletrica/34_painel_autonomo_e_guia_ligacoes.md).
 
 ## 41.4 Firmware do ESP32
 

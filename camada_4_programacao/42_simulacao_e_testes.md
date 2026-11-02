@@ -261,7 +261,7 @@ instalar nada, com o firmware do [Doc 40](40_firmware_arduino.md).
 |---|---|---|
 | DS18B20 (centro da câmara) | DS18B20 | **Clique nele e arraste a temperatura** para simular a câmara esquentando ou esfriando |
 | Botão START / STOP / EMERGÊNCIA | Pushbuttons | Clique |
-| KM1 (**24 V** presentes) | Chave deslizante no D25 | Desligue para simular a emergência cortando em hardware |
+| BD-POT / N4AIC24 V1 | Driver Modbus simulado ou stub de leitura V1 | Teste 24 V, 0 V, valor fora da faixa, ausência da primeira resposta e leitura expirada; Wokwi não substitui o N4AIC24 real |
 | BTS7960 #1 e #2 | LEDs ciano e laranja | ⚠️ **Com o PWM em 20 kHz o LED não pisca — ele varia de brilho.** Para ver o duty no Wokwi, olhe o valor impresso no Serial |
 | LEDs RUN / FRIO / QUENTE / FALHA | LEDs | Iguais aos do painel |
 | Fan do dissipador | Pino D30 ligado por fio ao D3 | O sketch gera os pulsos do tacômetro — **testa a interrupção de verdade** |
@@ -275,8 +275,9 @@ instalar nada, com o firmware do [Doc 40](40_firmware_arduino.md).
 | 2 | **PWM** | Dê START com a temperatura em 25 °C | O LED ciano acende com brilho proporcional ao duty. ⚠️ Ele NÃO pisca: a 20 kHz o olho integra. Antes, a 1 Hz, ele piscava com o tempo aceso proporcional ao duty |
 | 3 | **Intertravamento** | Force um modo e olhe os dois LEDs | **Nunca** os dois acesos ao mesmo tempo |
 | 4 | **Intervalo de 30 s** | Passe rapidamente a temperatura de 30 °C para 0 °C | Os dois LEDs ficam apagados por 30 s antes de trocar de modo |
-| 5 | **START recusado sem potência** | Desligue a chave do D25 e aperte START | Serial: `START recusado: 24 V ausentes` |
-| 6 | **Emergência não religa** | Aperte a emergência, solte, e **não** aperte START | Fica em `AGUARDA_START`. **Não pode voltar a rodar sozinho** |
+| 5 | **START recusado sem leitura segura de potência** | Simule V1 ausente, inválido ou 0 V e aperte START | Partida recusada; distinguir `MEDICAO_POTENCIA_INDISPONIVEL` de `POTENCIA_AUSENTE` |
+| 6 | **Perda de Modbus durante ensaio** | Pare de atualizar V1 por mais que o timeout de teste | Trip retentivo `MEDICAO_POTENCIA_INDISPONIVEL`; recuperar o barramento não reinicia sozinho |
+| 7 | **Emergência não religa** | Aperte a emergência, solte, e **não** aperte START | Fica em `AGUARDA_START`. **Não pode voltar a rodar sozinho** |
 
 > ⚠️ **Se uma peça não existir com esse nome** na sua versão do Wokwi, arraste uma equivalente — as ligações estão descritas na tabela acima.
 

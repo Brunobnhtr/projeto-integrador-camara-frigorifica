@@ -9,7 +9,7 @@
     <rect x="340" y="96" width="600" height="30" fill="#5f3dc4"/>
     <text x="354" y="117" font-size="15" font-weight="700" fill="#fff">KM1</text>
     <text x="396" y="117" font-size="10.5" fill="#fff">O ÚNICO SELO — cai na emergência, no STOP e no trip; só o LIGAR verde devolve · ⚡ contato de 6 A</text>
-    <text x="928" y="117" font-size="9.5" fill="#ffffffcc" text-anchor="end">trilho 1 · X = 372 mm</text>
+    <text x="928" y="117" font-size="9.5" fill="#ffffffcc" text-anchor="end">trilho 1 · X = 48 mm</text>
     <text x="354" y="144" font-size="10" fill="#868e96">relé 8 pinos + base PTF08A · trilho 1</text>
     <rect x="432" y="292" width="416" height="76" fill="#f1f3f5" stroke="#868e96" stroke-width="1.6" rx="3"/>
     <text x="640" y="322" font-size="12" font-weight="700" fill="#868e96" text-anchor="middle">BASE PTF08A · trilho DIN</text>
@@ -27,7 +27,7 @@
     <text x="605" y="308" font-size="9" fill="#868e96">nº 8</text>
     <path d="M588 291 L588 180" stroke="#5f3dc4" stroke-width="2.4"/>
     <circle cx="588" cy="180" r="3.2" fill="#5f3dc4"/>
-    <text x="588" y="168" font-size="9.5" fill="#343a40" text-anchor="middle">O SELO DO KM1</text>
+    <text x="588" y="168" font-size="9.5" fill="#343a40" text-anchor="middle">KM1 · A1</text>
     <text x="588" y="155" font-size="8" fill="#5f3dc4" text-anchor="middle">NA do contato 2</text>
     <circle cx="692" cy="304" r="13" fill="#5f3dc422" stroke="#5f3dc4" stroke-width="2.2"/>
     <path d="M685 304 L699 304" stroke="#5f3dc4" stroke-width="2"/>
@@ -35,7 +35,7 @@
     <text x="709" y="308" font-size="9" fill="#868e96">nº 12</text>
     <path d="M692 291 L692 180" stroke="#5f3dc4" stroke-width="2.4"/>
     <circle cx="692" cy="180" r="3.2" fill="#5f3dc4"/>
-    <text x="692" y="168" font-size="9.5" fill="#343a40" text-anchor="middle">comum do selo</text>
+    <text x="692" y="168" font-size="9.5" fill="#343a40" text-anchor="middle">S1 · 13</text>
     <text x="692" y="155" font-size="8" fill="#5f3dc4" text-anchor="middle">comum 2</text>
     <circle cx="796" cy="304" r="13" fill="#5f3dc422" stroke="#5f3dc4" stroke-width="2.2"/>
     <path d="M789 304 L803 304" stroke="#5f3dc4" stroke-width="2"/>
@@ -43,7 +43,7 @@
     <text x="813" y="308" font-size="9" fill="#868e96">nº 14</text>
     <path d="M796 291 L796 180" stroke="#5f3dc4" stroke-width="2.4"/>
     <circle cx="796" cy="180" r="3.2" fill="#5f3dc4"/>
-    <text x="796" y="168" font-size="9.5" fill="#343a40" text-anchor="middle">KA1 · COM1</text>
+    <text x="796" y="168" font-size="9.5" fill="#343a40" text-anchor="middle">KA123 · COM1; KM1 · A1</text>
     <text x="796" y="155" font-size="8" fill="#5f3dc4" text-anchor="middle">bobina</text>
     <circle cx="484" cy="356" r="13" fill="#f8f9fa" stroke="#ced4da" stroke-width="1.3"/>
     <path d="M477 356 L491 356" stroke="#ced4da" stroke-width="2"/>
@@ -56,7 +56,7 @@
     <text x="605" y="360" font-size="9" fill="#868e96">nº 5</text>
     <path d="M588 369 L588 470" stroke="#5f3dc4" stroke-width="2.4"/>
     <circle cx="588" cy="470" r="3.2" fill="#5f3dc4"/>
-    <text x="588" y="486" font-size="9.5" fill="#343a40" text-anchor="middle">saída para o BD-POT</text>
+    <text x="588" y="486" font-size="9.5" fill="#343a40" text-anchor="middle">BD-POT · IN</text>
     <text x="588" y="499" font-size="8" fill="#5f3dc4" text-anchor="middle">NA do contato 1</text>
     <circle cx="692" cy="356" r="13" fill="#5f3dc422" stroke="#5f3dc4" stroke-width="2.2"/>
     <path d="M685 356 L699 356" stroke="#5f3dc4" stroke-width="2"/>
@@ -64,17 +64,16 @@
     <text x="709" y="360" font-size="9" fill="#868e96">nº 9</text>
     <path d="M692 369 L692 470" stroke="#5f3dc4" stroke-width="2.4"/>
     <circle cx="692" cy="470" r="3.2" fill="#5f3dc4"/>
-    <text x="692" y="486" font-size="9.5" fill="#343a40" text-anchor="middle">entrada dos 24 V do</text>
-    <text x="692" y="498" font-size="9.5" fill="#343a40" text-anchor="middle">prensa-cabo PG9-1</text>
-    <text x="692" y="511" font-size="8" fill="#5f3dc4" text-anchor="middle">comum 1</text>
+    <text x="692" y="486" font-size="9.5" fill="#343a40" text-anchor="middle">F-R · F1_OUT</text>
+    <text x="692" y="499" font-size="8" fill="#5f3dc4" text-anchor="middle">comum 1</text>
     <circle cx="796" cy="356" r="13" fill="#5f3dc422" stroke="#5f3dc4" stroke-width="2.2"/>
     <path d="M789 356 L803 356" stroke="#5f3dc4" stroke-width="2"/>
     <text x="796" y="386" font-size="13" font-weight="700" fill="#5f3dc4" text-anchor="middle">A1</text>
     <text x="813" y="360" font-size="9" fill="#868e96">nº 13</text>
     <path d="M796 369 L796 470" stroke="#5f3dc4" stroke-width="2.4"/>
     <circle cx="796" cy="470" r="3.2" fill="#5f3dc4"/>
-    <text x="796" y="486" font-size="9.5" fill="#343a40" text-anchor="middle">S1 · 14 (START verde) EM</text>
-    <text x="796" y="498" font-size="9.5" fill="#343a40" text-anchor="middle">PARALELO com o selo…</text>
+    <text x="796" y="486" font-size="9.5" fill="#343a40" text-anchor="middle">S1 · 14; KM1 · 24; KM1 ·</text>
+    <text x="796" y="498" font-size="9.5" fill="#343a40" text-anchor="middle">A2</text>
     <text x="796" y="511" font-size="8" fill="#5f3dc4" text-anchor="middle">bobina</text>
     <rect x="354" y="492" width="572" height="60" fill="#fff9db" stroke="#e8a33d" stroke-width="1.2"/>
     <text x="364" y="509" font-size="10.5" font-weight="700" fill="#8a6116">⚡ COMPONENTES DISCRETOS — não vão em placa nenhuma, vão nos bornes</text>
@@ -98,7 +97,7 @@
     <text x="230" y="776" font-size="11.5" font-weight="700" fill="#c2410c" text-anchor="middle">+5V</text>
     <path d="M230 781 L230 670" stroke="#c2410c" stroke-width="2.4"/>
     <circle cx="230" cy="670" r="3.2" fill="#c2410c"/>
-    <text x="230" y="658" font-size="9.5" fill="#343a40" text-anchor="middle">BD-5V saída 12</text>
+    <text x="230" y="658" font-size="9.5" fill="#343a40" text-anchor="middle">BD-5V · O12</text>
     <text x="230" y="645" font-size="8" fill="#c2410c" text-anchor="middle">DC+ · alimentação</text>
     <circle cx="322" cy="794" r="11" fill="#c2410c22" stroke="#c2410c" stroke-width="2"/>
     <text x="322" y="776" font-size="11.5" font-weight="700" fill="#c2410c" text-anchor="middle">0V</text>
@@ -110,7 +109,7 @@
     <text x="414" y="776" font-size="11.5" font-weight="700" fill="#c2410c" text-anchor="middle">IN1</text>
     <path d="M414 781 L414 670" stroke="#c2410c" stroke-width="2.4"/>
     <circle cx="414" cy="670" r="3.2" fill="#c2410c"/>
-    <text x="414" y="658" font-size="9.5" fill="#343a40" text-anchor="middle">Mega D27</text>
+    <text x="414" y="658" font-size="9.5" fill="#343a40" text-anchor="middle">MEGA · D27</text>
     <text x="414" y="645" font-size="8" fill="#c2410c" text-anchor="middle">gatilho, vindo do Mega</text>
     <circle cx="254" cy="846" r="11" fill="#c2410c22" stroke="#c2410c" stroke-width="2"/>
     <text x="254" y="872" font-size="11.5" font-weight="700" fill="#c2410c" text-anchor="middle">COM1</text>
@@ -149,7 +148,7 @@
     <text x="850" y="776" font-size="11.5" font-weight="700" fill="#c2410c" text-anchor="middle">+5V</text>
     <path d="M850 781 L850 670" stroke="#c2410c" stroke-width="2.4"/>
     <circle cx="850" cy="670" r="3.2" fill="#c2410c"/>
-    <text x="850" y="658" font-size="9.5" fill="#343a40" text-anchor="middle">BD-5V saída 12</text>
+    <text x="850" y="658" font-size="9.5" fill="#343a40" text-anchor="middle">BD-5V · O12</text>
     <text x="850" y="645" font-size="8" fill="#c2410c" text-anchor="middle">DC+ · alimentação</text>
     <circle cx="942" cy="794" r="11" fill="#c2410c22" stroke="#c2410c" stroke-width="2"/>
     <text x="942" y="776" font-size="11.5" font-weight="700" fill="#c2410c" text-anchor="middle">0V</text>
@@ -161,21 +160,20 @@
     <text x="1034" y="776" font-size="11.5" font-weight="700" fill="#c2410c" text-anchor="middle">IN2</text>
     <path d="M1034 781 L1034 670" stroke="#c2410c" stroke-width="2.4"/>
     <circle cx="1034" cy="670" r="3.2" fill="#c2410c"/>
-    <text x="1034" y="658" font-size="9.5" fill="#343a40" text-anchor="middle">Mega D30</text>
+    <text x="1034" y="658" font-size="9.5" fill="#343a40" text-anchor="middle">MEGA · D30</text>
     <text x="1034" y="645" font-size="8" fill="#c2410c" text-anchor="middle">gatilho, vindo do Mega</text>
     <circle cx="874" cy="846" r="11" fill="#c2410c22" stroke="#c2410c" stroke-width="2"/>
     <text x="874" y="872" font-size="11.5" font-weight="700" fill="#c2410c" text-anchor="middle">COM2</text>
     <path d="M874 859 L874 960" stroke="#c2410c" stroke-width="2.4"/>
     <circle cx="874" cy="960" r="3.2" fill="#c2410c"/>
-    <text x="874" y="976" font-size="9.5" fill="#343a40" text-anchor="middle">BD-AUX saída 2</text>
+    <text x="874" y="976" font-size="9.5" fill="#343a40" text-anchor="middle">BD-AUX · O2</text>
     <text x="874" y="989" font-size="8" fill="#c2410c" text-anchor="middle">comum do contato</text>
     <circle cx="992" cy="846" r="11" fill="#c2410c22" stroke="#c2410c" stroke-width="2"/>
     <text x="992" y="872" font-size="11.5" font-weight="700" fill="#c2410c" text-anchor="middle">NC2</text>
     <path d="M992 859 L992 960" stroke="#c2410c" stroke-width="2.4"/>
     <circle cx="992" cy="960" r="3.2" fill="#c2410c"/>
-    <text x="992" y="976" font-size="9.5" fill="#343a40" text-anchor="middle">fio X5 → ventoinhas do</text>
-    <text x="992" y="988" font-size="9.5" fill="#343a40" text-anchor="middle">radiador · +</text>
-    <text x="992" y="1001" font-size="8" fill="#c2410c" text-anchor="middle">NC — FECHADO em repouso</text>
+    <text x="992" y="976" font-size="9.5" fill="#343a40" text-anchor="middle">RAD · +</text>
+    <text x="992" y="989" font-size="8" fill="#c2410c" text-anchor="middle">NC — FECHADO em repouso</text>
     <circle cx="1110" cy="846" r="11" fill="#f8f9fa" stroke="#ced4da" stroke-width="1.3"/>
     <text x="1110" y="872" font-size="11.5" font-weight="700" fill="#ced4da" text-anchor="middle">NO2</text>
     <text x="1110" y="886" font-size="8.5" fill="#adb5bd" text-anchor="middle">NÃO USE</text>
@@ -204,7 +202,7 @@
     <text x="530" y="1266" font-size="11.5" font-weight="700" fill="#c2410c" text-anchor="middle">+5V</text>
     <path d="M530 1271 L530 1160" stroke="#c2410c" stroke-width="2.4"/>
     <circle cx="530" cy="1160" r="3.2" fill="#c2410c"/>
-    <text x="530" y="1148" font-size="9.5" fill="#343a40" text-anchor="middle">BD-5V saída 12</text>
+    <text x="530" y="1148" font-size="9.5" fill="#343a40" text-anchor="middle">BD-5V · O12</text>
     <text x="530" y="1135" font-size="8" fill="#c2410c" text-anchor="middle">DC+ · alimentação</text>
     <circle cx="622" cy="1284" r="11" fill="#c2410c22" stroke="#c2410c" stroke-width="2"/>
     <text x="622" y="1266" font-size="11.5" font-weight="700" fill="#c2410c" text-anchor="middle">0V</text>
@@ -216,21 +214,20 @@
     <text x="714" y="1266" font-size="11.5" font-weight="700" fill="#c2410c" text-anchor="middle">IN3</text>
     <path d="M714 1271 L714 1160" stroke="#c2410c" stroke-width="2.4"/>
     <circle cx="714" cy="1160" r="3.2" fill="#c2410c"/>
-    <text x="714" y="1148" font-size="9.5" fill="#343a40" text-anchor="middle">Mega D29</text>
+    <text x="714" y="1148" font-size="9.5" fill="#343a40" text-anchor="middle">MEGA · D29</text>
     <text x="714" y="1135" font-size="8" fill="#c2410c" text-anchor="middle">gatilho, vindo do Mega</text>
     <circle cx="554" cy="1336" r="11" fill="#c2410c22" stroke="#c2410c" stroke-width="2"/>
     <text x="554" y="1362" font-size="11.5" font-weight="700" fill="#c2410c" text-anchor="middle">COM3</text>
     <path d="M554 1349 L554 1450" stroke="#c2410c" stroke-width="2.4"/>
     <circle cx="554" cy="1450" r="3.2" fill="#c2410c"/>
-    <text x="554" y="1466" font-size="9.5" fill="#343a40" text-anchor="middle">BD-AUX saída 1</text>
+    <text x="554" y="1466" font-size="9.5" fill="#343a40" text-anchor="middle">BD-AUX · O1</text>
     <text x="554" y="1479" font-size="8" fill="#c2410c" text-anchor="middle">comum do contato</text>
     <circle cx="672" cy="1336" r="11" fill="#c2410c22" stroke="#c2410c" stroke-width="2"/>
     <text x="672" y="1362" font-size="11.5" font-weight="700" fill="#c2410c" text-anchor="middle">NO3</text>
     <path d="M672 1349 L672 1450" stroke="#c2410c" stroke-width="2.4"/>
     <circle cx="672" cy="1450" r="3.2" fill="#c2410c"/>
-    <text x="672" y="1466" font-size="9.5" fill="#343a40" text-anchor="middle">fio X9 → as 5 internas ·</text>
-    <text x="672" y="1478" font-size="9.5" fill="#343a40" text-anchor="middle">+</text>
-    <text x="672" y="1491" font-size="8" fill="#c2410c" text-anchor="middle">NO — aberto em repouso</text>
+    <text x="672" y="1466" font-size="9.5" fill="#343a40" text-anchor="middle">VF · +</text>
+    <text x="672" y="1479" font-size="8" fill="#c2410c" text-anchor="middle">NO — aberto em repouso</text>
     <circle cx="790" cy="1336" r="11" fill="#f8f9fa" stroke="#ced4da" stroke-width="1.3"/>
     <text x="790" y="1362" font-size="11.5" font-weight="700" fill="#ced4da" text-anchor="middle">NC3</text>
     <text x="790" y="1376" font-size="8.5" fill="#adb5bd" text-anchor="middle">NÃO USE</text>

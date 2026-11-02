@@ -4,6 +4,28 @@
 >
 > ✅ **Pré-requisito:** [Doc 30](30_forca_e_distribuicao.md) e [Doc 31](31_comando_e_protecoes.md).
 
+> ⛔ **Atenção à fiação do aquecedor:** a tabela antiga de cabos na §32.4 mostra o
+> BTS2 ligado a um PTC de 24 V. Essa ligação foi retirada. A proposta agora é PTC
+> 12 V/50 W em ramal separado, ainda sem corte DC, proteção, condutores ou retorno
+> definidos. Não executar essa tabela para o circuito do PTC nem energizar o ramal.
+
+> 🔄 **Nota V7 — sensores da câmara compacta.** A câmara passou a ter 15 L
+> (300 × 200 × 250 internos), com dois dutos de 60 × 60 nos cantos traseiros.
+> O conjunto mínimo de sensores é:
+>
+> | Sensor | Onde | Para quê |
+> |---|---|---|
+> | DS18B20 nº 1 | centro do volume, a meia altura | controle PID (o que o ensaio mede) |
+> | DS18B20 nº 2 | no retorno do duto, z ≈ 200 | detecta estratificação / ventoinha parada |
+> | DS18B20 nº 3 | na parede próxima ao PTC | proteção: dispara acima de 70 °C |
+> | Termostato bimetálico 70 °C | parede interna | corte físico, independente do firmware |
+> | Termostato bimetálico 90 °C | corpo do PTC | corte físico do aquecedor |
+>
+> Com 15 L, **dois sensores a 20 mm de distância já leem temperaturas diferentes**
+> se as ventoinhas pararem — é essa diferença que serve de diagnóstico. Não use a
+> média dos três para o PID: use o nº 1 para controlar e os outros dois só para
+> plausibilidade e alarme.
+
 ---
 
 ## 🟢 Em palavras simples — os sentidos e os nervos da máquina
@@ -204,10 +226,12 @@ Duas armadilhas do Arduino Mega estão documentadas aqui, e as duas eram silenci
 >
 > **Também saiu o bloco NF de 24 V do STOP.** O S2 ficou com um bloco só (NA, 5 V → `D23`), e com isso sumiu o fio dele até a bobina do KM1 — e sumiu **um dos três erros de montagem catalogados em [§31.5](31_comando_e_protecoes.md)**, o de trocar os blocos e queimar o `D23`.
 >
-> 🎯 **Sobrou 1 pino de comando para as cinco ventoinhas internas** (o `D29`, hoje no gatilho do KA3) e o Mega tem `D22`, `D26`, `D28` e `D50–D53` livres.
+> 🎯 **Sobrou 1 pino de comando para as cinco ventoinhas internas** (o `D29`, hoje no gatilho do KA3) e o Mega tem `D14`, `D15`, `D22`, `D26`, `D28` e `D50–D53` livres.
 | ~~D31–D34~~ | 🗑️ **livres** — eram os 4 bits de seleção do multiplexador | — | Ver [Doc 13 §13.4](../camada_1_maquete/13_posicoes_de_ensaio.md) |
-| ~~D22~~ | 🗑️ **livre** — era a leitura do SC-1 | — | A detecção de falha migrou para um barramento **RS-485 Modbus RTU**, sendo lida de forma autônoma pela porta serial do **ESP32** (o Arduino Mega não gasta mais pino com isso) |
-| ~~A2~~ | 🗑️ **livre** — era a entrada analógica dos 16 canais do mux | — | |
+| ~~D22~~ | 🗑️ **livre** — era a leitura do SC-1 | — | Liberado com a simplificação dos comandos |
+| ~~D14/D15/D26~~ | 🗑️ **livres** — eram Serial3 e DE do MAX485 | — | Liberados com a leitura analógica direta |
+| **A2** | Leitura analógica de corrente do **DUT 1** (ACS712 #1) | `INPUT` | Sinal 0–5 V com capacitor de 100 nF (`C3`) para GND2 |
+| **A3** | Leitura analógica de corrente do **DUT 2** (ACS712 #2) | `INPUT` | Sinal 0–5 V com capacitor de 100 nF (`C4`) para GND2 |
 
 #### 🔥 Correção — as ventoinhas do radiador saíram do MV-1 (e depois o MV-1 saiu inteiro)
 
@@ -290,10 +314,10 @@ O pino que vagou aqui é o mesmo que resolve o maior buraco do projeto: o firmwa
 > **Um fio rompido não pode abrir a máquina para o mundo.** Por isso o contato fecha para o 0 V na posição REMOTO: a falha cai sempre para o lado de quem está presente e enxerga a câmara.
 >
 > 📌 **Basta UM bloco NA e UM pino.** Aberto = LOCAL, fechado = REMOTO. Não precisa de dois blocos.
-| **D9** | Sinaleiro verde — RUN | `OUTPUT` | → **terminal + do sinaleiro H1** (5 V, direto) |
-| **D10** | Sinaleiro azul — COOL | `OUTPUT` | → **terminal + do H2** |
-| **D11** | Sinaleiro amarelo — HEAT | `OUTPUT` | → **terminal + do H3** |
-| **D12** | Sinaleiro vermelho — FAULT | `OUTPUT` | → **terminal + do H4** |
+| **D9** | Sinaleiro verde — RUN (H1) | `OUTPUT` | → **IN4 da placa de 8 relés** (Active-LOW, fecha NO4 comutando +24 V para H1.X1) |
+| **D10** | Sinaleiro azul — COOL (H2) | `OUTPUT` | → **IN5 da placa de 8 relés** (Active-LOW, fecha NO5 comutando +24 V para H2.X1) |
+| **D11** | Sinaleiro amarelo — HEAT (H3) | `OUTPUT` | → **IN6 da placa de 8 relés** (Active-LOW, fecha NO6 comutando +24 V para H3.X1) |
+| **D12** | Sinaleiro vermelho — FAULT (H4) | `OUTPUT` | → **IN7 da placa de 8 relés** (Active-LOW, fecha NO7 comutando +24 V para H4.X1) |
 
 ### Mapa visual
 
@@ -307,7 +331,7 @@ ARDUINO MEGA 2560
 ├─ D5      ── BTS #1 RPWM  (frio)
 ├─ D6      ── BTS #2 RPWM  (quente)
 ├─ D7      ── BTS #2 R_EN
-├─ D9..D12 ─────────────► 4 SINALEIROS 22 mm de 5 V (RUN/COOL/HEAT/FALHA)
+├─ D9..D12 ── IN4..IN7 placa 8 relés ──► Sinaleiros industriais 22 mm 24 Vcc (RUN/COOL/HEAT/FALHA)
 ├─ D16/D17 ── Serial2 ──[conversor de nível]──► tela ES3C28P
 ├─ D18/D19 ── Serial1 ────────────────────► DNLCB30 → ESP32
 ├─ D20/D21 ── I²C ────────────────────────► AM2315C · DS3231
@@ -409,7 +433,7 @@ ARDUINO MEGA 2560
 > gate** (TC4420, IR2104 ou equivalente) e do circuito em volta. O BTS7960 já traz o driver
 > dentro do encapsulamento — o pino do Arduino só manda o sinal.
 >
-> #### 3 · Ele se protege sozinho
+> #### 3 · Proteções internas do chip
 >
 > Sobrecorrente, sobretemperatura e subtensão são tratadas **dentro do chip**. Um MOSFET
 > discreto não tem nada disso: quem protege é o projetista, com mais componentes.
@@ -611,9 +635,11 @@ ARDUINO MEGA 2560
 
 ---
 
-## 32.4 Cabos painel → câmara
+## 32.4 Cabos painel → câmara (tabela histórica; não executar para o PTC)
 
-São **13 condutores**. Separe fisicamente em 2 grupos dentro da eletrocalha aérea.
+Esta tabela preserva o roteiro antigo de cabos; o total e as bitolas não são uma
+especificação de montagem atual. Separe potência e sinais conforme a arquitetura
+aprovada; o ramal do PTC está excluído até haver projeto de corte DC e proteção.
 
 ### Grupo A — Potência (lado esquerdo da eletrocalha)
 
@@ -621,8 +647,8 @@ São **13 condutores**. Separe fisicamente em 2 grupos dentro da eletrocalha aé
 |---|---|---|---|
 | BTS #1 M+ | 1,5 mm² | Vermelho | BTS #1 saída → borne **`24V-FRIO`** (2× Peltier em série) |
 | BTS #1 M− | 1,5 mm² | Preto | BTS #1 saída → borne `0V-FRIO` |
-| BTS #2 M+ | 1,5 mm² | Laranja | BTS #2 saída → borne **`24V-QUENTE`** (PTC de 24 V) |
-| BTS #2 M− | 1,5 mm² | Preto | BTS #2 saída → borne `0V-QUENTE` |
+| ~~BTS #2 M+~~ | — | — | ⛔ Não conectar ao PTC; o ramal proposto é de 12 V e ainda não tem topologia aprovada |
+| ~~BTS #2 M−~~ | — | — | ⛔ Retorno do BTS2/PTC não definido; não criar ligação por esta tabela |
 | Cooler externo **#1** + | 0,5 mm² | Vermelho | Régua 12V-AUX → cooler #1 + |
 | Cooler externo **#1** − | 0,5 mm² | Preto | Bloco BD-0V → cooler #1 − |
 | Cooler externo **#2** + | 0,5 mm² | Vermelho | Régua 12V-AUX → cooler #2 + |
@@ -691,17 +717,20 @@ Fans padrão geram 2 pulsos por rotação:
 
 ---
 
-## 32.5b Monitoramento de Falha — O Barramento RS-485 Modbus
+## 32.5b Monitoramento de Falha das Cargas (DUTs) — Aquisição Analógica Direta
 
-A maquete usa uma arquitetura industrial separada do Arduino Mega para monitorar os dispositivos. A inteligência mestre é o ESP32 (via placa DNLCB30), que conversa com um Módulo ADC via RS-485.
+No painel autônomo da maquete, os sensores de corrente ACS712-5A estão a menos de 40 cm do Arduino Mega. Por isso, a arquitetura física foi otimizada para **leitura analógica direta nos pinos A2 e A3**, dispensando transceptores RS-485 e módulos A/D intermediários.
 
 | Trecho | Cabo | O que leva |
 |---|---|---|
-| **Sensores → Módulo A/D** | Fios soltos curtíssimos (20 cm) | O sinal analógico 0–5 V puro, saindo do pino `VOUT` dos 2 sensores ACS712, direto para as entradas `IN_0` e `IN_1` do Módulo Modbus. A alimentação deles (5 V / GND) vem do BD-5V e BD-0V. |
-| **Módulo A/D → MAX485** | Par trançado (preferencialmente blindado) | Os dados empacotados pelo protocolo Modbus. Os fios cruzam do borne `A` para o `A` e do `B` para o `B`. |
-| **MAX485 → ESP32** | Pinos diretos | O MAX485 converte os níveis diferenciais (RS-485) para TTL (3,3 V) da Serial2 do ESP32 (`RX` e `TX`). |
+| **ACS712 #1 → Mega A2** | Fio flexível 0,25 mm² verde | Saída analógica `VOUT` (0–5 V) da corrente do DUT 1, com capacitor cerâmico de 100 nF (`C3`) para GND2. |
+| **ACS712 #2 → Mega A3** | Fio flexível 0,25 mm² verde | Saída analógica `VOUT` (0–5 V) da corrente do DUT 2, com capacitor cerâmico de 100 nF (`C4`) para GND2. |
+| **Alimentação dos ACS712** | Fios 0,5 mm² violeta e azul | 5 Vcc e 0 V puxados das réguas BD-5V e BD-0V-B. |
+| **Mega → ESP32** | Serial1 (D18/D19) | Envio de telemetria e alarmes de falha de DUT para a interface Web e MQTT. |
 
-> ⭐ **Resistores de Terminação:** O protocolo RS-485 precisa de dois resistores de 120 Ω nas extremidades do barramento (um no borne do MAX485 e outro no borne do Módulo A/D). Isso evita a reflexão do sinal (o famoso *echo* de linha).
+> 🛡️ **Filtro local de 100 nF (C3 e C4):** Como os ACS712 geram sinal analógico dentro de um painel que chaveia correntes elevadas, os capacitores de 100 nF instalados diretamente nos bornes A2/A3 e GND2 do Mega funcionam como filtro passa-baixas essencial, eliminando pulsos de comutação e garantindo leitura estável sem alarmes falsos.
+
+> 🏭 **Nota de Engenharia (Escala Industrial):** A especificação de barramento RS-485 Modbus RTU permanece no memorial descritivo da planta para o escalonamento de 50 posições dispersas no galpão, onde a distância e o ruído justificam o uso de concentradores remotos.
 
 ## 32.6 Boas práticas de cabeamento de sinal
 
@@ -751,8 +780,8 @@ A maquete usa uma arquitetura industrial separada do Arduino Mega para monitorar
 - [ ] START D22 (NA), STOP D23 (NA), EMERG D24 (**NF**)
 - [ ] Divisor **22 kΩ / 4,7 kΩ** do BD-POT para o pino D25 (medir **~4,2 V** com potência presente)
 - [ ] **Pull-down de 10 kΩ em cada `R_EN`** dos BTS7960 — com o Arduino desligado, medir ~0 V
-- [ ] **D9–D12 direto no terminal + de cada sinaleiro** — ⚠️ **sem CI, sem relé e sem resistor externo**: o sinaleiro de 5 V já traz o resistor dentro. Meça a corrente antes (passo A-02): acima de 20 mA ele não pode ir direto no pino
-- [ ] Sinaleiros de 24 V com o **positivo no BD-24V permanente** e o negativo nas saídas OUT1–OUT4
+- [ ] **D9–D12 ligados nas entradas IN4–IN7 da placa de 8 relés** (acionamento Active-LOW, ~3 mA). Isolação galvânica total entre pinos do Mega e a tensão de 24 Vcc dos sinaleiros
+- [ ] **Sinaleiros 24 Vcc (H1 a H4)**: Barramento `BD-24V` jampeado nos comuns `COM4..COM7`. Saídas `NO4..NO7` para os bornes `X1` de H1..H4 na porta. Retorno dos negativos `X2` interligados na porta e retornando ao `BD-0V` da fonte de 24V
 - [ ] **Teste da emergência: o sinaleiro vermelho continua aceso** com o cogumelo acionado
 - [ ] Grupos A e B em canaletas opostas
 - [ ] Blindagem aterrada **só no painel**

@@ -1,0 +1,7 @@
+﻿codigo;nome;material;esp_mm;larg_mm;alt_mm;qtd
+PNL-01;Fundo do painel;MDF;15;600;800;1
+PNL-02;Lateral esquerda;MDF;15;250;800;1
+PNL-03;Lateral direita;MDF;15;250;800;1
+PNL-04;Tampa superior;MDF;15;600;250;1
+PNL-05;Tampa inferior;MDF;15;600;250;1
+PNL-06;Porta do painel;MDF;15;596;796;1

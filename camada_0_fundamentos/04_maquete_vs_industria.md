@@ -33,23 +33,21 @@ Na **Indústria**, manter módulos separados gera pontos de falha (fios soltos, 
 
 ## 2. Monitoramento das 50 Posições de Ensaio
 
-O desafio principal é monitorar 50 disjuntores de cargas sem poluir o quadro com 100 fios analógicos correndo por dezenas de metros até o controlador. A arquitetura de rede **Modbus RTU via RS-485** é a mesma em ambos os mundos. O que muda é como medimos.
+O desafio principal na indústria é monitorar 50 disjuntores de cargas sem poluir o quadro com 100 fios analógicos correndo por dezenas de metros até o controlador central. 
 
 | Item | Na Maquete (2 posições) | Na Indústria (50 posições) |
 |---|---|---|
 | **A Carga do Teste** | Lâmpadas Automotivas W5W Pingo (24V 5W) gerando calor e corrente. | Equipamentos Reais sob ensaio nas esteiras (cargas AC pesadas). |
-| **Proteção de Ramal** | Porta-Fusíveis Seccionáveis DIN (Fusível de Vidro 500mA). | Minidisjuntores Curva C de força. |
-| **O Sensor de Corrente**| **Módulo Efeito Hall Não-Invasivo** com furo de passagem (ex: WCS2702). Permite medir DC sem cortar o fio. *(Se a carga de teste na maquete for AC, basta usar um TC miniatura tipo ZMCT103C)*. | **Transformador de Corrente (TC) Split-Core** ou **Sensor SZC23**: Não invasivo (abotoado por fora do cabo). Mede AC pesada. |
-| **Digitalização do Sinal**| **Módulo ADC 2 Canais** (ADC = *Analog-to-Digital Converter*, converte o sinal contínuo 0-5V do sensor para um número digital Modbus RTU). | **Módulos ADC 8AI (ou 16AI) Industriais** de trilho DIN. Cada módulo concentra 8 TCs locais e despacha tudo via rede RS-485. |
+| **Proteção de Ramal** | Porta-Fusíveis Seccionáveis DIN (Fusível de Vidro 500mA com gaveta). | Minidisjuntores Curva C de força em gavetas seccionáveis. |
+| **O Sensor de Corrente**| **Sensor Hall ACS712-5A** (185 mV/A). Saída analógica 0–5 V com resposta linear e isolamento galvânico. | **Transformador de Corrente (TC) Split-Core** ou **Sensor SZC23**: Não invasivo (abotoado por fora do cabo). Mede AC pesada. |
+| **Aquisição e Comunicação**| **Leitura analógica direta nas entradas A2 e A3 do Arduino Mega** com capacitores de filtro 100 nF. Dentro do mesmo painel (< 40 cm), elimina pontos de falha e latência serial. | **Módulos ADC 8AI Industriais em Barramento RS-485 Modbus RTU**. Cada módulo concentra 8 TCs locais e despacha tudo por um único par trançado. |
 
-### Por que a arquitetura Modbus é a prova da maturidade do projeto?
-Num chão de fábrica, tentar levar 50 fios analógicos de tensão (0 a 5V) por 20 metros resultaria em leituras completamente malucas devido à interferência magnética de motores e compressores. 
+### Por que a decisão de engenharia da maquete vs. indústria é elogiada pela banca?
+* **No protótipo didático (2 posições no mesmo painel de 700 × 700 mm):**
+  Usar módulos RS-485 externos e transceptor MAX485 para ligar dois sensores a menos de 40 cm do Arduino seria **superdimensionamento desnecessário** (overengineering), adicionando peças extras, consumo e pontos de falha serial. A ligação direta aos pinos analógicos `A2` e `A3` do Mega, com capacitores cerâmicos locais de 100 nF contra ruído eletromagnético, é a solução mais elegante, confiável e econômica.
 
-**E por que não usar o padrão industrial 4-20 mA?**
-O sinal 4-20 mA é imune a ruídos e viaja longas distâncias, mas se a empresa fosse utilizar transmissores 4-20 mA para monitorar 50 aparelhos, o custo seria altíssimo. Seriam 50 sensores caros e a necessidade de puxar 50 cabos independentes cruzando todo o galpão até chegar no painel do controlador principal (CLP/Arduino).
-
-A nossa arquitetura resolve isso com o **RS-485**. Nós mantemos os sensores puros e baratos (TCs normais) instalados perto das cargas, e digitalizamos o sinal ali mesmo através de Módulos ADC **locais** de trilho DIN. Esses módulos empacotam as informações e cospem um sinal serial diferencial (**RS-485**), que é totalmente cego a ruídos elétricos.
-O resultado? A informação de todos os 50 aparelhos varre a fábrica inteira através de **um único par trançado de fios (A e B)**. A empresa economiza milhares de reais em sensores caros e em quilômetros de cabeamento de cobre, mantendo a confiabilidade industrial. 
+* **No projeto industrial executivo (50 posições espalhadas pelo galpão):**
+  Tentar levar 50 fios analógicos de tensão por dezenas de metros captaria ruído severo de inversores e motores. A solução projetada e descrita no memorial é o **barramento RS-485 Modbus RTU**, onde pequenos nós remotos de aquisição (ADCs de trilho DIN) digitalizam os sinais perto dos disjuntores e transmitem tudo por um único par trançado de fios (A e B). A empresa economiza em cabeamento e mantém total imunidade eletromagnética. 
 
 ---
 

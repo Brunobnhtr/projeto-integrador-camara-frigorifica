@@ -21,12 +21,14 @@ removidos na refatoração para 24 V.
 from __future__ import annotations
 
 import re
+import os
 import sys
+import tempfile
 from datetime import datetime
 from pathlib import Path
 
 try:
-    from openpyxl import Workbook
+    from openpyxl import Workbook, load_workbook
     from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
     from openpyxl.utils import get_column_letter
 except ImportError:
@@ -48,6 +50,12 @@ BORDA = Border(left=FINA, right=FINA, top=FINA, bottom=FINA)
 
 # Seções da BOM que descrevem o que SAIU do projeto — nunca viram compra.
 SECAO_REMOVIDOS = re.compile(r"n[ãa]o existem mais|removid", re.IGNORECASE)
+SECAO_COMPRA = re.compile(r"^(?:E\.\d|M\.\d|C\.\d|L\.\d|CAMADA [23])", re.IGNORECASE)
+ITEM_BLOQUEADO = re.compile(
+    r"n[aã]o comprar|n[aã]o comprar/energizar|compra bloqueada|"
+    r"compra pendente|bloquead[oa] para compra",
+    re.IGNORECASE,
+)
 
 
 def limpar(texto: str) -> str:
@@ -132,16 +140,16 @@ BUSCA_ALIEXPRESS = {
     # Reles: so entram com MARCA e MODELO. O criterio nao e "importado e
     # ruim" - e que o datasheet precisa declarar a corrente em DC, e
     # anuncio generico ("24V 10A Relay Module") nao declara.
-    "km1":                       "JQX-13F LY2N 24VDC relay 10A 8 pin PTF08A socket",
+    "km1":                       "HH64P LY4NJ 24VDC relay 10A 14 pin PTF14A socket",
     "kit duplo de refrigera":     "dual TEC1-12706 peltier cooler kit 12V",
     "peltier tec1-12706":        "TEC1-12706 peltier module",
     "ventoinha de reposi":       "80mm fan 12V 3 pin PWM tachometer",
-    "aquecedor ptc":             "24V PTC heater element with fan",
+    "aquecedor ptc":             "12V 50W PTC heater element with fan",
     "sensor ina219":             "INA219 current sensor module",
     "uln2803":                   "ULN2803A DIP18 darlington",
     "soquete dip":               "DIP18 IC socket",
-    "kit 2":                     "LM2596 buck converter voltmeter display",
-    "kit lm2596":                "LM2596 buck converter voltmeter display",
+    "conversor 24 v → 5 v":    "24V to 5V 5A buck converter datasheet",
+    "conversor 24 v → 12 v":   "24V to 12V 20A buck converter datasheet",
     "bts7960":                   "BTS7960 43A motor driver module",
     "esp32-wroom":               "ESP32 WROOM 32U",
     "arduino mega":              "Arduino Mega 2560 R3",
@@ -245,7 +253,8 @@ def ler_bom(caminho: Path) -> list[dict]:
             cabecalho = [limpar(c) for c in celulas]
             continue
 
-        # só interessam as tabelas que descrevem materiais
+        # Só entram as seções de materiais. Tabelas do carrinho, exemplos,
+        # resumos e histórico não são listas de compra.
         if not cabecalho or "Item" not in cabecalho[0]:
             continue
 
@@ -255,6 +264,8 @@ def ler_bom(caminho: Path) -> list[dict]:
         #    para a lista de compras.
         if SECAO_REMOVIDOS.search(secao):
             continue
+        if not SECAO_COMPRA.search(secao):
+            continue
 
         brutos = dict(zip(cabecalho, celulas))
         valores = dict(zip(cabecalho, [limpar(c) for c in celulas]))
@@ -263,6 +274,8 @@ def ler_bom(caminho: Path) -> list[dict]:
         # O tachado (~~item~~) marca o que saiu do projeto. A checagem é feita
         # na célula BRUTA porque limpar() remove os "~~" antes de chegar aqui.
         if not item or "~~" in brutos.get(cabecalho[0], ""):
+            continue
+        if any(ITEM_BLOQUEADO.search(valor) for valor in valores.values()):
             continue
 
         # a 4ª coluna muda de nome conforme a tabela (Busca / Ajuste / Aplicação)
@@ -296,61 +309,59 @@ def ler_bom(caminho: Path) -> list[dict]:
     return itens
 
 
-# Inventario conferido nos dados que o React realmente renderiza. Esta aba nao
-# substitui a BOM: ela torna visiveis as decisoes do modelo que ainda nao estao
-# representadas de forma confiavel nas tabelas Markdown.
+# Inventário confrontado com o modelo React atual; não é aprovação para energizar.
 REACT_INVENTARIO = [
-    ("Painel", "Caixa do painel", 1, "500 x 500 x 200 mm", "painel_interativo/src/data/painel_completo.js"),
-    ("Painel", "BD-POT", 1, "24 V de potencia, 1 entrada + 4 saidas", "painel_interativo/src/data/painel.js"),
-    ("Painel", "BD-AUX", 1, "12 V auxiliar, 1 entrada + 4 saidas", "painel_interativo/src/data/painel.js"),
-    ("Painel", "BD-24V", 1, "24 V permanente, 1 entrada + 6 saidas", "painel_interativo/src/data/painel_completo.js"),
-    ("Painel", "BD-5V", 1, "5 V, 1 entrada + 8 saidas", "painel_interativo/src/data/painel_completo.js"),
-    ("Painel", "BD-0V", 1, "barra star ground, minimo 20 pontos", "painel_interativo/src/data/painel_completo.js"),
-    ("Painel", "BTS7960", 2, "1 para Peltier; 1 para PTC", "painel_interativo/src/data/painel_completo.js"),
-    ("Painel", "Rele 8 pinos + base DIN", 2, "KM1 (1 em uso + 1 reserva), bobina 24 Vcc, contato 10 A em CC", "painel_interativo/src/data/reles_fisico.js"),
-    ("Painel", "Modulo rele 1 canal 5 V", 3, "KA1 NO, KA2 NC e KA3 NO, optoacoplados; caixa DIN 6M", "painel_interativo/src/data/reles_fisico.js"),
+    ("Painel", "Caixa do painel", 1, "700 x 700 x 250 mm; conferir medidas e furação antes de fabricar", "painel_interativo/src/data/painel_completo.js"),
+    ("Painel", "BD-POT", 1, "24 V comutados pelo KM1 para o BTS da Peltier; o PTC proposto não pertence a este barramento", "painel_interativo/src/data/painel_completo.js"),
+    ("Painel", "BD-AUX", 1, "12 V auxiliar para ventoinhas; não é corte de emergência nem alimentação aprovada do PTC", "painel_interativo/src/data/painel_completo.js"),
+    ("Bloqueado", "BD-PTC / ramal do aquecedor", 1, "12 V permanente proposto via T3; sem corte DC independente definido. BTS do PTC em curto pode manter 4,17 A na emergência enquanto a ventoinha para. NÃO MONTAR NEM ENERGIZAR.", "painel_interativo/src/sim/energia.js"),
+    ("Bloqueado", "T2 — conversor proposto", 1, "24 V para 5,0 V / 5 A; modelo, ficha, tensão máxima de entrada e transientes pendentes", "painel_interativo/src/data/painel_completo.js"),
+    ("Bloqueado", "T3 — conversor proposto", 1, "24 V para 12 V / 20 A; modelo, ficha e capacidade contínua/térmica pendentes", "painel_interativo/src/data/painel_completo.js"),
+    ("Painel", "BD-24V", 1, "24 V permanente para comando e N4AIC24", "painel_interativo/src/data/painel_completo.js"),
+    ("Painel", "BD-5V", 1, "5 V de lógica, IHM e sinaleiros", "painel_interativo/src/data/painel_completo.js"),
+    ("Painel", "BD-0V / BD-0V-B", 2, "Retornos separados conforme a topologia; conferir quantidade de terminais no modelo", "painel_interativo/src/data/painel_completo.js"),
+    ("Painel", "BTS7960", 2, "Um para Peltier; outro para PTC proposto. Falha em curto pode energizar o PTC sem comando; não é dispositivo de corte independente.", "painel_interativo/src/data/painel_completo.js"),
+    ("Painel", "Rele KM1 14 pinos + base DIN", 2, "1 em uso + 1 reserva; HH64P / LY4NJ 24 Vcc 10 A com base PTF14A; 4 contatos (corta 24 V Peltier, 12 V PTC e SELO)", "painel_interativo/src/data/reles_fisico.js"),
+    ("Painel", "Modulos rele 1 canal 5 V", 3, "KA1 NO, KA2 NC e KA3 NO; montagem DIN conforme o modelo atual", "painel_interativo/src/data/reles_fisico.js"),
     ("Painel", "Arduino Mega 2560", 1, "Controlador principal", "painel_interativo/src/data/painel_completo.js"),
-    ("Painel", "Placa PI-1", 1, "Placa ilhada com ULN2803A, filtros e divisor D25", "painel_interativo/src/data/pi1_fisico.js"),
-    ("Painel", "Placa PI-2", 1, "Placa ilhada com CD74HC4067, shunts e INA219", "painel_interativo/src/data/pi2_fisico.js"),
-    ("Painel", "DNLCB30 + ESP32-WROOM-32U", 1, "Supervisao Wi-Fi/MQTT; entrada 24 V", "painel_interativo/src/data/painel_completo.js"),
-    ("Painel", "ES3C28P ESP32-S3", 1, "IHM 2,8 pol, touch, microSD; alimentacao pelo Type-C", "painel_interativo/src/data/pinagens.js"),
-    ("Painel", "Conversor de nivel UART", 1, "2 canais, 5 V <-> 3,3 V", "painel_interativo/src/data/pinagens.js"),
-    ("Painel", "Sinaleiro LED 22 mm 24 V", 4, "RUN verde, COOL azul, HEAT amarelo, FAULT vermelho", "painel_interativo/src/data/painel.js"),
-    ("Painel", "Botoeiras", 3, "Emergencia (cogumelo), LIGAR verde e STOP preto", "painel_interativo/src/data/painel.js"),
-    ("Camara", "Peltier TEC1-12706", 2, "Ligadas em serie, carga de 24 V / aproximadamente 6 A", "painel_interativo/src/data/camara.js"),
-    ("Camara", "PTC 24 V", 1, "Aquecedor; comandado pelo BTS #2", "painel_interativo/src/data/camara.js"),
-    ("Camara", "Ventoinhas internas 12 V", 5, "4 de circulacao + 1 do PTC, em paralelo", "painel_interativo/src/data/camara_ligacoes.js"),
-    ("Fora da camara", "Cooler do radiador 3 fios", 2, "12 V, com RPM individual; lado quente", "painel_interativo/src/data/camara_ligacoes.js"),
-    ("Camara", "AM2315C", 1, "Temperatura e umidade, dentro da camara", "painel_interativo/src/data/camara.js"),
-    ("Fora da camara", "DS18B20", 1, "Temperatura do dissipador quente, 3 fios", "painel_interativo/src/data/camara_ligacoes.js"),
-    ("Camara", "Posicao de ensaio / DUT", 2, "LED + resistor; retornos individuais RET-1 e RET-2", "painel_interativo/src/data/camara.js"),
-    ("Camara", "Porta-fusivel das posicoes", 1, "2 vias, fusivel 100 mA por DUT", "painel_interativo/src/data/camara_ligacoes.js"),
-    ("Camara", "Modulo CD74HC4067", 1, "Multiplexador de 16 canais", "painel_interativo/src/data/pi2_fisico.js"),
-    ("Camara", "Modulo INA219", 1, "Medicao de referencia da posicao 1", "painel_interativo/src/data/pi2_fisico.js"),
+    ("Painel", "N4AIC24", 1, "V1 mede BD-POT; aquisição de tensão/corrente via Modbus RTU RS-485", "painel_interativo/src/data/painel_completo.js"),
+    ("Painel", "MAX485", 1, "Transceptor RS-485 entre Serial3 do Mega e N4AIC24", "painel_interativo/src/data/painel_completo.js"),
+    ("Painel", "DNLCB30 + ESP32-WROOM-32U", 1, "Supervisão Wi-Fi/MQTT; não autoriza partida", "painel_interativo/src/data/painel_completo.js"),
+    ("Painel", "ES3C28P ESP32-S3", 1, "IHM 2,8 pol., touch e microSD integrado", "painel_interativo/src/data/painel_completo.js"),
+    ("Painel", "Conversor de nível UART", 1, "Adaptação de níveis entre Mega 5 V e IHM 3,3 V", "painel_interativo/src/data/painel_completo.js"),
+    ("Painel", "Sinaleiros LED 22 mm 5 V", 4, "RUN, COOL, HEAT e FAULT; validar corrente por pino antes da ligação direta", "painel_interativo/src/data/painel_completo.js"),
+    ("Painel", "Botoeiras", 3, "Emergência, LIGAR verde e STOP preto", "painel_interativo/src/data/painel_completo.js"),
+    ("Camara", "Peltier TEC1-12706", 2, "Ligadas em série; 24 V e aproximadamente 6 A no conjunto", "painel_interativo/src/data/camara.js"),
+    ("Camara", "PTC proposto 12 V / 50 W — BLOQUEADO", 1, "Estimativa de 4,17 A; modelo, topologia de corte DC, proteção, condutores e limites térmicos não aprovados. Não comprar/montar/energizar.", "painel_interativo/src/data/camara.js"),
+    ("Camara", "ST-1: termostato NF 90 C de rearme manual — modelo pendente", 1, "NAO COMPRAR: identificar variante exata e exigir ficha com rearme manual, tolerância, proteção ambiental e capacidade CC apropriada para o ramal de 12 V; validar corte/trava.", "painel_interativo/src/data/camara.js"),
+    ("Camara", "ST-2: termostato NF 70 C de rearme manual — modelo pendente", 1, "NAO COMPRAR NEM LIGAR DIRETO AO PTC: rating AC não comprova interrupção CC. Exigir ficha do modelo exato com rating 12 Vcc adequado, temperatura/tolerância e proteção ambiental.", "painel_interativo/src/data/camara.js"),
+    ("Camara", "Ventoinhas internas 12 V", 5, "4 de circulação + ventoinha integrada do PTC; dois fios e sem tacômetro. A ventoinha do PTC pode parar durante emergência; a estratégia térmica permanece pendente.", "painel_interativo/src/data/camara.js"),
+    ("Fora da camara", "Coolers do radiador 3 fios", 2, "12 V; somente estes dois sinais de RPM são monitorados", "painel_interativo/src/data/camara.js"),
+    ("Camara", "AM2315C", 1, "Temperatura e umidade dentro da câmara", "painel_interativo/src/data/camara.js"),
+    ("Fora da camara", "DS18B20", 1, "Temperatura do dissipador quente; não mede o corpo do PTC nem substitui ST-1", "painel_interativo/src/data/camara.js"),
+    ("Camara", "Placas PL-1 e PL-2 / DUT", 2, "Oito posições totais, quatro por placa; retornos individuais medidos no N4AIC24", "painel_interativo/src/data/discretos.js"),
+    ("Camara", "Porta-fusível das posições", 1, "Oito vias, um canal por DUT; confirmar especificação final do conjunto", "painel_interativo/src/data/camara.js"),
 ]
 
 REACT_FIACAO = [
-    ("127 V CA", "preto / azul / verde-amarelo", "1,5 mm2", "Tomada -> disjuntor -> fonte; PE aterra a carcaça", "painel_interativo/src/data/maquete.js"),
-    ("24 V potencia", "vermelho", "1,5 mm2", "P1/painel -> KM1 -> BD-POT -> BTS", "painel_interativo/src/data/fiacao.js"),
-    ("0 V comum", "preto ou azul escuro", "1,5 mm2", "Retorno geral e star ground BD-0V", "painel_interativo/src/data/fiacao.js"),
-    ("24 V linha R1", "vermelho rigido encapado", "1,00 mm2", "Ramal das Peltier, 6,0 A", "painel_interativo/src/data/maquete.js"),
-    ("24 V linha R2", "marrom rigido encapado", "0,50 mm2", "Ramal do T2 e 24 V de servicos", "painel_interativo/src/data/maquete.js"),
-    ("24 V linha R3", "cinza rigido encapado", "0,50 mm2", "Ramal do T3 e auxiliares", "painel_interativo/src/data/maquete.js"),
-    ("0 V linha", "azul claro rigido encapado", "1,50 mm2", "Retorno comum dos tres ramais, 6,9 A", "painel_interativo/src/data/maquete.js"),
-    ("12 V auxiliar", "amarelo / preto", "0,75 mm2", "T3/BD-AUX -> ventoinhas", "painel_interativo/src/data/fiacao.js"),
-    ("5 V logica", "violeta ou vermelho / preto", "0,50 mm2", "T2/BD-5V -> Arduino, IHM e modulos", "painel_interativo/src/data/fiacao.js"),
-    ("Sinais", "cinza, azul, amarelo ou verde", "0,25 mm2", "Sensores, RPM, I2C, UART e comandos", "painel_interativo/src/data/fiacao_etapa4.js"),
-    ("I2C / 1-Wire", "par trançado blindado", "2 x 0,25 mm2", "Painel <-> camara; blindagem aterrada em um ponto", "painel_interativo/src/data/fiacao_etapa4.js"),
+    ("127 V CA + PE", "Conforme condutores cadastrados", "1,5 mm²", "Entrada AC, proteção Q0 e fonte; conferir montagem física", "painel_interativo/src/data/fiacao.js"),
+    ("24 V potência / BD-POT", "Conforme FIOS", "1,5 / 0,5 mm²", "KM1, barramento comutado e drivers BTS", "painel_interativo/src/data/fiacao.js"),
+    ("24 V permanente / BD-24V", "Conforme FIOS", "0,75 / 0,5 mm²", "Comando e alimentação do N4AIC24; não é V1", "painel_interativo/src/data/fiacao.js"),
+    ("12 V auxiliar / BD-AUX", "Conforme FIOS", "0,75 / 0,5 mm²", "Coolers do radiador e grupo de cinco ventoinhas internas", "painel_interativo/src/data/fiacao.js"),
+    ("12 V proposto / BD-PTC", "Não definido", "Não definido", "Ramal proposto direto do T3, ainda sem corte DC independente, F3 e bitola aprovados; não montar nem energizar", "painel_interativo/src/sim/energia.js"),
+    ("5 V / BD-5V", "Conforme FIOS", "0,5 mm²", "Mega, IHM, interfaces e sinaleiros de 5 V", "painel_interativo/src/data/fiacao.js"),
+    ("Modbus RS-485", "Par trançado A/B", "Conforme FIOS", "N4AIC24 ↔ MAX485 ↔ Serial3 do Mega", "painel_interativo/src/data/fiacao.js"),
+    ("Sinais e sensores", "Conforme FIOS", "Conforme FIOS", "Entradas do Mega, sensores, RPM do radiador e comandos", "painel_interativo/src/data/fiacao.js"),
 ]
 
 DIVERGENCIAS = [
-    ("Critica", "Dimensao do painel", "BOM: 400 x 500 x 200 mm", "React: 500 x 500 x 200 mm", "Comprar/fabricar com 500 mm de largura; o layout atual precisa disso."),
-    ("Critica", "PI-2 e ensaio", "BOM descreve itens espalhados e ainda cita 4 em alguns trechos", "React: 2 DUTs, CD74HC4067 e 1 INA219", "Comprar para 2 posicoes; manter 1 mux e 1 INA219."),
-    ("Critica", "Ventoinhas internas", "BOM separa 2 fans de 60 mm e 2 fans de 40 mm", "React: 5 internas no mesmo grupo: 4 de circulacao + 1 do PTC", "Conferir fisicamente o tamanho das 5; a fiação atual trata as cinco em paralelo."),
-    ("Alta", "BD-5V e BD-24V", "Trechos antigos do BOM/React antigo mostram 6 e 4 saidas", "React atual: BD-5V com 8 e BD-24V com 6", "Comprar os blocos maiores da aba Inventario React."),
-    ("Alta", "IHM", "BOM antiga ainda cita Nextion e modulo SD separado em partes do texto", "React: ES3C28P com microSD integrado", "Nao comprar Nextion nem modulo SD separado; comprar conversor de nivel e rabicho Type-C."),
-    ("Media", "Cores de fiação", "BOM resume positivos/negativos por cor", "React usa cor funcional: 24 V permanente laranja, 5 V violeta, sinal cinza/verde", "Seguir a aba Fiacao React e identificar cada cabo com anilha."),
-    ("Media", "Geometria da camara", "BOM/documentos têm dimensoes revisadas diferentes", "React ainda conserva constantes antigas em camara.js, enquanto montagem/ligacoes refletem a revisao", "Nao cortar acrilico sem confirmar a lista de corte e o desenho final."),
+    ("Resolvido", "Corte do PTC na emergência", "KM1 atualizado para 14 pinos (HH64P/LY4NJ)", "Contato 2 do KM1 chaveia o BD-PTC 12 V; ao bater emergência ou STOP, KM1 abre simultaneamente Peltier (24 V) e PTC (12 V)", "Adotado relé HH64P/LY4NJ 10 A com base PTF14A. Validação física de montagem e fiação liberada."),
+    ("Bloqueante", "F3 e condutores do PTC", "Valores legados não se aplicam ao ramal novo", "Corrente estimada do PTC ≈ 4,17 A; proteção e cabos de saída T3 não definidos", "Dimensionar F3, dispositivo com capacidade de interrupção CC, cabos, terminais e coordenação com a fonte/T3; não escolher valor por anúncio."),
+    ("Pendente", "T2/T3", "Anúncios/capacidades nominais sem modelo e ficha aprovados", "T2: 24→5,0 V/5 A; T3: 24→12 V/20 A são apenas propostas", "Confirmar faixa máxima/transientes de T2 e capacidade contínua, térmica e de proteção de T3."),
+    ("Bloqueante", "ST-1 — proteção térmica", "Modelo, rearme, tolerância, rating CC e proteção ambiental sem confirmação", "Componente ainda pendente no modelo e na lista", "Não comprar nem energizar o PTC até identificar variante e validar a arquitetura de corte/trava."),
+    ("Bloqueante", "ST-2 — proteção térmica", "Rating AC de KSD301 não comprova interrupção em 12 Vcc", "Componente ainda pendente no modelo e na lista", "Não comprar nem ligar diretamente em série; exigir ficha da variante exata ou dimensionar corte alternativo DC."),
+    ("Pendente", "Acrílico e temperaturas", "Tipo GS/XT e lote comprado não registrados", "ST-2 nominal 70 °C não comprova temperatura máxima real", "Identificar material e medir vários pontos, com tolerância e atraso térmico antes de aprovar."),
+    ("Limitação", "Ventilação interna", "Cinco ventoinhas internas são de dois fios, sem tacômetro", "RPM1/RPM2 medem apenas os dois coolers do radiador", "Documentar que KA3 ou a ventoinha do PTC podem falhar sem diagnóstico de RPM."),
 ]
 
 
@@ -377,62 +388,149 @@ def adicionar_aba_tabela(wb, nome, cabecalho, linhas, larguras=None):
 
 
 def aplicar_react_como_fonte(itens: list[dict]) -> list[dict]:
-    """Corrige a lista principal para seguir o inventario efetivo do React."""
-    corrigidos = []
+    """Reconcile legacy Markdown rows with the current panel and chamber model."""
+    corrigidos: list[dict] = []
+    descartar = (
+        "sensor de tensao dc 0-25", "modulo sensor de tensao 0-25", "sv-1",
+        "wcs2702", "acs712", "cd74hc4067", "ina219", "placa pi-1",
+        "placa pi-2", "divisor d25", "divisor de realimentacao", "d25",
+        "sinaleiro 22 mm 24 v", "sinaleiro led 22 mm 24 v",
+        "n4aic24", "max485", "ds18b20", "resistor 10 k", "resistor 4,7 k",
+        "ptc", "lm2596", "t2 (poste p2", "t3 (poste p3",
+    )
     for reg in itens:
-        item = reg["item"].lower().translate(ACENTOS)
-        if "fan 60" in item or "fan 40" in item:
+        item = reg["item"].lower().translate(ACENTOS).replace("–", "-").replace("—", "-")
+        texto = " ".join((reg["item"], reg["espec"], reg["obs"])).lower().translate(ACENTOS)
+        if any(termo in item for termo in descartar):
+            continue
+        if "placa ilhada" in item or "resistor 22 k" in item:
+            continue
+        if reg["secao"].lower().startswith("l.4b") and "capacitor ceramico" in item:
+            continue
+        if "sinaleiro" in item and "24 v" in texto:
             continue
         if "caixa de comando ou mdf" in item:
-            reg["espec"] = "500 x 500 x 200 mm — dimensao exigida pelo layout React"
+            reg["espec"] = "700 x 700 x 250 mm — dimensao do modelo React; conferir medidas antes de fabricar"
         elif "arduino mega 2560" in item:
             reg["qtd"] = "1"
             reg["espec"] = "1 controlador em uso; reserva opcional"
         elif "km1" in item:
             reg["qtd"] = "2"
-            reg["espec"] = "1 conjunto em uso + 1 reserva; 24 Vcc, 2 contatos reversiveis de 10 A em CC"
+            reg["espec"] = "1 conjunto em uso + 1 reserva; confirmar rating CC na ficha do modelo exato"
         elif "modulo rele 1 canal 5 v" in item:
             reg["qtd"] = "3"
-            reg["espec"] = "KA1 (NO), KA2 (NC) e KA3 (NO), optoacoplados, caixa DIN 6M; reservas opcionais"
-        elif item.startswith("sensor ds18b20"):
-            reg["espec"] = "1-Wire, 3 fios, colado no dissipador quente; nao fica no centro da camara"
-        elif "placa ilhada (padrao" in item:
-            reg["item"] = "Placa ilhada 9 x 15 cm para PI-1 + PI-2"
-            reg["espec"] = "1 placa de 34 x 58 furos, cortada ao meio para formar as duas placas"
-        elif "resistor 47" in item:
-            reg["qtd"] = "2"
-            reg["espec"] = "47 ohm, 1%, 1/4 W; R1 e R2 ativos na PI-2"
-        elif "fusivel mini automotivo 500" in item:
-            reg["qtd"] = "2"
-            reg["espec"] = "100 mA por DUT; F-P1 e F-P2"
-        elif "resistor 1,2" in item or "resistor 2,2" in item:
+            reg["espec"] = "KA1 (NO), KA2 (NC) e KA3 (NO), conforme módulos e contatos do modelo atual"
+        elif "sensor ds18b20" in item:
             reg["qtd"] = "1"
-        elif "led 5 mm" in item:
-            reg["qtd"] = "2"
-        elif "micro-chave ou jumper" in item:
-            reg["qtd"] = "2"
-        elif "diodo 1n4007" in item:
-            reg["qtd"] = "2"
-        elif "ci uln2803a" in item:
+            reg["espec"] = "1-Wire, 3 fios, no dissipador quente; não mede o corpo do PTC"
+        elif "ds18b20" in item and "adaptador" in item:
             reg["qtd"] = "1"
-        elif "cabo flexivel 1,5 mm² preto" in item:
-            reg["item"] = "Cabo flexivel 1,5 mm² azul escuro"
-            reg["espec"] = "750 V; 0 V comum conforme a codificacao do React"
+            reg["espec"] = "Uma sonda + adaptador; confirmar pull-up integrado"
+        elif "t2" in item and "poste p2" in item:
+            reg["espec"] = "Proposta T2: 24→5,0 V/5 A; modelo, faixa de entrada e ficha ainda pendentes. Não comprar/energizar."
+        elif "lm2596" in item:
+            reg["espec"] = "Referência legada, substituída pelas propostas T2 24→5 V/5 A e T3 24→12 V/20 A; não comprar LM2596."
+        elif "resistor 10 k" in item:
+            reg["qtd"] = "5"
+            reg["espec"] = "R8/R9 nos BTS7960 e pull-downs dos módulos KA1/KA2/KA3"
+        elif "resistor 4,7 k" in item:
+            reg["qtd"] = "1"
+            reg["espec"] = "Reserva caso o adaptador DS18B20 não tenha pull-up integrado"
+        elif "bloco de distribuicao" in item:
+            if "4 mm" in item and "4 saidas" in item:
+                reg["espec"] = "BD-POT · 24 V comutados pelo KM1 para os dois drivers; sem divisor D25"
+            elif "2,5 mm" in item and "6 saidas" in item:
+                reg["espec"] = "BD-24V · 24 V permanente para comando e N4AIC24"
+            elif "2,5 mm" in item and "8 saidas" in item:
+                reg["espec"] = "BD-5V · alimentação do Mega, IHM, interfaces e sinaleiros de 5 V"
+            elif "2,5 mm" in item and "4 saidas" in item:
+                reg["espec"] = "BD-AUX · 12 V para coolers e ventoinhas"
+        elif "barra de distribuicao" in item:
+            reg["espec"] = "Barra de retorno conforme o desenho atual; conferir quantidade de terminais"
+        elif "porta-fusivel" in item and "din" in item:
+            reg["qtd"] = "8"
+            reg["espec"] = "Um canal seccionável por posição DUT; fusível conforme Doc 13"
+        elif "resistor 220" in item and "sinaleiro" in texto:
+            continue
+        elif "cabo flexivel 1,5 mm" in item and "preto" in item:
+            reg["item"] = "Cabo flexível 1,5 mm² — retorno 0 V"
+            reg["espec"] = "Cor e comprimento conforme a tabela de fios atual; não usar identificação legada"
+
+        if "posic" in item and ("dut" in texto or "ensaio" in item):
+            reg["qtd"] = "8"
+            reg["espec"] = "Oito posições LED em 12 V, em duas placas de quatro canais, com retorno medido no N4AIC24"
         corrigidos.append(reg)
 
-    corrigidos.append({
-        "secao": "L.3 — Atuadores térmicos e ventilação",
-        "item": "Ventoinha interna 12 V — grupo React",
-        "qtd": "5",
-        "espec": "Cinco unidades compatíveis com a geometria atual: 2 frias, 2 dos dutos e 1 do PTC; ligadas em paralelo",
-        "obs": "Confirmar dimensao fisica antes da compra",
-        "link_manual": "", "busca_ml": "", "busca_amz": "", "termo": "ventoinha 12v 40mm",
-        "termo_en": "", "busca_ali": "",
-    })
+    def adicionar(
+        item: str, qtd: str, espec: str, fonte_busca: str = "", *, bloqueado: bool = False
+    ) -> None:
+        corrigidos.append({
+            "secao": "L.6 — Itens reconciliados com o modelo atual",
+            "item": item,
+            "qtd": qtd,
+            "espec": espec,
+            "obs": "",
+            "link_manual": "",
+            "busca_ml": "" if bloqueado else url_mercadolivre(termo_de_busca(fonte_busca or item)),
+            "busca_amz": "" if bloqueado else url_amazon(termo_de_busca(fonte_busca or item)),
+            "termo": termo_de_busca(fonte_busca or item),
+            "termo_en": "",
+            "busca_ali": "" if bloqueado else url_aliexpress(busca_aliexpress(fonte_busca or item)),
+        })
+
+    adicionar("Módulo N4AIC24", "1", "V1 mede BD-POT; aquisição de tensões e correntes por Modbus RTU RS-485")
+    adicionar("Transceptor MAX485", "1", "Interface RS-485 entre o N4AIC24 e Serial3 do Mega")
+    adicionar("PTC proposto 12 V / 50 W — BLOQUEADO", "1", "≈4,17 A estimados; não comprar, montar ou energizar até definir corte DC independente, F3, condutores, termostatos e validação térmica", bloqueado=True)
+    adicionar("Conversor T2 — 24 V para 5,0 V / 5 A (proposta bloqueada)", "1", "Modelo, faixa máxima/transientes de entrada e ficha técnica pendentes; não comprar", bloqueado=True)
+    adicionar("Conversor T3 — 24 V para 12 V / 20 A (proposta bloqueada)", "1", "Modelo e capacidade contínua/térmica pendentes; proteção de saída e corte do PTC não definidos; não comprar", bloqueado=True)
+    adicionar("F3 e proteção do ramal 12 V do PTC — pendentes", "a dimensionar", "Não reutilizar o valor legado de 2 A; coordenar corrente, cabos, terminais, fusível e capacidade de interrupção CC", bloqueado=True)
+    adicionar("Sinaleiros LED 22 mm 5 V", "4", "RUN, COOL, HEAT e FAULT; medir corrente antes de ligar diretamente aos pinos")
+    adicionar("Placas PL-1/PL-2 — oito posições DUT", "2", "Quatro canais LED de 12 V em cada placa; correntes individuais pelo N4AIC24")
+    adicionar("Ventoinhas internas 12 V", "5", "Quatro de circulação e uma do PTC; dois fios, sem tacômetro")
+    adicionar("Coolers do radiador 12 V, 3 fios", "2", "RPM1/RPM2 supervisionam somente os coolers externos do radiador")
+    adicionar("ST-1 — termostato NF manual, modelo pendente", "1", "NÃO COMPRAR: ficha do modelo exato deve comprovar rating 12 Vcc adequado, temperatura/tolerância e proteção ambiental")
+    adicionar("ST-2 — termostato NF manual, modelo pendente", "1", "NÃO COMPRAR NEM LIGAR DIRETO AO PTC: rating AC não comprova interrupção 12 Vcc; exigir ficha da variante exata")
+    adicionar("Resistor 10 kΩ 1/4 W — R8/R9 e pull-downs KA1/KA2/KA3", "5", "2 para BTS7960 + 3 para módulos KA1/KA2/KA3; quantidade consolidada")
+    adicionar("Resistor 4,7 kΩ 1/4 W — reserva do DS18B20", "1", "Reserva única caso o adaptador/sonda DS18B20 não tenha pull-up integrado")
+    adicionar("⭐ DS18B20 à prova d'água + adaptador", "1", "Um conjunto, não uma sonda adicional; medir o dissipador quente, não o corpo do PTC")
     return corrigidos
 
 
+def ler_dados_manuais(destino: Path) -> dict[tuple[str, str], list[dict]]:
+    """Read user-entered links and prices before rebuilding the generated workbook."""
+    if not destino.exists():
+        return {}
+    wb_existente = load_workbook(destino, data_only=False)
+    if "Lista de Compras" not in wb_existente.sheetnames:
+        return {}
+    ws = wb_existente["Lista de Compras"]
+    dados: dict[tuple[str, str], list[dict]] = {}
+    for linha in range(5, ws.max_row + 1):
+        item = ws.cell(linha, 2).value
+        qtd = ws.cell(linha, 3).value
+        if not item or not qtd or not isinstance(ws.cell(linha, 1).value, (int, float)):
+            continue
+        link = ws.cell(linha, 9).value
+        preco = ws.cell(linha, 10).value
+        if link or preco not in (None, ""):
+            chave = (str(item).strip().casefold(), str(qtd).strip().casefold())
+            dados.setdefault(chave, []).append({"link": link, "preco": preco})
+    return dados
+
+
 def gerar(itens: list[dict], destino: Path) -> None:
+    dados_manuais = ler_dados_manuais(destino)
+    indices_manuais: dict[tuple[str, str], int] = {}
+    for reg in itens:
+        chave = (str(reg["item"]).strip().casefold(), str(reg["qtd"]).strip().casefold())
+        indice = indices_manuais.get(chave, 0)
+        registros = dados_manuais.get(chave, [])
+        if indice < len(registros):
+            anterior = registros[indice]
+            reg["link_manual"] = reg["link_manual"] or anterior["link"] or ""
+            reg["preco_unit"] = anterior["preco"]
+            indices_manuais[chave] = indice + 1
+
     wb = Workbook()
 
     # ───────────────────────── aba 1: lista de compras ─────────────────────
@@ -453,6 +551,18 @@ def gerar(itens: list[dict], destino: Path) -> None:
     )
     ws["A2"].font = Font(size=10, italic=True, color="44546A")
     ws["A2"].alignment = Alignment(horizontal="center")
+
+    ws.merge_cells("A3:K3")
+    ws["A3"] = (
+        "BLOQUEIO: NÃO COMPRAR/MONTAR/ENERGIZAR PTC, T2 OU T3. "
+        "BD-PTC permanece energizado na emergência; BTS em curto pode manter "
+        "≈4,17 A e desligar a ventoinha. Corte DC independente, F3 e condutores "
+        "não definidos. Consulte Divergencias."
+    )
+    ws["A3"].font = Font(bold=True, color="9C0006")
+    ws["A3"].fill = PatternFill("solid", fgColor="FFC7CE")
+    ws["A3"].alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
+    ws.row_dimensions[3].height = 42
 
     colunas = [
         ("#", 5),
@@ -496,7 +606,7 @@ def gerar(itens: list[dict], destino: Path) -> None:
 
         numero += 1
         valores = [numero, reg["item"], reg["qtd"], reg["espec"], reg["obs"],
-                   "", "", "", reg["link_manual"], "", ""]
+                   "", "", "", reg["link_manual"], reg.get("preco_unit"), ""]
         for indice, valor in enumerate(valores, start=1):
             celula = ws.cell(row=linha, column=indice, value=valor)
             celula.border = BORDA
@@ -571,7 +681,7 @@ def gerar(itens: list[dict], destino: Path) -> None:
     ws2.row_dimensions[1].height = 28
 
     etapas = [
-        ("CAMADA 0", "Fundamentos", "Visão geral · Arquitetura de energia · BOM", "Entregável: BOM fechada e cálculos feitos"),
+        ("CAMADA 0", "Fundamentos", "Visão geral · Arquitetura de energia · BOM", "Entregável: BOM reconciliada; itens bloqueados e ensaios pendentes identificados"),
         ("CAMADA 1", "Maquete", "Base e chão de fábrica · Subestação e postes · Câmara térmica", "Entregável: cenário pronto, sem eletrônica"),
         ("CAMADA 2", "Painel", "Dimensionamento · Layout · Furação · Fixação nos trilhos", "Entregável: painel montado, sem um fio ligado"),
         ("CAMADA 3", "Elétrica", "Força e distribuição · Comando e proteções · Sinais e sensores", "Entregável: energizado e medido, sem firmware"),
@@ -607,30 +717,34 @@ def gerar(itens: list[dict], destino: Path) -> None:
     ws3.column_dimensions["B"].width = 46
 
     dados = [
-        ("Arquitetura de energia", "Potência em 24 V — carga térmica sem conversor"),
+        ("Arquitetura de energia", "24 Vcc · propostas T2 5 V/5 A e T3 12 V/20 A (modelos e proteções pendentes)"),
         ("Tensão de entrada", "127 V CA"),
         ("Barramento de distribuição", "24 V CC (SELV)"),
         ("Potência instalada (fonte)", "240 W · 10 A"),
-        ("Consumo calculado", "≈ 166 W · 6,9 A @ 24 V"),
-        ("Folga da fonte", "1,44× (44 %) — a fonte de 150 W NÃO atende"),
-        ("Corrente CA de entrada", "2,37 A"),
+        ("Consumo calculado", "≈ 170,2 W · 7,09 A @ 24 V (estimativa do modelo; validar em bancada)"),
+        ("Folga da fonte", "Estimativa sujeita a perdas reais e fichas dos conversores; não aprova a fonte"),
+        ("Corrente CA de entrada", "2,43 A"),
         ("Queda de tensão na linha dos postes", "0,21 V (0,86 %)"),
-        ("Conversores", "2 × LM2596 com display (T2 e T3) · P1 é derivação direta"),
-        ("Tensões derivadas", "24,0 V potência (direto) · 12,0 V auxiliar · 5,10 V comando · 3,3 V ESP32"),
-        ("Fusíveis dos ramais", "F1 = 10 A · F2 = 2 A · F3 = 2 A (sem F4/F5, sem crowbar)"),
-        ("Níveis de proteção", "5 (do disjuntor ao intertravamento por software)"),
-        ("Volume útil da câmara", "5,0 litros (200 × 100 × 250 mm)"),
+        ("Conversores", "Propostas: T2 24→5 V/5 A e T3 24→12 V/20 A · modelos não aprovados"),
+        ("Tensões derivadas", "24 V Peltier · 12 V auxiliar/PTC proposto · 5,0 V lógica proposto · 3,3 V ESP32"),
+        ("Fusíveis dos ramais", "F1/F2/F3 e proteção/corte do PTC pendentes de dimensionamento; valores legados não são especificação"),
+        ("Proteção do PTC", "Solução adotada: Relé KM1 14 pinos (HH64P/LY4NJ 10 A) chaveia 24 V (Peltier) e 12 V (PTC) simultaneamente no corte da emergência/STOP"),
+        ("Volume da câmara", "15,00 L bruto (300 × 200 × 250 mm) · 14,63 L com EPS 1 mm · 14,09 L livres"),
         ("Carga térmica calculada", "≈ 9,5 W"),
-        ("Refrigeração", "2 × TEC1-12706 EM SÉRIE · 24 V · 6,0 A · 144 W"),
+        ("Refrigeração", "2 × TEC1-12706 em série · 24 V · 6,0 A · 144 W"),
         ("Capacidade das Peltier a ΔT = 20 K", "≈ 60 W (margem de 6,3×)"),
         ("Dissipação no lado quente", "≈ 200 W — 2 conjuntos dissipador + cooler 80 mm"),
-        ("Aquecimento", "PTC cerâmico de 24 V · 80 W · 3,3 A"),
-        ("Isolamento", "XPS 30 mm + barreira de vapor · U = 0,86 W/m²·K"),
-        ("Porta", "Dupla · U = 2,42 W/m²·K (não condensa)"),
+        ("Aquecimento", "Proposta PTC 12 V · 50 W · ≈4,17 A; modelo e arquitetura de corte ainda não aprovados — NÃO COMPRAR/MONTAR/ENERGIZAR"),
+        ("Aquisição", "N4AIC24 V1 mede BD-POT; leitura do simulador via Modbus RTU/RS-485"),
+        ("Posições DUT", "8 posições LED em 12 V · 2 placas de 4 canais · retornos medidos no N4AIC24"),
+        ("Supervisão de ventilação", "RPM1/RPM2 cobrem apenas 2 coolers do radiador; 5 ventoinhas internas e fan do PTC sem tacômetro"),
+        ("Bloqueio do PTC", "BD-PTC permanece energizado na emergência; BTS em curto pode manter ≈4,17 A e desligar a ventoinha. Corte DC independente, F3, cabos e estratégia de ventilação pendentes. Não energizar."),
+        ("Acrílico", "Identificar GS/XT e validar temperaturas em diversos pontos antes da energização do PTC"),
+        ("Porta", "Acrílico de 5 mm, uma chapa só · mesma U das paredes"),
         ("Base da maquete", "1500 × 500 mm · escala cenográfica 1:50"),
-        ("Painel", "400 × 500 × 200 mm · 3 trilhos DIN"),
-        ("Componentes discretos", "6 + 1 CI ULN2803 na PI-1 · 2 nos BTS7960 · 4 nos postes da maquete"),
-        ("Sinalização", "4 sinaleiros 22 mm de 24 V (via ULN2803) · 4 LEDs brancos de 5 V na maquete"),
+        ("Painel", "700 × 700 × 250 mm · conferir medidas e furação no modelo atual"),
+        ("Componentes discretos", "Sem PI-1/PI-2, CD74HC4067, INA219 ou divisor D25; medição por N4AIC24/Modbus"),
+        ("Sinalização", "4 sinaleiros de painel 22 mm / 5 V · conferir corrente antes de ligar direto aos pinos"),
     ]
     for i, (rotulo, valor) in enumerate(dados, start=3):
         c1 = ws3.cell(row=i, column=1, value=rotulo)
@@ -642,7 +756,17 @@ def gerar(itens: list[dict], destino: Path) -> None:
             if i % 2 == 0:
                 c.fill = PatternFill("solid", fgColor=CINZA_CLARO)
 
-    wb.save(destino)
+    destino.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.NamedTemporaryFile(
+        prefix=f"{destino.stem}.", suffix=".xlsx", dir=destino.parent, delete=False
+    ) as temporario:
+        caminho_temporario = Path(temporario.name)
+    try:
+        wb.save(caminho_temporario)
+        os.replace(caminho_temporario, destino)
+    finally:
+        if caminho_temporario.exists():
+            caminho_temporario.unlink()
     print(f"  Planilha gerada: {destino}")
     print(f"  {numero} itens em {len({i['secao'] for i in itens})} seções")
 

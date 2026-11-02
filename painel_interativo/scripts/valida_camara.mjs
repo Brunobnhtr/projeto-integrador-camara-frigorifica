@@ -22,17 +22,58 @@ for (const c of PAINEL) {
 }
 
 const usados = new Set();
+/* ⭐ A CÂMARA TAMBÉM TEM FIAÇÃO PRÓPRIA. Enquanto todo terminal da câmara
+   apontava para o painel, uma ligação INTERNA — como a cadeia térmica
+   ST-1 → ST-2 → PTC — não tinha como ser declarada nem conferida: o
+   validador só conhecia bornes do painel e acusava "não existe".
+   Agora ele resolve os dois mundos e conta separado: `usados` é o que
+   atravessa a parede (é o número que a TRAVESSIA declara), `internos`
+   é o que fica dentro da câmara e não passa por prensa-cabo nenhum. */
+const bornesCamara = new Map();
+for (const c of COMPONENTES) {
+  for (const t of c.terminais) bornesCamara.set(`${c.id}|${t.t}`, c);
+}
+
+const internos = new Set();
 for (const c of COMPONENTES) {
   for (const t of c.terminais) {
     if (!t.ref) { avi(`${c.id} · ${t.t}: sem ref, não dá para conferir`); continue; }
     const chave = t.ref.join('|');
     const b = bornes.get(chave);
-    if (!b) { err(`${c.id} · ${t.t} → ${chave} NÃO EXISTE no painel`); continue; }
+    if (!b) {
+      const alvo = bornesCamara.get(chave);
+      if (alvo) { internos.add(chave); continue; }
+      err(`${c.id} · ${t.t} → ${chave} NÃO EXISTE nem no painel nem na câmara`);
+      continue;
+    }
     if (!b.pino.usa) err(`${c.id} · ${t.t} → ${chave} existe mas está marcado como LIVRE`);
     usados.add(chave);
   }
 }
-if (!erros) console.log(`  . ${usados.size} bornes distintos, todos conferidos`);
+if (!erros) console.log(`  . ${usados.size} bornes do painel + ${internos.size} ligações internas da câmara, todas conferidas`);
+
+/* ── 1b. ninguém aponta para um terminal que não existe na própria câmara ── */
+console.log('\n=== as ligações internas da câmara fecham? ===');
+for (const c of COMPONENTES) {
+  for (const t of c.terminais) {
+    if (!t.ref) continue;
+    const chave = t.ref.join('|');
+    if (bornes.has(chave)) continue;              // vem do painel, já conferido
+    const alvo = COMPONENTES.find(x => x.id === t.ref[0]);
+    if (!alvo) continue;                          // já foi erro acima
+    if (!alvo.terminais.some(tt => tt.t === t.ref[1]))
+      err(`${c.id} · ${t.t} → ${chave}: ${alvo.id} não tem o terminal ${t.ref[1]}`);
+  }
+}
+/* O ramal proposto está bloqueado: não atribuir conexões físicas à cadeia
+   térmica enquanto fonte e elemento de corte DC não estiverem definidos. */
+const ptc = COMPONENTES.find(x => x.id === 'PTC');
+const terminaisProtecao = COMPONENTES
+  .filter(c => ['PTC', 'ST1', 'ST2'].includes(c.id))
+  .flatMap(c => c.terminais);
+if (terminaisProtecao.some(t => t.ref))
+  err('PTC/ST-1/ST-2 têm ligação física declarada antes de aprovar a topologia DC');
+else console.log('  . PTC e termostatos sem ligações declaradas; ramal permanece bloqueado');
 
 /* ── 2. geometria: nada atravessa parede nem vizinho ───────────────── */
 console.log('\n=== os componentes cabem onde foram postos? ===');

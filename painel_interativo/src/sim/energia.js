@@ -12,19 +12,25 @@
  *   "2 fans internas ativas" depois de as cinco terem sido juntadas
  *   num contato só, o do KA3.
  *
- * Números: Doc 02 §2.4 (tabelas dos ramais R1, R2 e R3).
+ * Números: proposta provisória de T2/T3/PTC; conferir no Doc 02 §2.4
+ * antes de qualquer compra ou energização.
  */
 
 /** Correntes nominais, em ampères, na tensão do próprio barramento. */
 export const CARGAS = {
-  // ── BD-POT · 24 V comutado (morre na emergência) ─────────────────
+  // ── BD-POT · 24 V comutado (Peltier) ────────────────────────────
   peltier: 6.0,          // 2 pastilhas TEC1-12706 em série, a 100 %
-  ptc: 3.3,              // PTC cerâmico 24 V / 80 W
+  ptc: 50 / 12,          // A — PTC proposto 12 V / 50 W; variante pendente
 
-  // ── BD-AUX · 12 V permanente ─────────────────────────────────────
+  // ── BD-AUX · 12 V permanente (ventoinhas e serviços) ─────────────
   radiadorCada: 0.25,    // 80 mm, 3 fios — são 2
   internaCada: 0.125,    // ⭐ são CINCO: 2 frias + 2 dos dutos + a do PTC
   coolerBts: 0.12,       // 40 mm, sem comando — sempre ligado
+  /* ⭐ AS 8 POSIÇÕES DE ENSAIO ENTRARAM NA CONTA. Elas são a carga que o
+     projeto mede, e ficavam de fora do orçamento: 12 V sobre 1 kΩ dão 10 mA
+     cada, 80 mA nas oito. Parece nada — e é, no total —, mas um orçamento que
+     esquece a carga principal é o tipo de erro que só aparece na auditoria. */
+  posicoesCada: 0.010,   // LED 5 mm + 1 kΩ em 12 V — são OITO
 
   // ── BD-5V · 5,10 V permanente ────────────────────────────────────
   mega: 0.20,
@@ -38,10 +44,14 @@ export const CARGAS = {
   esp32: 0.10,           // DNLCB30 + ESP32
   bobinaRele: 0.037,     // 24 V / 650 Ω — a bobina do KM1
   sinaleiroCada: 0.02,   // ⭐ agora em 5 V, acesos direto pelo pino do Mega
+  /* ⭐ O INSTRUMENTO TAMBÉM CONSOME, e ele é o único que NUNCA desliga:
+     fica no 24 V permanente justamente para sobreviver à emergência. Ficava
+     fora da conta porque "é só um módulo" — 30 mA que ninguém somava. */
+  n4aic24: 0.030,        // 24 V — módulo de aquisição (datasheet ~0,7 W)
 };
 
-/** Rendimento dos LM2596 — Doc 02 §2.5. */
-const RENDIMENTO = { v5: 0.78, v12: 0.88 };
+/** Estimativas provisórias; substituir pelos dados dos conversores escolhidos. */
+const RENDIMENTO = { v5: 0.85, v12: 0.88 };
 
 /** Limites de projeto, para o simulador poder reprovar sozinho. */
 export const LIMITES = {
@@ -51,7 +61,8 @@ export const LIMITES = {
   F3: 2.0,            // A — ramal auxiliar (12 V)
   caboT2: 0.7,        // A — 0,50 mm² declarado no Doc 02 §2.7
   caboT3: 1.6,        // A — 0,75 mm² declarado no Doc 02 §2.7
-  lm2596Seguro: 1.5,  // A — contínuo com dissipador colado
+  t2SaidaDeclarada: 5.0, // A — conversor proposto; ficha do modelo exato pendente
+  t3SaidaDeclarada: 20.0, // A — conversor proposto; ficha do modelo exato pendente
 };
 
 /**
@@ -63,20 +74,28 @@ export function consumo(sim) {
   const geral = !sim.falhas.geralDesligada;
   const haPotencia = (sim.barras?.['BD-POT'] ?? 0) > 0;
   const haAux = (sim.barras?.['BD-AUX'] ?? 0) > 0;
+  const haPtc = (sim.barras?.['BD-PTC'] ?? 0) > 0;
   const ha5v = (sim.barras?.['BD-5V'] ?? 0) > 0;
 
-  // ── BD-POT ───────────────────────────────────────────────────────
-  //   ⚠ O BTS em curto puxa os 6 A cheios ignorando o duty. É o pior
-  //     caso de corrente do projeto, e ele NÃO aparece numa planilha
-  //     de consumo — só num modelo que conheça o modo de falha.
+  // ── BD-POT · 24 V (Peltier) ──────────────────────────────────────
   let iPot = 0;
   if (haPotencia) {
     if (sim.falhas.btsPeltierEmCurto) iPot += CARGAS.peltier;
     else if (f.renPeltier) iPot += CARGAS.peltier * f.duty / 100;
-    if (f.renPtc) iPot += CARGAS.ptc * f.duty / 100;
   }
 
-  // ── BD-AUX (12 V) ────────────────────────────────────────────────
+  // ── BD-PTC · 12 V permanente, separado do KM1 ────────────────────
+  // ST-1/ST-2 são contatos físicos em série. Sem o corte CC independente
+  // ainda definido, um BTS2 em curto pode manter o PTC energizado após STOP,
+  // trip ou emergência, enquanto o barramento geral de 12 V estiver ativo.
+  let iPtc = 0;
+  const cadeiaTermicaFechada = !sim.termostatos.st1Aberto && !sim.termostatos.st2Aberto;
+  if (haPtc && cadeiaTermicaFechada) {
+    if (sim.falhas.btsPtcEmCurto) iPtc = CARGAS.ptc;
+    else if (f.renPtc) iPtc = CARGAS.ptc * f.duty / 100;
+  }
+
+  // ── BD-AUX (12 V; PTC excluído) ──────────────────────────────────
   let i12 = 0;
   if (haAux) {
     // ⭐ quem gasta é o CONTATO do KA2, não a ordem do firmware
@@ -84,8 +103,12 @@ export function consumo(sim) {
       : sim.falhas.ka2Aberto ? false
       : f.ventRadiador;
     if (contatoKa2) i12 += 2 * CARGAS.radiadorCada;
-    if (f.ventInternas) i12 += 5 * CARGAS.internaCada;
+    const contatoKa3 = sim.falhas.ka3Aberto ? false : f.ventInternas;
+    if (contatoKa3) i12 += 5 * CARGAS.internaCada;
     i12 += CARGAS.coolerBts;      // sem comando: enquanto houver 12 V
+    /* As 8 posições acendem com a chave de cada uma — e o ensaio roda com
+       elas acesas, que é o caso real. Entram no pior caso, não no melhor. */
+    i12 += 8 * CARGAS.posicoesCada;
   }
 
   // ── BD-5V ────────────────────────────────────────────────────────
@@ -112,17 +135,20 @@ export function consumo(sim) {
   let i24srv = 0;
   if (geral) {
     i24srv += CARGAS.esp32;
+    i24srv += CARGAS.n4aic24;     // o instrumento nunca desliga
     if (sim.eletrica.km1Selado) i24srv += CARGAS.bobinaRele;
   }
 
   // ── O que a fonte de 24 V enxerga ────────────────────────────────
   //   Cada conversor puxa a POTÊNCIA da saída dividida pelo rendimento.
-  const i24de5 = (i5 * 5.1) / RENDIMENTO.v5 / 24;
-  const i24de12 = (i12 * 12) / RENDIMENTO.v12 / 24;
+  const i24de5 = (i5 * 5.0) / RENDIMENTO.v5 / 24;
+  const i24de12 = ((i12 + iPtc) * 12) / RENDIMENTO.v12 / 24;
 
   return {
     'BD-POT': iPot,
     'BD-AUX': i12,
+    'BD-PTC': iPtc,
+    'T3-OUT': i12 + iPtc,
     'BD-5V': i5,
     'BD-24V': i24srv,
     // as correntes vistas por cada fusível, do lado de 24 V

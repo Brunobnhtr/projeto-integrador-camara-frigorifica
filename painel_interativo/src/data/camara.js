@@ -1,370 +1,1365 @@
-/* O que existe DENTRO da câmara e de onde vem cada fio.
-   Cada `de:` aponta para um borne real da vista "Dentro do painel" —
-   é isso que amarra as duas vistas.                                  */
-
-export const CAIXA = {
-  /* corte frontal, em px. 336 × 326 mm reais a ~1,55 px/mm */
-  x1: 180, x2: 700, y1: 70, y2: 590,
-  cobertura: 5,     // acrílico branco 3 mm
-  xps: 46,          // isolamento 30 mm
-  duto: 46,         // duto lateral 30 × 30 mm
-  acrilico: 8,      // parede estrutural 5 mm
-  plenum: 46,       // 30 mm sob a base interna
+export const BASE_INT=485;
+export const CAIXA={
+  "x1": 180,
+  "x2": 700,
+  "y1": 70,
+  "y2": 590,
+  "cobertura": 0,
+  "xps": 0,
+  "duto": 62,
+  "acrilico": 8,
+  "plenum": 46
 };
-
-/* a face interna útil, calculada a partir das camadas */
-const u = CAIXA.cobertura + CAIXA.xps;
-export const UTIL = {
-  x1: CAIXA.x1 + u + CAIXA.duto + CAIXA.acrilico,   // 285
-  x2: CAIXA.x2 - u - CAIXA.duto - CAIXA.acrilico,   // 595
-  y1: CAIXA.y1 + u + CAIXA.acrilico,                // 129
-  y2: CAIXA.y2 - u - CAIXA.acrilico,                // 531
+export const COMPONENTES=[
+  {
+    "id": "PELT",
+    "pc": "PC-1",
+    "nome": "2× Peltier TEC1-12706",
+    "tipo": "frio",
+    "x": 378,
+    "y": 133,
+    "w": 124,
+    "h": 34,
+    "cor": "#1971c2",
+    "onde": "Encaixadas na TAMPA, no centro. Face fria para dentro, face quente para fora.",
+    "porque": "No topo porque o ar frio desce sozinho. Colocá-las embaixo faria o frio ficar empoçado no fundo e a câmara nunca homogeneizaria.",
+    "terminais": [
+      {
+        "t": "+",
+        "de": "BTS #1 · M+",
+        "ref": [
+          "BTS1",
+          "M+"
+        ],
+        "fio": "1,5 mm² vermelho"
+      },
+      {
+        "t": "−",
+        "de": "BTS #1 · M−",
+        "ref": [
+          "BTS1",
+          "M−"
+        ],
+        "fio": "1,5 mm² preto"
+      }
+    ],
+    "avisos": [
+      "⭐ AS DUAS EM SÉRIE, não em paralelo. O par forma uma carga de 24 V / 6 A que se alimenta direto do barramento, sem conversor — e cada pastilha continua vendo os seus 12 V nominais.",
+      "🔥 SE UM COOLER DO RADIADOR PARAR, A PASTILHA MORRE EM MENOS DE UM MINUTO. Ela não produz frio: transporta calor de um lado para o outro. Lado quente saturado = o calor volta atravessando a pastilha. Por isso o firmware monitora o RPM.",
+      "⚠️ NUNCA COMANDAR POR PWM RÁPIDO. Cada liga-desliga é um choque térmico na junção. O BTS #1 trabalha em regime contínuo ou com chaveamento muito lento."
+    ]
+  },
+  {
+    "id": "VF",
+    "pc": "PC-1",
+    "nome": "2× ventoinha fria 40 mm",
+    "tipo": "ar",
+    "x": 390,
+    "y": 178,
+    "w": 100,
+    "h": 26,
+    "cor": "#4dabf7",
+    "sopra": "baixo",
+    "onde": "Logo abaixo das Peltier, soprando PARA BAIXO.",
+    "porque": "Sem elas o frio fica colado na pastilha e a câmara estratifica — topo gelado, fundo morno. O ar precisa ser empurrado.",
+    "terminais": [
+      {
+        "t": "+",
+        "de": "KA3 · NO3",
+        "ref": [
+          "KA123",
+          "NO3"
+        ],
+        "fio": "0,5 mm² vermelho"
+      },
+      {
+        "t": "−",
+        "de": "BD-0V · Z13",
+        "ref": [
+          "BD-0V",
+          "Z13"
+        ],
+        "fio": "0,5 mm² preto"
+      }
+    ],
+    "avisos": [
+      "📌 DIVIDEM O CONTATO DO KA3 COM AS 2 DO DUTO. São 4 ventoinhas no mesmo par de fios — ligam e desligam juntas, o que é o correto: elas formam um circuito de ar só.",
+      "⭐ CONTINUAM GIRANDO DEPOIS DE DESLIGAR (pós-ventilação). O calor acumulado no dissipador precisa sair, senão volta para dentro da câmara."
+    ]
+  },
+  {
+    "id": "VD1",
+    "pc": "PC-1",
+    "nome": "ventoinha da entrada do duto esq.",
+    "tipo": "ar",
+    "x": 340,
+    "y": 485,
+    "w": 36,
+    "h": 30,
+    "cor": "#4dabf7",
+    "sopra": "esquerda",
+    "grupoAr": "duto",
+    "pequeno": true,
+    "onde": "⭐ ABAIXO DO PTC, na BOCA do duto esquerdo — não dentro dele.",
+    "porque": "Fecha o circuito: o ar que desceu pelo centro entra aqui e sobe pelo duto lateral até o topo. É o que impede o gradiente entre a base e a tampa. 🔧 Ela ficava DENTRO do duto de 30 × 30 mm, e isso era um erro de duas caras: uma ventoinha de 40 mm não cabe folgada num vão de 30, e enfiada lá dentro ela sopra contra a parede em vez de empurrar o ar para a entrada.",
+    "terminais": [
+      {
+        "t": "+",
+        "de": "KA3 · NO3",
+        "ref": [
+          "KA123",
+          "NO3"
+        ],
+        "fio": "em paralelo com as frias"
+      },
+      {
+        "t": "−",
+        "de": "BD-0V · Z13",
+        "ref": [
+          "BD-0V",
+          "Z13"
+        ],
+        "fio": "—"
+      }
+    ],
+    "avisos": [
+      "📌 O duto fica FORA da parede de acrílico, dentro do isolamento. O ar circula sem furar o volume útil.",
+      "⭐ AS DUAS FICAM LADO A LADO, ABAIXO DO PTC, cada uma soprando para a boca do seu duto. Assim elas ficam acessíveis para manutenção sem desmontar o duto, e o ar entra no duto já com velocidade em vez de ser empurrado contra a parede lateral.",
+      "⚠️ CONFIRA A SETA DE FLUXO no corpo de cada uma antes de fixar. Invertidas, as duas puxam o ar do duto para o centro e o circuito de ar roda ao contrário — defeito quase impossível de perceber sem teste de fumaça."
+    ]
+  },
+  {
+    "id": "VD2",
+    "pc": "PC-1",
+    "nome": "ventoinha da entrada do duto dir.",
+    "tipo": "ar",
+    "x": 504,
+    "y": 485,
+    "w": 36,
+    "h": 30,
+    "cor": "#4dabf7",
+    "sopra": "direita",
+    "grupoAr": "duto",
+    "pequeno": true,
+    "onde": "⭐ ABAIXO DO PTC, na BOCA do duto direito — ao lado da VD1.",
+    "porque": "Idem à esquerda — o retorno tem que ser simétrico, senão um lado da câmara fica mais frio que o outro.",
+    "terminais": [
+      {
+        "t": "+",
+        "de": "KA3 · NO3",
+        "ref": [
+          "KA123",
+          "NO3"
+        ],
+        "fio": "em paralelo"
+      },
+      {
+        "t": "−",
+        "de": "BD-0V · Z13",
+        "ref": [
+          "BD-0V",
+          "Z13"
+        ],
+        "fio": "—"
+      }
+    ],
+    "avisos": []
+  },
+  {
+    "id": "SENS",
+    "pc": "PC-2",
+    "nome": "AM2315C — temperatura e umidade",
+    "tipo": "sensor",
+    "x": 402,
+    "y": 310,
+    "w": 76,
+    "h": 40,
+    "cor": "#f76707",
+    "onde": "⭐ NO CENTRO GEOMÉTRICO, suspenso no ar — longe da Peltier e longe do PTC.",
+    "porque": "Este é o ponto mais importante da montagem. Se o sensor encostar na Peltier ele lê a pastilha, não o ar: o controle desliga cedo demais e a câmara nunca chega ao setpoint. Se ficar perto do PTC, lê o aquecedor e desliga cedo do outro lado. No centro, ele lê o que o ensaio realmente vê.",
+    "terminais": [
+      {
+        "t": "VCC",
+        "de": "BD-5V saída 10",
+        "ref": [
+          "BD-5V",
+          "O10"
+        ],
+        "fio": "0,25 mm² vermelho"
+      },
+      {
+        "t": "GND",
+        "de": "BD-0V · Z15",
+        "ref": [
+          "BD-0V",
+          "Z15"
+        ],
+        "fio": "0,25 mm² preto"
+      },
+      {
+        "t": "SDA",
+        "de": "Mega D20",
+        "ref": [
+          "MEGA",
+          "D20"
+        ],
+        "fio": "0,25 mm² azul"
+      },
+      {
+        "t": "SCL",
+        "de": "Mega D21",
+        "ref": [
+          "MEGA",
+          "D21"
+        ],
+        "fio": "0,25 mm² amarelo"
+      }
+    ],
+    "avisos": [
+      "🔥 É O ÚNICO SENSOR DO CONTROLE, E ISSO É UM RISCO ASSUMIDO. Se ele travar lendo um valor plausível mas errado, o sistema aquece ou resfria sem perceber. O firmware desconfia dele: valor congelado por muito tempo, fora de faixa ou variação impossível derrubam o ensaio.",
+      "💧 A UMIDADE NÃO É ENFEITE. Ensaio térmico com condensação não vale — é ela que avisa quando é hora do ciclo de degelo.",
+      "📌 I²C no endereço 0x38, dividindo o barramento com o DS3231.",
+      "⚠️ Suspenso por fio de nylon ou haste fina — nada de parafusar na parede, que conduz a temperatura do acrílico para o sensor."
+    ]
+  },
+  {
+    "id": "PTC",
+    "pc": "PC-1",
+    "nome": "PTC proposto 12 V / 50 W — BLOQUEADO",
+    "tipo": "quente",
+    "x": 385,
+    "y": 430,
+    "w": 110,
+    "h": 30,
+    "cor": "#e03131",
+    "onde": "Na base interna, no centro, sobre o plenum de 30 mm.",
+    "porque": "Embaixo porque o ar quente sobe sozinho — o oposto da Peltier. E sobre o plenum para o ar poder passar POR BAIXO dele e não só por cima.",
+    "terminais": [
+      {
+        "t": "+",
+        "de": "Ramal 12 V do PTC — corte DC e ligação pendentes",
+        "fio": "bitola por dimensionar para 12 V"
+      },
+      {
+        "t": "−",
+        "de": "Retorno do ramal PTC 12 V — conexão pendente",
+        "fio": "bitola por dimensionar para 12 V"
+      }
+    ],
+    "avisos": [
+      "⛔ PROPOSTA NÃO LIBERADA: PTC 12 V/50 W (≈4,17 A nominal). Exige ramal separado da alimentação permanente das ventoinhas e corte DC independente; não ligar ao BD-POT/24 V nem diretamente ao T3.",
+      "⚠️ ELE SE AUTOLIMITA — E ISSO **NÃO** É PROTEÇÃO SUFICIENTE. A temperatura de autorregulação do PTC não protege o acrílico. ST-1/ST-2 precisam atuar sobre uma arquitetura de corte apropriada, ainda não definida; não ligar contatos diretamente sem rating CC documentado.",
+      "⛔ NÃO ENERGIZAR ATÉ APROVAR A PROTEÇÃO TÉRMICA. A proposta exige ST-1 no corpo do PTC, com rearme manual; o modelo, a classificação CC e a montagem ainda precisam ser comprovados."
+    ]
+  },
+  {
+    "id": "ST1",
+    "pc": "PC-1",
+    "nome": "ST-1 · termostato do PTC — 90 °C NF · rearme MANUAL (pendente)",
+    "tipo": "seguranca",
+    "x": 385,
+    "y": 464,
+    "w": 40,
+    "h": 18,
+    "cor": "#f08c00",
+    "onde": "Preso na FACE DE BAIXO do corpo do PTC, com a cápsula encostada no metal — nunca no ar.",
+    "porque":     "Proteção térmica proposta no corpo do aquecedor. O componente e sua forma de acionar o corte DC ainda não foram definidos; não presumir que o contato pode interromper diretamente a corrente do PTC.",
+    "terminais": [
+      {
+        "t": "1",
+        "de": "Entrada de comando/corte do ramal PTC — topologia pendente",
+        "fio": "bitola por dimensionar para 12 V"
+      },
+      {
+        "t": "2",
+        "de": "Interligação da cadeia térmica — definição pendente",
+        "fio": "bitola por dimensionar para 12 V"
+      }
+    ],
+    "avisos": [
+      "🔥 É **NF — NORMALMENTE FECHADO**, e isso não é detalhe. Com o fio rompido ele fica ABERTO e o PTC não liga: a falha é segura. Um NA com o fio rompido ficaria fechado e a proteção sumiria sem ninguém notar.",
+      "⭐ REQUISITO A VALIDAR, NÃO ESPECIFICAÇÃO DE COMPRA: se o PTC 12 V/50 W for confirmado, a corrente nominal estimada será 4,17 A; confirmar também a corrente de partida/elemento frio. Exigir termostato/elemento de corte com rating DC documentado para a tensão e corrente reais. Rating AC isolado não comprova interrupção em CC.",
+      "⛔ COMPRA E ENERGIZAÇÃO PENDENTES. ST-1 deve ser de rearme MANUAL ou atuar em uma trava de desligamento manual equivalente: qualquer disparo tem de impedir novo aquecimento até inspeção e rearme deliberado, sem depender do DS18B20. O modelo KSD9700-B citado não está aprovado: identificar variante exata e obter ficha técnica do fabricante com abertura 90 °C (incluindo tolerância), rearme manual e capacidade de interrupção DC adequada ao PTC e à corrente de partida. O corte do ramal T3/12 V ainda precisa de topologia e componente definidos.",
+      "⚠️ O DS18B20 mede o ar da câmara, não o corpo do PTC; não se pode afirmar que o firmware detecta o disparo de ST-1. O simulador trata a abertura e o rearme como eventos físicos explícitos e não estima a temperatura do corpo nem libera o contato automaticamente.",
+      "🧪 TESTE DE ACEITAÇÃO, com o painel desenergizado: verificar abertura perto do valor especificado, permanência aberto após resfriamento e rearme somente manual; registrar a temperatura de abertura e de rearme. Se não cumprir os requisitos, não energizar o PTC."
+    ]
+  },
+  {
+    "id": "ST2",
+    "pc": "PC-1",
+    "nome": "ST-2 · termostato da câmara — 70 °C NF · rearme MANUAL (pendente)",
+    "tipo": "seguranca",
+    "x": 555,
+    "y": 232,
+    "w": 40,
+    "h": 18,
+    "cor": "#f08c00",
+    "onde": "Colado na PAREDE INTERNA DIREITA, na metade de cima — o ar quente sobe.",
+    "porque": "ST-1 destina-se a proteger o aquecedor; ST-2, a câmara. A proposta de instalação na parede e limite nominal de 70 °C ainda não foi validada contra o tipo de acrílico, tolerância, gradientes térmicos e temperatura dos pontos mais quentes. Não comprar nem energizar até demonstrar a margem térmica e a capacidade CC do componente.",
+    "terminais": [
+      {
+        "t": "1",
+        "de": "Interligação da cadeia térmica — definição pendente",
+        "fio": "bitola por dimensionar para 12 V"
+      },
+      {
+        "t": "2",
+        "de": "Entrada do ramal PTC — definição pendente",
+        "fio": "bitola por dimensionar para 12 V"
+      }
+    ],
+    "avisos": [
+      "⛔ COMPRA E LIGAÇÃO DIRETA EM SÉRIE NÃO APROVADAS. Ainda não foi identificada uma variante manual específica de KSD301 cuja ficha técnica comprove temperatura de abertura e tolerância, rearme manual, capacidade de interrupção em DC adequada ao ramal PTC de 12 V e corrente de partida, e proteção ambiental apropriada. Classificação AC 250 V/16 A não comprova interrupção em CC. Não comprar nem ligar diretamente ao PTC sem essa evidência do fabricante. Alternativa: projetar uma arquitetura com termostato de comando e elemento de corte/trava DC dimensionado; selecionar e validar os componentes antes da compra.",
+      "⚠️ 70 °C ±5 °C pode significar abertura a 75 °C. PLEXIGLAS GS fundido tem temperatura máxima aproximada de serviço de 80 °C; PLEXIGLAS XT extrudado, aproximadamente 70 °C. O limite de ST-2 ainda não foi validado: identificar o acrílico comprado e medir em vários pontos, especialmente junto ao PTC, durante ensaio controlado; incluir tolerância do termostato e atraso/gradiente térmico. Não energizar o PTC até confirmar margem abaixo do limite aplicável.",
+      "🔒 **REARME MANUAL obrigatório.** Se a câmara atingiu o limite, o aquecimento deve permanecer bloqueado até inspeção, correção da causa e rearme deliberado. Esta é uma exigência de projeto; o modelo exato do componente e a arquitetura ainda não foram aprovados.",
+      "⚠️ VERIFICAR GRAU DE PROTEÇÃO (IP). Algumas versões de KSD301 são IP00. A câmara pode ter condensação; exigir classificação ambiental documentada apropriada para o local ou instalar o dispositivo em compartimento protegido, e validar a proteção contra umidade na montagem.",
+      "⚠️ A POSIÇÃO NO CIRCUITO NÃO DETERMINA A ORDEM DE ABERTURA. ST-1 e ST-2 respondem a temperaturas em pontos diferentes: quem abre primeiro depende da montagem, da tolerância e da resposta térmica — não de quem vem primeiro no fio. A topologia proposta põe os dois em série; a eficácia dos componentes ainda não foi validada."
+    ]
+  },
+  {
+    "id": "VP",
+    "pc": "PC-1",
+    "nome": "ventoinha do PTC",
+    "tipo": "ar",
+    "x": 405,
+    "y": 396,
+    "w": 70,
+    "h": 26,
+    "cor": "#4dabf7",
+    "sopra": "baixo",
+    "onde": "Logo acima do PTC, soprando PARA BAIXO — no MESMO sentido das de cima.",
+    "porque": "Empurra o ar sobre o PTC e para dentro do plenum, de onde ele sobe pelos dutos. 🔧 Antes tinha canal próprio; hoje entra em PARALELO com as outras quatro internas, porque todas têm a mesma condição — ensaio rodando.",
+    "terminais": [
+      {
+        "t": "+",
+        "de": "KA3 · NO3 (emenda com as 4 de circulação)",
+        "ref": [
+          "KA123",
+          "NO3"
+        ],
+        "fio": "0,5 mm² vermelho"
+      },
+      {
+        "t": "−",
+        "de": "BD-0V · Z13 (emenda com as 4 de circulação)",
+        "ref": [
+          "BD-0V",
+          "Z13"
+        ],
+        "fio": "0,5 mm² preto"
+      }
+    ],
+    "avisos": [
+      "Conferir a tensão da fan do PTC no kit real antes de agrupá-la nas ventoinhas 12 V. Não presumir compatibilidade."
+    ]
+  },
+  {
+    "id": "PL-1",
+    "pc": "PC-2",
+    "nome": "Placa PL-1 · 4 posições de ensaio",
+    "tipo": "dut",
+    "x": 296,
+    "y": 420,
+    "w": 76,
+    "h": 56,
+    "cor": "#c92a2a",
+    "dut": 1,
+    "onde": "Nas tiras de alumínio (CAM-26) com espaçadores M3. A PCB real tem 95 × 75 mm — nesta vista ela é desenhada menor para caber junto das outras peças.",
+    "porque": "As 4 posições desta placa: o positivo vem da chave da placa F-P e o retorno entra no canal I_n do N4AIC24, que mede a corrente e entrega por Modbus.",
+    "terminais": [
+      {
+        "t": "+1",
+        "de": "F-P1",
+        "ref": [
+          "F-P",
+          "F-P1"
+        ],
+        "fio": "0,5 mm² amarelo"
+      },
+      {
+        "t": "+2",
+        "de": "F-P2",
+        "ref": [
+          "F-P",
+          "F-P2"
+        ],
+        "fio": "0,5 mm² amarelo"
+      },
+      {
+        "t": "+3",
+        "de": "F-P3",
+        "ref": [
+          "F-P",
+          "F-P3"
+        ],
+        "fio": "0,5 mm² amarelo"
+      },
+      {
+        "t": "+4",
+        "de": "F-P4",
+        "ref": [
+          "F-P",
+          "F-P4"
+        ],
+        "fio": "0,5 mm² amarelo"
+      },
+      {
+        "t": "r1",
+        "de": "N4AIC24 · I1",
+        "ref": [
+          "N4AIC24",
+          "I1"
+        ],
+        "fio": "0,5 mm² azul"
+      },
+      {
+        "t": "r2",
+        "de": "N4AIC24 · I2",
+        "ref": [
+          "N4AIC24",
+          "I2"
+        ],
+        "fio": "0,5 mm² azul"
+      },
+      {
+        "t": "r3",
+        "de": "N4AIC24 · I3",
+        "ref": [
+          "N4AIC24",
+          "I3"
+        ],
+        "fio": "0,5 mm² azul"
+      },
+      {
+        "t": "r4",
+        "de": "N4AIC24 · I4",
+        "ref": [
+          "N4AIC24",
+          "I4"
+        ],
+        "fio": "0,5 mm² azul"
+      }
+    ],
+    "avisos": [
+      "⚠️ O retorno NÃO vai ao 0 V: ele entra no canal I_n do módulo de medição. É a corrente passando pelo shunt interno que produz o número — ligado direto na barra, a posição acende e o painel lê zero.",
+      "⭐ São 2 placas iguais. Esta é a de nº 1; a outra tem os mesmos 4 canais nos bornes seguintes da placa F-P."
+    ]
+  },
+  {
+    "id": "PL-2",
+    "pc": "PC-2",
+    "nome": "Placa PL-2 · 4 posições de ensaio",
+    "tipo": "dut",
+    "x": 510,
+    "y": 420,
+    "w": 76,
+    "h": 56,
+    "cor": "#c92a2a",
+    "dut": 2,
+    "onde": "Nas tiras de alumínio (CAM-26) com espaçadores M3. A PCB real tem 95 × 75 mm — nesta vista ela é desenhada menor para caber junto das outras peças.",
+    "porque": "As 4 posições desta placa: o positivo vem da chave da placa F-P e o retorno entra no canal I_n do N4AIC24, que mede a corrente e entrega por Modbus.",
+    "terminais": [
+      {
+        "t": "+1",
+        "de": "F-P5",
+        "ref": [
+          "F-P",
+          "F-P5"
+        ],
+        "fio": "0,5 mm² amarelo"
+      },
+      {
+        "t": "+2",
+        "de": "F-P6",
+        "ref": [
+          "F-P",
+          "F-P6"
+        ],
+        "fio": "0,5 mm² amarelo"
+      },
+      {
+        "t": "+3",
+        "de": "F-P7",
+        "ref": [
+          "F-P",
+          "F-P7"
+        ],
+        "fio": "0,5 mm² amarelo"
+      },
+      {
+        "t": "+4",
+        "de": "F-P8",
+        "ref": [
+          "F-P",
+          "F-P8"
+        ],
+        "fio": "0,5 mm² amarelo"
+      },
+      {
+        "t": "r1",
+        "de": "N4AIC24 · I5",
+        "ref": [
+          "N4AIC24",
+          "I5"
+        ],
+        "fio": "0,5 mm² azul"
+      },
+      {
+        "t": "r2",
+        "de": "N4AIC24 · I6",
+        "ref": [
+          "N4AIC24",
+          "I6"
+        ],
+        "fio": "0,5 mm² azul"
+      },
+      {
+        "t": "r3",
+        "de": "N4AIC24 · I7",
+        "ref": [
+          "N4AIC24",
+          "I7"
+        ],
+        "fio": "0,5 mm² azul"
+      },
+      {
+        "t": "r4",
+        "de": "N4AIC24 · I8",
+        "ref": [
+          "N4AIC24",
+          "I8"
+        ],
+        "fio": "0,5 mm² azul"
+      }
+    ],
+    "avisos": [
+      "⚠️ O retorno NÃO vai ao 0 V: ele entra no canal I_n do módulo de medição. É a corrente passando pelo shunt interno que produz o número — ligado direto na barra, a posição acende e o painel lê zero.",
+      "⭐ São 2 placas iguais. Esta é a de nº 2; a outra tem os mesmos 4 canais nos bornes seguintes da placa F-P."
+    ]
+  },
+  
+  
+];
+export const EMENDAS_CAMARA=[
+  {
+    "de": {
+      "p": "VF",
+      "b": "+"
+    },
+    "para": {
+      "p": "VD1",
+      "b": "+"
+    },
+    "diz": "⭐ as 5 internas em paralelo — 1 par de fios para 5 ventoinhas"
+  },
+  {
+    "de": {
+      "p": "VF",
+      "b": "−"
+    },
+    "para": {
+      "p": "VD1",
+      "b": "−"
+    },
+    "diz": ""
+  },
+  {
+    "de": {
+      "p": "VF",
+      "b": "+"
+    },
+    "para": {
+      "p": "VD2",
+      "b": "+"
+    },
+    "diz": ""
+  },
+  {
+    "de": {
+      "p": "VF",
+      "b": "−"
+    },
+    "para": {
+      "p": "VD2",
+      "b": "−"
+    },
+    "diz": ""
+  },
+  {
+    "de": {
+      "p": "VF",
+      "b": "+"
+    },
+    "para": {
+      "p": "VP",
+      "b": "+"
+    },
+    "diz": "🔧 A ventoinha do PTC entrou nesta emenda. Ela tinha canal e par próprios (fios X7/X8) para continuar girando depois do aquecedor. A alteração foi proposta junto com ST-1/ST-2, mas a proteção térmica ainda não está aprovada; não energizar o PTC até confirmar componentes, classificação CC, rearme manual e ensaios."
+  },
+  {
+    "de": {
+      "p": "VF",
+      "b": "−"
+    },
+    "para": {
+      "p": "VP",
+      "b": "−"
+    },
+    "diz": ""
+  }
+];
+export const EXTERNOS=[
+  {
+    "id": "DIS1",
+    "nome": "dissipador + cooler",
+    "x": 366,
+    "y": 74,
+    "w": 68,
+    "h": 50
+  },
+  {
+    "id": "DIS2",
+    "nome": "dissipador + cooler",
+    "x": 446,
+    "y": 74,
+    "w": 68,
+    "h": 50
+  }
+];
+export const PECAS3D=[
+  {
+    "id": "PELT",
+    "bornes": [
+      {
+        "b": "+",
+        "lado": "esq",
+        "t": 0.3
+      },
+      {
+        "b": "−",
+        "lado": "esq",
+        "t": 0.7
+      }
+    ],
+    "nome": "2× Peltier",
+    "cor": "#1971c2",
+    "pc": "PC-1",
+    "caixa": [
+      60,
+      30,
+      236,
+      140,
+      70,
+      250
+    ],
+    "diz": "Encaixadas na tampa. Face fria para dentro, quente para fora."
+  },
+  {
+    "id": "VF",
+    "bornes": [
+      {
+        "b": "+",
+        "lado": "base",
+        "t": 0.35
+      },
+      {
+        "b": "−",
+        "lado": "base",
+        "t": 0.7
+      }
+    ],
+    "nome": "2× ventoinha fria",
+    "cor": "#4dabf7",
+    "pc": "PC-1",
+    "caixa": [
+      70,
+      32,
+      210,
+      130,
+      68,
+      234
+    ],
+    "diz": "Sopram para BAIXO — o ar desce pelo centro."
+  },
+  {
+    "id": "SENS",
+    "bornes": [
+      {
+        "b": "VCC",
+        "lado": "dir",
+        "t": 0.15
+      },
+      {
+        "b": "GND",
+        "lado": "dir",
+        "t": 0.38
+      },
+      {
+        "b": "SDA",
+        "lado": "dir",
+        "t": 0.62
+      },
+      {
+        "b": "SCL",
+        "lado": "dir",
+        "t": 0.85
+      }
+    ],
+    "nome": "AM2315C",
+    "cor": "#f76707",
+    "pc": "PC-2",
+    "caixa": [
+      88,
+      42,
+      116,
+      112,
+      58,
+      136
+    ],
+    "diz": "⭐ No centro geométrico, suspenso. Longe da Peltier e do PTC."
+  },
+  {
+    "id": "VP",
+    "bornes": [
+      {
+        "b": "+",
+        "lado": "topo",
+        "t": 0.3
+      },
+      {
+        "b": "−",
+        "lado": "topo",
+        "t": 0.7
+      }
+    ],
+    "nome": "ventoinha do PTC",
+    "cor": "#4dabf7",
+    "pc": "PC-1",
+    "caixa": [
+      76,
+      32,
+      50,
+      124,
+      68,
+      72
+    ],
+    "diz": "Sopra para BAIXO também — o circuito de ar é único."
+  },
+  {
+    "id": "PTC",
+    "bornes": [
+      {
+        "b": "+",
+        "lado": "base",
+        "t": 0.3
+      },
+      {
+        "b": "−",
+        "lado": "base",
+        "t": 0.7
+      }
+    ],
+    "nome": "PTC proposto 12 V / 50 W — bloqueado",
+    "cor": "#e03131",
+    "pc": "PC-1",
+    "caixa": [
+      64,
+      30,
+      26,
+      136,
+      70,
+      44
+    ],
+    "diz": "Na base, sobre o plenum de 30 mm."
+  },
+  {
+    "id": "ST1",
+    "bornes": [
+      {
+        "b": "1",
+        "lado": "dir",
+        "t": 0.3
+      },
+      {
+        "b": "2",
+        "lado": "dir",
+        "t": 0.7
+      }
+    ],
+    "nome": "ST-1 · 90 °C NF",
+    "cor": "#f08c00",
+    "pc": "PC-1",
+    "caixa": [
+      122,
+      44,
+      44,
+      134,
+      54,
+      50
+    ],
+    "diz": "Abraçadeira metálica no corpo do PTC, com pasta térmica. Fica no canto do PTC para não disputar espaço com a ventoinha VP, que sopra logo acima."
+  },
+  {
+    "id": "ST2",
+    "bornes": [
+      {
+        "b": "1",
+        "lado": "dir",
+        "t": 0.3
+      },
+      {
+        "b": "2",
+        "lado": "dir",
+        "t": 0.7
+      }
+    ],
+    "nome": "ST-2 · 70 °C NF",
+    "cor": "#f08c00",
+    "pc": "PC-1",
+    "caixa": [
+      288,
+      40,
+      170,
+      298,
+      52,
+      178
+    ],
+    "diz": "Colado na parede interna DIREITA, na metade de cima — o ar quente sobe. É o que protege o acrílico. ⚠️ Não pode ir na parede esquerda: é por ela que sobem os fios do PC-1 e do PC-2, e o termostato ficaria no meio do feixe."
+  },
+  {
+    "id": "PL-1",
+    "bornes": [
+      {
+        "b": "+1",
+        "lado": "base",
+        "t": 0.15
+      },
+      {
+        "b": "+2",
+        "lado": "base",
+        "t": 0.38
+      },
+      {
+        "b": "+3",
+        "lado": "base",
+        "t": 0.62
+      },
+      {
+        "b": "+4",
+        "lado": "base",
+        "t": 0.85
+      },
+      {
+        "b": "r1",
+        "lado": "topo",
+        "t": 0.15
+      },
+      {
+        "b": "r2",
+        "lado": "topo",
+        "t": 0.38
+      },
+      {
+        "b": "r3",
+        "lado": "topo",
+        "t": 0.62
+      },
+      {
+        "b": "r4",
+        "lado": "topo",
+        "t": 0.85
+      }
+    ],
+    "nome": "Placa PL-1 — 4 posições · PCB real 95 × 75 mm (LED + 1 kΩ)",
+    "cor": "#c92a2a",
+    "pc": "PC-2",
+    "caixa": [
+      22,
+      25,
+      24,
+      58,
+      75,
+      58
+    ],
+    "diz": "PCB de 95 × 75 mm com 4 canais. Cada canal é uma coluna reta: borne + (borda de baixo) → ânodo do LED → cátodo → resistor de 1 kΩ → borne r (borda de cima). Sem barramento comum: as 2 placas dão as 8 posições, o + vem da chave da placa F-P e o r volta para o canal I_n do módulo de medição."
+  },
+  {
+    "id": "PL-2",
+    "bornes": [
+      {
+        "b": "+1",
+        "lado": "base",
+        "t": 0.15
+      },
+      {
+        "b": "+2",
+        "lado": "base",
+        "t": 0.38
+      },
+      {
+        "b": "+3",
+        "lado": "base",
+        "t": 0.62
+      },
+      {
+        "b": "+4",
+        "lado": "base",
+        "t": 0.85
+      },
+      {
+        "b": "r1",
+        "lado": "topo",
+        "t": 0.15
+      },
+      {
+        "b": "r2",
+        "lado": "topo",
+        "t": 0.38
+      },
+      {
+        "b": "r3",
+        "lado": "topo",
+        "t": 0.62
+      },
+      {
+        "b": "r4",
+        "lado": "topo",
+        "t": 0.85
+      }
+    ],
+    "nome": "Placa PL-2 — 4 posições · PCB real 95 × 75 mm (LED + 1 kΩ)",
+    "cor": "#c92a2a",
+    "pc": "PC-2",
+    "caixa": [
+      142,
+      25,
+      24,
+      178,
+      75,
+      58
+    ],
+    "diz": "PCB de 95 × 75 mm com 4 canais. Cada canal é uma coluna reta: borne + (borda de baixo) → ânodo do LED → cátodo → resistor de 1 kΩ → borne r (borda de cima). Sem barramento comum: as 2 placas dão as 8 posições, o + vem da chave da placa F-P e o r volta para o canal I_n do módulo de medição."
+  },
+  {
+    "id": "SUP-E",
+    "bornes": [],
+    "nome": "Suporte CAM-26 — tiras de alumínio (apoio esquerdo)",
+    "cor": "#868e96",
+    "pc": "PC-1",
+    "caixa": [
+      14,
+      25,
+      22,
+      21,
+      75,
+      62
+    ],
+    "diz": "⭐ SUPORTE DAS DUAS PLACAS. Duas tiras de alumínio apoiadas nas cantoneiras CAM-24, com espaçadores M3 para elevar as placas. Deixa o ar circular 100% livre pela frente e por trás das PCBs, sem bloquear o fluxo vertical."
+  },
+  {
+    "id": "SUP-D",
+    "bornes": [],
+    "nome": "Suporte CAM-26 — tiras de alumínio (apoio direito)",
+    "cor": "#868e96",
+    "pc": "PC-1",
+    "caixa": [
+      179,
+      25,
+      22,
+      186,
+      75,
+      62
+    ],
+    "diz": "A outra lateral do mesmo berço. As duas ficam FORA das placas, para não tapar LED nem borne."
+  },
+  
+  
+  {
+    "id": "VD1",
+    "bornes": [
+      {
+        "b": "+",
+        "lado": "topo",
+        "t": 0.35
+      },
+      {
+        "b": "−",
+        "lado": "topo",
+        "t": 0.7
+      }
+    ],
+    "nome": "vent. entrada duto esq.",
+    "cor": "#74c0fc",
+    "pc": "PC-1",
+    "fora": true,
+    "caixa": [
+      -32,
+      35,
+      108,
+      -6,
+      65,
+      138
+    ],
+    "diz": "Dentro do duto lateral, FORA do volume útil. Sopra para CIMA."
+  },
+  {
+    "id": "VD2",
+    "bornes": [
+      {
+        "b": "+",
+        "lado": "topo",
+        "t": 0.35
+      },
+      {
+        "b": "−",
+        "lado": "topo",
+        "t": 0.7
+      }
+    ],
+    "nome": "vent. entrada duto dir.",
+    "cor": "#74c0fc",
+    "pc": "PC-1",
+    "fora": true,
+    "caixa": [
+      206,
+      35,
+      108,
+      232,
+      65,
+      138
+    ],
+    "diz": "Idem à esquerda — o retorno tem que ser simétrico."
+  }
+];
+export const PRENSAS=[
+  {
+    "id": "PC-1",
+    "nome": "POTÊNCIA",
+    "y": 200,
+    "cor": "#c92a2a",
+    "lado": "esq",
+    "onde": "canto inferior esquerdo da parede traseira",
+    "diz": "A potência da Peltier e os 8 positivos das posições de ensaio saem por aqui. O ramal do PTC está excluído até definir fonte, corte DC, proteção e cabos."
+  },
+  {
+    "id": "PC-2",
+    "nome": "MEDIÇÃO E SINAL",
+    "y": 440,
+    "cor": "#1971c2",
+    "lado": "esq",
+    "onde": "canto superior esquerdo, a pelo menos 100 mm do PC-1",
+    "diz": "Os 8 retornos das posições carregam a corrente que está sendo medida, e o I²C carrega pulsos de microssegundos. Um transiente de 6 A induzido aqui vira leitura errada ou sensor travado."
+  }
+];
+export const PRENSAS3D=[
+  {
+    "id": "PC-1",
+    "nome": "POTÊNCIA",
+    "tipo": "PG13,5",
+    "cor": "#c92a2a",
+    "x": 40,
+    "z": 10,
+    "diz": "Peltier, ventoinhas internas e os 8 positivos das posições de ensaio. O ramal do PTC não está incluído: fonte, corte DC e passagem de cabos ainda não foram definidos.",
+    "porque": "A contagem atual é de 12 condutores antes do ramal do PTC. Recalcular diâmetro do feixe e prensa-cabo com os cabos reais; não usar a estimativa antiga como dimensionamento."
+  },
+  {
+    "id": "PC-2",
+    "nome": "SINAL E MEDIÇÃO",
+    "tipo": "PG11",
+    "cor": "#1971c2",
+    "x": 155,
+    "z": 228,
+    "diz": "As 8 posições de ensaio, o AM2315C, o DS18B20 e os dois tacômetros. Carrega os ~80 mA que estão sendo medidos e os pulsos do I²C.",
+    "porque": "⚠️ PG11 e não PG9: 8 retornos de 0,5 mm² mais 9 condutores de sinal dão 9,5 mm de feixe, e o PG9 aperta até 8 mm — não fecharia com as 8 posições ligadas. Sobram 0,5 mm; se quiser folga, use PG13,5. O PG9-3 do painel cresce junto, porque é o mesmo feixe."
+  }
+];
+export const ROTAS_CAMARA={
+  "X1": {
+    "alvo": "PELT.+",
+    "pc": "PC-1",
+    "gx": 43.2,
+    "lane": 17.0,
+    "sobe": 6.6
+  },
+  "X2": {
+    "alvo": "PELT.−",
+    "pc": "PC-1",
+    "gx": 44.1,
+    "lane": 16.0
+  },
+  "X9": {
+    "alvo": "VF.+",
+    "pc": "PC-1",
+    "gx": 42.3,
+    "lane": 15.0,
+    "sobe": 9.2,
+    "crz": 202
+  },
+  "X10": {
+    "alvo": "VF.−",
+    "pc": "PC-1",
+    "gx": 41.4,
+    "lane": 14.0,
+    "sobe": 11.8,
+    "crz": 198
+  },
+  "X11": {
+    "alvo": "PL-1.+1",
+    "pc": "PC-1",
+    "gx": 38.7,
+    "lane": 8.0
+  },
+  "X11b": {
+    "alvo": "PL-1.+2",
+    "pc": "PC-1",
+    "gx": 37.8,
+    "lane": 7.0
+  },
+  "X11c": {
+    "alvo": "PL-1.+3",
+    "pc": "PC-1",
+    "gx": 36.9,
+    "lane": 6.0
+  },
+  "X11d": {
+    "alvo": "PL-1.+4",
+    "pc": "PC-1",
+    "gx": 36.0,
+    "lane": 5.0
+  },
+  "X11e": {
+    "alvo": "PL-2.+1",
+    "pc": "PC-1",
+    "gx": 35.1,
+    "lane": 4.0
+  },
+  "X11f": {
+    "alvo": "PL-2.+2",
+    "pc": "PC-1",
+    "gx": 34.2,
+    "lane": 3.0
+  },
+  "X11g": {
+    "alvo": "PL-2.+3",
+    "pc": "PC-1",
+    "gx": 33.3,
+    "lane": 2.0
+  },
+  "X11h": {
+    "alvo": "PL-2.+4",
+    "pc": "PC-1",
+    "gx": 32.4,
+    "lane": 1.0
+  },
+  "X13": {
+    "alvo": "PL-1.r1",
+    "pc": "PC-2",
+    "gx": 156.1,
+    "lane": 226.0,
+    "sobe": 188.0,
+    "crz": 102.5
+  },
+  "X13b": {
+    "alvo": "PL-1.r2",
+    "pc": "PC-2",
+    "gx": 157.0,
+    "lane": 227.2,
+    "sobe": 189.6,
+    "crz": 101.0
+  },
+  "X13c": {
+    "alvo": "PL-1.r3",
+    "pc": "PC-2",
+    "gx": 157.9,
+    "lane": 228.4,
+    "sobe": 191.2,
+    "crz": 99.5
+  },
+  "X13d": {
+    "alvo": "PL-1.r4",
+    "pc": "PC-2",
+    "gx": 158.8,
+    "lane": 229.6,
+    "sobe": 192.8,
+    "crz": 98.0
+  },
+  "X13e": {
+    "alvo": "PL-2.r1",
+    "pc": "PC-2",
+    "gx": 159.7,
+    "lane": 230.8,
+    "sobe": 194.4,
+    "crz": 96.5
+  },
+  "X13f": {
+    "alvo": "PL-2.r2",
+    "pc": "PC-2",
+    "gx": 160.6,
+    "lane": 232.0,
+    "sobe": 196.0,
+    "crz": 95.0
+  },
+  "X13g": {
+    "alvo": "PL-2.r3",
+    "pc": "PC-2",
+    "gx": 161.5,
+    "lane": 233.2,
+    "sobe": 197.6,
+    "crz": 93.5
+  },
+  "X13h": {
+    "alvo": "PL-2.r4",
+    "pc": "PC-2",
+    "gx": 162.4,
+    "lane": 234.4,
+    "sobe": 199.2,
+    "crz": 92.0
+  },
+  "X15": {
+    "alvo": "SENS.VCC",
+    "pc": "PC-2",
+    "gx": 155.2,
+    "lane": 224.4,
+    "sobe": 186.0
+  },
+  "X16": {
+    "alvo": "SENS.GND",
+    "pc": "PC-2",
+    "gx": 154.3,
+    "lane": 223.1,
+    "sobe": 184.0
+  },
+  "X17": {
+    "alvo": "SENS.SDA",
+    "pc": "PC-2",
+    "gx": 153.4,
+    "lane": 221.8,
+    "sobe": 182.0
+  },
+  "X18": {
+    "alvo": "SENS.SCL",
+    "pc": "PC-2",
+    "gx": 152.5,
+    "lane": 220.5,
+    "sobe": 180.0
+  }
 };
-export const BASE_INT = UTIL.y2 - CAIXA.plenum;      // 485
-
-export const COMPONENTES = [
+export const TAMPA3D=[
   {
-    id: 'PELT', pc: 'PC-1', nome: '2× Peltier TEC1-12706', tipo: 'frio',
-    x: 378, y: 133, w: 124, h: 34, cor: '#1971c2',
-    onde: 'Encaixadas na TAMPA, no centro. Face fria para dentro, face quente para fora.',
-    porque: 'No topo porque o ar frio desce sozinho. Colocá-las embaixo faria o frio '
-          + 'ficar empoçado no fundo e a câmara nunca homogeneizaria.',
-    terminais: [
-      { t: '+', de: 'BTS #1 · M+', ref: ['BTS1', 'M+'], fio: '1,5 mm² vermelho' },
-      { t: '−', de: 'BTS #1 · M−', ref: ['BTS1', 'M−'], fio: '1,5 mm² preto' },
+    "id": "RAD",
+    "nome": "2 coolers do radiador",
+    "cor": "#e8590c",
+    "bornes": [
+      {
+        "b": "+",
+        "lado": "base",
+        "t": 0.12
+      },
+      {
+        "b": "−",
+        "lado": "base",
+        "t": 0.3
+      },
+      {
+        "b": "RPM1",
+        "lado": "base",
+        "t": 0.72
+      },
+      {
+        "b": "RPM2",
+        "lado": "base",
+        "t": 0.9
+      }
     ],
-    avisos: [
-      '⭐ AS DUAS EM SÉRIE, não em paralelo. O par forma uma carga de 24 V / 6 A que se '
-      + 'alimenta direto do barramento, sem conversor — e cada pastilha continua vendo '
-      + 'os seus 12 V nominais.',
-      '🔥 SE UM COOLER DO RADIADOR PARAR, A PASTILHA MORRE EM MENOS DE UM MINUTO. Ela não '
-      + 'produz frio: transporta calor de um lado para o outro. Lado quente saturado = o '
-      + 'calor volta atravessando a pastilha. Por isso o firmware monitora o RPM.',
-      '⚠️ NUNCA COMANDAR POR PWM RÁPIDO. Cada liga-desliga é um choque térmico na junção. '
-      + 'O BTS #1 trabalha em regime contínuo ou com chaveamento muito lento.',
-    ],
+    "diz": "Em paralelo nos dois primeiros; cada uma com o seu fio de RPM."
   },
   {
-    id: 'VF', pc: 'PC-1', nome: '2× ventoinha fria 40 mm', tipo: 'ar',
-    x: 390, y: 178, w: 100, h: 26, cor: '#4dabf7', sopra: 'baixo',
-    onde: 'Logo abaixo das Peltier, soprando PARA BAIXO.',
-    porque: 'Sem elas o frio fica colado na pastilha e a câmara estratifica — topo '
-          + 'gelado, fundo morno. O ar precisa ser empurrado.',
-    terminais: [
-      { t: '+', de: 'KA3 · NO3', ref: ['KA123', 'NO3'], fio: '0,5 mm² vermelho' },
-      { t: '−', de: 'BD-0V · Z13', ref: ['BD-0V', 'Z13'], fio: '0,5 mm² preto' },
+    "id": "DS18",
+    "nome": "DS18B20 do radiador",
+    "cor": "#f76707",
+    "bornes": [
+      {
+        "b": "VCC",
+        "lado": "base",
+        "t": 0.2
+      },
+      {
+        "b": "GND",
+        "lado": "base",
+        "t": 0.5
+      },
+      {
+        "b": "DATA",
+        "lado": "base",
+        "t": 0.8
+      }
     ],
-    avisos: [
-      '📌 DIVIDEM O CONTATO DO KA3 COM AS 2 DO DUTO. São 4 ventoinhas no mesmo par de fios — '
-      + 'ligam e desligam juntas, o que é o correto: elas formam um circuito de ar só.',
-      '⭐ CONTINUAM GIRANDO DEPOIS DE DESLIGAR (pós-ventilação). O calor acumulado no '
-      + 'dissipador precisa sair, senão volta para dentro da câmara.',
-    ],
-  },
-  {
-    id: 'VD1', pc: 'PC-1', nome: 'ventoinha da entrada do duto esq.', tipo: 'ar',
-    x: 340, y: 485, w: 36, h: 30, cor: '#4dabf7', sopra: 'esquerda', grupoAr: 'duto', pequeno: true,
-    onde: '⭐ ABAIXO DO PTC, na BOCA do duto esquerdo — não dentro dele.',
-    porque: 'Fecha o circuito: o ar que desceu pelo centro entra aqui e sobe pelo duto '
-          + 'lateral até o topo. É o que impede o gradiente entre a base e a tampa. '
-          + '🔧 Ela ficava DENTRO do duto de 30 × 30 mm, e isso era um erro de duas caras: '
-          + 'uma ventoinha de 40 mm não cabe folgada num vão de 30, e enfiada lá dentro '
-          + 'ela sopra contra a parede em vez de empurrar o ar para a entrada.',
-    terminais: [
-      { t: '+', de: 'KA3 · NO3', ref: ['KA123', 'NO3'], fio: 'em paralelo com as frias' },
-      { t: '−', de: 'BD-0V · Z13', ref: ['BD-0V', 'Z13'], fio: '—' },
-    ],
-    avisos: ['📌 O duto fica FORA da parede de acrílico, dentro do isolamento. O ar circula '
-           + 'sem furar o volume útil.',
-           '⭐ AS DUAS FICAM LADO A LADO, ABAIXO DO PTC, cada uma soprando para a boca do '
-           + 'seu duto. Assim elas ficam acessíveis para manutenção sem desmontar o duto, '
-           + 'e o ar entra no duto já com velocidade em vez de ser empurrado contra a '
-           + 'parede lateral.',
-           '⚠️ CONFIRA A SETA DE FLUXO no corpo de cada uma antes de fixar. Invertidas, as '
-           + 'duas puxam o ar do duto para o centro e o circuito de ar roda ao contrário — '
-           + 'defeito quase impossível de perceber sem teste de fumaça.'],
-  },
-  {
-    id: 'VD2', pc: 'PC-1', nome: 'ventoinha da entrada do duto dir.', tipo: 'ar',
-    x: 504, y: 485, w: 36, h: 30, cor: '#4dabf7', sopra: 'direita', grupoAr: 'duto', pequeno: true,
-    onde: '⭐ ABAIXO DO PTC, na BOCA do duto direito — ao lado da VD1.',
-    porque: 'Idem à esquerda — o retorno tem que ser simétrico, senão um lado da câmara '
-          + 'fica mais frio que o outro.',
-    terminais: [
-      { t: '+', de: 'KA3 · NO3', ref: ['KA123', 'NO3'], fio: 'em paralelo' },
-      { t: '−', de: 'BD-0V · Z13', ref: ['BD-0V', 'Z13'], fio: '—' },
-    ],
-    avisos: [],
-  },
-  {
-    id: 'SENS', pc: 'PC-2', nome: 'AM2315C — temperatura e umidade', tipo: 'sensor',
-    x: 402, y: 310, w: 76, h: 40, cor: '#f76707',
-    onde: '⭐ NO CENTRO GEOMÉTRICO, suspenso no ar — longe da Peltier e longe do PTC.',
-    porque: 'Este é o ponto mais importante da montagem. Se o sensor encostar na Peltier '
-          + 'ele lê a pastilha, não o ar: o controle desliga cedo demais e a câmara nunca '
-          + 'chega ao setpoint. Se ficar perto do PTC, lê o aquecedor e desliga cedo do '
-          + 'outro lado. No centro, ele lê o que o ensaio realmente vê.',
-    terminais: [
-      { t: 'VCC', de: 'BD-5V saída 10', ref: ['BD-5V', 'O10'], fio: '0,25 mm² vermelho' },
-      { t: 'GND', de: 'BD-0V · Z15', ref: ['BD-0V', 'Z15'], fio: '0,25 mm² preto' },
-      { t: 'SDA', de: 'Mega D20', ref: ['MEGA', 'D20'], fio: '0,25 mm² azul' },
-      { t: 'SCL', de: 'Mega D21', ref: ['MEGA', 'D21'], fio: '0,25 mm² amarelo' },
-    ],
-    avisos: [
-      '🔥 É O ÚNICO SENSOR DO CONTROLE, E ISSO É UM RISCO ASSUMIDO. Se ele travar lendo um '
-      + 'valor plausível mas errado, o sistema aquece ou resfria sem perceber. O firmware '
-      + 'desconfia dele: valor congelado por muito tempo, fora de faixa ou variação '
-      + 'impossível derrubam o ensaio.',
-      '💧 A UMIDADE NÃO É ENFEITE. Ensaio térmico com condensação não vale — é ela que '
-      + 'avisa quando é hora do ciclo de degelo.',
-      '📌 I²C no endereço 0x38, dividindo o barramento com o DS3231.',
-      '⚠️ Suspenso por fio de nylon ou haste fina — nada de parafusar na parede, que '
-      + 'conduz a temperatura do acrílico para o sensor.',
-    ],
-  },
-  {
-    id: 'PTC', pc: 'PC-1', nome: 'PTC 24 V — aquecedor', tipo: 'quente',
-    x: 385, y: 430, w: 110, h: 30, cor: '#e03131',
-    onde: 'Na base interna, no centro, sobre o plenum de 30 mm.',
-    porque: 'Embaixo porque o ar quente sobe sozinho — o oposto da Peltier. E sobre o '
-          + 'plenum para o ar poder passar POR BAIXO dele e não só por cima.',
-    terminais: [
-      { t: '+', de: 'BTS #2 · M+', ref: ['BTS2', 'M+'], fio: '1,5 mm² vermelho' },
-      { t: '−', de: 'BTS #2 · M−', ref: ['BTS2', 'M−'], fio: '1,5 mm² preto' },
-    ],
-    avisos: [
-      '⭐ TEM QUE SER O PTC DE 24 V, não o de 12 V. Ele vai direto no barramento pelo '
-      + 'BTS #2, sem conversor. Um PTC de 12 V ligado em 24 V queima.',
-      '✅ ELE SE PROTEGE SOZINHO: conforme esquenta, a resistência sobe e a corrente cai. '
-      + 'É a razão de ser um PTC e não uma resistência comum — que continuaria puxando '
-      + 'corrente até derreter alguma coisa.',
-      '🔥 NUNCA LIGAR O PTC SEM A VENTOINHA DELE. O firmware trava isso: sem fluxo de ar, '
-      + 'o calor fica concentrado e o acrílico logo acima deforma.',
-    ],
-  },
-  {
-    id: 'VP', pc: 'PC-1', nome: 'ventoinha do PTC', tipo: 'ar',
-    x: 405, y: 396, w: 70, h: 26, cor: '#4dabf7', sopra: 'baixo',
-    onde: 'Logo acima do PTC, soprando PARA BAIXO — no MESMO sentido das de cima.',
-    porque: 'Empurra o ar sobre o PTC e para dentro do plenum, de onde ele sobe pelos '
-          + 'dutos. 🔧 Antes tinha canal próprio; hoje entra em PARALELO com as '
-          + 'outras quatro internas, porque todas têm a mesma condição — ensaio rodando.',
-    terminais: [
-      { t: '+', de: 'KA3 · NO3 (emenda com as 4 de circulação)', ref: ['KA123', 'NO3'], fio: '0,5 mm² vermelho' },
-      { t: '−', de: 'BD-0V · Z13 (emenda com as 4 de circulação)', ref: ['BD-0V', 'Z13'], fio: '0,5 mm² preto' },
-    ],
-    avisos: [
-      '🔥 SOPRA PARA BAIXO, IGUAL ÀS DE CIMA — e isto NÃO é engano. Uma ventoinha DC não '
-      + 'gira ao contrário: invertendo a polaridade ela simplesmente não parte, e mesmo '
-      + 'que partisse a pá é assimétrica e moveria quase nada de ar. Como as 2 do duto '
-      + 'dividem um canal só, o circuito de ar é FIXO: sempre desce pelo centro e sobe '
-      + 'pelos dutos. Ver Doc 12 §12.7.',
-      '⭐ CANAL SEPARADO DE PROPÓSITO. Ela é intertravada com o PTC: o aquecedor não liga '
-      + 'sem ela girando, e ela continua girando depois que ele desliga.',
-    ],
-  },
-  {
-    id: 'DUT1', pc: 'PC-2', nome: 'Posição de ensaio 1', tipo: 'dut',
-    x: 296, y: 420, w: 76, h: 56, cor: '#c92a2a', dut: 1,
-    onde: 'Na base interna, à esquerda, com folga das paredes.',
-    porque: 'É o dispositivo sob ensaio — o motivo de a câmara existir. Consome 17,6 mA '
-          + 'constantes, e é o sumiço dessa corrente que denuncia a falha.',
-    terminais: [
-      { t: '+24 V', de: 'F-P1 — fusível 100 mA + chave, e 10 voltas no sensor SC-1',
-        ref: ['F-P', 'F-P1'], fio: '0,5 mm² vermelho' },
-      { t: 'retorno', de: 'BD-0V-B · Z22', ref: ['BD-0V-B', 'Z22'], fio: '0,5 mm² azul' },
-    ],
-    avisos: [
-      '⭐ O RETORNO VIROU 0 V COMUM. Ele ia para o shunt da PI-2, onde os 17,6 mA '
-      + 'viravam tensão para o multiplexador ler; hoje quem responde "tem corrente?" é o '
-      + 'sensor SC-1, no painel, e o retorno é um 0 V com parafuso próprio na barra.',
-      '⭐ LED VERMELHO + RESISTOR DE 1,2 kΩ. O LED é só o indicador visual; quem fixa a '
-      + 'corrente é o resistor.',
-      '⚠️ QUEM DETECTA A FALHA NÃO ESTÁ AQUI DENTRO. O sensor fica no painel, e o fio '
-      + 'que sai daqui passa 10 vezes pelo furo dele antes de seguir — é o que faz o '
-      + 'sensor enxergar 176 mA em vez de 17,6 mA.',
-    ],
-  },
+    "diz": "Colado no dissipador com pasta térmica. Rabicho de 3 vias: vermelho +5 V, preto 0 V, amarelo (ou branco) DATA."
+  }
 ];
-
-/* ⭐ O LADO QUENTE, na tampa. Não atravessa parede: fica no ar
-   ambiente, em cima dos dissipadores. */
-export const TAMPA3D = [
-  { id: 'RAD', nome: '2 coolers do radiador', cor: '#e8590c',
-    /* ⭐ ALIMENTAÇÃO À ESQUERDA, TACÔMETRO À DIREITA. Não é capricho de
-       desenho: os 12 V vêm do KA2 e sobem pelo lado da POTÊNCIA; os
-       dois RPM vão para o Mega e sobem pelo lado do SINAL. Postos na
-       ordem em que chegam, nenhum dos cinco precisa cruzar o outro. */
-    bornes: [{ b:'+', lado:'base', t:0.12 }, { b:'−', lado:'base', t:0.30 },
-              { b:'RPM1', lado:'base', t:0.72 }, { b:'RPM2', lado:'base', t:0.90 }],
-    diz: 'Em paralelo nos dois primeiros; cada uma com o seu fio de RPM.' },
-  /* ⭐ SÃO TRÊS FIOS, e o modelo declarava um. O DS18B20 vem com rabicho
-     de 3 vias — VCC, GND e DATA — e não existe "o resto vem no cabo
-     dele": as três pontas soltas chegam TODAS no painel. Sem o VCC ele
-     não liga; sem o GND o barramento 1-Wire não tem referência e a
-     leitura sai lixo, quando sai. */
-  { id: 'DS18', nome: 'DS18B20 do radiador', cor: '#f76707',
-    bornes: [{ b:'VCC', lado:'base', t:0.20 }, { b:'GND', lado:'base', t:0.50 },
-             { b:'DATA', lado:'base', t:0.80 }],
-    diz: 'Colado no dissipador com pasta térmica. Rabicho de 3 vias: '
-       + 'vermelho +5 V, preto 0 V, amarelo (ou branco) DATA.' },
-];
-
-/* o que fica FORA, na tampa — o lado quente */
-export const EXTERNOS = [
-  { id: 'DIS1', nome: 'dissipador + cooler', x: 366, y: 74, w: 68, h: 50 },
-  { id: 'DIS2', nome: 'dissipador + cooler', x: 446, y: 74, w: 68, h: 50 },
-];
-
-/* ⭐ DOIS prensa-cabos, e não um. Potência que chaveia 6 A não pode
-   dividir cabo com a medição de 17,6 mA nem com os pulsos do I²C.   */
-export const PRENSAS = [
+export const TRAVESSIA=[
   {
-    id: 'PC-1', nome: 'POTÊNCIA', y: 200, cor: '#c92a2a', lado: 'esq',
-    onde: 'canto inferior esquerdo da parede traseira',
-    diz: 'Os BTS chaveiam 6 A por estes fios. É a fonte de ruído do projeto — por isso '
-       + 'ele sai sozinho.',
+    "pc": "PC-1",
+    "g": "Potência",
+    "n": 2,
+    "o": "Peltier + e −",
+    "de": "BTS #1",
+    "mm": "1,5 mm²",
+    "condutores": 12
   },
   {
-    id: 'PC-2', nome: 'MEDIÇÃO E SINAL', y: 440, cor: '#1971c2', lado: 'esq',
-    onde: 'canto superior esquerdo, a pelo menos 100 mm do PC-1',
-    diz: 'Os retornos das posições carregam a corrente que está sendo medida, e o I²C '
-       + 'carrega pulsos de microssegundos. Um transiente de 6 A induzido aqui vira '
-       + 'leitura errada ou sensor travado.',
-  },
-];
-
-export const TRAVESSIA = [
-  { pc: 'PC-1', g: 'Potência',   n: 2, o: 'Peltier + e −', de: 'BTS #1', mm: '1,5 mm²' },
-  { pc: 'PC-1', g: 'Potência',   n: 2, o: 'PTC + e −', de: 'BTS #2', mm: '1,5 mm²' },
-  { pc: 'PC-1', g: 'Ventilação', n: 2, o: '⭐ as 5 internas (4 de circulação + a do PTC, em paralelo)', de: 'KA3 · NO3 (+) e BD-0V · Z13 (−)', mm: '0,5 mm²' },
-  { pc: 'PC-2', g: 'Ensaio',     n: 1, o: 'positivo da posição de ensaio', de: 'F-P1', mm: '0,5 mm²' },
-  { pc: 'PC-2', g: 'Ensaio',     n: 1, o: 'retorno da posição de ensaio', de: 'BD-0V-B · Z22', mm: '0,5 mm²' },
-  { pc: 'PC-2', g: 'Sinal',      n: 4, o: 'AM2315C (VCC GND SDA SCL)', de: 'Mega + BD-5V', mm: '0,25 mm²' },
-];
-
-/* ══════════════════════════════════════════════════════════════════════
-   MODELO 3D — para a vista girável
-   ══════════════════════════════════════════════════════════════════════
-   Coordenadas em mm dentro do VOLUME ÚTIL, que é 200 × 100 × 250:
-     x  0 → 200   esquerda → direita
-     y  0 → 100   FRENTE (a porta) → FUNDO
-     z  0 → 250   base → tampa
-
-   ⭐ Todos os cabos entram pelo FUNDO, nunca pela porta nem pelas
-   laterais: a porta abre e as laterais têm os dutos de circulação.
-   São dois prensa-cabos, em cantos opostos da parede traseira.       */
-
-export const UTIL3D = { w: 200, d: 100, h: 250 };
-
-export const PRENSAS3D = [
-  {
-    id: 'PC-1', nome: 'POTÊNCIA', tipo: 'PG13,5', cor: '#c92a2a', x: 45, z: 22,
-    diz: 'Peltier, PTC e as ventoinhas. Os BTS chaveiam 6 A por aqui — '
-       + 'é a fonte de ruído do projeto.',
-    porque: '⭐ PG13,5 e não PG9: os dez condutores que entram aqui, quatro deles de '
-          + '1,5 mm², dão 9,3 mm de feixe. Um PG9 vai até 8 mm e não fecharia.',
+    "pc": "PC-1",
+    "g": "Ventilação",
+    "n": 2,
+    "o": "⭐ as 5 internas (4 de circulação + a do PTC, em paralelo)",
+    "de": "KA3 · NO3 (+) e BD-0V · Z13 (−)",
+    "mm": "0,5 mm²",
+    "condutores": 12
   },
   {
-    id: 'PC-2', nome: 'SINAL E MEDIÇÃO', tipo: 'PG9', cor: '#1971c2', x: 155, z: 228,
-    diz: 'As duas posições de ensaio e o AM2315C. Carrega os 17,6 mA que '
-       + 'estão sendo medidos e os pulsos do I²C.',
+    "pc": "PC-1",
+    "g": "Potência",
+    "n": 8,
+    "o": "positivos das 8 posições (um por canal da placa F-P)",
+    "de": "F-P · F-P1 a F-P8",
+    "mm": "0,5 mm²",
+    "condutores": 12,
+    "nota": "12 condutores no arranjo modelado: 2 de 1,5 mm² da Peltier, 2 de 0,5 mm² das ventoinhas e 8 positivos das posições. O ramal do PTC não está contabilizado; recalcular o prensa-cabo após definir a arquitetura e os cabos reais."
   },
+  {
+    "pc": "PC-2",
+    "g": "Ensaio",
+    "n": 8,
+    "o": "retornos das 8 posições, um por canal do módulo",
+    "de": "N4AIC24 · I1 a I8",
+    "mm": "0,5 mm²",
+    "condutores": 12,
+    "nota": "⚠️ 8 retornos de 0,5 mm² mais os 4 fios do AM2315C dão 9,5 mm de feixe com os 3 do DS18B20 e os 2 dos tacômetros. O PG9 aperta até 8 mm e não fecharia: este furo é PG11, no painel e na parede."
+  },
+  {
+    "pc": "PC-2",
+    "g": "Sinal",
+    "n": 4,
+    "o": "AM2315C (VCC GND SDA SCL)",
+    "de": "Mega + BD-5V",
+    "mm": "0,25 mm²",
+    "condutores": 12
+  }
 ];
-
-/* caixa = [x0, y0, z0, x1, y1, z1]
-   bornes = onde o fio encosta, em fração da largura da peça (0 a 1) */
-export const PECAS3D = [
-  { id: 'PELT', bornes: [{ b:'+', lado:'esq', t:0.30 }, { b:'−', lado:'esq', t:0.70 }], nome: '2× Peltier', cor: '#1971c2', pc: 'PC-1',
-    caixa: [60, 30, 236, 140, 70, 250],
-    diz: 'Encaixadas na tampa. Face fria para dentro, quente para fora.' },
-  { id: 'VF', bornes: [{ b:'+', lado:'base', t:0.35 }, { b:'−', lado:'base', t:0.70 }], nome: '2× ventoinha fria', cor: '#4dabf7', pc: 'PC-1',
-    caixa: [70, 32, 210, 130, 68, 234],
-    diz: 'Sopram para BAIXO — o ar desce pelo centro.' },
-  { id: 'SENS', bornes: [{ b:'VCC', lado:'dir', t:0.15 }, { b:'GND', lado:'dir', t:0.38 },
-              { b:'SDA', lado:'dir', t:0.62 }, { b:'SCL', lado:'dir', t:0.85 }], nome: 'AM2315C', cor: '#f76707', pc: 'PC-2',
-    caixa: [88, 42, 116, 112, 58, 136],
-    diz: '⭐ No centro geométrico, suspenso. Longe da Peltier e do PTC.' },
-  { id: 'VP', bornes: [{ b:'+', lado:'topo', t:0.30 }, { b:'−', lado:'topo', t:0.70 }], nome: 'ventoinha do PTC', cor: '#4dabf7', pc: 'PC-1',
-    caixa: [76, 32, 50, 124, 68, 72],
-    diz: 'Sopra para BAIXO também — o circuito de ar é único.' },
-  { id: 'PTC', bornes: [{ b:'+', lado:'base', t:0.30 }, { b:'−', lado:'base', t:0.70 }], nome: 'PTC 24 V', cor: '#e03131', pc: 'PC-1',
-    caixa: [64, 30, 26, 136, 70, 44],
-    diz: 'Na base, sobre o plenum de 30 mm.' },
-  { id: 'DUT1', bornes: [{ b:'+24 V', lado:'base', t:0.35 }, { b:'retorno', lado:'topo', t:0.75 }], nome: 'Posição 1 (W5W)', cor: '#c92a2a', pc: 'PC-2',
-    caixa: [22, 25, 24, 62, 75, 58],
-    diz: 'Lâmpada W5W (Pingo) 24V 5W — 208 mA.' },
-  { id: 'DUT2', bornes: [{ b:'+24 V', lado:'base', t:0.35 }, { b:'retorno', lado:'topo', t:0.75 }], nome: 'Posição 2 (W5W)', cor: '#c92a2a', pc: 'PC-2',
-    caixa: [138, 25, 24, 178, 75, 58],
-    diz: 'Lâmpada W5W (Pingo) 24V 5W — 208 mA.' },
-  { id: 'VD1', bornes: [{ b:'+', lado:'topo', t:0.35 }, { b:'−', lado:'topo', t:0.70 }], nome: 'vent. entrada duto esq.', cor: '#74c0fc', pc: 'PC-1', fora: true,
-    caixa: [-32, 35, 108, -6, 65, 138],
-    diz: 'Dentro do duto lateral, FORA do volume útil. Sopra para CIMA.' },
-  { id: 'VD2', bornes: [{ b:'+', lado:'topo', t:0.35 }, { b:'−', lado:'topo', t:0.70 }], nome: 'vent. entrada duto dir.', cor: '#74c0fc', pc: 'PC-1', fora: true,
-    caixa: [206, 35, 108, 232, 65, 138],
-    diz: 'Idem à esquerda — o retorno tem que ser simétrico.' },
-];
-
-/* ──────────────────────────────────────────────────────────────────────
-   POR ONDE O FIO ANDA DEPOIS DE ATRAVESSAR A PAREDE
-   ==================================================
-   Faltava isto: a etapa 6 dizia que o fio X1 vai da BTS #1 até a
-   pastilha, mas não dizia por onde ele passa DEPOIS do prensa-cabo. Sem
-   caminho, o desenho parava na parede e o aluno não via a ida nem a volta.
-
-   Tudo em milímetros do volume útil (x = 0 na parede esquerda,
-   z = 0 no piso), do jeito que se mede com a trena na hora de montar:
-
-     lane = corredor rente ao PISO, por onde o fio corre no sentido X
-     sobe = coluna vertical rente à PAREDE, por onde ele ganha altura
-     crz  = altura em que ele deixa a coluna e atravessa até a peça
-
-   ⭐ A COLUNA ABRE 2,6 mm ENTRE FIOS, e não 1,6. Com o espaçamento
-   antigo os seis fios que sobem até a Peltier viravam um borrão de
-   2 px de largura — dava para ver que subia alguma coisa, não O QUÊ.
-   Para caber a folga, as duas posições de ensaio recuaram 8 mm.
-
-   ⭐ POR QUE CADA FIO TEM UM CORREDOR SÓ DELE: dois fios no mesmo
-   corredor viram um risco só no desenho, e aí não dá para conferir na
-   montagem. As alturas foram escolhidas numa ordem que faz o feixe se
-   abrir como um leque — quem vai mais longe corre mais embaixo — e com
-   isso NENHUM fio cruza outro aqui dentro.
-
-   ⚠️ Quem tem `pc` atravessa a parede. Os cinco que faltam nesta lista
-   (X5, X6, X19, X20, X21) são do lado quente, EM CIMA da tampa: sobem
-   por fora e não furam nada.                                            */
-export const ROTAS_CAMARA = {
-  /* ── PC-1 · potência, entra no piso à esquerda ───────────────────── */
-  X2:  { alvo:'PELT.−', pc:'PC-1', gx:44.1, lane: 8.3, sobe: 4.0 },   // Peltier −
-  X1:  { alvo:'PELT.+', pc:'PC-1', gx:43.2, lane: 9.6, sobe: 6.6 },   // Peltier +
-  X9:  { alvo:'VF.+', pc:'PC-1', gx:42.3, lane:10.9, sobe: 9.2, crz:202 },  // circulação +
-  X10: { alvo:'VF.−', pc:'PC-1', gx:41.4, lane:12.2, sobe:11.8, crz:198 },  // circulação −
-  X11: { alvo:'DUT1.+24 V', pc:'PC-1', gx:38.7, lane:16.1 },              // posição 1 +
-  X11b: { alvo:'DUT2.+24 V', pc:'PC-1', gx:37.8, lane:17.4 },             // posição 2 +
-  X4:  { alvo:'PTC.−', pc:'PC-1', gx:46.8, lane:18.7 },              // PTC −
-  X3:  { alvo:'PTC.+', pc:'PC-1', gx:47.7, lane:20.0 },              // PTC +
-
-  /* ── PC-2 · sinal, entra no alto à direita ───────────────────────── */
-  X13: { alvo:'DUT1.retorno', pc:'PC-2', gx:156.1, lane:225.7, sobe:195.6, crz: 94 }, // retorno 1
-  X13b: { alvo:'DUT2.retorno', pc:'PC-2', gx:157.0, lane:227.0, sobe:197.0, crz: 94 }, // retorno 2
-  X15: { alvo:'SENS.VCC', pc:'PC-2', gx:155.2, lane:224.4, sobe:194.2 },          // AM2315C VCC
-  X16: { alvo:'SENS.GND', pc:'PC-2', gx:154.3, lane:223.1, sobe:192.8 },          // AM2315C GND
-  X17: { alvo:'SENS.SDA', pc:'PC-2', gx:153.4, lane:221.8, sobe:191.4 },          // AM2315C SDA
-  X18: { alvo:'SENS.SCL', pc:'PC-2', gx:152.5, lane:220.5, sobe:190.0 },          // AM2315C SCL
+export const UTIL={
+  "x1": 285,
+  "x2": 595,
+  "y1": 129,
+  "y2": 531
 };
-
-/* as emendas feitas DENTRO da câmara, que não são fio vindo do painel */
-export const EMENDAS_CAMARA = [
-  { de:{ p:'VF', b:'+' }, para:{ p:'VD1', b:'+' },
-    diz:'⭐ as 5 internas em paralelo — 1 par de fios para 5 ventoinhas' },
-  { de:{ p:'VF', b:'−' }, para:{ p:'VD1', b:'−' }, diz:'' },
-  { de:{ p:'VF', b:'+' }, para:{ p:'VD2', b:'+' }, diz:'' },
-  { de:{ p:'VF', b:'−' }, para:{ p:'VD2', b:'−' }, diz:'' },
-  { de:{ p:'VF', b:'+' }, para:{ p:'VP', b:'+' },
-    diz:'🔧 A ventoinha do PTC entrou nesta emenda. Ela tinha canal e par próprios '
-      + '(fios X7/X8) para continuar girando depois do aquecedor — não '
-      + 'precisa: o PTC é AUTO-LIMITADO, sem fluxo de ar a resistência sobe e ele '
-      + 'corta a própria potência. Saíram 2 condutores da parede e o pino D28 '
-      + 'do Mega.' },
-  { de:{ p:'VF', b:'−' }, para:{ p:'VP', b:'−' }, diz:'' },
-];
+/* ⚠️ ATENÇÃO — ESTE ENVELOPE NÃO É O DA CÂMARA DO PROJETO.
+   200 × 100 × 250 = 5,0 L. A câmara real tem 300 × 200 × 250 = 15,0 L
+   (ver cad_corte/parametros_v11.py). Este envelope é herança de uma versão
+   antiga de 5 L, e é por isso que as peças cabem aqui com folga e o desenho
+   não bate com o CAD. Redesenhar a vista em escala é trabalho pendente:/n   exige reposicionar 12 peças, os 2 prensa-cabos e recalcular as 26 rotas.
+   NÃO "conserte" o CAD para bater com isto — o CAD é a verdade. */
+export const UTIL3D={
+  "w": 200,
+  "d": 100,
+  "h": 250
+};

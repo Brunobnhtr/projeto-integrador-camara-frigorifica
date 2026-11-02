@@ -4,10 +4,10 @@ Curso Técnico em Eletrotécnica · maquete funcional de uma **planta industrial
 
 📖 **Comece por aqui: [`00_indice_projeto.md`](00_indice_projeto.md)** — índice completo, na ordem de construção.
 
-🔩 **Vai montar?** Abra o aplicativo (`cd painel_interativo && npm run dev`) e vá direto em
-**Guia de montagem** — 31 passos, da bancada ao ensaio final, cada um com o que pegar, o que
-fazer e **o que medir para provar que ficou certo** — e em **Componentes soltos**, que mostra
-desenhado onde cada resistor, diodo e LED do projeto se liga.
+🔩 **Vai montar?** Abra o aplicativo (`cd painel_interativo && npm run dev`) e consulte
+**Guia de montagem** e **Componentes soltos**. O guia marca explicitamente os pontos
+bloqueados: conversores T2/T3 e o ramal do PTC não estão liberados para compra ou
+energização até validar modelos, proteções, corte DC e condutores.
 
 ---
 
@@ -31,25 +31,28 @@ desenhado onde cada resistor, diodo e LED do projeto se liga.
 ## Arquitetura de energia (resumo)
 
 ```
-127 V AC ─[Disj. 2P 6A]─[Chave 0-1]─► FONTE 24 Vcc 240 W    (SUBESTAÇÃO)
-                    ┌───────────────────┼───────────────────┐
-                 [F1 10A]            [F2 2A]             [F3 2A]
-                    ▼                   ▼                   ▼
-              P1 · DERIVAÇÃO       T2 · LM2596 📟      T3 · LM2596 📟
-              24 V PASSANTE        24 V → 5,10 V       24 V → 12,0 V
-                    │                   │                   │
-        BTS #1 → 2× Peltier série  Arduino/tela        fans · coolers
-        BTS #2 → PTC 24 V          SD/RTC/PI-1         LEDs · ESP32
+127 V AC ─[Q0]─► PS1: 24 Vcc / 10 A / 240 W
+                    ├── BD-POT (24 V, comutado por KM1) ── BTS1 ── 2× Peltier
+                    ├── T2 proposto: 24→5,0 V / 5 A ── BD-5V (modelo pendente)
+                    └── T3 proposto: 24→12 V / 20 A ── serviços 12 V (modelo pendente)
+                                                       └── ramal PTC 12 V/50 W
+                                                           corte DC/F3/fiação pendentes
 ```
 
 ⚡ Os **127 V AC existem apenas dentro da casa de comando — fechada e aparafusada**, no pátio da subestação. Tudo que o público toca opera em **24 Vcc ou menos (SELV)**.
 
 | Grandeza | Valor |
 |---|---|
-| Consumo calculado | ≈ 166 W · 6,9 A @ 24 V |
+| Consumo do simulador | **estimativa do modelo**; rendimento dos conversores não confirmado |
 | Refrigeração | 2× TEC1-12706 **em série** · 24 V · 144 W |
-| Aquecimento | PTC cerâmico 24 V · 80 W |
+| Aquecimento | **Proposta** PTC 12 V · 50 W; sem aprovação para compra ou energização |
+| Conversores | T2 5,0 V/5 A e T3 12 V/20 A propostos; modelos e fichas pendentes |
 | Controle | Arduino Mega 2560 (PID, PWM 1 Hz) + ESP32 (MQTT) |
+
+> ⛔ A proposta do PTC exige um ramal de 12 V separado das ventoinhas e um
+> dispositivo de corte DC independente. KM1 corta BD-POT/24 V e **não** desliga
+> esse novo ramal. Não comprar nem energizar até definir corte, F3, condutores e
+> proteções e validar as fichas dos conversores.
 
 ---
 

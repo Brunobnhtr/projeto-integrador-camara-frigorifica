@@ -16,6 +16,12 @@ O firmware faz três coisas, e só três:
 
 O resto do documento é o detalhamento disso.
 
+> ⚠️ **Status do artefato:** este documento reúne trechos e exemplos de firmware; não
+> existe aqui um único sketch `.ino` consolidado e compilado para o Mega 2560. As
+> sequências de pinos, timers, chamadas e dependências precisam ser reunidas e
+> verificadas numa fonte compilável antes de afirmar que correspondem ao firmware
+> implantado. A simulação JavaScript não compila nem valida C++/AVR.
+
 ### O que é um PID, sem matemática
 
 Imagine dirigir mantendo 60 km/h. Você não pisa 100 % no acelerador nem tira o pé — você **dosa**. E dosa olhando três coisas:
@@ -28,15 +34,16 @@ Imagine dirigir mantendo 60 km/h. Você não pisa 100 % no acelerador nem tira o
 
 O PID é isso. **É um motorista automático para temperatura**, e as letras são só três formas de olhar o mesmo erro.
 
-### Por que o PWM é lento (1 vez por segundo)
+### PWM de alta frequência: 20 kHz nos timers do Mega
 
 **PWM** é a forma de entregar "meia potência" a algo que só sabe ligar e desligar: você liga e desliga muito rápido, e a média dá o valor intermediário. É como piscar uma lâmpada rápido demais para o olho ver — parece meia luz.
 
-O Arduino faz isso naturalmente **490 vezes por segundo**. Para a nossa Peltier, isso é péssimo:
-
-> Cada liga-desliga dá um pequeno **choque térmico** na pastilha. A 490 Hz são 490 choques por segundo — milhares de ciclos que a fadigam e descolam as junções internas. O fabricante recomenda corrente contínua ou chaveamento **muito lento**.
-
-Então chaveamos em **20 kHz** — rápido o bastante para a pastilha ver corrente constante, acima da audição e dentro do limite do BTS7960. ⚠️ **A versão anterior usava 1 Hz, e estava errada:** 1 Hz é justamente a velocidade que faz a junção da pastilha ciclar termicamente. O porquê está na §40.5.
+O Arduino faz isso naturalmente **490 vezes por segundo**. Para reduzir a ciclagem térmica da junção da Peltier, a proposta usa **20 kHz**: a inércia
+térmica filtra a portadora, enquanto o duty controla a potência média. A justificativa e as
+limitações estão na §40.5; isso não comprova o comportamento do módulo físico, que ainda
+depende de validação do driver e da medição em bancada. ⚠️ A versão anterior usava 1 Hz, o
+que pode produzir ciclos térmicos da junção; não confundir a frequência de PWM com o período
+de atualização do PID, que permanece em 1 s.
 
 ### O que é uma máquina de estados
 
@@ -62,7 +69,7 @@ E existe uma regra que atravessa tudo:
 | 1 | **RPM dos coolers** | Peltier sem dissipação queima em < 1 min. Cooler parado = desliga na hora |
 | 2 | **Intertravamento** | Peltier e PTC ligadas juntas — brigariam, gastando energia para nada |
 | 3 | **Watchdog** | Programa travado. Se ele não "der sinal de vida" em 2 s, o processador reinicia |
-| 4 | **Diagnóstico de corrente (IS)** | Atuador desconectado ou queimado — duty alto com corrente zero |
+| 4 | **Diagnóstico de corrente (IS)** | Tentativa de identificar corrente fora do comando; depende da resposta de IS, que não é garantida com a chave inativa |
 
 > 🎯 **O watchdog só funciona por causa de um resistor.** Quando o Arduino reinicia, os pinos viram entrada e ficam "soltos". Se não houvesse o resistor de pull-down puxando o `R_EN` para zero, o driver poderia ficar num estado indefinido justamente durante o reset. O software e o hardware se protegem **juntos** — ver [Doc 33](../camada_3_eletrica/33_placa_interface_componentes.md).
 
@@ -91,14 +98,14 @@ E existe uma regra que atravessa tudo:
 |---|---|---|
 | 1 | **RPM migrou de D13 para D3** | D13 **não é pino de interrupção** no Mega — a proteção nunca funcionou ([Doc 32 §32.1](../camada_3_eletrica/32_sinais_e_sensores.md)) |
 | 1b | ⭐ **Segundo canal de RPM em A8 (PCINT16)** | Com **2 Peltier em série** são 2 dissipadores e 2 coolers. Como só o D3 sobrou entre as interrupções externas, o 2º tacômetro entra por interrupção de mudança de pino (§40.7) |
-| 1c | ⭐ **Divisor do D25 mudou para 22 k / 4,7 k** | O BD-POT passou de 12 V para **24 V**. Com os resistores antigos chegariam **7,67 V** no pino e a entrada seria danificada ([Doc 33](../camada_3_eletrica/33_placa_interface_componentes.md)) |
+| 1c | ⭐ **D25/divisor removidos da arquitetura atual** | A tensão de BD-POT é medida no canal V1 do N4AIC24 e lida via Modbus RTU/RS-485; não existe mais divisor analógico no Mega |
 | 2 | **Corte de potência pelo `R_EN` + pull-down + watchdog** | O firmware desabilita os drivers, e o pull-down garante que um Arduino resetado deixe tudo desligado |
-| 3 | **Novo pino D25 ← realimentação do K1** | O firmware passa a **saber** se a potência está realmente armada |
+| 3 | **N4AIC24 V1 ← BD-POT** | A confirmação de potência depende de uma leitura Modbus válida e recente; timeout, validade e ciclo de consulta precisam ser confirmados no firmware real |
 | 4 | **STOP passa a ser lido como NA** | A versão anterior declarava NF mas testava `LOW` como "pressionado" — logicamente inconsistente |
 | 5 | **PID com saída bipolar (−100 a +100)** | Uma única malha resolve frio e quente; o sinal da saída escolhe o atuador |
 | 6 | **Ciclo de degelo** | Sem ele, o gelo na placa fria degrada a refrigeração ao longo da operação |
 | 7 | **Máquina de estados explícita** | A versão anterior usava flags soltas (`processoAtivo`, `estadoEmergencia`), difíceis de auditar |
-| 8 | **Leitura do IS sincronizada com o PWM** | Ler a corrente enquanto o PWM está desligado sempre retorna zero |
+| 8 | **Leitura de corrente pelo duty registrado** | O estado do canal vem de `dutyAtual`; `digitalRead()` no pino OC não mede o duty e conflita com o PWM de hardware |
 | 9 | **Acionamento em cadeia única** | STOP e EMERGÊNCIA cortam em **hardware** e derrubam o mesmo selo; o STOP normal também funciona **pela IHM**. Religar a potência é sempre o botão verde S1, que o firmware nem lê |
 | 10 | **Watchdog habilitado** | Sem ele, um travamento deixaria a Peltier ligada. Com ele, o Mega reseta em 2 s e os pull-downs desligam os drivers |
 | 11 | **Pull-down de 10 kΩ em cada `R_EN`** | Garante que **pino flutuante = driver desligado**. É o que torna o watchdog realmente eficaz |
@@ -135,6 +142,12 @@ E existe uma regra que atravessa tudo:
 
 ## 40.3 Definições e pinagem
 
+> ⛔ **A pinagem não libera o circuito de potência do BTS2.** A proposta mudou o PTC
+> para 12 V/50 W, mas o ramal protegido, o corte DC independente e sua relação com
+> STOP/emergência ainda não foram projetados nem selecionados. KM1 corta BD-POT
+> (Peltier/24 V), não o novo BD-PTC permanente. Não ligar BTS2 diretamente ao T3
+> nem considerar A1/IS ou o trip de firmware como corte físico validado.
+
 ```cpp
 // ============================================================
 //  MINI CÂMARA FRIGORÍFICA — PROJETO INTEGRADOR
@@ -148,11 +161,11 @@ E existe uma regra que atravessa tudo:
 #include <SD.h>
 #include <PID_v1.h>
 
-// ---------- ATUADORES (BTS7960) — ALIMENTADOS EM 24 V ----------
+// ---------- ATUADORES (BTS7960) — RAMAIS DE POTÊNCIA DISTINTOS ----------
 #define BTS1_RPWM     5    // 2x PELTIER EM SERIE (FRIO)  24 V / 6,0 A - PWM 20 kHz (Timer3)
 #define BTS1_REN      4    // Peltier  enable
 #define BTS1_IS      A0    // Peltier  diagnóstico de corrente (cap 100 nF na PI-1)
-#define BTS2_RPWM     6    // PTC 24 V (QUENTE)            24 V / 3,3 A - PWM 20 kHz (Timer4)
+#define BTS2_RPWM     6    // PTC proposto 12 V / 50 W     ~4,17 A - PWM 20 kHz (Timer4)
 #define BTS2_REN      7    // PTC      enable
 #define BTS2_IS      A1    // PTC      diagnóstico de corrente (cap 100 nF na PI-1)
 
@@ -167,7 +180,10 @@ E existe uma regra que atravessa tudo:
 // ---------- COMANDO ----------
 #define BTN_STOP     23    // bloco NA  -> LOW = pressionado
 #define BTN_EMERG    24    // bloco NF  -> HIGH = EMERGENCIA ACIONADA
-#define POTENCIA_OK  25    // divisor 22k/4k7 do BD-POT -> HIGH = 24 V presente
+// V1 chega por Modbus no N4AIC24; não é uma entrada digital/analógica do Mega.
+float tensaoV1BdPot = 0.0f;
+unsigned long tV1AtualizadaMs = 0;
+bool v1Recebida = false;
 // D22 e D26 ficaram LIVRES:
 //   D22 era o botao START verde -- o START passou para a IHM.
 //   D26 era a seletora LOCAL/REMOTO -- removida. A regra que dava
@@ -237,9 +253,12 @@ inline void radiador(bool ligar) { digitalWrite(VENT_RADIADOR, ligar ? LOW : HIG
 // Desabilita os dois drivers imediatamente. É o corte de potência do software.
 // BTS1_REN comanda R_EN E L_EN do modulo 1 (ligados no mesmo pino).
 // Nivel baixo desabilita as DUAS metades da ponte -> nenhuma corrente.
+void zerarDuty(uint8_t canal);
 inline void desabilitarDrivers() {
-    digitalWrite(BTS1_REN, LOW);   digitalWrite(BTS1_RPWM, LOW);
-    digitalWrite(BTS2_REN, LOW);   digitalWrite(BTS2_RPWM, LOW);
+    digitalWrite(BTS1_REN, LOW);
+    digitalWrite(BTS2_REN, LOW);
+    zerarDuty(0);
+    zerarDuty(1);
 }
 
 // ⭐ Corte FISICO e RETENTIVO. Abre o KA1 -> a bobina do KM1 perde o
@@ -256,7 +275,6 @@ inline void cortarPotencia()    { digitalWrite(HAB_POTENCIA, LOW);
 inline void autorizarPotencia() { digitalWrite(HAB_POTENCIA, HIGH); }
 
 // ---------- PARÂMETROS DE PROCESSO ----------
-const uint16_t      PWM_TOP            = 799;           // 20 kHz nos Timers 3 e 4
 const unsigned long INTERVALO_TROCA_MS = 30000;         // 30 s entre frio<->quente
 const double        BANDA_MORTA        = 5.0;           // % de duty (~0,6 °C com Kp=8)
 const double        DUTY_MAXIMO        = 95.0;          // limite de segurança
@@ -289,8 +307,7 @@ const double        DEGELO_DUTY         = 20.0;            // PTC em 20 %
 > | Grupo | Pino | Liga quando | Desliga quando |
 > |---|---|---|---|
 > | **RADIADOR** (2, lado quente) | ⭐ **D30** | a Peltier está resfriando **ou** o dissipador está quente | o **DS18B20** dizer que voltou perto da ambiente |
-> | **PTC** (1, no aquecedor) | D28 | está **aquecendo** ou em degelo | **2 min** depois de parar de aquecer |
-> | **CIRCULAÇÃO** (2 frias + 2 do duto) | D29 | ensaio rodando, **frio ou quente** | fim do ensaio, na hora |
+> | **INTERNAS** (5, incluindo PTC) | **D29 / KA3** | ensaio rodando, **frio ou quente** | fim do ensaio no firmware atual; pós-ventilação pendente |
 >
 > ⚠️ **Os três comportamentos só existem a partir da revisão de §40.10.** Antes, os pinos D28 e D29 estavam apenas `#define`ados e nenhuma linha do firmware escrevia neles — **as ventoinhas comandadas não giravam nunca** — e o radiador não tinha pino algum: girava sem parar enquanto o painel estivesse energizado.
 >
@@ -300,21 +317,21 @@ const double        DEGELO_DUTY         = 20.0;            // PTC em 20 %
 >
 > O MV-1 é um módulo de MOSFET canal N: ele chaveia o **negativo**. E o terceiro fio da ventoinha — o tacômetro — é um transistor em coletor aberto cujo emissor está ligado a esse mesmo negativo. Com o canal desligado, o preto da ventoinha sobe para perto de 12 V e empurra corrente pelo diodo de proteção do pino `D3` do Mega. E antes disso, a leitura já mentia: **canal desligado = "ventoinha parada"**, que é exatamente o alarme que existe para salvar a pastilha.
 >
-> **Elas ficaram permanentemente ligadas, direto no BD-AUX.** O custo é o que este documento apontava: uns 5 W a mais e um pouco de fuga térmica enquanto o PTC trabalha. A conta: a pastilha desligada conduz ~0,5 W/K, e ventilar o dissipador muda a diferença de temperatura em uns 5 K — **uns 2,5 W de fuga a mais, contra um PTC de dezenas de watts.** Atrasa o aquecimento em alguma coisa; não impede.
+> **Histórico — arquitetura substituída:** nesta revisão anterior, as ventoinhas externas ficaram permanentemente ligadas direto no BD-AUX. O projeto vigente usa o contato NF do KA2 para comandá-las pelo positivo; não trate a ligação permanente como configuração atual.
 >
-> Em troca: os dois tacômetros passam a ter uma referência que nunca se mexe, o lado quente continua ventilado **até depois da emergência** (o BD-AUX não passa pelo KM1), e o firmware tem um modo de falha a menos.
+> Na arquitetura antiga, deixar as ventoinhas diretas no BD-AUX mantinha os dois tacômetros referenciados e o radiador ventilando após a emergência, mas não permitia desligá-los. A arquitetura vigente usa o KA2 no positivo e supervisiona os tacômetros quando o radiador está comandado, inclusive na pós-ventilação.
 >
-> 🎁 **Se um dia quiser o comando de volta:** ventoinha de **4 fios (PWM)**. Nela o preto é 0 V de verdade, o tacômetro tem referência fixa, e o controle entra por um quarto fio — aí sim de um pino PWM do Mega, sem tocar no circuito de potência.
+> A alternativa de ventoinha de **4 fios (PWM)** citada em revisões anteriores continua sendo apenas uma opção de projeto; não é necessária para o comando por KA2 adotado atualmente.
 >
-> **⭐ Por que a ventoinha não desliga junto com a carga: a PÓS-VENTILAÇÃO.** Quando o ensaio acaba, o dissipador ainda está cheio de calor armazenado. Cortar a ventoinha ali deixa esse calor voltar por condução — no caso da Peltier, atravessando a própria pastilha no sentido errado, que é o que mais encurta a vida dela. Então a ventoinha continua girando até o dissipador esfriar.
+> **⭐ Por que o radiador pode continuar ligado após a carga: a pós-ventilação.** Quando o ensaio acaba, o dissipador da Peltier ainda pode estar quente. O KA2 mantém as ventoinhas do radiador comandadas enquanto a leitura do DS18B20 indicar calor; isso é diferente da ventoinha do PTC, que faz parte do grupo interno KA3.
 >
 > 🔧 **A implementação está em [§40.10 · gerenciarVentoinhas()](#-as-ventoinhas--quem-liga-quem-para-e-quem-nunca-para), e mudou de critério.** A versão anterior desta nota trazia uma `precisaPosVentilar()` que comparava a temperatura do dissipador com a ambiente — mas **a função nunca foi chamada por ninguém**, e ela pressupunha um *"segundo DS18B20"* que não existe: o [Doc 32 §32.1](../camada_3_eletrica/32_sinais_e_sensores.md) usa o **único** DS18B20 do projeto no dissipador do lado quente da Peltier, e não há sensor nas aletas do PTC.
 >
-> Como a única ventoinha que ainda precisa de pós-ventilação comandada é a do PTC — e ela não tem sensor —, **a pós-ventilação passou a ser por tempo: 2 minutos.** Some o sensor inexistente, some a rede de segurança `POS_VENT_MAX` que existia só para tapar o travamento desse sensor, e some um modo de falha.
+> A ventoinha do PTC compartilha o KA3 com as outras quatro ventoinhas internas. O firmware atual desliga o grupo ao sair de `RODANDO`; não há pós-ventilação implementada. Nem os dois minutos citados em versões anteriores nem o desligamento imediato estão validados termicamente: medir a temperatura do corpo do PTC e do acrílico após STOP e emergência antes de definir o critério. O modelo atual não calcula o calor residual local do aquecedor.
 >
-> **O DS18B20 do dissipador continua útil**, só que para outra coisa: acender o aviso *"DISSIPADOR QUENTE — NÃO DESLIGUE A CHAVE GERAL"* na tela.
+> **O DS18B20 do dissipador continua útil**, inclusive para alertar sobre o calor residual do radiador da Peltier. A mensagem da tela não deve desencorajar o isolamento: em risco elétrico ou térmico imediato, interrompa/isole a alimentação conforme o procedimento de emergência.
 >
-> ✅ **A pós-ventilação sobrevive à emergência**, e isso foi de graça: os 12 V das ventoinhas vêm do **BD-AUX** e o Arduino do **BD-5V** — os dois são barramentos permanentes, que não caem com o KM1. Ou seja, alguém pode socar o cogumelo com a câmara a 60 °C e as ventoinhas continuam tirando o calor.
+> ✅ **A pós-ventilação do radiador sobrevive à emergência** enquanto Arduino, BD-AUX e BD-5V permanecerem ativos. Isso não vale para o grupo interno: a ventoinha do PTC compartilha o KA3 com as outras quatro internas e o firmware atual as desliga ao sair de `RODANDO`. O calor residual do PTC e do acrílico após STOP/emergência continua sem avaliação. Em parada operacional normal, sem perigo imediato, siga o procedimento de resfriamento que vier a ser validado; diante de risco elétrico ou térmico imediato, priorize a interrupção e o isolamento da alimentação conforme o procedimento de emergência, sem aguardar pela ventilação.
 
 
 ---
@@ -439,27 +456,39 @@ const uint8_t PASSO_RAMPA = 5;         // % por atualizacao
 uint8_t dutyAtual[2] = { 0, 0 };
 
 void aplicarDuty(uint8_t canal, uint8_t alvo) {
+    if (canal > 1) { dispararTrip("PWM_CANAL_INVALIDO"); return; }
+    alvo = min(alvo, (uint8_t)100);
     uint8_t &atual = dutyAtual[canal];
-    if      (alvo > atual) atual = min(alvo, (uint8_t)(atual + PASSO_RAMPA));
-    else if (alvo < atual) atual = (atual > PASSO_RAMPA) ? atual - PASSO_RAMPA : 0;
+    if (alvo > atual) atual = min(alvo, (uint8_t)(atual + PASSO_RAMPA));
+    else if (alvo < atual)
+        atual = (atual - alvo > PASSO_RAMPA) ? atual - PASSO_RAMPA : alvo;
 
     uint16_t conta = (uint32_t)atual * PWM_TOP / 100;
     if (canal == 0) OCR3A = conta;     // Peltier
     else            OCR4A = conta;     // PTC
 }
+
+// Parada imediata: primeiro desabilitar R_EN/L_EN; depois zerar o comparador
+// sem digitalWrite() no pino OC, que desconectaria a saída PWM do timer.
+void zerarDuty(uint8_t canal) {
+    if (canal == 0) { OCR3A = 0; dutyAtual[0] = 0; }
+    else if (canal == 1) { OCR4A = 0; dutyAtual[1] = 0; }
+}
 ```
 
 ### O que isso mudou na leitura de corrente
 
-O `IS` de cada BTS7960 entrega uma corrente proporcional à da carga, e o módulo IBT-2 já traz
-~1 kΩ nesse pino. Com o **100 nF** da PI-1 (C1 e C2), o filtro corta em
+O `IS` de cada BTS7960 pode fornecer um sinal proporcional à corrente da chave high-side ativa,
+conforme as condições da ficha técnica; não se presume leitura válida quando a chave está inativa.
+O módulo IBT-2 é descrito como trazendo ~1 kΩ nesse pino. Com o **100 nF** indicado em A0/A1,
+o filtro RC nominal seria
 `1 / (2π × 1 kΩ × 100 nF) ≈ 1,6 kHz` — doze vezes abaixo da portadora.
 
-| | PWM de 1 Hz | PWM de 20 kHz |
+| | PWM antigo a 1 Hz (retirado) | PWM proposto a 20 kHz |
 |---|---|---|
-| O que o A0 lia | o valor **instantâneo**, e só valia dentro do tempo ligado | a **média** da corrente |
-| Papel do capacitor | filtrar ruído captado pelo cabo | ⭐ **integrar a corrente picotada** — virou parte da medição |
-| Cuidado no firmware | amostrar sincronizado com a janela | nenhum: pode ler a qualquer momento |
+| O que o A0/A1 podem ler | O sinal `IS` sob as condições da chave high-side indicadas pelo fabricante | O sinal filtrado; confirmar escala, banda e condição de validade em bancada |
+| Papel do capacitor | filtragem analógica do sinal `IS` | Não comprova por si só a corrente no ramal nem operação do IS com a chave inativa |
+| Cuidado no firmware | interpretar `IS` conforme estado/capacidade da saída | uma leitura zero fora das condições especificadas não é prova de corrente zero |
 
 > ⭐ **O C1 e o C2 ficaram mais importantes com esta mudança, não menos.** Sem eles, a 20 kHz o
 > A/D lê um pedaço qualquer da onda e o diagnóstico de corrente vira ruído.
@@ -521,45 +550,43 @@ void selecionarModo() {
 }
 
 void desligarTudo() {
-    digitalWrite(BTS1_REN, LOW);   digitalWrite(BTS1_RPWM, LOW);
-    digitalWrite(BTS2_REN, LOW);   digitalWrite(BTS2_RPWM, LOW);
+    digitalWrite(BTS1_REN, LOW);
+    digitalWrite(BTS2_REN, LOW);
+    zerarDuty(0);
+    zerarDuty(1);
     digitalWrite(LED_COOL, LOW);   digitalWrite(LED_HEAT, LOW);
 
-    // ⭐ Todas as internas param junto com o ensaio.
-    //   O PTC nao precisa de pos-ventilacao: ele e AUTO-LIMITADO -- sem
-    //   fluxo de ar a resistencia sobe e ele corta a propria potencia.
-    //   Quem continua ventilando e so o RADIADOR, pelo KA2, enquanto o
-    //   DS18B20 disser que o dissipador esta quente.
+    // O grupo interno inteiro, incluindo a ventoinha do PTC, para no STOP.
+    // Pos-ventilacao ainda nao foi definida: exige ensaio de calor residual.
     digitalWrite(VENT_INTERNAS, LOW);
 }
 
 void aplicarPotencia() {
-    atualizarJanelaPWM();
     double duty = min(fabs(saidaPID), DUTY_MAXIMO);
 
     switch (modo) {
 
       case RESFRIAMENTO:
         digitalWrite(BTS2_REN, LOW);      // ⚠ PTC desabilitado PRIMEIRO
-        digitalWrite(BTS2_RPWM, LOW);
+        zerarDuty(1);
         digitalWrite(BTS1_REN, HIGH);
-        digitalWrite(BTS1_RPWM, pwmLentoAtivo(duty));
+        aplicarDuty(0, duty);
         digitalWrite(LED_COOL, HIGH);  digitalWrite(LED_HEAT, LOW);
         break;
 
       case AQUECIMENTO:
         digitalWrite(BTS1_REN, LOW);      // ⚠ Peltier desabilitada PRIMEIRO
-        digitalWrite(BTS1_RPWM, LOW);
+        zerarDuty(0);
         digitalWrite(BTS2_REN, HIGH);
-        digitalWrite(BTS2_RPWM, pwmLentoAtivo(duty));
+        aplicarDuty(1, duty);
         digitalWrite(LED_HEAT, HIGH);  digitalWrite(LED_COOL, LOW);
         break;
 
       case DEGELO:
         digitalWrite(BTS1_REN, LOW);
-        digitalWrite(BTS1_RPWM, LOW);
+        zerarDuty(0);
         digitalWrite(BTS2_REN, HIGH);
-        digitalWrite(BTS2_RPWM, pwmLentoAtivo(DEGELO_DUTY));
+        aplicarDuty(1, DEGELO_DUTY);
         digitalWrite(LED_HEAT, HIGH);  digitalWrite(LED_COOL, HIGH);  // ambos = degelo
         break;
 
@@ -623,29 +650,42 @@ void medirRPM() {
     //   a PÓS-VENTILAÇÃO, que antes ficava sem ninguém olhando.
     //   O tempo de partida conta do COMANDO do radiador, não do início
     //   do resfriamento: é a ventoinha que precisa acelerar.
-    if (!radiadorLigado || estado == EMERGENCIA) return;
-    if (millis() - inicioRadiador < TEMPO_PARTIDA_FAN) return;
+    if (!radiadorLigado || estado == EMERGENCIA) {
+        avisoPosVent[0] = '\0';
+        return;
+    }
+    if (millis() - inicioRadiador < TEMPO_PARTIDA_FAN) {
+        avisoPosVent[0] = '\0';
+        return;
+    }
 
     bool parada1 = (rpmAtual1 < RPM_MINIMA);
     bool parada2 = (rpmAtual2 < RPM_MINIMA);
-    if (!parada1 && !parada2) return;
+    if (!parada1 && !parada2) {
+        avisoPosVent[0] = '\0';
+        return;
+    }
 
     if (modo == RESFRIAMENTO && estado == RODANDO) {
         // A pastilha está gerando calor AGORA: corta.
         if (parada1) dispararTrip("FAN1_PARADA");
         if (parada2) dispararTrip("FAN2_PARADA");
     } else {
-        // ⭐ PÓS-VENTILAÇÃO: não há o que cortar — a potência já caiu.
-        //   Mas o dissipador está quente e o calor está voltando pela
-        //   pastilha desligada. Isso é ALARME, e tem de aparecer.
-        strncpy(alerta, parada1 ? "FAN1_POSVENT" : "FAN2_POSVENT",
-                sizeof(alerta) - 1);
+        // ⭐ AVISO DE RPM FORA DO RESFRIAMENTO: não é trip automático.
+        //   A potência pode continuar disponível após STOP pela IHM;
+        //   driver desabilitado não equivale a BD-POT isolado.
+        strncpy(avisoPosVent, parada1 ? "FAN1_POSVENT" : "FAN2_POSVENT",
+                sizeof(avisoPosVent) - 1);
         digitalWrite(LED_FAULT, HIGH);
     }
 }
 ```
 
-> 📌 **Identifique QUAL fan parou no alarme.** `FAN1_PARADA` e `FAN2_PARADA` como motivos distintos economizam muito tempo de diagnóstico — e aparecem na tela e no log do SD, o que é ótimo material para o relatório de ensaios.
+> 📌 **Aviso de pós-ventilação é um estado ativo, separado do alarme principal.**
+> Ele não substitui recusas de partida ou trips; desaparece quando RPM volta ou quando
+> o radiador deixa de ser comandado. A transição para/desde o aviso deve permanecer no
+> histórico de eventos. `FAN1_PARADA` e `FAN2_PARADA` continuam sendo os motivos de trip
+> durante resfriamento.
 
 ### O trip: cortar a potência em HARDWARE
 
@@ -653,7 +693,7 @@ void medirRPM() {
 void dispararTrip(const char* motivo) {
     desabilitarDrivers();              // 1º — corta o comando dos dois drivers
     cortarPotencia();                  // 2º — ⚡ e ABRE O KM1: corte FÍSICO
-                                       //      ⭐ e agenda a CONFERÊNCIA pelo D25
+                                       //      ⭐ e agenda confirmação por V1/Modbus
     desligarTudo();
     digitalWrite(LED_RUN, LOW);
     digitalWrite(LED_FAULT, HIGH);
@@ -666,21 +706,25 @@ void dispararTrip(const char* motivo) {
 
 > ### ⭐ E o corte agora é CONFERIDO, não suposto
 
-Mandar cortar e acreditar que cortou são coisas diferentes — e o painel já tinha
-o fio que responde: o **`D25`** lê se os 24 V continuam no BD-POT. Ele era usado
-só como pré-condição do START; passa a fechar a malha também no corte.
+Mandar cortar e acreditar que cortou são coisas diferentes. O canal **V1 do
+N4AIC24** mede BD-POT e envia a leitura pelo Modbus RTU/RS-485. A confirmação
+precisa usar uma amostra posterior ao pedido de corte; leitura ausente, inválida
+ou expirada não pode ser interpretada como 0 V.
 
 ```cpp
 unsigned long tCorte = 0;
 bool          conferirCorte = false;
 
-// ⚠ CHAMADA EM TODO LOOP. O KA1 desatraca em ~10 ms e o KM1 em ~20 ms;
-//   150 ms é folga generosa para os dois, sem travar nada esperando.
+// ⚠ A confirmação depende do próximo ciclo de leitura Modbus válido.
+//   Os tempos desta simulação são hipóteses; medir e configurar no firmware real.
 void conferirCortePotencia() {
-    if (!conferirCorte || millis() - tCorte < 150) return;
+    if (!conferirCorte || !leituraV1NovaApos(tCorte)) return;
     conferirCorte = false;
 
-    if (potenciaDisponivel()) {          // ⛔ mandei cortar e a energia FICOU
+    if (!leituraV1Valida()) {
+        strncpy(alerta, "CORTE_NAO_CONFIRMADO", sizeof(alerta) - 1);
+        digitalWrite(LED_FAULT, HIGH);
+    } else if (potenciaDisponivel()) {
         strncpy(alerta, "CORTE_FALHOU", sizeof(alerta) - 1);
         digitalWrite(LED_FAULT, HIGH);
         // Nao ha segundo canal: o firmware ja fez tudo o que podia.
@@ -714,9 +758,16 @@ void conferirCortePotencia() {
 >
 > Na prática, um trip por fan parada baixava o `R_EN` e nada mais. **Se o BTS7960 tivesse um MOSFET em curto** — que é o modo de falha típico de MOSFET de potência — a Peltier continuaria a 100 % com o LED de falha aceso, e só o STOP físico ou o cogumelo a parariam.
 >
-> O `cortarPotencia()` acima torna a frase verdadeira: ele abre o **KA1**, a bobina do **KM1** perde o retorno e o **contato de potência** do KM1 abre — junto com o selo, que é o que torna o corte retentivo. O corte é galvânico e acontece **a montante do BTS** — então independe de o driver estar são. Ver [Doc 31 §31.13](../camada_3_eletrica/31_comando_e_protecoes.md).
+> O `cortarPotencia()` comanda a abertura do **KA1**; se o circuito e os contatos do
+> **KM1** funcionarem, a bobina perde o retorno e o contato de potência abre a montante
+> do BTS. Isso pode interromper corrente apesar de um driver em curto, mas não cobre um
+> contato KM1 soldado: nesse caso o simulador mantém BD-POT e corrente após o trip. O
+> corte físico e a redundância para esse modo de falha não estão validados. Ver
+> [Doc 31 §31.13](../camada_3_eletrica/31_comando_e_protecoes.md).
 >
-> 📌 **A ordem importa:** desabilitar os drivers **antes** de abrir o KM1 faz o contato interromper uma corrente já próxima de zero. Abrir sob 6 A queimaria o contato em poucas dezenas de operações.
+> 📌 **A ordem importa:** o firmware desabilita os drivers antes de comandar o corte do
+> KM1. Isso não garante corrente zero no contato; o componente deve ser dimensionado para
+> a carga em corrente contínua e a sequência física precisa ser ensaiada.
 
 ---
 
@@ -738,10 +789,10 @@ Verificação: a 6 A → 145 contagens → resolução de ~0,04 A. Adequado.
 ```cpp
 const float FATOR_CORRENTE = 0.0415;   // A/contagem — CALIBRAR na prática
 
-// ⚠️ Só faz sentido ler enquanto o PWM está LIGADO.
-// Lendo durante o tempo desligado, o resultado é sempre zero.
-float lerCorrente(int pinoIS, int pinoPWM) {
-    if (digitalRead(pinoPWM) == LOW) return -1.0;   // −1 = "não medido agora"
+// Só usa a medição de carga quando há duty comandado no canal.
+// Não leia o pino OC com digitalRead(): o timer gera ali o PWM de hardware.
+float lerCorrente(uint8_t pinoIS, uint8_t canal) {
+    if (canal > 1 || dutyAtual[canal] == 0) return -1.0; // não medido nesta janela
     long soma = 0;
     for (int i = 0; i < 8; i++) soma += analogRead(pinoIS);   // média de 8 amostras
     return (soma / 8.0) * FATOR_CORRENTE;
@@ -770,10 +821,10 @@ void verificarCarga(float i, double duty) {
 > quando mandou DESLIGAR.** E o modo de falha típico de MOSFET de potência é justamente o
 > **curto** — o driver fica ligado sozinho, ignorando o `R_PWM` e o `R_EN`.
 >
-> Repare no `lerCorrente()`: se o pino de PWM está em nível baixo ele devolve `−1`, e o
-> `verificarCarga()` sai na primeira linha. **A janela em que a falha mais perigosa aparece é
-> exatamente a janela que o firmware não olhava.** Sem isto, um BTS colado só é descoberto
-> depois — pela temperatura fugindo, pelo watchdog de RPM, ou pelo operador.
+> `lerCorrente()` usa o duty registrado pelo controlador, não `digitalRead()` no pino OC.
+> A leitura de `IS` com duty zero é uma tentativa de diagnóstico do canal inativo, mas a
+> ficha do BTS7960 não garante que o espelho forneça corrente proporcional com a chave
+> high-side inativa. Resultado zero em `IS` **não prova ausência de corrente no ramal**.
 
 ```cpp
 // Le o IS IGNORANDO o estado do PWM. Le sempre, mesmo com o comando em zero.
@@ -783,22 +834,26 @@ float lerCorrenteSempre(int pinoIS) {
     return (soma / 8.0) * FATOR_CORRENTE;
 }
 
-// Corrente com o comando DESLIGADO so tem uma explicacao: o MOSFET do
-// driver esta em curto. E o unico teste que enxerga a falha ANTES de ela
-// virar temperatura errada.
-//   O limiar de 0,5 A fica MUITO acima do offset de repouso do espelho de
-//   corrente (tipico < 50 mA equivalente), entao nao ha alarme falso.
-void verificarDriverColado(float iPelt, float iPtc, double duty) {
-    if (duty >= 5.0) return;                  // so vale com o comando em zero
-    if (lerCorrenteSempre(BTS1_IS) > 0.5) dispararTrip("DRIVER1_COLADO");
-    if (lerCorrenteSempre(BTS2_IS) > 0.5) dispararTrip("DRIVER2_COLADO");
+// Corrente detectada com o canal correspondente comandado abaixo de 5 %
+// indica condução inesperada ou falha da medição: ambos exigem trip.
+// Cada canal usa seu próprio duty; o duty alto da Peltier não pode mascarar
+// corrente no PTC durante resfriamento.
+void verificarDriverColado(double dutyPelt, double dutyPtc) {
+    if (dutyPelt < 5.0 && lerCorrenteSempre(BTS1_IS) > 0.5)
+        dispararTrip("DRIVER_PELTIER_COLADO");
+    if (dutyPtc < 5.0 && lerCorrenteSempre(BTS2_IS) > 0.5)
+        dispararTrip("DRIVER_PTC_COLADO");
 }
 ```
 
-> 🎯 **E o trip resolve de verdade**, porque o `dispararTrip()` chama o `cortarPotencia()`, que
-> abre o **`KA1`** — a bobina do `KM1` perde o retorno e o contato de potência tira os 24 V do
-> barramento. **Cortar por fora do driver é a única coisa que funciona contra um MOSFET em
-> curto**, e é para isso que o `KA1` existe.
+> ⚠️ **Status de validação:** o simulador agora modela corrente e leitura separadas para
+> Peltier e PTC. Com leitura ideal, corrente inesperada em qualquer canal pode ordenar
+> trip retentivo; falha injetada sem sinal mantém a corrente real sem diagnóstico. Isso
+> não comprova o comportamento de A0/A1 (`IS`) durante um curto interno. O KM1 pode
+> continuar conduzindo se seu contato soldar; portanto, o comando de corte não é uma
+> interrupção independente comprovada. Validar medição independente dos BTS e uma
+> estratégia de interrupção redundante, dimensionada para CC, antes de atribuir crédito
+> de segurança.
 >
 > 🎓 **Vale ponto na banca:** *"eu conferia a corrente só quando mandava ligar. Mas MOSFET de
 > potência falha em curto, e nessa falha o comando está em zero — então eu estava cego
@@ -854,13 +909,30 @@ void gerenciarDegelo() {
 bool pedidoStart = false;
 bool pedidoStop  = false;
 
-bool emergenciaAtiva()    { return digitalRead(BTN_EMERG) == HIGH; }  // NF aberto
-bool potenciaDisponivel() { return digitalRead(POTENCIA_OK) == HIGH; }
+bool emergenciaAtiva() { return digitalRead(BTN_EMERG) == HIGH; }  // NF aberto
+
+// Hipóteses do simulador, não parâmetros liberados para o firmware real:
+// consulta periódica de 250 ms, timeout de 3000 ms, faixa válida 0–30 V
+// e presença de potência a partir de 18 V. Ajustar após validar o mapa e o ciclo.
+constexpr unsigned long INTERVALO_MODBUS_MS = 250;
+constexpr unsigned long MODBUS_TIMEOUT_MS = 3000;
+constexpr float V1_MINIMO_POTENCIA_V = 18.0f;
+bool leituraV1NovaApos(unsigned long t) {
+    return v1Recebida && tV1AtualizadaMs > t;
+}
+bool leituraV1Valida() {
+    return v1Recebida && isfinite(tensaoV1BdPot) &&
+           tensaoV1BdPot >= 0.0f && tensaoV1BdPot <= 30.0f &&
+           millis() - tV1AtualizadaMs <= MODBUS_TIMEOUT_MS;
+}
+bool potenciaDisponivel() {
+    return leituraV1Valida() && tensaoV1BdPot >= V1_MINIMO_POTENCIA_V;
+}
 
 // START: só pela IHM (§41.3). STOP: botão da porta, IHM ou MQTT.
 bool pedidoDeStart() { return pedidoStart; }   // ⭐ INICIAR: só pela IHM.
 // O botão VERDE não é lido por pino nenhum: ele arma a potência em
-// hardware (refaz o selo do KM1) e o firmware descobre pelo D25 —
+// hardware (refaz o selo do KM1) e o firmware confirma via V1/Modbus —
 // e não por um contato auxiliar de relé.
 bool pedidoDeStop()  { return digitalRead(BTN_STOP)  == LOW || pedidoStop;  }
 
@@ -891,11 +963,15 @@ void maquinaDeEstados() {
       case AGUARDA_START:
         digitalWrite(LED_FAULT, LOW);
         // ⭐ INICIAR vem da IHM. O botão verde não é lido: ele arma a
-        //    potência em hardware, e o firmware descobe pelo D25.
+        //    potência em hardware, e o firmware confirma via V1/Modbus.
         if (pedidoDeStart()) {
+            if (!leituraV1Valida()) {
+                strncpy(alerta, "MEDICAO_POTENCIA_INDISPONIVEL", sizeof(alerta) - 1);
+                pedidoStart = false;
+                break;
+            }
             if (!potenciaDisponivel()) {
-                // O selo do KM1 está aberto — só um dedo no verde o refaz
-                strncpy(alerta, "APERTE_O_VERDE", sizeof(alerta) - 1);
+                strncpy(alerta, "POTENCIA_AUSENTE", sizeof(alerta) - 1);
                 pedidoStart = false;
                 break;
             }
@@ -913,8 +989,11 @@ void maquinaDeEstados() {
         //   classificaria toda parada normal como FALHA.
         if (pedidoDeStop()) { pararProcesso(); break; }
 
-        // Potência que sumiu sem ninguém ter pedido = fusível, borne solto,
-        // ou a emergência com o bloco de 5 V rompido.
+        // Leitura vencida/inválida ou V1 baixo durante o ensaio é falha retentiva.
+        if (!leituraV1Valida()) {
+            dispararTrip("MEDICAO_POTENCIA_INDISPONIVEL");
+            break;
+        }
         if (!potenciaDisponivel()) { dispararTrip("POTENCIA_PERDIDA"); break; }
         break;
 
@@ -953,7 +1032,7 @@ void maquinaDeEstados() {
 > if (pedidoDeStop())        { ... estado = AGUARDA_START; }                // ← depois
 > ```
 >
-> **Apertar o STOP físico dispara as duas condições.** O botão tem dois blocos mecanicamente ligados: o NF de 24 V corta a bobina do KM1 (e o BD-POT cai, derrubando o `D25`), e o NA de 5 V avisa o `D23`. Tipicamente o NF abre uns 2 ms antes de o NA fechar, mas o relé leva ~10 ms para desatracar — e o `loop()` carrega PID, sensores, SD e três seriais, então seu período é bem maior que isso. **Quando a máquina de estados finalmente roda, as duas já são verdadeiras.** E aí quem está escrito primeiro vence.
+> **Apertar o STOP físico dispara as duas condições.** O botão tem dois blocos mecanicamente ligados: o NF de 24 V corta a bobina do KM1 (e BD-POT cai); o NA de 5 V avisa o `D23`. A confirmação de tensão vem depois pelo V1/Modbus, portanto o STOP deve continuar tendo prioridade no laço. Não usar uma leitura vencida como prova de que BD-POT está sem tensão.
 >
 > | | Comportamento antigo | Corrigido |
 > |---|---|---|
@@ -1163,15 +1242,14 @@ void gerenciarVentoinhas(float tDissipador, float tAmbiente) {
 >
 > Na prática: os dois comandos de ventoinha interna nunca eram acionados, a ventoinha do PTC e as quatro de circulação **nunca giravam**, e o ensaio rodava com o ar parado dentro da câmara. É o tipo de coisa que só aparece na bancada, quando a temperatura não homogeneíza e ninguém entende por quê.
 >
-> 📌 **A ventoinha do PTC não tem mais pós-ventilação, e não precisa.** Ela entrou no mesmo canal das outras internas e para junto com o ensaio — **o PTC é auto-limitado**: sem fluxo de ar a resistência dele sobe e ele corta a própria potência. Somem um pino, um canal de acionamento, um temporizador e um modo de falha. O **DS18B20 continua útil**, comandando a pós-ventilação do **radiador**, que é onde ela realmente importa.
+> 📌 **A ventoinha do PTC compartilha o KA3 com as outras quatro ventoinhas internas e hoje para junto com o ensaio.** Isso descreve o firmware atual, não comprova que o calor residual seja seguro: ST-1/ST-2 interrompem a alimentação, mas não removem o calor já acumulado. Nem desligamento imediato nem dois minutos de pós-ventilação foram validados; medir corpo do PTC e acrílico após STOP e emergência antes de escolher o critério. O DS18B20 mede o dissipador da Peltier, não a superfície do PTC.
 
 ### ⚠️ Quem para quando, e quem sobrevive à emergência
 
 | Grupo | Pino | Para no STOP? | Para na EMERGÊNCIA? | O que a desliga |
 |---|---|---|---|---|
 | **2× radiador** (lado quente da Peltier) | **D30** | ❌ não — **só quando esfriar** | ❌ **não** | o **DS18B20** do dissipador |
-| 1× ventoinha do PTC | D28 | não na hora — **2 min de pós-ventilação** | idem | o tempo |
-| 4× circulação (2 frias + 2 do duto) | D29 | ✅ sim, na hora | ✅ sim | `desligarTudo()` |
+| **5× internas** (inclui PTC, 2 frias e 2 dos dutos) | **D29 / KA3** | ✅ sim, na hora no firmware atual | ✅ sim no firmware atual | `desligarTudo()`; pós-ventilação pendente de ensaio |
 
 **Nenhuma das três passa pelo KM1.** Todas vêm do BD-AUX, alimentado pelo ramal auxiliar T3 ([Doc 30](../camada_3_eletrica/30_forca_e_distribuicao.md)), e o Arduino vem do BD-5V — os dois são barramentos permanentes. Então:
 
@@ -1226,17 +1304,17 @@ void gerenciarVentoinhas(float tDissipador, float tAmbiente) {
 >
 > 🧪 **Dá para provar no simulador:** o cenário 34 mata o Arduino com o ensaio rodando e confere que o BD-POT vai a zero **e** que o radiador continua girando. O cenário 33 abre o contato do KA2 e mostra o trip por RPM acusando — uma falha que, até esta revisão, o simulador nem sabia representar.
 
-> ### ⛔ O único caso em que o resfriamento realmente para: a chave geral
+> ### ⛔ Se a chave geral for desligada, o resfriamento para
 >
-> Corte a chave rotativa (ou falte energia) com o dissipador quente e **tudo** para — ventoinhas incluídas. Não há projeto que resolva isso sem bateria, e não vale a pena aqui. Resolve-se por procedimento, e o firmware ajuda:
+> Se a chave rotativa for desligada (ou faltar energia), **tudo** para — ventoinhas incluídas. Em uma parada operacional normal, sem perigo imediato, o procedimento pode orientar a manter o painel energizado até a dissipação apropriada. Isso nunca deve atrasar isolamento diante de risco elétrico, incêndio, sobretemperatura ou outra emergência:
 >
 > ```cpp
-> // Em atualizarTela(), quando o ensaio não está rodando:
+> // Mensagem informativa para parada operacional normal, não para emergência:
 > if (estado != RODANDO && dissipadorQuente)
->     mostrar("DISSIPADOR QUENTE - NAO DESLIGUE A CHAVE GERAL");
+>     mostrar("DISSIPADOR QUENTE - siga procedimento; em risco, isole");
 > ```
 >
-> 📋 **Vai para o procedimento operacional:** ao terminar o ensaio, espere a tela liberar antes de desligar a chave geral. É exatamente a instrução que existe em compressor, em turbo e no radiador de carro que você citou — e pela mesma razão física.
+> 📋 **Procedimento operacional normal ainda precisa de validação.** Não usar a mensagem para impedir ou retardar a ação de emergência.
 
 ---
 
@@ -1312,7 +1390,8 @@ void setup() {
 
     pinMode(BTN_STOP,    INPUT_PULLUP);
     pinMode(BTN_EMERG,   INPUT_PULLUP);
-    pinMode(POTENCIA_OK, INPUT);       // divisor resistivo — sem pull-up!
+    // Inicializar Serial3/MAX485 e o cliente Modbus conforme a biblioteca
+    // e o mapa de registradores verificados para o N4AIC24.
 
     // ⭐ Habilitação da potência: SAÍDA e LOW **antes de tudo**.
     //   O pull-down de 10 kOhm no IN ja garantia isso durante o boot;
@@ -1327,6 +1406,7 @@ void setup() {
     //   como "pode estar quente". Sao ~2 s de ventilacao a mais no boot.
     pinMode(VENT_RADIADOR, OUTPUT); radiador(true);   // ⭐ ventila desde o boot
 
+    setupPWM20kHz();           // após os níveis seguros iniciais, antes do primeiro uso de OCR3A/OCR4A
     desligarTudo();
     setupRPM();
     setupPID();
@@ -1345,13 +1425,13 @@ void loop() {
     wdt_reset();                       // ⚡ "estou vivo" — some daqui e o Mega reseta
     processarComandoRemoto();          // START/STOP/receita vindos da IHM
     maquinaDeEstados();
-    conferirCortePotencia();           // ⭐ mandei cortar — caiu mesmo? (D25)
+    atualizarN4AIC24();                // V1, timestamp e estado da comunicação
+    conferirCortePotencia();           // confirmar somente com amostra Modbus posterior
     medirRPM();
     lerSensores();                         // entrada, umidade, temperatura de referência
 
-    // ⭐ FORA do if abaixo, de propósito: a pós-ventilação do PTC e o aviso
-    //    de dissipador quente precisam continuar em AGUARDA_START, em FALHA
-    //    e em EMERGENCIA. Só param quando a chave geral cair.
+    // O radiador e o grupo interno são atualizados em todos os estados;
+    // a ventilação interna pós-STOP ainda não está implementada.
     gerenciarVentoinhas(tDissipador, tAmbiente);
 
     if (estado == RODANDO) {
@@ -1362,14 +1442,16 @@ void loop() {
         }
         aplicarPotencia();
 
-        float iPelt = lerCorrente(BTS1_IS, BTS1_RPWM);
-        float iPtc  = lerCorrente(BTS2_IS, BTS2_RPWM);
+        float iPelt = lerCorrente(BTS1_IS, 0);
+        float iPtc  = lerCorrente(BTS2_IS, 1);
         if (modo == RESFRIAMENTO) verificarCarga(iPelt, fabs(saidaPID));
         if (modo == AQUECIMENTO)  verificarCarga(iPtc,  fabs(saidaPID));
-        verificarDriverColado(iPelt, iPtc, fabs(saidaPID));   // ⭐ comando em zero: sobrou corrente?
     } else {
         desligarTudo();
     }
+    // Executar em todos os estados: o duty de cada canal é independente.
+    // Corrente no BTS2_IS não pode ser mascarada pelo duty da Peltier.
+    verificarDriverColado(dutyAtual[0], dutyAtual[1]);
 
     // Tarefas de 1 Hz
     static unsigned long t1Hz = 0;
@@ -1418,7 +1500,7 @@ void loop() {
 - [ ] **STOP funciona pelo botão físico E pela IHM**
 - [ ] Após a emergência ser destravada, **a energia não volta** (é hardware — medir 0 V no BD-POT)
 - [ ] Após o LIGAR verde, a energia volta mas **o processo continua parado**
-- [ ] Divisor do `POTENCIA_OK` medido: ~3,8 V com o KM1 selado, ~0 V com a emergência acionada
+- [ ] N4AIC24: validar V1 no BD-POT em KM1 aberto/fechado, faixa, atualização e timeout Modbus
 - [ ] PWM verificado com osciloscópio: **20 kHz ± 5 %** nos dois pinos, com duty variável. Sem osciloscópio: **não pode haver chiado audível**, e o LED do driver não pode piscar
 - [ ] **Intertravamento validado:** com o osciloscópio nos dois `RPWM`, nunca há sobreposição
 - [ ] Intervalo de 30 s na troca de modo verificado com cronômetro
