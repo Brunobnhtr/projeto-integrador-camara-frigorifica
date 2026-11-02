@@ -36,7 +36,7 @@ Rede 127 V AC
           │      │
           │      ├─► BD-POT (Barramento 24 V Comutado)
           │      │      ├─► BTS7960 (Ponte H 1) ──► Peltier Duplo 2× TEC1-12706 em série (24 V, 5,2 A)
-          │      │      └─► BTS7960 (Ponte H 2) ──► PTC Aquecedor 24 V (em série com ST-1 e ST-2)
+          │      │      └─► BTS7960 (Ponte H 2) ──► Aquecedor PTC 12 V / 50 W (Ligação direta via PWM, autolimitante)
           │      │
           │      ├─► T2 (Step-Down LM2596 / XL4015) ──► BD-5V (5,10 Vcc / 3 A)
           │      │      └─► Arduino Mega 2560, ESP32, Lógica da Placa de 8 Relés (Sinaleiros 24 V alimentados pelo BD-24V via relés Ch4-Ch7)
@@ -52,10 +52,9 @@ Rede 127 V AC
 ### 2.2 Cadeia Crítica de Segurança em Hardware (Independente de Microcontrolador)
 O projeto obedece ao princípio de que **segurança de vida e proteção contra incêndio NUNCA dependem exclusivamente de código/software**:
 1. **Botão de Emergência (Cogumelo com Trava)**: Corta a bobina do relé KM1 desfazendo o selo físico. Ao ser acionado, desenergiza imediatamente o barramento `BD-POT`, derrubando o Peltier e o PTC instantaneamente.
-2. **Cadeia Térmica Bimetálica em Série do PTC**:
-   - `ST-1`: Termostato bimetálico NF KSD9700 (90 °C) colado no corpo do aquecedor PTC.
-   - `ST-2`: Termostato bimetálico NF KSD9700 (70 °C) na parede interna do acrílico.
-   - Ligados **eletricamente em série** com o PTC. Caso o microcontrolador trave em nível alto (`HIGH`), a elevação térmica abre o circuito mecanicamente.
+2. **Controle Direto do Aquecedor PTC**:
+   - O elemento cerâmico PTC opera em 12 Vcc / 50 W e possui **propriedade física autolimitante de temperatura** (a resistência ôhmica cresce exponencialmente com a temperatura, estabilizando-se naturalmente).
+   - Ligação direta à saída da **Ponte H 2 (BTS7960)** com controle proporcional PWM pelo Arduino, sem necessidade de termostatos bimetálicos em série (ST-1/ST-2 eliminados).
 3. **Cuidado Vital do Retorno de Medição (N4AIC24)**:
    - ⚠️ **O retorno das 8 posições de ensaio NÃO é ligado na barra de 0 V comum.**
    - O cabo de retorno entra no respectivo canal `I1..I8` do N4AIC24, passa pelo **shunt interno do módulo** e sai pelo terminal `GND` para o barramento `BD-0V-B`. Se for ligado diretamente na barra de 0 V, o LED acende mas a medição fica zerada eternamente.
@@ -159,8 +158,8 @@ Em anúncios do AliExpress, vendedores ofertam kits complexos (ex: Kit Peltier D
    - *Motivo*: As lâmpadas geravam calor espúrio excessivo dentro da câmara (prejudicando a dinâmica do teste térmico de refrigeração) e o sensor ACS712 possui deriva térmica severa e ruído em baixas correntes. Foram substituídas por **8 posições com LEDs de 5 mm e resistores de 1 kΩ alimentados em 12 V**, gerando corrente estável de 9 a 11 mA medida com altíssima precisão pelo módulo industrial **N4AIC24**.
 2. **Eliminação da Fonte ATX de PC**:
    - *Motivo*: Fontes ATX comuns não possuem barramento de 24 Vcc e todos os trilhos compartilham o mesmo terra elétrico (impossibilitando ligação em série de duas saídas de 12 V). Foi adotada **fonte industrial única de 24 Vcc / 10 A**, utilizando conversores chaveados Step-Down (T2 e T3) para derivar 5 V e 12 V.
-3. **Bloqueio Conceitual de Energização do PTC**:
-   - A documentação estabelece: **NÃO energizar o PTC** até que o sensor de corrente dedicado (BTS2 IS), os fusíveis seccionáveis F3 e a fixação dos termostatos bimetálicos ST-1 e ST-2 sejam 100% validados fisicamente na bancada para evitar derretimento das paredes de acrílico.
+3. **Liberação Definitiva do PTC**:
+   - O Aquecedor Cerâmico PTC 12 V / 50 W está **100% LIBERADO e APROVADO**, conectado diretamente à Ponte H BTS2 comandada pelo Arduino. A proteção contra superaquecimento é garantida pela característica física intrínseca do elemento cerâmico PTC e pelo corte de emergência geral via KM1.
 
 ---
 
