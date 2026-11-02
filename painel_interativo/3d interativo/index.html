@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Projeto Integrador • Maquete Industrial 3D | Painel + Câmara</title>
+<style>
+:root{color-scheme:dark;--bg:#080e16;--panel:rgba(12,22,34,.94);--edge:#273d50;--txt:#e9f3fa;--muted:#8fa8b9;--cyan:#4cd1ee;--gold:#f5c360}
+*{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);font:13px/1.5 Inter,system-ui,-apple-system,Segoe UI,sans-serif;color:var(--txt)}
+#viewport{position:fixed;inset:0}canvas{display:block}
+#mast{position:absolute;top:14px;left:18px;z-index:4;pointer-events:none;text-shadow:0 2px 10px #000b}
+#mast h1{font-size:18px;letter-spacing:.05em;margin:0 0 2px;font-weight:750;color:#f0f8ff}
+#mast p{margin:0;color:#b2c7d7;font-size:11.5px}
+#tag{display:inline-block;border:1px solid #376f87;background:#153041c2;border-radius:20px;padding:2px 10px;color:#9decf8;font-weight:700;letter-spacing:.07em;font-size:10px;margin-bottom:6px}
+#toolbar{position:absolute;left:18px;bottom:18px;display:flex;flex-wrap:wrap;max-width:min(720px,calc(100% - 355px));gap:7px;z-index:5}
+.action{border:1px solid #385064;background:#122536d9;backdrop-filter:blur(12px);color:#edf7fa;padding:9px 12px;border-radius:9px;cursor:pointer;font-size:12px;font-weight:550;transition:all .15s}
+.action:hover,.action:focus-visible{background:#1f4258;border-color:#5fc6d7;outline:none}
+.action.active{background:#1b5064;border-color:#65d4ed}
+#tips{position:fixed;z-index:9;display:none;pointer-events:none;min-width:220px;max-width:320px;padding:11px 14px;border:1px solid #45627f;background:rgba(8,20,33,.97);box-shadow:0 12px 35px #000c;border-radius:10px}
+#tips strong{display:block;font-size:13px;color:#e8f6ff;margin-bottom:4px}
+#tips small{color:#acd0e2;display:block;font-size:11px;line-height:1.4}
+#tips em{font-style:normal;display:block;color:#f8cb6e;font-size:11px;margin-top:5px;font-weight:600}
+#notice{position:fixed;left:18px;bottom:78px;z-index:4;background:rgba(12,25,38,.9);border:1px solid #29475c;padding:8px 12px;border-radius:8px;max-width:min(580px,calc(100vw - 40px));color:#c2d6e3;font-size:11px}
+#notice b{color:#ffcf87}
+#legend{position:fixed;left:18px;top:92px;z-index:4;pointer-events:none;background:rgba(10,23,35,.8);border:1px solid #294354;border-radius:9px;padding:7px 11px;display:flex;gap:9px;flex-wrap:wrap;max-width:540px}
+.sw{display:flex;align-items:center;gap:5px;color:#d7e4ec;font-size:10px;font-weight:500}
+.sw i{width:9px;height:9px;display:block;border-radius:50%}
+#status{position:fixed;right:16px;bottom:16px;z-index:6;pointer-events:none;background:#10202ccc;border:1px solid #2e4a5a;padding:9px 12px;border-radius:9px;color:#b8cedc;font-size:11px;max-width:290px}
+#status strong{color:#b6eaff}
+#loader{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#060f19;z-index:50;color:#cbe2f2;font-size:15px;letter-spacing:.05em}
+#loader.hidden{display:none}
+.lil-gui{--background-color:#0f1e2ef5;--text-color:#dbe9f3;--title-background-color:#1e3547;--widget-color:#283f51;--hover-color:#35566b;--focus-color:#367988;--number-color:#8fe5f7;--string-color:#efd4a2;--font-size:12px;--width:305px;z-index:10!important;top:14px!important;right:14px!important;border:1px solid #365064;border-radius:10px;overflow:hidden;box-shadow:0 14px 44px #0007}
+@media(max-width:780px){#mast h1{font-size:15px}#mast p{display:none}#legend{top:74px;max-width:280px;gap:5px}#toolbar{left:8px;bottom:10px;max-width:calc(100% - 16px);gap:4px}.action{font-size:11px;padding:7px 9px}#notice{left:8px;bottom:94px;font-size:10px;max-width:65vw}#status{display:none}.lil-gui{--width:240px;top:70px!important;right:8px!important;max-height:60vh;overflow-y:auto}#mast{left:10px;top:10px}}
+</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/lil-gui@0.20/dist/lil-gui.umd.min.js"></script>
+</head>
+<body>
+<div id="loader">Carregando maquete 3D industrial…</div>
+<div id="viewport"></div>
+<header id="mast">
+  <span id="tag">MAQUETE INDUSTRIAL • PROJETO INTEGRADOR</span>
+  <h1>PLANTA TÉRMICA & PAINEL DE AUTOMAÇÃO</h1>
+  <p>Painel 700 × 700 × 250 mm • Câmara Térmica 15 L • Peltier Traseiro • Fiação em Canaletas</p>
+</header>
+<div id="legend">
+  <span class="sw"><i style="background:#c92a2a"></i>24 V comut.</span>
+  <span class="sw"><i style="background:#e8590c"></i>24 V perm.</span>
+  <span class="sw"><i style="background:#f59f00"></i>12 V aux/cargas</span>
+  <span class="sw"><i style="background:#7048e8"></i>5 V lógica</span>
+  <span class="sw"><i style="background:#1864ab"></i>0 V comum</span>
+  <span class="sw"><i style="background:#2465ae"></i>Retorno I1–I8</span>
+  <span class="sw"><i style="background:#2f9e44"></i>Medição</span>
+  <span class="sw"><i style="background:#8796a3"></i>Sinal / I²C / RS485</span>
+</div>
+<div id="toolbar">
+  <button class="action" id="btnOverview">◈ Geral</button>
+  <button class="action" id="btnPanel">▤ Painel Aberto</button>
+  <button class="action" id="btnChamber">◇ Câmara Frontal</button>
+  <button class="action" id="btnRearPelt">❄ Peltier Traseira</button>
+  <button class="action" id="btnPCB">◉ Ensaios CAM-26</button>
+  <button class="action" id="btnScreenshot">▧ Capturar PNG</button>
+</div>
+<div id="notice">
+  <b>Engenharia Industrial:</b> Dimensões comerciais reais baseadas nos produtos adquiridos via AliExpress. O conjunto Peltier duplo está fixado na <b>parede traseira superior</b> com calha coletora. PTC 12 V / 50 W cerâmico operando via BTS2 PWM. Fiação embutida nas <b>canaletas perfuradas</b>.
+</div>
+<div id="tips"></div>
+<div id="status">
+  Escala: <strong>1 mm = 1 unidade 3D</strong>
+  <div>Painel: 700 × 700 × 250 mm • Câmara: 310 × 210 × 260 mm</div>
+  <div id="wcount">Fiação: 133 circuitos rastreados</div>
+  <div id="pickstatus">Passe o cursor sobre os componentes para inspecionar.</div>
+  <div>Girar: botão esquerdo • Pan: botão direito • Zoom: scroll</div>
+</div>
+
+<script>
+window.addEventListener('load', () => {
+  'use strict';
+  if (!window.THREE || !THREE.OrbitControls || !window.lil) {
+    document.getElementById('loader').textContent = 'Erro ao carregar bibliotecas externas. Verifique sua conexão e recarregue.';
+    return;
+  }
+  try { initModel(); } catch (err) {
+    console.error(err);
+    document.getElementById('loader').textContent = 'Falha ao inicializar o WebGL: ' + err.message;
+  }
+});
+
+function initModel() {
+  const THREE = window.THREE, DEG = Math.PI / 180;
+  const VIEW = document.getElementById('viewport'), tooltip = document.getElementById('tips');
+
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, preserveDrawingBuffer: true, powerPreference: 'high-performance' });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setSize(innerWidth, innerHeight);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.18;
+  VIEW.appendChild(renderer.domElement);
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color('#08101a');
+  scene.fog = new THREE.FogExp2('#08101a', 0.00019);
+
+  const camera = new THREE.PerspectiveCamera(40, innerWidth / innerHeight, 1, 8000);
+  camera.position.set(1280, 850, 1420);
+
+  const controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.target.set(0, 260, 0);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.07;
+  controls.minDistance = 80;
+  controls.maxDistance = 3800;
+  controls.maxPolarAngle = Math.PI * 0.495;
+  controls.update();
+
+  scene.add(new THREE.HemisphereLight(0xe8f4ff, 0x1f2e3c, 1.15));
+  const key = new THREE.DirectionalLight(0xfff3e0, 2.9);
+  key.position.set(-850, 1350, 950);
+  key.castShadow = true;
+  key.shadow.mapSize.set(2048, 2048);
+  key.shadow.camera.left = -1600; key.shadow.camera.right = 1600;
+  key.shadow.camera.top = 1500; key.shadow.camera.bottom = -1400;
+  key.shadow.camera.near = 10; key.shadow.camera.far = 4200;
+  key.shadow.bias = -0.00014;
+  scene.add(key);
+
+  const fill = new THREE.DirectionalLight(0x90d4ff, 1.4);
+  fill.position.set(980, 600, -750);
+  scene.add(fill);
+
+  const bench = new THREE.PointLight(0xcde8ff, 0.95, 2600);
+  bench.position.set(220, 950, 680);
+  scene.add(bench);
+
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(5500, 5500), new THREE.MeshStandardMaterial({ color: 0x0c1622, roughness: 0.9, metalness: 0.08 }));
+  floor.rotation.x = -Math.PI / 2;
+  floor.position.y = -2;
+  floor.receiveShadow = true;
+  scene.add(floor);
+
+  const grid = new THREE.GridHelper(4400, 88, 0x3d6075, 0x243542);
+  grid.position.y = -1;
+  grid.material.transparent = true;
+  grid.material.opacity = 0.32;
+  scene.add(grid);
+
+  const mats = {
+    steel: new THREE.MeshStandardMaterial({ color: 0xa9b7be, metalness: 0.85, roughness: 0.25 }),
+    darkSteel: new THREE.MeshStandardMaterial({ color: 0x3e4e5e, metalness: 0.8, roughness: 0.35 }),
+    metalFrame: new THREE.MeshStandardMaterial({ color: 0x82959c, metalness: 0.82, roughness: 0.28 }),
+    black: new THREE.MeshStandardMaterial({ color: 0x141b22, metalness: 0.25, roughness: 0.55 }),
+    rubber: new THREE.MeshStandardMaterial({ color: 0x182026, roughness: 0.88 }),
+    plastic: new THREE.MeshStandardMaterial({ color: 0x627380, roughness: 0.72 }),
+    ductBody: new THREE.MeshStandardMaterial({ color: 0x76838d, roughness: 0.86 }),
+    ductCover: new THREE.MeshStandardMaterial({ color: 0x939fa9, roughness: 0.7, transparent: true, opacity: 0.82 }),
+    mount: new THREE.MeshStandardMaterial({ color: 0xc4a67e, roughness: 0.65, metalness: 0.3 }),
+    rail: new THREE.MeshStandardMaterial({ color: 0xccd4db, metalness: 0.88, roughness: 0.2 }),
+    pcb: new THREE.MeshStandardMaterial({ color: 0x155d43, metalness: 0.25, roughness: 0.45 }),
+    relayBlue: new THREE.MeshStandardMaterial({ color: 0x1971c2, metalness: 0.2, roughness: 0.38 }),
+    relayBase: new THREE.MeshStandardMaterial({ color: 0x2b8a3e, metalness: 0.15, roughness: 0.5 }),
+    terminal: new THREE.MeshStandardMaterial({ color: 0x247255, roughness: 0.55 }),
+    copper: new THREE.MeshStandardMaterial({ color: 0xbb8045, metalness: 0.78, roughness: 0.25 }),
+    ceramic: new THREE.MeshStandardMaterial({ color: 0xd8c6a5, roughness: 0.65 }),
+    glass: new THREE.MeshPhysicalMaterial({ color: 0xe2f7ff, metalness: 0, roughness: 0.12, transmission: 0.92, thickness: 5, transparent: true, opacity: 0.48, side: THREE.DoubleSide, depthWrite: false }),
+    glassDoor: new THREE.MeshPhysicalMaterial({ color: 0xc2ecfc, roughness: 0.1, metalness: 0, transmission: 0.9, thickness: 5, transparent: true, opacity: 0.38, depthWrite: false, side: THREE.DoubleSide }),
+    eps: new THREE.MeshStandardMaterial({ color: 0xe6e7e2, metalness: 0.25, roughness: 0.65, transparent: true, opacity: 0.55 }),
+    ptcBody: new THREE.MeshStandardMaterial({ color: 0xb57048, metalness: 0.22, roughness: 0.6 }),
+    trayAlu: new THREE.MeshStandardMaterial({ color: 0xb8c6ce, metalness: 0.75, roughness: 0.32 })
+  };
+  const newMat = (hex, metalness = 0.1, roughness = 0.55) => new THREE.MeshStandardMaterial({ color: hex, metalness, roughness });
+
+  const wireColors = { pot24: '#c92a2a', srv24: '#e8590c', aux12: '#f59f00', log5: '#7048e8', zero: '#1864ab', medida: '#2f9e44', digital: '#8796a3', ac: '#725647', pe: '#41aa58' };
+
+  const groups = { panel: new THREE.Group(), chamber: new THREE.Group(), cables: new THREE.Group() };
+  groups.panel.name = 'Painel DIN'; groups.chamber.name = 'Câmara térmica'; groups.cables.name = 'Conduítes externos';
+  groups.panel.position.set(-500, 0, 20); groups.chamber.position.set(475, 0, 75);
+  scene.add(groups.panel, groups.chamber, groups.cables);
+
+  const shellGroup = new THREE.Group(), panelDoorPivot = new THREE.Group(), chamberShell = new THREE.Group(), chamberDoorPivot = new THREE.Group(), insulation = new THREE.Group(), ductGroup = new THREE.Group(), wireGroup = new THREE.Group(), pcbDetail = new THREE.Group(), peltierRearGroup = new THREE.Group(), explodables = [], rotors = [], indicators = [], picks = [], anchors = {}, camAnchors = {}, ductCovers = [];
+
+  const opts = {
+    perfil: '700 × 700 × 250 (GitHub)',
+    portaPainel: true,
+    portaCamara: true,
+    tampaAcrilico: true,
+    tampaCanaletas: true,
+    transpCanaleta: 0.82,
+    isolamentoDutos: true,
+    fiacao: true,
+    tipoFio: 'Todos os 133',
+    explodida: false,
+    explosao: 0,
+    operacao: 'Ventilação ilustrativa',
+    velocidade: 0.75,
+    mostrarGrade: true,
+    animacao: true,
+    opacidade: 0.48,
+    etiquetas: true,
+    temperatura: 22.4
+  };
+
+  function box(parent, w, h, d, x, y, z, mat, cast = true) {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+    m.position.set(x, y, z);
+    m.castShadow = cast; m.receiveShadow = true;
+    parent.add(m);
+    return m;
+  }
+  function cyl(parent, r, h, x, y, z, material, segments = 20) {
+    const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, segments), material);
+    m.position.set(x, y, z);
+    m.castShadow = true;
+    parent.add(m);
+    return m;
+  }
+  function cylinderZ(parent, r, length, x, y, z, mat) {
+    const m = cyl(parent, r, length, x, y, z, mat, 24);
+    m.rotation.x = Math.PI / 2;
+    return m;
+  }
+  function pipe(parent, points, r, mat, segments) {
+    if (!points || points.length < 2) return null;
+    const curve = new THREE.CatmullRomCurve3(points.map(p => new THREE.Vector3(...p)), false, 'catmullrom', 0.15);
+    const mesh = new THREE.Mesh(new THREE.TubeGeometry(curve, segments || Math.min(90, points.length * 10), r, 6, false), mat);
+    parent.add(mesh);
+    return mesh;
+  }
+  function register(group, code, title, func, tensao, extra = '') {
+    let info = { code, title, func, tensao, extra, group };
+    group.userData.info = info;
+    group.traverse(o => { if (o.isMesh) { o.userData.component = info; picks.push(o); } });
+    return group;
+  }
+  function labelTexture(text, color = '#e9f4fa', bg = 'rgba(9,24,36,0.93)', size = 36) {
+    const c = document.createElement('canvas'); c.width = 1024; c.height = 256;
+    const cx = c.getContext('2d');
+    cx.fillStyle = bg; cx.fillRect(0, 0, 1024, 256);
+    cx.strokeStyle = '#547384'; cx.lineWidth = 7; cx.strokeRect(3, 3, 1018, 250);
+    cx.font = `700 ${size}px system-ui,Segoe UI,Arial`; cx.textAlign = 'center'; cx.textBaseline = 'middle'; cx.fillStyle = color;
+    const lines = text.split('\n').slice(0, 3);
+    lines.forEach((line, i) => cx.fillText(line, 512, 128 + (i - (lines.length - 1) / 2) * Math.min(size * 1.3, 70), 965));
+    const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.anisotropy = 4;
+    return t;
+  }
+  const labels = [];
+  function decal(parent, text, x, y, z, w = 75, h = 20, color = '#f1f5f9', bg = 'rgba(9,24,36,.93)', size = 60) {
+    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: labelTexture(text, color, bg, size), transparent: true, depthWrite: false, side: THREE.DoubleSide }));
+    mesh.position.set(x, y, z);
+    parent.add(mesh);
+    labels.push(mesh);
+    return mesh;
+  }
+  function screw(parent, x, y, z, r = 2) {
+    const metal = cylinderZ(parent, r, 2, x, y, z, mats.steel);
+    box(parent, r * 1.25, .5, .45, x, y, z + 1.15, mats.darkSteel, false);
+    return metal;
+  }
+  function component(groupName, code, title, fn, volt, x, y, w, h, d, color = 'gray', extra = '') {
+    const p = new THREE.Group();
+    p.position.set(x, y, -92 + d / 2 + 5);
+    p.name = code;
+    groups.panel.add(p);
+    const rgb = color === 'gray' ? mats.plastic : typeof color === 'string' ? newMat(color, .1, .5) : color;
+    box(p, w, h, d, 0, 0, 0, rgb);
+    box(p, w - 4, 3, d + 1, 0, h / 2 - 4, 0, mats.black, false);
+    box(p, w - 4, 3, d + 1, 0, -h / 2 + 4, 0, mats.black, false);
+    decal(p, code, 0, Math.min(h / 4, 15), d / 2 + .6, Math.max(22, w - 6), Math.min(16, h * .26), '#ebf6fb', 'rgba(12,28,40,.94)', 72);
+    register(p, code, title, fn, volt, extra);
+    anchors[code] = new THREE.Vector3(x, y, -92 + d + 8);
+    explodables.push({ obj: p, start: p.position.clone(), offset: new THREE.Vector3((x > 0 ? 1 : -1) * 14, 0, 48) });
+    return p;
+  }
+
+  // ESTRUTURA DO PAINEL 700 × 700 × 250 mm
+  box(shellGroup, 700, 700, 5, 0, 350, -124, mats.darkSteel);
+  for (const x of [-348, 348]) box(shellGroup, 4, 700, 250, x, 350, 0, mats.darkSteel);
+  for (const y of [3, 697]) box(shellGroup, 700, 6, 250, 0, y, 0, mats.darkSteel);
+  box(shellGroup, 652, 652, 5, 0, 350, -113, mats.mount);
+  for (const x of [-322, 322]) for (const y of [22, 678]) screw(shellGroup, x, y, -107, 4);
+
+  // CANALETAS PERFURADAS PVC COM TAMPA
+  const ductDefs = [
+    ['CH-topo', 14, 22, 672, 30, 'sinal'],
+    ['CH-3x2', 14, 180, 672, 28, 'sinal'],
+    ['CH-2x1', 14, 302, 672, 30, 'potencia'],
+    ['CH-base', 14, 660, 672, 32, 'potencia'],
+    ['CV-esq', 14, 22, 26, 668, 'potencia'],
+    ['CV-dir', 660, 22, 26, 668, 'sinal'],
+    ['CH-1x4', 14, 490, 672, 28, 'potencia'],
+    ['CH-ac', 0, 510, 338, 14, 'ac'],
+    ['CV-ac', 0, 510, 12, 180, 'ac']
+  ];
+  const ductCoords = {}, ductLines = {};
+  for (const [code, px, py, w, h, typ] of ductDefs) {
+    const cx = px + w / 2 - 350, cy = 700 - py - h / 2;
+    ductCoords[code] = new THREE.Vector3(cx, cy, -82);
+    ductLines[code] = { cx, cy, w, h, vert: h > w, isAc: typ === 'ac' };
+    const vert = h > w;
+    const dg = new THREE.Group();
+    dg.position.set(cx, cy, -82);
+    shellGroup.add(dg);
+    // Base e abas da canaleta perfurada
+    box(dg, w, h, 24, 0, 0, -2, mats.ductBody);
+    // Tampa da canaleta (removível / transparente via GUI)
+    const cover = box(dg, w - 2, h - 2, 2.5, 0, 0, 11, mats.ductCover);
+    ductCovers.push(cover);
+    // Ranhuras laterais (perforated fingers)
+    const n = vert ? Math.floor(h / 24) : Math.floor(w / 24);
+    for (let j = 0; j < n; j++) {
+      let dx = vert ? 0 : -w / 2 + 12 + j * 24, dy = vert ? -h / 2 + 12 + j * 24 : 0;
+      box(dg, vert ? w - 4 : 8, vert ? 8 : h - 4, 1.2, dx, dy, 12.2, mats.darkSteel, false);
+    }
+    decal(shellGroup, code, cx, cy + (!vert ? h / 2 + 6 : 0), -68, vert ? 45 : 68, vert ? 13 : 10, '#c3d5de', 'rgba(18,30,40,.75)', 56);
+  }
+
+  // TRILHOS DIN
+  const railY = { 3: 587, 2: 449, 1: 289, 4: 127 };
+  for (const [k, y] of Object.entries(railY)) {
+    box(shellGroup, 632, 35, 4.5, 0, y, -92, mats.rail);
+    box(shellGroup, 632, 5, 10, 0, y + 14, -88, mats.steel);
+    box(shellGroup, 632, 5, 10, 0, y - 14, -88, mats.steel);
+    for (let x = -295; x <= 295; x += 30) box(shellGroup, 7, 5, 2, x, y, -88, mats.darkSteel, false);
+  }
+  groups.panel.add(shellGroup, wireGroup);
+
+  // COMPONENTES REAIS COM COTAS DE COMPRA
+  const panParts = [
+    // Trilho 3: Controle e Medição Modbus
+    ['MEGA', 'Arduino Mega 2560 R3 + DIN', 'PID, intertravamentos, Modbus e I/O', '5 V', 48, 3, 153, 87, 45, '#147f74'],
+    ['MAX485', 'MAX485 TTL ⇄ RS-485', 'Transceptor Modbus N4AIC24', '5 V', 214, 3, 32, 40, 19, '#29858c'],
+    ['AD-1', 'Adaptador DS18B20', '1-Wire + resistor pull-up 4,7 kΩ', '5 V', 256, 3, 32, 30, 17, '#2a755c'],
+    ['N4AIC24', 'Módulo N4AIC24 (eletechsup)', '22 AI (0–20 mA) + 2 AV (0–30 V) Modbus', '24 V permanente', 298, 3, 101, 82, 40, '#6d9695'],
+    ['BD-0V-B', 'Barramento 0 V eletrônico', 'Retorno analógico e sensores eletrônicos', '0 V', 412, 3, 63, 58, 25, '#426d9b'],
+    ['RTC', 'Relógio RTC DS3231', 'Carimbo de data e hora real para log', '5 V', 486, 3, 38, 30, 18, '#286a83'],
+
+    // Trilho 2: Potência PWM, Supervisão Wi-Fi, Distribuição e Relés
+    ['BTS1', 'Driver BTS7960 #1 + SPCI4', 'PWM de potência Peltier 24 V (até 43 A)', '24 V', 48, 2, 55, 75, 45, '#1b7299'],
+    ['BTS2', 'Driver BTS7960 #2 + SPCI4', 'PWM de potência Aquecedor PTC 12 V', '12 V', 115, 2, 55, 75, 45, '#1b7299'],
+    ['ESP32', 'ESP32 em DNLCB30 DIN', 'Gateway Wi-Fi / MQTT com antena externa', '5 V / 3,3 V', 182, 2, 86, 60, 35, '#1a9a74'],
+    ['F-P', 'Distribuição F-P (CMD-10 DIN)', '8 fusíveis lâmina + chaves de ensaio', '12 V', 280, 2, 145, 48, 48, '#457b9a'],
+    ['CMD-02', 'Módulo de 8 Relés 5 V DIN', 'KA1..KA3 + Sinaleiros H1..H4 (8x Songle)', '5 V / 24 V', 438, 2, 145, 88, 42, '#357d9d'],
+
+    // Trilho 1: Segurança KM1 e Distribuição Principal DIN
+    ['KM1', 'Relé KM1 LY4NJ + Base PTF14A', 'Selo físico e corte de emergência 4P', 'Bobina 24 V', 48, 1, 45.5, 80, 65, '#252e3a'],
+    ['BD-POT', 'Barramento potência 24 V', 'Corta imediatamente com emergência', '24 V', 105, 1, 36, 58, 25, '#ae3a2b'],
+    ['BD-AUX', 'Barramento auxiliar ventiladores', 'Alimentação auxiliar permanente 12 V', '12 V', 153, 1, 36, 58, 25, '#ac8b35'],
+    ['BD-24V', 'Barramento 24 V permanente', 'Alimentação de comando e medidores', '24 V', 201, 1, 45, 58, 25, '#b75e29'],
+    ['BD-5V', 'Barramento de lógica 5 V', 'Alimentação eletrônica regulada T2', '5 V', 258, 1, 87, 58, 25, '#66459a'],
+    ['BD-0V', 'Barramento de retorno estrela', '0 V referência comum de alimentação', '0 V', 357, 1, 84, 58, 25, '#365b94'],
+    ['BD-12V', 'Barramento cargas 12 V', '+12 V após conversor T3', '12 V', 453, 1, 45, 58, 25, '#c79b30'],
+
+    // Trilho 4: Alimentação AC, Fonte Colmeia, Fusíveis e Conversores DC
+    ['Q0', 'Disjuntor bipolar 6 A (2P DIN)', 'Seccionamento geral 127 Vca e proteção', '127 Vca', 48, 4, 36, 81, 75, '#e1dcd1'],
+    ['PS1', 'Fonte colmeia industrial PS1', 'Entrada AC → 24 Vcc / 10 A (240 W)', '24 V / 240 W', 96, 4, 200, 110, 50, '#b2b6b8'],
+    ['F-R', 'Fusíveis de ramais F1–F3', '3x bases seccionadoras RT18-32', '24 V', 308, 4, 54, 78, 60, '#858e9a'],
+    ['T2', 'Conversor Step-Down T2', '24 Vcc → 5,0 Vcc / 5 A (Lógica/Sensores)', '5 V', 374, 4, 63, 32, 20, '#286d7f'],
+    ['T3', 'Conversor Step-Down T3', '24 Vcc → 12,0 Vcc / 20 A (Vent/Cargas)', '12 V', 449, 4, 74, 74, 32, '#286d7f'],
+    ['PE', 'Barra de terra PE', 'Terra de proteção, distinto do 0 V', 'PE', 535, 4, 40, 60, 25, '#489b6e']
+  ];
+
+  for (const [id, title, fn, volt, xrow, row, w, h, d, col] of panParts) {
+    let x = xrow - 350 + w / 2, y = railY[row], p = component('panel', id, title, fn, volt, x, y, w, h, d, col);
+    if (id === 'PS1') {
+      for (let ix = -85; ix < 90; ix += 20) for (let iy = -38; iy < 42; iy += 14) box(p, 11, 5, .8, ix, iy, d / 2 + .8, mats.darkSteel, false);
+      box(p, 65, 18, 12, -w / 2 + 38, -h / 2 + 10, d / 2 + 6, mats.terminal);
+    } else if (id === 'N4AIC24') {
+      for (let i = 0; i < 12; i++) {
+        box(p, 6, 6, 3, -44 + i * 8, -h / 2 + 5, d / 2 + 1, mats.terminal, false);
+        box(p, 6, 6, 3, -44 + i * 8, h / 2 - 5, d / 2 + 1, mats.terminal, false);
+      }
+      decal(p, 'I1  I2  I3  I4  I5  I6  I7  I8  V1 V2', 0, -18, d / 2 + 1, 94, 9, '#d8ffff', 'rgba(0,0,0,.85)', 65);
+    } else if (id === 'KM1') {
+      // Base DIN PTF14A
+      box(p, w - 2, h, 28, 0, 0, -d / 2 + 14, mats.black);
+      // Corpo do relé 4P transparente / azul
+      box(p, w - 6, 44, 34, 0, 0, d / 2 - 17, mats.relayBlue);
+      box(p, 10, 8, 3, 0, 10, d / 2 + 1, newMat('#ff6b6b', .1, .2));
+    } else if (id === 'CMD-02') {
+      // MÓDULO REAL DE 8 RELÉS DIN: 8 cubos Songle azuis + régua de bornes
+      box(p, w - 4, h - 4, 12, 0, 0, -d / 2 + 6, mats.relayBase);
+      for (let i = 0; i < 8; i++) {
+        const rx = -w / 2 + 14 + i * 16.5;
+        box(p, 14, 18, 15, rx, 3, d / 2 + 2, mats.relayBlue);
+        box(p, 2.5, 2.5, 1, rx, 14, d / 2 + 2, newMat('#fff', 0, 0));
+        box(p, 14, 8, 8, rx, -h / 2 + 7, d / 2 + 1, mats.terminal);
+        box(p, 14, 8, 8, rx, h / 2 - 7, d / 2 + 1, mats.terminal);
+      }
+      decal(p, 'MÓDULO 8 RELÉS DIN (CMD-02)', 0, -h / 2 + 18, d / 2 + 3, 115, 8, '#d0ebff', 'rgba(10,30,45,0.85)', 55);
+    } else if (id === 'BTS1' || id === 'BTS2') {
+      // Suporte SPCI4 verde + dissipador aletado de alumínio
+      box(p, w - 4, h - 4, 12, 0, 0, -d / 2 + 6, mats.relayBase);
+      for (let f = -20; f <= 20; f += 5) box(p, 2, 45, 14, f, 0, d / 2 + 4, mats.steel);
+      box(p, 36, 12, 10, 0, -h / 2 + 10, d / 2 + 6, mats.terminal);
+    } else if (id.startsWith('BD-') || id === 'F-R') {
+      for (let t = -w / 2 + 5; t < w / 2 - 3; t += 8) {
+        box(p, 5, 7, 4, t, -h / 2 + 8, d / 2 + 2, mats.black);
+        screw(p, t, -h / 2 + 8, d / 2 + 4, 1.4);
+      }
+    } else if (id === 'ESP32' || id === 'MEGA') {
+      box(p, w * .7, h * .6, 2, 0, 0, d / 2 + 1, mats.pcb);
+      box(p, w * .32, h * .25, 3, 0, d / 2 + 4, mats.black);
+    } else if (id === 'Q0') {
+      for (let j of [-1, 1]) box(p, 10, 14, 8, j * 8, -4, d / 2 + 5, mats.black);
+    }
+  }
+
+  // PORTA DO PAINEL INDUSTRIAL
+  panelDoorPivot.position.set(-350, 0, 127);
+  groups.panel.add(panelDoorPivot);
+  const metalDoor = newMat('#c8d3d7', .76, .27);
+  box(panelDoorPivot, 685, 686, 7, 350, 350, 0, metalDoor);
+  for (const y of [16, 684]) box(panelDoorPivot, 684, 4, 13, 350, y, 0, mats.darkSteel);
+  for (const x of [9, 691]) box(panelDoorPivot, 5, 686, 13, x, 350, 0, mats.darkSteel);
+  for (let y = 80; y <= 620; y += 180) cyl(panelDoorPivot, 6, 35, 0, y, 2, mats.rail, 16);
+  for (let x = 80; x <= 600; x += 260) for (let y of [28, 671]) screw(panelDoorPivot, x, y, 7.1, 3);
+
+  const doorAnchor = (id, x, y) => { anchors[id] = new THREE.Vector3(-350 + x, y, 127 + 14); };
+  function doorControl(id, title, fn, volt, x, y, r, color, ring = false) {
+    const g = new THREE.Group(); g.position.set(x, y, 0);
+    panelDoorPivot.add(g);
+    cylinderZ(g, r + 5, 6, 0, 0, 7, mats.steel);
+    cylinderZ(g, r, 12, 0, 0, 15, newMat(color, .12, .3));
+    if (ring) {
+      const tor = new THREE.Mesh(new THREE.TorusGeometry(r + 1.2, 2.2, 8, 30), new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: .45 }));
+      tor.position.z = 21; g.add(tor);
+      indicators.push({ lamp: tor, role: id });
+    }
+    decal(g, id, 0, -r - 13, 9, 56, 14, '#29455a', 'rgba(221,234,239,.97)', 70);
+    register(g, id, title, fn, volt);
+    doorAnchor(id, x, y);
+    return g;
+  }
+
+  // IHM 2.8" UART LCDWIKI ES3C28P
+  const HMI = new THREE.Group(); HMI.position.set(350, 536, 9);
+  panelDoorPivot.add(HMI);
+  box(HMI, 120, 85, 12, 0, 0, 0, mats.black);
+  const hmCanvas = document.createElement('canvas'); hmCanvas.width = 512; hmCanvas.height = 320;
+  const hx = hmCanvas.getContext('2d'), hmTex = new THREE.CanvasTexture(hmCanvas); hmTex.encoding = THREE.sRGBEncoding;
+  const hmScreen = new THREE.Mesh(new THREE.PlaneGeometry(105, 70), new THREE.MeshBasicMaterial({ map: hmTex }));
+  hmScreen.position.z = 7; HMI.add(hmScreen);
+  register(HMI, 'HMI', 'IHM ES3C28P 2,8″ Touch', 'Supervisão do experimento e ciclo térmico', '5 V / UART');
+  doorAnchor('HMI', 350, 536);
+
+  doorControl('H1', 'Sinaleiro RUN', 'Painel energizado (Ch 4 do Módulo 8 Relés)', '24 V', 225, 413, 13, '#25d47d', true);
+  doorControl('H2', 'Sinaleiro COOL', 'Refrigeração ativa (Ch 5 do Módulo 8 Relés)', '24 V', 315, 413, 13, '#4da7ff', true);
+  doorControl('H3', 'Sinaleiro HEAT', 'Aquecimento ativo (Ch 6 do Módulo 8 Relés)', '24 V', 405, 413, 13, '#ffba47', true);
+  doorControl('H4', 'Sinaleiro FAULT', 'Falha de processo (Ch 7 do Módulo 8 Relés)', '24 V', 495, 413, 13, '#ff5265', true);
+  doorControl('S1', 'Botão LIGAR', 'Selo KM1 / start do circuito de comando', '24 V', 405, 299, 19, '#1ac66a', true);
+  doorControl('S2', 'Botão STOP', 'Abertura do selo, parada de potência', '24 V', 280, 299, 18, '#242930');
+  doorControl('S0', 'Cogumelo de emergência', 'Corte hardware de KM1 com trava mecânica', '24 V', 348, 180, 28, '#e72f35');
+  decal(panelDoorPivot, 'AUTOMAÇÃO • PLANTA TÉRMICA 15 L', 350, 649, 8, 385, 22, '#1a3546', 'rgba(225,234,237,.97)', 66);
+
+  // CÂMARA TÉRMICA (310 × 210 × 260 mm externa; 300 × 200 × 250 mm útil)
+  const cw = 310, ch = 260, cd = 210;
+  // Paredes e base em acrílico
+  for (const y of [2.5, 257.5]) box(chamberShell, cw, 5, cd, 0, y, 0, mats.glass);
+  for (const x of [-152.5, 152.5]) box(chamberShell, 5, 250, cd, x, 130, 0, mats.glass);
+  // Parede traseira com recorte para Peltier e prensa-cabos
+  box(chamberShell, 300, 250, 5, 0, 130, -102.5, mats.glass);
+  for (const x of [-155, 155]) for (const z of [-105, 105]) box(chamberShell, 5, 260, 5, x, 130, z, mats.metalFrame);
+  for (const y of [0, 260]) for (const z of [-105, 105]) box(chamberShell, 310, 3.5, 4, 0, y, z, mats.metalFrame);
+  for (const y of [0, 260]) for (const x of [-155, 155]) box(chamberShell, 4, 3.5, 210, x, y, 0, mats.metalFrame);
+  groups.chamber.add(chamberShell);
+
+  // Isolamento externo amovível e dutos laterais
+  for (const x of [-163, 163]) box(insulation, 11, 235, 185, x, 130, -2, mats.eps);
+  for (const side of [-1, 1]) {
+    const g = new THREE.Group(); g.position.x = side * 185; ductGroup.add(g);
+    box(g, 40, 230, 40, 0, 132, -1, mats.glass);
+    for (const xx of [-20, 20]) box(g, 3, 235, 41, xx, 132, 0, mats.metalFrame);
+    for (const zz of [-20, 20]) box(g, 41, 235, 3, 0, 132, zz, mats.metalFrame);
+    decal(g, side < 0 ? 'DUTO ESQ' : 'DUTO DIR', 0, 212, 23, 38, 11, '#d6f6ff', 'rgba(18,42,56,.8)', 60);
+  }
+  groups.chamber.add(insulation, ductGroup);
+
+  // Porta frontal da câmara com dobradiça piano
+  chamberDoorPivot.position.set(-155, 0, 105);
+  groups.chamber.add(chamberDoorPivot);
+  box(chamberDoorPivot, 310, 260, 5, 155, 130, 0, mats.glassDoor);
+  for (const y of [1, 259]) box(chamberDoorPivot, 310, 4, 8, 155, y, 0, mats.metalFrame);
+  for (const x of [2, 308]) box(chamberDoorPivot, 5, 260, 8, x, 130, 0, mats.metalFrame);
+  box(chamberDoorPivot, 18, 70, 12, 284, 135, 11, mats.steel);
+  decal(chamberDoorPivot, 'CÂMARA 15,0 L ÚTEIS', 160, 240, 5, 144, 16, '#25516b', 'rgba(204,231,243,.85)', 70);
+
+  // VENTILADOR HELICOIDAL
+  function fan(parent, id, x, y, z, size, axis = 'y', blades = 7) {
+    const g = new THREE.Group(); g.position.set(x, y, z); parent.add(g);
+    const base = new THREE.Group(); g.add(base); const half = size / 2;
+    for (const edge of [-1, 1]) {
+      box(base, size, 4, 4, 0, 0, edge * (half - 2), mats.black);
+      box(base, 4, 4, size, edge * (half - 2), 0, 0, mats.black);
+    }
+    const frame = new THREE.Mesh(new THREE.TorusGeometry(half * .76, 2.5, 8, 36), mats.darkSteel);
+    frame.rotation.x = -Math.PI / 2; base.add(frame);
+    const rot = new THREE.Group(); rot.position.y = 2; base.add(rot);
+    cyl(rot, size * .11, 6, 0, 0, 0, mats.darkSteel);
+    for (let j = 0; j < blades; j++) {
+      const blade = new THREE.Mesh(new THREE.BoxGeometry(size * .1, 1.8, size * .38), mats.black);
+      blade.position.set(Math.sin(j * 2 * Math.PI / blades) * size * .22, 0, Math.cos(j * 2 * Math.PI / blades) * size * .22);
+      blade.rotation.y = j * 2 * Math.PI / blades + .42;
+      rot.add(blade);
+    }
+    rotors.push({ obj: rot, speed: size > 60 ? .7 : 1.3 });
+    if (axis === 'z') g.rotation.x = Math.PI / 2;
+    if (axis === 'x') g.rotation.z = Math.PI / 2;
+    if (id) register(g, id, id.includes('RAD') ? 'Ventoinha radiador externo' : 'Microventilador axial', 'Circulação forçada', '12 V');
+    return g;
+  }
+
+  // KIT PELTIER DUPLO NA PAREDE TRASEIRA SUPERIOR (X: 95..205 mm, Z: 160..235 mm)
+  // Montado no plano traseiro Z = -105 mm, Y = 197.5 mm
+  peltierRearGroup.position.set(0, 197.5, -105);
+  groups.chamber.add(peltierRearGroup);
+
+  // Bloco cerâmico duplo TEC1-12706 atravessando a parede traseira
+  for (const sx of [-28, 28]) {
+    box(peltierRearGroup, 40, 40, 4, sx, 0, 0, mats.ceramic);
+  }
+
+  // DISSIPADOR FRIO INTERNO (SALIÊNCIA DE 45 mm PARA DENTRO DA CÂMARA EM +Z)
+  const coldHeatsink = box(peltierRearGroup, 110, 75, 10, 0, 0, 7, mats.steel);
+  // Aletas frias de alumínio projetando-se para o interior
+  for (let fx = -48; fx <= 48; fx += 8) {
+    box(peltierRearGroup, 2.5, 72, 35, fx, 0, 24.5, mats.steel);
+  }
+  // 2x Microventiladores axiais 40 mm (VF-1 e VF-2) soprando ar frio para frente (+Z)
+  fan(peltierRearGroup, 'VF-1', -28, 0, 46, 40, 'z');
+  fan(peltierRearGroup, 'VF-2', 28, 0, 46, 40, 'z');
+
+  // CALHA COLETORA DE CONDENSADO (VED-08) RENTE À BASE DO DISSIPADOR FRIO
+  const calha = new THREE.Group(); calha.position.set(0, -42, 22); peltierRearGroup.add(calha);
+  box(calha, 126, 4, 48, 0, 0, 0, mats.trayAlu);
+  box(calha, 126, 12, 3, 0, 6, 24, mats.trayAlu); // Borda frontal
+  box(calha, 3, 12, 48, -63, 6, 0, mats.trayAlu); // Borda esq
+  box(calha, 3, 12, 48, 63, 6, 0, mats.trayAlu);  // Borda dir
+  decal(calha, 'CALHA CONDENSADO (VED-08)', 0, 3, 26, 80, 8, '#cde6f2', 'rgba(10,35,45,.8)', 50);
+
+  // RADIADOR QUENTE EXTERNO E VENTILADORES 80 mm (LADO DE FORA DA CÂMARA EM -Z)
+  const hotRadiator = box(peltierRearGroup, 200, 90, 12, 0, 0, -8, mats.darkSteel);
+  for (let hx = -92; hx <= 92; hx += 7) {
+    box(peltierRearGroup, 2.5, 86, 32, hx, 0, -28, mats.steel);
+  }
+  // 2x Coolers externos do radiador 80 mm (RAD-1 e RAD-2) soprando para fora (-Z)
+  fan(peltierRearGroup, 'RAD-1', -52, 0, -50, 80, 'z');
+  fan(peltierRearGroup, 'RAD-2', 52, 0, -50, 80, 'z');
+
+  // Sonda DS18B20 do radiador
+  cylinderZ(peltierRearGroup, 3, 25, 38, 28, -25, mats.copper);
+  register(peltierRearGroup, 'PELT', 'Kit Peltier Duplo 2× TEC1-12706', 'Refrigeração termoelétrica na parede traseira', '24 V / ~6 A');
+  camAnchors.PELT = new THREE.Vector3(0, 197.5, -95);
+  camAnchors.RAD = new THREE.Vector3(0, 197.5, -165);
+  camAnchors.VF = new THREE.Vector3(0, 197.5, -60);
+  camAnchors.DS18 = new THREE.Vector3(38, 225, -135);
+
+  // AQUECEDOR PTC 12 V / 50 W COM VENTILADOR (CAM-03)
+  // Montado na base interna sobre o plenum inferior
+  const ptcGroup = new THREE.Group(); ptcGroup.position.set(0, 36, -20);
+  groups.chamber.add(ptcGroup);
+  box(ptcGroup, 60, 60, 42, 0, 0, 0, mats.ptcBody);
+  box(ptcGroup, 52, 52, 6, 0, 0, 22, mats.ceramic);
+  for (let i = -3; i <= 3; i++) for (let j = -3; j <= 3; j++) box(ptcGroup, 5, 5, 4, i * 7, j * 7, 24, mats.steel, false);
+  // Ventilador axial acoplado soprando para o plenum inferior
+  fan(ptcGroup, 'VP', 0, 0, -25, 50, 'z');
+  decal(ptcGroup, 'PTC 12 V / 50 W • ATIVO (PWM BTS2)', 0, -34, 18, 120, 12, '#ffd49b', 'rgba(80,30,15,.95)', 52);
+  register(ptcGroup, 'PTC', 'Aquecedor Cerâmico PTC 12 V / 50 W', 'Aquecimento autorregulável ativado via BTS2 PWM', '12 V / 50 W (4,17 A)');
+  camAnchors.PTC = new THREE.Vector3(0, 36, -20);
+
+  // VENTILADORES DA BOCA DOS DUTOS VD1 e VD2 (40 × 40 × 10 mm, 2 fios)
+  for (const x of [-105, 105]) {
+    fan(groups.chamber, x < 0 ? 'VD1' : 'VD2', x, 25, 40, 40, 'y');
+  }
+  camAnchors.VD1 = new THREE.Vector3(-105, 25, 35);
+  camAnchors.VD2 = new THREE.Vector3(105, 25, 35);
+
+  // SENSOR DIGITAL AM2315C NO CENTRO DO AR
+  const sensGroup = new THREE.Group(); sensGroup.position.set(0, 140, 0);
+  groups.chamber.add(sensGroup);
+  cyl(sensGroup, 8, 30, 0, 0, 0, newMat('#0d6efd', .2, .3), 16);
+  cyl(sensGroup, 7, 10, 0, -18, 0, mats.ceramic, 16); // Filtro sinterizado
+  decal(sensGroup, 'AM2315C (PID)', 0, 20, 0, 45, 12);
+  register(sensGroup, 'SENS', 'Sensor Digital AM2315C', 'Temperatura e umidade central para controle PID', '5 V / I²C');
+  camAnchors.SENS = new THREE.Vector3(0, 140, 0);
+
+  // SUPORTE CAM-26: EXATAMENTE 2 BARRAS CHATAS DE ALUMÍNIO 210 × 20 mm
+  for (const z of [-28, 28]) {
+    box(pcbDetail, 210, 2, 20, 0, 105, z, mats.steel);
+    for (const x of [-98, 98]) {
+      screw(pcbDetail, x, 107, z, 2.5);
+      box(pcbDetail, 15, 10, 15, x, 100, z, mats.glass);
+    }
+  }
+
+  // 2 PLACAS ILHADAS DE ENSAIO 90 × 70 mm (PL-1 e PL-2) COM 8 ESPAÇADORES M3
+  for (let board = 0; board < 2; board++) {
+    const x0 = board === 0 ? -52 : 52, id = board === 0 ? 'PL-1' : 'PL-2';
+    const pcb = new THREE.Group(); pcb.position.set(x0, 116, 0);
+    pcbDetail.add(pcb);
+    box(pcb, 90, 1.6, 70, 0, 0, 0, mats.pcb);
+    // Espaçadores M3 de 10 mm elevando a placa das tiras
+    for (const sx of [-38, 38]) for (const sz of [-28, 28]) {
+      cyl(pcb, 2.2, 10, sx, -6, sz, mats.steel, 12);
+    }
+    // 4 LEDs + resistores de 1 kΩ em cada placa
+    for (let led = 0; led < 4; led++) {
+      let x = (led % 2 ? 18 : -18), z = (led >= 2 ? 16 : -16);
+      cyl(pcb, 2.6, 3, x, 3, z, mats.steel, 16);
+      const lens = new THREE.Mesh(new THREE.SphereGeometry(3, 16, 12), new THREE.MeshPhysicalMaterial({ color: 0xff3b3b, transparent: true, opacity: .9, emissive: 0xce1111, emissiveIntensity: .5 }));
+      lens.position.set(x, 5, z);
+      pcb.add(lens);
+      indicators.push({ lamp: lens, role: 'LED', index: board * 4 + led });
+      box(pcb, 8, 2, 3, x + 11, 2, z, mats.ceramic); // Resistor 1 kΩ
+      const ch = board * 4 + led + 1;
+      decal(pcb, 'I' + ch, x, 11, z + 9, 11, 8, '#fff6e3', 'rgba(11,73,58,.88)', 74);
+    }
+    // Bornes de conexão
+    box(pcb, 24, 7, 10, 0, 5, -28, mats.terminal);
+    register(pcb, id, id + ' • Placa 4 Posições de Ensaio', 'Cargas térmicas com retornos individuais I' + (board * 4 + 1) + '–I' + (board * 4 + 4), '12 V / 1 kΩ');
+    camAnchors[id] = new THREE.Vector3(x0, 116, 0);
+  }
+  groups.chamber.add(pcbDetail);
+  decal(groups.chamber, 'CAM-26 • 2× TIRAS 210 × 20 mm (FLUXO LIVRE)', 0, 96, 65, 185, 12, '#bce3f2', 'rgba(12,32,40,.75)', 56);
+
+  // PRENSA-CABOS PG13,5 (PC-1) e PG11 (PC-2) NA PARTE TRASEIRA FIXA
+  function gland(parent, id, x, y, z, hole) {
+    const p = new THREE.Group(); p.position.set(x, y, z); parent.add(p);
+    const outer = hole === 20.5 ? 13 : 11.5;
+    cylinderZ(p, outer, 22, 0, 0, 0, mats.black);
+    cylinderZ(p, outer + 3, 6, 0, 0, 8, mats.darkSteel);
+    cylinderZ(p, outer * .72, 20, 0, 0, 14, mats.rubber);
+    register(p, id, id + ' • Prensa-Cabo', 'Passagem de chicote pela parede traseira', `Furo Ø ${hole} mm`);
+    camAnchors[id] = new THREE.Vector3(x, y, z);
+    return p;
+  }
+  gland(groups.chamber, 'PC-1', -52, 85, -112, 20.5);
+  gland(groups.chamber, 'PC-2', 52, 85, -112, 18.6);
+  decal(groups.chamber, 'PC-1 (PG13,5)', -52, 112, -125, 75, 15);
+  decal(groups.chamber, 'PC-2 (PG11)', 52, 112, -125, 75, 15);
+
+  // ADAPTADOR SERIAL UART NA PORTA DO PAINEL
+  const convObj = new THREE.Group(); convObj.position.set(488, 534, 9);
+  panelDoorPivot.add(convObj);
+  box(convObj, 42, 22, 8, 0, 0, 0, mats.pcb);
+  decal(convObj, 'CONV', 0, 0, 5, 36, 11);
+  register(convObj, 'CONV', 'Conversor de Nível Lógico 5 ↔ 3,3 V', 'Serial UART Arduino Mega ⇄ IHM', '5 V / 3,3 V');
+  doorAnchor('CONV', 488, 534);
+  anchors['AC-IN'] = new THREE.Vector3(-325, 31, 2);
+
+  // INVENTÁRIO ELÉTRICO COMPLETO (133 CIRCUITOS RASTREADOS)
+  const cableText = `
+AC1|AC-IN|Q0|ac|1.5|CV-ac
+AC2|AC-IN|Q0|ac|1.5|CV-ac
+PE1|AC-IN|PE|pe|1.5|CV-ac,CH-ac
+AC3|Q0|PS1|ac|1.5|CH-ac
+AC4|Q0|PS1|ac|1.5|CH-ac
+PE2|PE|PS1|pe|1.5|CH-ac
+E2|PS1|BD-0V|zero|1.5|CH-base,CV-esq,CH-2x1
+F1A|PS1|F-R|srv24|1.5|CH-base
+F2A|PS1|F-R|srv24|0.75|CH-base
+F3A|PS1|F-R|srv24|0.75|CH-base
+E1|F-R|KM1|srv24|1.5|CH-1x4
+E5|F-R|BD-24V|srv24|0.75|CH-1x4,CV-esq,CH-2x1
+T2A|F-R|T2|srv24|0.75|CH-1x4
+T3A|F-R|T3|srv24|0.75|CH-1x4
+T2N|T2|BD-0V|zero|0.75|CH-1x4
+T3N|T3|BD-0V|zero|0.75|CH-1x4
+E3|T2|BD-5V|log5|0.75|CH-base,CV-esq,CH-2x1
+E4|T3|BD-AUX|aux12|0.75|CH-base,CV-esq,CH-2x1
+E4b|T3|BD-12V|aux12|0.5|CH-base,CV-esq,CH-2x1
+C1|BD-24V|S0|srv24|0.5|CH-1x4,CV-esq,CH-base,CP-vpot,CP-3x4
+C2|S0|S2|srv24|0.5|CP-3x4
+C3|S2|S1|srv24|0.5|CP-3x4
+C4|S1|KM1|srv24|0.5|CP-3x4,CP-vpot,CH-base,CV-esq,CH-2x1
+C5|S1|KM1|srv24|0.5|CP-3x4,CP-vpot,CH-base,CV-esq,CH-1x4
+C6|KM1|KM1|srv24|0.5|
+C7|KM1|CMD-02|zero|0.5|CH-2x1
+C8|CMD-02|BD-0V|zero|0.5|CH-2x1,CV-esq,CH-1x4
+C9|KM1|KM1|srv24|0.5|
+C10|KM1|BD-POT|pot24|1.5|CH-1x4,CV-esq,CH-2x1
+D1|BD-POT|BTS1|pot24|1.5|CH-1x4,CV-esq,CH-2x1
+D4|BD-24V|ESP32|srv24|0.5|CH-1x4,CV-esq,CH-2x1
+D7|BD-5V|MEGA|log5|0.5|CH-1x4,CV-esq,CH-topo
+D8|BD-5V|RTC|log5|0.5|CH-1x4,CV-esq,CH-3x2
+D9|BD-5V|BTS1|log5|0.5|CH-1x4,CV-esq,CH-3x2
+D10|BD-5V|BTS2|log5|0.5|CH-1x4,CV-esq,CH-3x2
+D11|BD-5V|AD-1|log5|0.5|CH-1x4,CV-esq,CH-3x2
+D12|BD-5V|MAX485|log5|0.5|CH-1x4,CV-esq,CH-3x2
+D14|BD-AUX|CMD-02|aux12|0.75|CH-1x4,CV-esq,CH-2x1
+D15|BTS1|BD-0V|zero|1.5|CH-3x2,CV-esq,CH-1x4
+D16|BTS2|BD-0V|zero|1.5|CH-3x2,CV-esq,CH-1x4
+D17|BTS1|BD-0V|zero|0.5|CH-3x2,CV-esq,CH-1x4
+D18|BTS2|BD-0V|zero|0.5|CH-3x2,CV-esq,CH-1x4
+D19|MEGA|BD-0V|zero|0.5|CH-3x2,CV-esq,CH-1x4
+D7b|BD-5V|CMD-02|log5|0.5|CH-1x4,CV-esq,CH-2x1
+D20b|CMD-02|BD-0V-B|zero|0.5|CH-2x1,CV-esq,CH-3x2
+D6b|BD-AUX|CMD-02|aux12|0.5|CH-1x4,CV-esq,CH-2x1
+D21|ESP32|BD-0V|zero|0.5|CH-2x1,CV-esq,CH-1x4
+D22|RTC|BD-0V|zero|0.5|CH-3x2,CV-esq,CH-1x4
+D26b|AD-1|BD-0V-B|zero|0.25|CH-3x2
+D27b|BD-0V|BD-0V-B|zero|4|CH-1x4,CV-esq,CH-topo
+D28b|BD-12V|F-P|aux12|0.5|CH-1x4,CV-esq,CH-3x2
+S1|MEGA|H1|digital|0.25|CH-topo,CV-dir,CP-vsin,CP-2x3
+S2|MEGA|H2|digital|0.25|CH-topo,CV-dir,CP-vsin,CP-2x3
+S3|MEGA|H3|digital|0.25|CH-topo,CV-dir,CP-vsin,CP-2x3
+S4|MEGA|H4|digital|0.25|CH-topo,CV-dir,CP-vsin,CP-2x3
+S4b|MEGA|CMD-02|digital|0.25|CH-topo,CV-dir,CH-3x2
+S4c|MEGA|CMD-02|digital|0.25|CH-topo,CV-dir,CH-3x2
+S7|AD-1|MEGA|digital|0.25|CH-3x2,CV-dir,CH-topo
+S9|BTS1|MEGA|medida|0.25|CH-3x2
+S10|BTS2|MEGA|medida|0.25|CH-3x2
+S11|MEGA|BTS1|digital|0.25|CH-topo,CV-dir,CH-3x2
+S12|MEGA|BTS1|digital|0.25|CH-topo,CV-dir,CH-3x2
+S311|BTS1|BTS1|digital|0.25|
+S312|BTS2|BTS2|digital|0.25|
+S13|BTS1|BTS1|digital|0.25|
+S14|MEGA|BTS2|digital|0.25|CH-topo,CV-dir,CH-3x2
+S15|MEGA|BTS2|digital|0.25|CH-topo,CV-dir,CH-3x2
+S16|BTS2|BTS2|digital|0.25|
+S19|MEGA|CMD-02|digital|0.25|CH-topo,CV-dir,CH-3x2
+S25|MEGA|RTC|digital|0.25|CH-topo,CV-dir,CH-3x2
+S26|MEGA|RTC|digital|0.25|CH-topo,CV-dir,CH-3x2
+S29|MEGA|ESP32|digital|0.25|CH-topo,CV-dir,CH-3x2
+S30|ESP32|MEGA|digital|0.25|CH-3x2,CV-dir,CH-topo
+P5|H1|H2|zero|0.5|CP-2x3
+P6|H2|H3|zero|0.5|CP-2x3
+P7|H3|H4|zero|0.5|CP-2x3
+P8|H4|MEGA|zero|0.5|CP-2x3,CP-vsin,CV-dir,CH-3x2
+P10|BD-5V|HMI|log5|0.5|CH-1x4,CV-dir,CP-vsin,CP-topo
+P11|HMI|BD-0V|zero|0.5|CP-topo,CP-vsin,CV-dir,CH-1x4
+P12|MEGA|CONV|digital|0.25|CH-topo,CV-dir,CP-vsin,CP-topo
+P13|CONV|MEGA|digital|0.25|CP-topo,CP-vsin,CV-dir,CH-topo
+P14|BD-5V|CONV|log5|0.25|CH-1x4,CV-dir,CP-vsin,CP-topo
+P15|CONV|BD-0V|zero|0.25|CP-topo,CP-vsin,CV-dir,CH-1x4
+P16|CONV|HMI|digital|0.25|CP-1x2,CP-vsin,CP-topo
+P17|CONV|HMI|digital|0.25|CP-1x2
+P18|HMI|CONV|digital|0.25|CP-1x2
+P19|HMI|CONV|zero|0.25|CP-1x2
+P20|BD-0V-B|S2|zero|0.25|CH-3x2,CV-dir,CP-vsin,CP-2x3
+P23|S2|S0|zero|0.25|CP-2x3,CP-vsin,CP-base
+P25|S2|MEGA|digital|0.25|CP-2x3,CP-vsin,CV-dir,CH-topo
+P26|S0|MEGA|digital|0.25|CP-base,CP-vsin,CV-dir,CH-topo
+X1|BTS1|@PELT|pot24|1.5|CH-2x1,CV-esq,CH-base
+X2|BTS1|@PELT|pot24|1.5|CH-2x1,CV-esq,CH-base
+X3|BTS2|@PTC|pot24|1.5|CH-2x1,CV-esq,CH-base
+X4|BTS2|@PTC|zero|1.5|CH-2x1,CV-esq,CH-base
+X5|CMD-02|@RAD|aux12|0.5|CH-2x1,CV-dir
+X6|@RAD|BD-0V|zero|0.5|CV-dir,CH-1x4
+X7|CMD-02|@PTC|aux12|0.5|CH-2x1,CV-dir
+X8|@PTC|BD-0V|zero|0.5|CV-dir,CH-1x4
+X9|CMD-02|@VF|aux12|0.5|CH-2x1,CV-dir
+X10|@VF|BD-0V|zero|0.5|CV-dir,CH-1x4
+X11|F-P|@PL-1|aux12|0.5|CH-2x1,CV-dir
+X11b|F-P|@PL-1|aux12|0.5|CH-2x1,CV-dir
+X11c|F-P|@PL-1|aux12|0.5|CH-2x1,CV-dir
+X11d|F-P|@PL-1|aux12|0.5|CH-2x1,CV-dir
+X11e|F-P|@PL-2|aux12|0.5|CH-2x1,CV-dir
+X11f|F-P|@PL-2|aux12|0.5|CH-2x1,CV-dir
+X11g|F-P|@PL-2|aux12|0.5|CH-2x1,CV-dir
+X11h|F-P|@PL-2|aux12|0.5|CH-2x1,CV-dir
+X13|@PL-1|N4AIC24|medida|0.5|CV-dir,CH-topo
+X13b|@PL-1|N4AIC24|medida|0.5|CV-dir,CH-topo
+X13c|@PL-1|N4AIC24|medida|0.5|CV-dir,CH-topo
+X13d|@PL-1|N4AIC24|medida|0.5|CV-dir,CH-topo
+X13e|@PL-2|N4AIC24|medida|0.5|CV-dir,CH-topo
+X13f|@PL-2|N4AIC24|medida|0.5|CV-dir,CH-topo
+X13g|@PL-2|N4AIC24|medida|0.5|CV-dir,CH-topo
+X13h|@PL-2|N4AIC24|medida|0.5|CV-dir,CH-topo
+X15|BD-5V|@SENS|log5|0.25|CH-1x4,CV-dir
+X16|@SENS|BD-0V-B|zero|0.25|CV-dir,CH-3x2
+X17|RTC|@SENS|digital|0.25|CH-3x2,CV-dir
+X18|RTC|@SENS|digital|0.25|CH-3x2,CV-dir
+X19|@DS18|AD-1|digital|0.25|CV-dir,CH-topo
+X20|@RAD|MEGA|digital|0.25|CV-dir,CH-topo
+X21|@RAD|MEGA|digital|0.25|CV-dir,CH-3x2
+X22|@DS18|AD-1|log5|0.25|CV-dir,CH-topo
+X23|@DS18|AD-1|zero|0.25|CV-dir,CH-topo
+M1|BD-24V|N4AIC24|srv24|0.5|CH-1x4,CV-esq,CH-topo
+M2|N4AIC24|BD-0V-B|zero|0.5|CH-3x2
+M3|BD-POT|N4AIC24|medida|0.25|CH-1x4,CV-esq,CH-3x2
+M4|BD-12V|N4AIC24|medida|0.25|CH-1x4,CV-esq,CH-3x2
+M6|MAX485|BD-0V-B|zero|0.5|CH-3x2
+M7|MAX485|MEGA|digital|0.25|CH-topo
+M8|MAX485|MEGA|digital|0.25|CH-topo
+M9|MAX485|MEGA|digital|0.25|CH-topo
+M10|N4AIC24|MAX485|digital|0.25|CH-3x2
+M11|N4AIC24|MAX485|digital|0.25|CH-3x2
+M12|F-P|BD-0V-B|zero|0.25|CH-3x2
+`;
+
+  const wireRows = cableText.trim().split('\n').map(s => {
+    const [id, a, b, func, mm2, route] = s.trim().split('|');
+    return { id, a, b, func, mm2: Number(mm2), route: route ? route.split(',') : [], cam: a.startsWith('@') || b.startsWith('@') };
+  });
+
+  const wmaterials = {};
+  for (const [f, color] of Object.entries(wireColors)) {
+    wmaterials[f] = new THREE.MeshStandardMaterial({ color, roughness: 0.65, metalness: 0.05 });
+  }
+  const measuredReturnMat = new THREE.MeshStandardMaterial({ color: '#2465ae', roughness: 0.6, metalness: 0.05 });
+  const cableMeshes = [];
+
+  // ROTEAMENTO 100% ORTOGONAL POR DENTRO DAS CANALETAS
+  function wp(id, wire) {
+    let a = anchors[id];
+    if (!a) return new THREE.Vector3(0, 250, 0);
+    let c = a.clone();
+    const hash = ([...wire.id].reduce((s, ch) => s + ch.charCodeAt(0), 0) % 9) - 4;
+    return c.add(new THREE.Vector3(hash * 1.8, (wire.id.length % 5 - 2) * 2, 0));
+  }
+
+  function getNearestDuctY(y) {
+    const hY = [663, 506, 383, 196, 24];
+    let best = hY[0], minDist = Math.abs(y - best);
+    for (const val of hY) {
+      if (Math.abs(y - val) < minDist) { minDist = Math.abs(y - val); best = val; }
+    }
+    return best;
+  }
+
+  for (let k = 0; k < wireRows.length; k++) {
+    const w = wireRows[k];
+    if (w.cam) continue; // Conexões externas com a câmara tratadas abaixo
+    const color = wmaterials[w.func] || wmaterials.digital;
+    const rad = Math.max(0.9, Math.min(2.8, Math.sqrt(w.mm2) * 1.15));
+
+    const a = wp(w.a, w), b = wp(w.b, w);
+    const path = [];
+    const ductZ = -82 + (k % 5 - 2) * 1.6;
+    const jx = (k % 7 - 3) * 1.5;
+
+    path.push([a.x, a.y, a.z]);
+    // Passo 1: Sai do borne e entra a 90° na canaleta horizontal mais próxima
+    const yDuctA = getNearestDuctY(a.y);
+    path.push([a.x, yDuctA, a.z]);
+    path.push([a.x, yDuctA, ductZ]);
+
+    // Passo 2: Se origem e destino estão no mesmo trilho/canaleta
+    const yDuctB = getNearestDuctY(b.y);
+    if (yDuctA === yDuctB) {
+      path.push([b.x, yDuctA, ductZ]);
+    } else {
+      // Usa canaleta vertical esquerda (X = -323) ou direita (X = 323)
+      const useRight = w.route.includes('CV-dir') || (a.x > 0 && b.x > 0);
+      const xVert = (useRight ? 323 : -323) + jx;
+      path.push([xVert, yDuctA, ductZ]);
+      path.push([xVert, yDuctB, ductZ]);
+      path.push([b.x, yDuctB, ductZ]);
+    }
+
+    // Passo 3: Sai da canaleta a 90° e entra no borne de destino
+    path.push([b.x, yDuctB, b.z]);
+    path.push([b.x, b.y, b.z]);
+
+    const mesh = pipe(wireGroup, path, rad, color, Math.min(65, path.length * 8));
+    if (mesh) { mesh.userData.wire = w; cableMeshes.push(mesh); }
+  }
+
+  // CONDUÍTES EXTERNOS E CABOS DA CÂMARA (PC-1 POTÊNCIA e PC-2 MEDIÇÃO/SINAL)
+  const panelGlandLocal = new THREE.Vector3(305, 75, -122);
+  function worldPoint(group, local) { return group.localToWorld(local.clone()); }
+
+  let exteriorInitialized = false;
+  function rebuildExterior() {
+    if (exteriorInitialized) {
+      for (const m of [...groups.cables.children]) { if (m.geometry) m.geometry.dispose(); groups.cables.remove(m); }
+      for (let j = cableMeshes.length - 1; j >= 0; j--) if (cableMeshes[j].userData.wire && cableMeshes[j].userData.wire.cam) cableMeshes.splice(j, 1);
+    }
+    exteriorInitialized = true; scene.updateMatrixWorld(true);
+
+    const panelExit = worldPoint(groups.panel, panelGlandLocal);
+    const gland1 = worldPoint(groups.chamber, camAnchors['PC-1']);
+    const gland2 = worldPoint(groups.chamber, camAnchors['PC-2']);
+
+    function conduit(start, end, idx) {
+      let a = start.clone(), b = end.clone();
+      const mid = new THREE.Vector3((a.x + b.x) / 2, Math.min(a.y, b.y) - 30, (a.z + b.z) / 2 - 80 - (idx * 24));
+      const points = [a.clone(), a.clone().add(new THREE.Vector3(32, -20, -20)), mid, b.clone().add(new THREE.Vector3(-40, -10, -18)), b.clone()];
+      const curve = new THREE.CatmullRomCurve3(points, false, 'centripetal');
+      const core = new THREE.Mesh(new THREE.TubeGeometry(curve, 100, idx ? 11 : 14, 12, false), mats.rubber);
+      groups.cables.add(core);
+      for (let i = 0; i <= 100; i++) {
+        const t = i / 100, pos = curve.getPoint(t), tan = curve.getTangent(t).normalize();
+        const tor = new THREE.Mesh(new THREE.TorusGeometry(idx ? 11.4 : 14.4, 1.6, 5, 12), mats.darkSteel);
+        tor.position.copy(pos); tor.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), tan);
+        groups.cables.add(tor);
+      }
+      return { points, curve };
+    }
+
+    const conduit1 = conduit(panelExit, gland1, 0), conduit2 = conduit(panelExit.clone().add(new THREE.Vector3(0, 12, 0)), gland2, 1);
+
+    for (let k = 0; k < wireRows.length; k++) {
+      const w = wireRows[k]; if (!w.cam) continue;
+      const which = w.func === 'medida' || ['X15', 'X16', 'X17', 'X18', 'X19', 'X20', 'X21', 'X22', 'X23'].includes(w.id) ? 2 : 1;
+      const gland = which === 1 ? gland1 : gland2, cond = which === 1 ? conduit1 : conduit2;
+      let camID = (w.a.startsWith('@') ? w.a : w.b).replace('@', '');
+      let toCam = (camAnchors[camID] || camAnchors.SENS).clone();
+
+      const mRet = w.id.match(/^X13([b-h]?)$/), mSupply = w.id.match(/^X11([b-h]?)$/);
+      if (mRet || mSupply) {
+        const n = mRet ? (mRet[1] ? mRet[1].charCodeAt(0) - 96 : 1) : (mSupply[1] ? mSupply[1].charCodeAt(0) - 96 : 1);
+        const q = (n - 1) % 4;
+        toCam.add(new THREE.Vector3(q % 2 ? 18 : -18, 3, q < 2 ? -16 : 16));
+      }
+      const toP = w.a.startsWith('@') ? w.b : w.a;
+      const startLocal = wp(toP, w);
+      if (mRet && toP === 'N4AIC24') {
+        const n = mRet[1] ? mRet[1].charCodeAt(0) - 96 : 1;
+        startLocal.x = anchors.N4AIC24.x - 40 + (n - 1) * 10;
+        startLocal.y -= 18;
+      }
+      const start = worldPoint(groups.panel, startLocal), end = worldPoint(groups.chamber, toCam);
+      const offset = (k % 9 - 4) * 1.3;
+      const path = [start.toArray(), worldPoint(groups.panel, new THREE.Vector3(299, 100, -90)).toArray(), panelExit.clone().add(new THREE.Vector3(0, offset, offset * .5)).toArray()];
+      for (let t = .08; t < 1; t += .16) {
+        const v = cond.curve.getPoint(t);
+        path.push([v.x, v.y + offset * .6, v.z + offset * .45]);
+      }
+      path.push(gland.clone().add(new THREE.Vector3(0, offset, offset * .3)).toArray());
+      path.push(worldPoint(groups.chamber, new THREE.Vector3(toCam.x, toCam.y, -96)).toArray());
+      path.push(end.toArray());
+
+      let radius = Math.max(.85, Math.min(2.5, Math.sqrt(w.mm2) * 1.1));
+      const mesh = pipe(groups.cables, path, radius, w.id.startsWith('X13') ? measuredReturnMat : (wmaterials[w.func] || wmaterials.digital), 55);
+      if (mesh) { mesh.userData.wire = w; cableMeshes.push(mesh); }
+    }
+  }
+
+  // PRESETS DE CÂMERA
+  const presets = {
+    geral: { pos: [1260, 850, 1420], target: [0, 260, 0] },
+    painel: { pos: [-550, 480, 880], target: [-500, 350, 15] },
+    camara: { pos: [520, 320, 580], target: [475, 145, 75] },
+    rearPelt: { pos: [540, 320, -520], target: [475, 195, -95] },
+    pcb: { pos: [480, 220, 320], target: [475, 115, 75] }
+  };
+  let tween = null, last = performance.now();
+  function focus(name) {
+    const p = presets[name];
+    tween = { from: camera.position.clone(), to: new THREE.Vector3(...p.pos), centerFrom: controls.target.clone(), centerTo: new THREE.Vector3(...p.target), start: performance.now(), duration: 1100 };
+  }
+
+  function setPanelProfile() {
+    const repo = opts.perfil.startsWith('700');
+    groups.panel.scale.set(repo ? 1 : 500 / 700, repo ? 1 : 600 / 700, repo ? 1 : 200 / 250);
+    groups.panel.updateMatrixWorld(true);
+    if (exteriorInitialized) { rebuildExterior(); updateWireFilter(); }
+    document.getElementById('pickstatus').textContent = repo ? 'Painel 700×700×250 mm • Geometria real de montagem' : 'Painel 500×600×200 mm • Estudo compacto';
+  }
+
+  function updateDoor() {
+    panelDoorPivot.rotation.y = opts.portaPainel ? -105 * DEG : 0;
+    chamberDoorPivot.rotation.y = opts.portaCamara ? -105 * DEG : 0;
+    chamberShell.visible = opts.tampaAcrilico;
+    chamberDoorPivot.visible = opts.tampaAcrilico;
+    insulation.visible = ductGroup.visible = opts.isolamentoDutos;
+    grid.visible = opts.mostrarGrade;
+    labels.forEach(l => l.visible = opts.etiquetas);
+    ductCovers.forEach(c => { c.visible = opts.tampaCanaletas; c.material.opacity = opts.transpCanaleta; });
+    chamberShell.traverse(o => { if (o.isMesh && o.material === mats.glass) o.material.opacity = opts.opacidade; });
+  }
+
+  function updateWireFilter() {
+    for (const o of cableMeshes) {
+      const w = o.userData.wire;
+      const ok = opts.tipoFio === 'Todos os 133' ||
+        (opts.tipoFio === 'Potência / AC' && ['pot24', 'srv24', 'ac', 'pe'].includes(w.func)) ||
+        (opts.tipoFio === '12 V / 5 V / 0 V' && ['aux12', 'log5', 'zero'].includes(w.func)) ||
+        (opts.tipoFio === 'Sinal e comunicação' && w.func === 'digital') ||
+        (opts.tipoFio === 'Medição' && w.func === 'medida') ||
+        (opts.tipoFio === 'Somente câmara' && w.cam);
+      o.visible = opts.fiacao && ok;
+    }
+    groups.cables.children.filter(x => !x.userData.wire).forEach(x => x.visible = opts.fiacao);
+  }
+
+  function updateExplode() {
+    for (const e of explodables) {
+      e.obj.position.copy(e.start).addScaledVector(e.offset, opts.explodida ? opts.explosao / 100 : 0);
+    }
+    peltierRearGroup.position.z = -105 - (opts.explodida ? opts.explosao * .65 : 0);
+    pcbDetail.position.y = (opts.explodida ? opts.explosao * .12 : 0);
+    ptcGroup.position.y = 36 - (opts.explodida ? opts.explosao * .12 : 0);
+  }
+
+  function drawHmi() {
+    hx.fillStyle = '#081e32'; hx.fillRect(0, 0, 512, 320);
+    hx.fillStyle = '#1ebbd6'; hx.fillRect(0, 0, 512, 14);
+    hx.font = 'bold 24px system-ui'; hx.fillText('PLANTA TÉRMICA 15 L  •  IHM', 22, 46);
+    hx.font = '76px system-ui'; hx.fillStyle = '#effcff'; hx.fillText(opts.temperatura.toFixed(1) + '°C', 18, 145);
+    hx.fillStyle = '#97cae0'; hx.font = '20px system-ui';
+    hx.fillText('SETPOINT: 22.0°C', 24, 190);
+    hx.fillText('8 POSIÇÕES DE ENSAIO (MODBUS)', 24, 222);
+    const cool = opts.operacao.startsWith('Refrig'), stopped = opts.operacao === 'Parado';
+    hx.fillStyle = stopped ? '#e68a8a' : (cool ? '#38bdf8' : '#34d399');
+    hx.fillText('ESTADO: ' + (stopped ? 'PARADO' : (cool ? 'REFRIGERAÇÃO PELTIER' : 'VENTILAÇÃO FORÇADA')), 24, 275);
+    hmTex.needsUpdate = true;
+  }
+
+  // CONTROLES LIL-GUI
+  const gui = new lil.GUI({ title: 'CONTROLES DA MAQUETE 3D', width: 305 });
+  const fViews = gui.addFolder('01 • Câmeras');
+  fViews.add({ v: () => focus('geral') }, 'v').name('◈ Vista geral');
+  fViews.add({ v: () => focus('painel') }, 'v').name('▤ Painel de comando');
+  fViews.add({ v: () => focus('camara') }, 'v').name('◇ Câmara (frontal)');
+  fViews.add({ v: () => focus('rearPelt') }, 'v').name('❄ Peltier traseira & calha');
+  fViews.add({ v: () => focus('pcb') }, 'v').name('◉ Placas de ensaio CAM-26');
+  fViews.open();
+
+  const fLayers = gui.addFolder('02 • Portas e painel');
+  fLayers.add(opts, 'perfil', ['700 × 700 × 250 (GitHub)', '500 × 600 × 200 (pedido)']).name('Cotas painel').onChange(setPanelProfile);
+  fLayers.add(opts, 'portaPainel').name('Porta painel 105°').onChange(updateDoor);
+  fLayers.add(opts, 'portaCamara').name('Porta câmara 105°').onChange(updateDoor);
+  fLayers.add(opts, 'tampaCanaletas').name('Tampas das canaletas').onChange(updateDoor);
+  fLayers.add(opts, 'transpCanaleta', 0.1, 1, 0.05).name('Opacidade canaletas').onChange(updateDoor);
+  fLayers.add(opts, 'tampaAcrilico').name('Acrílico câmara').onChange(updateDoor);
+  fLayers.add(opts, 'isolamentoDutos').name('Dutos + EPS externo').onChange(updateDoor);
+  fLayers.add(opts, 'etiquetas').name('Etiquetas descritivas').onChange(updateDoor);
+  fLayers.open();
+
+  const fWire = gui.addFolder('03 • Fiação (133 circuitos)');
+  fWire.add(opts, 'fiacao').name('Mostrar cabos').onChange(updateWireFilter);
+  fWire.add(opts, 'tipoFio', ['Todos os 133', 'Potência / AC', '12 V / 5 V / 0 V', 'Sinal e comunicação', 'Medição', 'Somente câmara']).name('Filtro elétrico').onChange(updateWireFilter);
+  fWire.open();
+
+  const fAnim = gui.addFolder('04 • Processo térmico');
+  fAnim.add(opts, 'explodida').name('Vista explodida').onChange(updateExplode);
+  fAnim.add(opts, 'explosao', 0, 100, 5).name('Afastamento mm').onChange(updateExplode);
+  fAnim.add(opts, 'operacao', ['Parado', 'Ventilação ilustrativa', 'Refrigeração ilustrativa']).name('Ciclo térmico').onChange(drawHmi);
+  fAnim.add(opts, 'velocidade', 0, 2, 0.05).name('Velocidade coolers');
+  fAnim.add(opts, 'temperatura', 5, 50, 0.1).name('Temp. ambiente °C').onChange(drawHmi);
+  fAnim.add(opts, 'animacao').name('Animar ventoinhas');
+  fAnim.open();
+
+  // BOTÕES DA TOOLBAR
+  const btn = (id, fn) => document.getElementById(id).addEventListener('click', fn);
+  btn('btnOverview', () => focus('geral'));
+  btn('btnPanel', () => focus('painel'));
+  btn('btnChamber', () => focus('camara'));
+  btn('btnRearPelt', () => focus('rearPelt'));
+  btn('btnPCB', () => focus('pcb'));
+  btn('btnScreenshot', () => {
+    renderer.render(scene, camera);
+    const a = document.createElement('a');
+    a.download = 'maquete-3d-projeto-integrador.png';
+    a.href = renderer.domElement.toDataURL('image/png');
+    a.click();
+  });
+
+  // TOOLTIPS E INTERAÇÃO
+  const raycaster = new THREE.Raycaster(), pointer = new THREE.Vector2();
+  let hoverInfo = null;
+  renderer.domElement.addEventListener('pointermove', (e) => {
+    const rect = renderer.domElement.getBoundingClientRect();
+    pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+    raycaster.setFromCamera(pointer, camera);
+    const hits = raycaster.intersectObjects(picks.filter(o => {
+      let n = o; while (n) { if (!n.visible) return false; n = n.parent; } return true;
+    }), false);
+    hoverInfo = hits.length ? hits[0].object.userData.component : null;
+    if (hoverInfo) {
+      tooltip.style.display = 'block';
+      tooltip.style.left = Math.max(6, Math.min(innerWidth - 325, e.clientX + 16)) + 'px';
+      tooltip.style.top = Math.max(6, Math.min(innerHeight - 145, e.clientY + 18)) + 'px';
+      tooltip.replaceChildren();
+      const st = document.createElement('strong'), s1 = document.createElement('small'), s2 = document.createElement('small'), em = document.createElement('em');
+      st.textContent = hoverInfo.code + ' — ' + hoverInfo.title;
+      s1.textContent = hoverInfo.func;
+      s2.textContent = 'Alimentação / Sinal: ' + hoverInfo.tensao;
+      em.textContent = hoverInfo.extra || 'Clique para fixar a seleção';
+      tooltip.append(st, s1, s2, em);
+    } else tooltip.style.display = 'none';
+    renderer.domElement.style.cursor = hoverInfo ? 'pointer' : 'grab';
+  });
+
+  renderer.domElement.addEventListener('pointerleave', () => { tooltip.style.display = 'none'; hoverInfo = null; });
+  renderer.domElement.addEventListener('click', () => {
+    if (!hoverInfo) return;
+    document.getElementById('pickstatus').textContent = hoverInfo.code + ': ' + hoverInfo.title + ' (' + hoverInfo.tensao + ')';
+  });
+
+  window.addEventListener('resize', () => {
+    const w = innerWidth, h = innerHeight;
+    camera.aspect = w / h; camera.updateProjectionMatrix();
+    renderer.setSize(w, h);
+  });
+
+  function renderLoop(time) {
+    requestAnimationFrame(renderLoop);
+    const dt = Math.min(.06, (time - last) / 1000);
+    last = time;
+    if (opts.animacao && opts.operacao !== 'Parado') {
+      for (const r of rotors) r.obj.rotation.y += dt * opts.velocidade * r.speed * 20;
+    }
+    const running = opts.operacao !== 'Parado', cool = opts.operacao.startsWith('Refrig');
+    for (const l of indicators) {
+      if (l.role === 'LED') l.lamp.material.emissiveIntensity = running ? .65 : .08;
+      else if (l.lamp.material) {
+        const on = l.role === 'H1' ? running : l.role === 'H2' ? cool : false;
+        l.lamp.material.emissiveIntensity = on ? 1.7 : .08;
+      }
+    }
+    if (tween) {
+      const t = Math.min(1, (time - tween.start) / tween.duration);
+      const e = t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+      camera.position.copy(tween.from).lerp(tween.to, e);
+      controls.target.copy(tween.centerFrom).lerp(tween.centerTo, e);
+      if (t >= 1) tween = null;
+    }
+    controls.update();
+    renderer.render(scene, camera);
+  }
+
+  setPanelProfile();
+  updateDoor();
+  updateExplode();
+  updateWireFilter();
+  drawHmi();
+  document.getElementById('wcount').textContent = `133 circuitos rastreados • ${cableMeshes.length} cabos 3D modelados nas canaletas`;
+  document.getElementById('loader').classList.add('hidden');
+  requestAnimationFrame(renderLoop);
+}
+</script>
+</body>
+</html>

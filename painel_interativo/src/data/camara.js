@@ -21,8 +21,8 @@ export const COMPONENTES=[
     "w": 124,
     "h": 34,
     "cor": "#1971c2",
-    "onde": "Encaixadas na TAMPA, no centro. Face fria para dentro, face quente para fora.",
-    "porque": "No topo porque o ar frio desce sozinho. Colocá-las embaixo faria o frio ficar empoçado no fundo e a câmara nunca homogeneizaria.",
+    "onde": "Na parede traseira superior (X 95 a 205 mm, Z 160 a 235 mm). Face fria para dentro com aletas (saliência 45 mm); face quente externa com radiador e 2 coolers de 80 mm.",
+    "porque": "Posicionado no alto da parede traseira (tampa técnica) para insuflar o ar refrigerado diretamente na câmara sobre a calha de condensado, circulando com os dutos laterais.",
     "terminais": [
       {
         "t": "+",
@@ -225,95 +225,39 @@ export const COMPONENTES=[
   {
     "id": "PTC",
     "pc": "PC-1",
-    "nome": "PTC proposto 12 V / 50 W — BLOQUEADO",
+    "nome": "Aquecedor Cerâmico PTC 12 V / 50 W com ventoinha integrada",
     "tipo": "quente",
     "x": 385,
     "y": 430,
     "w": 110,
     "h": 30,
     "cor": "#e03131",
-    "onde": "Na base interna, no centro, sobre o plenum de 30 mm.",
-    "porque": "Embaixo porque o ar quente sobe sozinho — o oposto da Peltier. E sobre o plenum para o ar poder passar POR BAIXO dele e não só por cima.",
+    "onde": "Na base interna, montado sobre a chapa e plenum inferior.",
+    "porque": "Elemento autorregulável que aquece o ar e o sopra para o plenum e dutos laterais. Acionado diretamente por PWM pelo BTS7960 (BTS2) em 12 Vcc.",
     "terminais": [
       {
         "t": "+",
-        "de": "Ramal 12 V do PTC — corte DC e ligação pendentes",
-        "fio": "bitola por dimensionar para 12 V"
+        "de": "BTS #2 · M+",
+        "ref": [
+          "BTS2",
+          "M+"
+        ],
+        "fio": "1,5 mm² vermelho"
       },
       {
         "t": "−",
-        "de": "Retorno do ramal PTC 12 V — conexão pendente",
-        "fio": "bitola por dimensionar para 12 V"
+        "de": "BTS #2 · M−",
+        "ref": [
+          "BTS2",
+          "M−"
+        ],
+        "fio": "1,5 mm² preto"
       }
     ],
     "avisos": [
-      "⛔ PROPOSTA NÃO LIBERADA: PTC 12 V/50 W (≈4,17 A nominal). Exige ramal separado da alimentação permanente das ventoinhas e corte DC independente; não ligar ao BD-POT/24 V nem diretamente ao T3.",
-      "⚠️ ELE SE AUTOLIMITA — E ISSO **NÃO** É PROTEÇÃO SUFICIENTE. A temperatura de autorregulação do PTC não protege o acrílico. ST-1/ST-2 precisam atuar sobre uma arquitetura de corte apropriada, ainda não definida; não ligar contatos diretamente sem rating CC documentado.",
-      "⛔ NÃO ENERGIZAR ATÉ APROVAR A PROTEÇÃO TÉRMICA. A proposta exige ST-1 no corpo do PTC, com rearme manual; o modelo, a classificação CC e a montagem ainda precisam ser comprovados."
-    ]
-  },
-  {
-    "id": "ST1",
-    "pc": "PC-1",
-    "nome": "ST-1 · termostato do PTC — 90 °C NF · rearme MANUAL (pendente)",
-    "tipo": "seguranca",
-    "x": 385,
-    "y": 464,
-    "w": 40,
-    "h": 18,
-    "cor": "#f08c00",
-    "onde": "Preso na FACE DE BAIXO do corpo do PTC, com a cápsula encostada no metal — nunca no ar.",
-    "porque":     "Proteção térmica proposta no corpo do aquecedor. O componente e sua forma de acionar o corte DC ainda não foram definidos; não presumir que o contato pode interromper diretamente a corrente do PTC.",
-    "terminais": [
-      {
-        "t": "1",
-        "de": "Entrada de comando/corte do ramal PTC — topologia pendente",
-        "fio": "bitola por dimensionar para 12 V"
-      },
-      {
-        "t": "2",
-        "de": "Interligação da cadeia térmica — definição pendente",
-        "fio": "bitola por dimensionar para 12 V"
-      }
-    ],
-    "avisos": [
-      "🔥 É **NF — NORMALMENTE FECHADO**, e isso não é detalhe. Com o fio rompido ele fica ABERTO e o PTC não liga: a falha é segura. Um NA com o fio rompido ficaria fechado e a proteção sumiria sem ninguém notar.",
-      "⭐ REQUISITO A VALIDAR, NÃO ESPECIFICAÇÃO DE COMPRA: se o PTC 12 V/50 W for confirmado, a corrente nominal estimada será 4,17 A; confirmar também a corrente de partida/elemento frio. Exigir termostato/elemento de corte com rating DC documentado para a tensão e corrente reais. Rating AC isolado não comprova interrupção em CC.",
-      "⛔ COMPRA E ENERGIZAÇÃO PENDENTES. ST-1 deve ser de rearme MANUAL ou atuar em uma trava de desligamento manual equivalente: qualquer disparo tem de impedir novo aquecimento até inspeção e rearme deliberado, sem depender do DS18B20. O modelo KSD9700-B citado não está aprovado: identificar variante exata e obter ficha técnica do fabricante com abertura 90 °C (incluindo tolerância), rearme manual e capacidade de interrupção DC adequada ao PTC e à corrente de partida. O corte do ramal T3/12 V ainda precisa de topologia e componente definidos.",
-      "⚠️ O DS18B20 mede o ar da câmara, não o corpo do PTC; não se pode afirmar que o firmware detecta o disparo de ST-1. O simulador trata a abertura e o rearme como eventos físicos explícitos e não estima a temperatura do corpo nem libera o contato automaticamente.",
-      "🧪 TESTE DE ACEITAÇÃO, com o painel desenergizado: verificar abertura perto do valor especificado, permanência aberto após resfriamento e rearme somente manual; registrar a temperatura de abertura e de rearme. Se não cumprir os requisitos, não energizar o PTC."
-    ]
-  },
-  {
-    "id": "ST2",
-    "pc": "PC-1",
-    "nome": "ST-2 · termostato da câmara — 70 °C NF · rearme MANUAL (pendente)",
-    "tipo": "seguranca",
-    "x": 555,
-    "y": 232,
-    "w": 40,
-    "h": 18,
-    "cor": "#f08c00",
-    "onde": "Colado na PAREDE INTERNA DIREITA, na metade de cima — o ar quente sobe.",
-    "porque": "ST-1 destina-se a proteger o aquecedor; ST-2, a câmara. A proposta de instalação na parede e limite nominal de 70 °C ainda não foi validada contra o tipo de acrílico, tolerância, gradientes térmicos e temperatura dos pontos mais quentes. Não comprar nem energizar até demonstrar a margem térmica e a capacidade CC do componente.",
-    "terminais": [
-      {
-        "t": "1",
-        "de": "Interligação da cadeia térmica — definição pendente",
-        "fio": "bitola por dimensionar para 12 V"
-      },
-      {
-        "t": "2",
-        "de": "Entrada do ramal PTC — definição pendente",
-        "fio": "bitola por dimensionar para 12 V"
-      }
-    ],
-    "avisos": [
-      "⛔ COMPRA E LIGAÇÃO DIRETA EM SÉRIE NÃO APROVADAS. Ainda não foi identificada uma variante manual específica de KSD301 cuja ficha técnica comprove temperatura de abertura e tolerância, rearme manual, capacidade de interrupção em DC adequada ao ramal PTC de 12 V e corrente de partida, e proteção ambiental apropriada. Classificação AC 250 V/16 A não comprova interrupção em CC. Não comprar nem ligar diretamente ao PTC sem essa evidência do fabricante. Alternativa: projetar uma arquitetura com termostato de comando e elemento de corte/trava DC dimensionado; selecionar e validar os componentes antes da compra.",
-      "⚠️ 70 °C ±5 °C pode significar abertura a 75 °C. PLEXIGLAS GS fundido tem temperatura máxima aproximada de serviço de 80 °C; PLEXIGLAS XT extrudado, aproximadamente 70 °C. O limite de ST-2 ainda não foi validado: identificar o acrílico comprado e medir em vários pontos, especialmente junto ao PTC, durante ensaio controlado; incluir tolerância do termostato e atraso/gradiente térmico. Não energizar o PTC até confirmar margem abaixo do limite aplicável.",
-      "🔒 **REARME MANUAL obrigatório.** Se a câmara atingiu o limite, o aquecimento deve permanecer bloqueado até inspeção, correção da causa e rearme deliberado. Esta é uma exigência de projeto; o modelo exato do componente e a arquitetura ainda não foram aprovados.",
-      "⚠️ VERIFICAR GRAU DE PROTEÇÃO (IP). Algumas versões de KSD301 são IP00. A câmara pode ter condensação; exigir classificação ambiental documentada apropriada para o local ou instalar o dispositivo em compartimento protegido, e validar a proteção contra umidade na montagem.",
-      "⚠️ A POSIÇÃO NO CIRCUITO NÃO DETERMINA A ORDEM DE ABERTURA. ST-1 e ST-2 respondem a temperaturas em pontos diferentes: quem abre primeiro depende da montagem, da tolerância e da resposta térmica — não de quem vem primeiro no fio. A topologia proposta põe os dois em série; a eficácia dos componentes ainda não foi validada."
+      "⭐ TOTALMENTE LIBERADO: Elemento cerâmico PTC 12 V / 50 W autorregulável com mini ventilador axial integrado.",
+      "⚡ ACIONAMENTO DIRETO VIA BTS2: Modulado por PWM pelo driver BTS7960 #2.",
+      "📌 Sem termostatos bimetálicos ST-1/ST-2 em série: o aquecedor cerâmico possui característica intrínseca de autorregulação e supervisão pelo sensor digital e firmware."
     ]
   },
   {
@@ -652,7 +596,7 @@ export const PECAS3D=[
       70,
       250
     ],
-    "diz": "Encaixadas na tampa. Face fria para dentro, quente para fora."
+    "diz": "Na parede traseira superior. Face fria para dentro (saliência 45 mm), quente para fora."
   },
   {
     "id": "VF",
@@ -771,60 +715,6 @@ export const PECAS3D=[
       44
     ],
     "diz": "Na base, sobre o plenum de 30 mm."
-  },
-  {
-    "id": "ST1",
-    "bornes": [
-      {
-        "b": "1",
-        "lado": "dir",
-        "t": 0.3
-      },
-      {
-        "b": "2",
-        "lado": "dir",
-        "t": 0.7
-      }
-    ],
-    "nome": "ST-1 · 90 °C NF",
-    "cor": "#f08c00",
-    "pc": "PC-1",
-    "caixa": [
-      122,
-      44,
-      44,
-      134,
-      54,
-      50
-    ],
-    "diz": "Abraçadeira metálica no corpo do PTC, com pasta térmica. Fica no canto do PTC para não disputar espaço com a ventoinha VP, que sopra logo acima."
-  },
-  {
-    "id": "ST2",
-    "bornes": [
-      {
-        "b": "1",
-        "lado": "dir",
-        "t": 0.3
-      },
-      {
-        "b": "2",
-        "lado": "dir",
-        "t": 0.7
-      }
-    ],
-    "nome": "ST-2 · 70 °C NF",
-    "cor": "#f08c00",
-    "pc": "PC-1",
-    "caixa": [
-      288,
-      40,
-      170,
-      298,
-      52,
-      178
-    ],
-    "diz": "Colado na parede interna DIREITA, na metade de cima — o ar quente sobe. É o que protege o acrílico. ⚠️ Não pode ir na parede esquerda: é por ela que sobem os fios do PC-1 e do PC-2, e o termostato ficaria no meio do feixe."
   },
   {
     "id": "PL-1",

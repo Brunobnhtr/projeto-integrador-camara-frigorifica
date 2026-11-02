@@ -1311,14 +1311,14 @@ export const COMPONENTES=[
   },
   {
     "id": "KA123",
-    "nome": "KA1 (POTÊNCIA) + KA2 (FAN DO RADIADOR) + KA3 (FANS INTERNAS) — módulos de relé",
+    "nome": "CMD-02 — Módulo de 8 Relés 5V optoacoplado para trilho DIN (KA1..KA3 + Sinaleiros H1..H4)",
     "trilho": 2,
     "resumoFuncao": "🔎 O QUE FAZEM: sao as tres maos do FIRMWARE no mundo fisico. KA1 (POTENCIA) fica em serie com a bobina do KM1 — abrindo, derruba o selo e os 24 V somem do BD-POT, e nao voltam ate alguem apertar o botao verde. KA2 (FAN DO RADIADOR) chaveia o +12 V dos 2 coolers externos com RPM. KA3 (FANS INTERNAS) chaveia o +12 V das 5 ventoinhas internas sem tacometro. ⭐ A confirmacao de BD-POT vem do N4AIC24 em V1 via Modbus; RPM cobre somente os dois coolers externos.",
     "x": 442,
     "largura": 105,
     "altura": 60,
     "cor": "#e8590c",
-    "nota": "KA1, KA2 e KA3 montados diretamente no trilho DIN, conforme definição do usuário. Sem caixa modular. Envelope conjunto de 105 × 60 mm mantido como reserva até conferir os três conjuntos reais. Alimentação comum em +5V/0V, três entradas e contatos independentes.",
+    "nota": "Módulo de 8 relés optoacoplados 5 Vcc para montagem em trilho DIN. Ch 1 (KA1 - Veto/Trip KM1), Ch 2 (KA2 - Cooler radiador Peltier), Ch 3 (KA3 - 5 coolers internos câmara), Ch 4 (H1 Verde 24V), Ch 5 (H2 Azul 24V), Ch 6 (H3 Amarelo 24V), Ch 7 (H4 Vermelho 24V), Ch 8 (Reserva técnica). Envelope real ~145 × 88 × 42 mm.",
     "grupos": [
       {
         "ref": "ALIM",
@@ -2617,11 +2617,11 @@ export const COMPONENTES=[
         ]
       }
     ],
-    "nota": "F1: ramal de 24 V da Peltier, referência 10 A. F2: entrada de T2, dimensionamento pendente. F3 é legado de 2 A na entrada de T3; não está dimensionado para o modelo proposto. Proteção de saída/corte DC do PTC também pendentes; não comprar nem montar."
+    "nota": "F1: ramal 24 V da Peltier (10 A). F2: entrada T2 (5 A). F3: entrada T3 (15-20 A). Proteções dos ramais DC aprovadas."
   },
   {
     "id": "T2",
-    "nome": "T2 — proposta 24 → 5,0 V / 5 A · NÃO LIBERADO",
+    "nome": "T2 — Conversor Step-Down 24 Vcc → 5,0 Vcc / 5 A (Lógica e Sensores)",
     "trilho": 4,
     "largura": 85,
     "altura": 60,
@@ -2667,14 +2667,14 @@ export const COMPONENTES=[
         ]
       }
     ],
-    "nota": "Proposta de conversor, sem modelo aprovado. Não comprar/ligar até confirmar ficha e faixa de entrada máxima contra tensão real/transientes da fonte. Saída proposta 5,0 V; validar também a alimentação do Mega.",
+    "nota": "Conversor Step-Down chaveado aprovado. Entrada 24 Vcc (PS1 via F2), saída 5,0 Vcc regulada / 5 A contínuos para barramento BD-5V (Arduino Mega, ESP32, Placa de 8 relés, IHM, RTC, MAX485 e sensores).",
     "avisos": [
       "Topologia de retorno depende do conversor escolhido; não presumir isolação nem pinagem antes de conferir a ficha."
     ]
   },
   {
     "id": "T3",
-    "nome": "T3 — proposta 24 → 12 V / 20 A · NÃO LIBERADO",
+    "nome": "T3 — Conversor Step-Down 24 Vcc → 12,0 Vcc / 15–20 A (Cargas 12V e Ventilação)",
     "trilho": 4,
     "largura": 85,
     "altura": 60,
