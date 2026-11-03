@@ -1,3 +1,13 @@
+> **ALERTA DE REVISÃO — 03/11/2026: CAD EM RECONCILIAÇÃO, NÃO LIBERADO PARA CORTE.**
+>
+> Leia primeiro [REVISAO_CAD_2026-11-03.md](REVISAO_CAD_2026-11-03.md). Esta pasta contém desenhos históricos e CSVs **desatualizados**. O arquivo `lista_corte_camara.csv` ainda traz a câmara antiga de ~40 litros e o `lista_corte_painel.csv` descreve MDF 600×800×250 mm, enquanto o painel interativo atual usa 700×700×250 mm. **Não enviar esses CSVs nem os DXFs antigos para corte.**
+>
+> A **CAM-26 vigente no modelo atual são 2 tiras de alumínio de 210×20×1,5 mm**, com 8 fixações M3; foi acrescentado `camara/01_pecas/CAM-26.dxf` como cópia exata de `placa_leds/berco_placas.dxf`. A descrição antiga de chapa dobrada 210×180 está **revogada para este conceito**. CAM-15 e CAM-25 são desenhos históricos de lâmpadas e não devem ser fabricados. As PCBs têm dimensão ainda contraditória (95×75 na documentação, 90×70 no DXF).
+>
+> O texto V12 abaixo é mantido **apenas como histórico de revisão**. A lista ativa de corte requer nova emissão paramétrica, aprovação dimensional e conferência com peças reais.
+
+---
+
 # CAD V12 — suportes do PTC, cantoneiras, berço das placas e fans internas
 
 ## Versão vigente
